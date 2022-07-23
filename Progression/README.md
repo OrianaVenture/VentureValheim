@@ -4,19 +4,24 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-This mod is in Beta: Use at your own risk! (make a backup of your data before you update)
+This mod is in Beta: Use at your own risk! (make a backup of your data before you update). You will likely need to generate a fresh config file.
 
 World Advancement and Progression lets you fine tune world settings. Ideal to use on multiplayer/RP (roleplay) servers to control world advancement.
 
 ## Features
 
 * Prevent/block public keys from being added to the global list. Configurable Allow/Block list options.
+* Configure Skill drain on death - disable or set to an absolute number.
 
 ## Changelog
 
+### 0.0.2
+
+* Added ability to configure Skill drain on death - disable or set to an absolute number.
+
 ### 0.0.1
 
-* Added ability to Prevent/block public keys from being added to the global list. Configurable Allow/Block list options.
+* Added ability to prevent/block public keys from being added to the global list. Configurable Allow/Block list options.
 
 ## Contributing
 
