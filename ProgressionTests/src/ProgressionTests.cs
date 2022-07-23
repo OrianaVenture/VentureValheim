@@ -1,11 +1,10 @@
-﻿using Moq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using VentureValheim.Progression;
 
 namespace VentureValheim.ProgressionTests
 {
     [TestFixture]
-    public class Tests
+    public class ProgressionTests
     {
         [TestCase(true, "", "")]
         [TestCase(true, "killedTroll", "")]

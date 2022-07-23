@@ -75,5 +75,17 @@ namespace VentureValheim.Progression
             
             return BlockedGlobalKeysList?.Contains(globalKey) ?? false;
         }
+        
+        public float GetSkillDrainFloor(float level)
+        {
+            // TODO: calculate skill floor based on global and player keys
+            return 0f;
+        }
+        
+        public float GetSkillGainCeiling(float level)
+        {
+            // TODO: calculate skill ceiling based on global and player keys
+            return 100f;
+        }
     }
 }

@@ -94,7 +94,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Plugin.cs" />
-        <Compile Include="src\ProgressionManager.cs" />
+        <Compile Include="src\*.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
