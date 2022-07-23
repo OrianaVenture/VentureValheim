@@ -16,7 +16,7 @@ namespace VentureValheim.Progression
         private const string ModVersion = "0.0.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
-        private static string ConfigFileName = ModGUID + ModVersion + ".cfg";
+        private static string ConfigFileName = ModGUID + "." + ModVersion + ".cfg";
         private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
