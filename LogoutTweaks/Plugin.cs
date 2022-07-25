@@ -28,6 +28,13 @@ namespace VentureValheim.LogoutTweaks
         internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
             
         internal static ConfigEntry<bool> CE_ModEnabled = null!;
+        
+        private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
+        {
+            string extendedDescription = ConfigSync.Instance.GetExtendedDescription(description, synced);
+            configEntry = Config.Bind(section, key, value, extendedDescription);
+            ConfigSync.Instance.AddConfigEntry(configEntry, synced);
+        }
             
         #endregion
 
@@ -36,16 +43,13 @@ namespace VentureValheim.LogoutTweaks
             #region Configuration
             
                 const string general = "General";
-                const string serverConfigLocked = "Force Server Config";
-                const string enabled = "Enabled";
 
-                string serverConfigLockedDescription = ConfigSync.Instance.GetExtendedDescription("Force Server Config (boolean)", true);
-                CE_ServerConfigLocked = Config.Bind(general, serverConfigLocked, true, serverConfigLockedDescription);
-                ConfigSync.Instance.AddConfigEntry(CE_ServerConfigLocked, true);
-
-                string enabledDescription = ConfigSync.Instance.GetExtendedDescription("Enable module (boolean).", true);
-                CE_ModEnabled = Config.Bind(general, enabled, true, enabledDescription);
-                ConfigSync.Instance.AddConfigEntry(CE_ModEnabled, true);
+                AddConfig("Force Server Config", general,
+                    ConfigSync.Instance.GetExtendedDescription("Force Server Config (boolean).", true),
+                    true, true, ref CE_ServerConfigLocked);
+                AddConfig("Enabled", general,
+                    ConfigSync.Instance.GetExtendedDescription("Enable module (boolean).", true),
+                    true, true, ref CE_ModEnabled);
             
             #endregion
 
