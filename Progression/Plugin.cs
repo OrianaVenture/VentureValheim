@@ -46,7 +46,7 @@ namespace VentureValheim.Progression
             private bool GetAllowSkillDrain() => CE_AllowSkillDrain.Value;
             private bool GetUseAbsoluteSkillDrain() => CE_UseAbsoluteSkillDrain.Value;
             private int GetAbsoluteSkillDrain() => CE_AbsoluteSkillDrain.Value;
-            
+
             private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
             {
                 string extendedDescription = ConfigSync.Instance.GetExtendedDescription(description, synced);
@@ -69,26 +69,23 @@ namespace VentureValheim.Progression
                 AddConfig("Enabled", general,
                     ConfigSync.Instance.GetExtendedDescription("Enable module (boolean).",true),
                     true, true, ref CE_ModEnabled);
-                
+
                 AddConfig("BlockAllGlobalKeys", general,
-                    ConfigSync.Instance.GetExtendedDescription("Whether to stop all global keys from being added to the global list (boolean).",true),
+                    "Whether to stop all global keys from being added to the global list (boolean).",
                     true, true, ref CE_BlockAllGlobalKeys);
                 AddConfig("BlockedGlobalKeys", general,
-                    ConfigSync.Instance.GetExtendedDescription("Stop only these keys being added to the global list when BlockAllGlobalKeys is false (comma-separated).",true),
+                    "Stop only these keys being added to the global list when BlockAllGlobalKeys is false (comma-separated).",
                     true, "", ref CE_BlockedGlobalKeys);
                 AddConfig("AllowedGlobalKeys", general,
-                    ConfigSync.Instance.GetExtendedDescription("Allow only these keys being added to the global list when BlockAllGlobalKeys is true (comma-separated).",true),
+                    "Allow only these keys being added to the global list when BlockAllGlobalKeys is true (comma-separated).",
                     true, "", ref CE_AllowedGlobalKeys);
-                
-                
-                AddConfig("AllowSkillDrain", skills,
-                    ConfigSync.Instance.GetExtendedDescription("Enable skill drain (boolean).",true),
+
+
+                AddConfig("AllowSkillDrain", skills, "Enable skill drain (boolean).",
                     true, true, ref CE_AllowSkillDrain);
-                AddConfig("UseAbsoluteSkillDrain", skills,
-                    ConfigSync.Instance.GetExtendedDescription("Reduce skills by a set value (boolean).",true),
+                AddConfig("UseAbsoluteSkillDrain", skills, "Reduce skills by a set value (boolean).",
                     true, false, ref CE_UseAbsoluteSkillDrain);
-                AddConfig("AbsoluteSkillDrain", skills,
-                    ConfigSync.Instance.GetExtendedDescription("Reduce all skills by this value (on death) (int).",true),
+                AddConfig("AbsoluteSkillDrain", skills, "Reduce all skills by this value (on death) (int).",
                     true, 1, ref CE_AbsoluteSkillDrain);
 
                 #endregion

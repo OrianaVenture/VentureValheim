@@ -44,11 +44,9 @@ namespace VentureValheim.LogoutTweaks
             
                 const string general = "General";
 
-                AddConfig("Force Server Config", general,
-                    ConfigSync.Instance.GetExtendedDescription("Force Server Config (boolean).", true),
+                AddConfig("Force Server Config", general, "Force Server Config (boolean).",
                     true, true, ref CE_ServerConfigLocked);
-                AddConfig("Enabled", general,
-                    ConfigSync.Instance.GetExtendedDescription("Enable module (boolean).", true),
+                AddConfig("Enabled", general,"Enable module (boolean).", 
                     true, true, ref CE_ModEnabled);
             
             #endregion
@@ -60,6 +58,7 @@ namespace VentureValheim.LogoutTweaks
             
             try
             {
+                LogoutTweaks.Instance.Initialize();
             }
             catch (Exception e)
             {
