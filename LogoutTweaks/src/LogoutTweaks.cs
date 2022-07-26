@@ -10,8 +10,6 @@ namespace VentureValheim.LogoutTweaks
     {
         private LogoutTweaks()
         {
-            _filepath = "";
-            _fileDirectory = "";
         }
         private static readonly LogoutTweaks _instance = new LogoutTweaks();
 
@@ -21,8 +19,8 @@ namespace VentureValheim.LogoutTweaks
         }
 
         private const string Rested = "Rested";
-        private string _filepath;
-        private string _fileDirectory;
+        private string _filepath = "";
+        private string _fileDirectory = "";
 
         private string GetNewFilePath(string original)
         {
@@ -41,6 +39,8 @@ namespace VentureValheim.LogoutTweaks
 
         public void Initialize()
         {
+            _filepath = "";
+            _fileDirectory = "";
         }
 
         [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.SavePlayerData))]
@@ -49,23 +49,19 @@ namespace VentureValheim.LogoutTweaks
             private static void Postfix(Player player, PlayerProfile __instance)
             {
                 LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Patch_PlayerProfile_SavePlayerData called.");
-
-                if (_instance._filepath.IsNullOrWhiteSpace())
+                if (_instance.SetFilePaths(__instance.m_fileSource, __instance.GetPath()))
                 {
-                    _instance._filepath = __instance.GetPath();
-                    _instance._fileDirectory = PlayerProfile.GetCharacterFolderPath(__instance.m_fileSource);
-                }
-
-                StatusEffect statusEffect = player.m_seman.GetStatusEffect(Rested);
-                if (statusEffect)
-                {
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Saving to file: rested bonus is {true}, {statusEffect.m_time} duration");
-                    _instance.SaveFile(__instance.m_fileSource, true, statusEffect.m_time);
-                }
-                else
-                {
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Saving to file: rested bonus is {false}, {0f} duration");
-                    _instance.SaveFile(__instance.m_fileSource, false, 0f);
+                    StatusEffect statusEffect = player.m_seman.GetStatusEffect(Rested);
+                    if (statusEffect)
+                    {
+                        LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Saving to file: rested bonus is {true}, {statusEffect.m_ttl} total, {statusEffect.m_time} remaining");
+                        _instance.SaveFile(__instance.m_fileSource, true, statusEffect.m_ttl, statusEffect.m_time);
+                    }
+                    else
+                    {
+                        LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Saving to file: rested bonus is {false}, {0} total, {0} remaining");
+                        _instance.SaveFile(__instance.m_fileSource, false, 0f, 0f);
+                    }
                 }
             }
         }
@@ -76,38 +72,35 @@ namespace VentureValheim.LogoutTweaks
             private static void Postfix(Player player, PlayerProfile __instance)
             {
                 LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Patch_PlayerProfile_LoadPlayerData called.");
-                if (_instance._filepath.IsNullOrWhiteSpace())
-                {
-                    _instance._filepath = __instance.GetPath();
-                    _instance._fileDirectory = PlayerProfile.GetCharacterFolderPath(__instance.m_fileSource);
-                }
-
+                if (!_instance.SetFilePaths(__instance.m_fileSource, __instance.GetPath())) return;
+                
                 var restedBonus = _instance.LoadFile(__instance.m_fileSource);
-                LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Found from file: rested bonus is {restedBonus.Item1}, {restedBonus.Item2} duration");
-                if (restedBonus.Item1)
+                LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug(
+                    $"Found from file: rested bonus is {restedBonus.rested}, {restedBonus.time} total, {restedBonus.remaining} remaining");
+                if (restedBonus.rested)
                 {
+                    player.m_seman.AddStatusEffect(Rested, true);
                     StatusEffect statusEffect = player.m_seman.GetStatusEffect(Rested);
-                    
-                    
-                    if (statusEffect != null)
-                    {
-                        statusEffect.m_time = restedBonus.Item2;
-                    }
-                    else
-                    {
-                        statusEffect = ObjectDB.instance.GetStatusEffect(Rested);
-                        statusEffect.m_time = restedBonus.Item2;
-                    }
-                    
-                    player.m_seman.AddStatusEffect(statusEffect, false);
-                    
+                        
+                    statusEffect.m_ttl = restedBonus.time;
+                    statusEffect.m_time = restedBonus.remaining;
+
                     Hud.instance.UpdateStatusEffects(player.m_seman.m_statusEffects);
                     LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Adding rested bonus from file.");
                 }
             }
         }
 
-        private void SaveFile(FileHelpers.FileSource filesource, bool rested, float time)
+        [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
+        public static class Patch_Player_Awake
+        {
+            private static void Postfix()
+            {
+                _instance.Initialize();
+            }
+        }
+
+        private void SaveFile(FileHelpers.FileSource filesource, bool rested, float time, float remaning)
         {
             FileHelpers.CheckMove(ref filesource, GetFilePath(_filepath));
             if (!Directory.Exists(_fileDirectory) && filesource != FileHelpers.FileSource.SteamCloud)
@@ -119,6 +112,7 @@ namespace VentureValheim.LogoutTweaks
             ZPackage zPackage = new ZPackage();
             zPackage.Write(rested);
             zPackage.Write(time);
+            zPackage.Write(remaning);
 
             // Save ZPackage
             FileWriter fileWriter = new FileWriter(GetNewFilePath(_filepath) , FileHelpers.FileHelperType.Binary, filesource);
@@ -132,7 +126,7 @@ namespace VentureValheim.LogoutTweaks
             FileHelpers.ReplaceOldFile(GetFilePath(_filepath), GetNewFilePath(_filepath), GetOldFilePath(_filepath), filesource);
         }
 
-        private (bool rested, float time) LoadFile(FileHelpers.FileSource filesource)
+        private (bool rested, float time, float remaining) LoadFile(FileHelpers.FileSource filesource)
         {
             FileReader? fileReader = null;
             try
@@ -151,17 +145,32 @@ namespace VentureValheim.LogoutTweaks
 
                 bool rested = package.ReadBool();
                 float time = package.ReadSingle();
+                float remaining = package.ReadSingle();
                 fileReader.Dispose();
                 
-                return (rested, time);
+                return (rested, time, remaining);
             }
             catch (Exception e)
             {
                 LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"Failed to load Source: {filesource}, Path: {GetFilePath(_filepath)}");
                 LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning(e);
                 fileReader?.Dispose();
-                return (false, 0f);
+                return (false, 0f, 0f);
             }
+        }
+
+        private bool SetFilePaths(FileHelpers.FileSource filesource, string path)
+        {
+            if (_instance._filepath.IsNullOrWhiteSpace())
+            {
+                _instance._filepath = path;
+                _instance._fileDirectory = PlayerProfile.GetCharacterFolderPath(filesource);
+            }
+
+            if (!_instance._filepath.IsNullOrWhiteSpace()) return true;
+            
+            LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"File paths could not be set.");
+            return false;
         }
     }
 }
