@@ -12,8 +12,13 @@ World Advancement and Progression lets you fine tune world settings. Ideal to us
 
 * Prevent/block public keys from being added to the global list. Configurable Allow/Block list options.
 * Configure Skill drain on death - disable or set to an absolute number.
+* ServerSync included
 
 ## Changelog
+
+### 0.0.3
+
+* Added new dependency for Venture ServerSync.
 
 ### 0.0.2
 
