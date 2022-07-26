@@ -1,4 +1,4 @@
-# World Advancement and Progression
+# Logout Tweaks
 
 Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/VentureValheim).
 
@@ -6,27 +6,19 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 This mod is in Beta: Use at your own risk! (make a backup of your data before you update). You will likely need to generate a fresh config file.
 
-World Advancement and Progression lets you fine tune world settings. Ideal to use on multiplayer/RP (roleplay) servers to control world advancement.
+Logout Tweaks reapplies rested bonus on logout, more features to come!
 
 ## Features
 
-* Prevent/block public keys from being added to the global list. Configurable Allow/Block list options.
-* Configure Skill drain on death - disable or set to an absolute number.
+* Reapply your rested bonus from your last logout
+* Saves your data to a new file
 * ServerSync included
 
 ## Changelog
 
-### 0.0.3
-
-* Added new dependency for Venture ServerSync.
-
-### 0.0.2
-
-* Added ability to configure Skill drain on death - disable or set to an absolute number.
-
 ### 0.0.1
 
-* Added ability to prevent/block public keys from being added to the global list. Configurable Allow/Block list options.
+* Added ability to reapply your rested bonus from your last logout
 
 ## Contributing
 

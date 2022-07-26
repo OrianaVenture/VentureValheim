@@ -5,7 +5,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using ServerSync;
+using VentureValheim.ServerSync;
 
 namespace VentureValheim.Progression
 {
@@ -13,7 +13,7 @@ namespace VentureValheim.Progression
     public class ProgressionPlugin : BaseUnityPlugin
     {
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.2";
+        private const string ModVersion = "0.0.3";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + "." + ModVersion + ".cfg";
@@ -23,86 +23,76 @@ namespace VentureValheim.Progression
 
         public static readonly ManualLogSource VentureProgressionLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
-        private static readonly ConfigSync ConfigurationSync = new(ModGUID)
-            { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
-            
         #region ConfigurationEntries
-        
+
             private ConfigEntry<bool> CE_ServerConfigLocked = null!;
-            
+
             private static ConfigEntry<bool> CE_ModEnabled = null!;
-        
+
             // Progression Manager
             private static ConfigEntry<bool> CE_BlockAllGlobalKeys = null!;
             private static ConfigEntry<string> CE_BlockedGlobalKeys = null!;
             private static ConfigEntry<string> CE_AllowedGlobalKeys = null!;
-            
+
             private bool GetBlockAllGlobalKeys() => CE_BlockAllGlobalKeys.Value;
             private string GetBlockedGlobalKeys() => CE_BlockedGlobalKeys.Value;
             private string GetAllowedGlobalKeys() => CE_AllowedGlobalKeys.Value;
-            
+
             // Skills Manager
             private static ConfigEntry<bool> CE_AllowSkillDrain = null!;
             private static ConfigEntry<bool> CE_UseAbsoluteSkillDrain = null!;
             private static ConfigEntry<int> CE_AbsoluteSkillDrain = null!;
-            
+
             private bool GetAllowSkillDrain() => CE_AllowSkillDrain.Value;
             private bool GetUseAbsoluteSkillDrain() => CE_UseAbsoluteSkillDrain.Value;
             private int GetAbsoluteSkillDrain() => CE_AbsoluteSkillDrain.Value;
 
-
-            internal ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
-                bool synchronizedSetting = true)
+            private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
             {
-                ConfigDescription extendedDescription =
-                    new(description.Description +
-                        (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]"),
-                        description.AcceptableValues, description.Tags);
-                ConfigEntry<T> configEntry = Config.Bind(group, name, value, extendedDescription);
-
-                SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
-                syncedConfigEntry.SynchronizedConfig = synchronizedSetting;
-
-                return configEntry;
+                string extendedDescription = ConfigSync.Instance.GetExtendedDescription(description, synced);
+                configEntry = Config.Bind(section, key, value, extendedDescription);
+                ConfigSync.Instance.AddConfigEntry(configEntry, synced);
             }
-            
-            internal ConfigEntry<T> config<T>(string group, string name, T value, string description,
-                bool synchronizedSetting = true)
-            {
-                return config(group, name, value, new ConfigDescription(description), synchronizedSetting);
-            }
-        
+
         #endregion
 
         public void Awake()
         {
             #region Configuration
-            
+
                 const string general = "General";
                 const string skills = "Skills";
-                
-                CE_ServerConfigLocked = config(general, "Force Server Config", true, "Force Server Config (boolean)");
-                ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
-                CE_ModEnabled = config(general, "Enabled", true, "Enable module (boolean).");
-                
-                CE_BlockAllGlobalKeys = config(general, "BlockAllGlobalKeys", true, 
-                    "Whether to stop all global keys from being added to the global list (boolean).");
-                CE_BlockedGlobalKeys = config(general, "BlockedGlobalKeys", "", 
-                    "Stop only these keys being added to the global list when blockAllGlobalKeys is false (comma-separated).");
-                CE_AllowedGlobalKeys = config(general, "AllowedGlobalKeys", "", 
-                    "Allow only these keys being added to the global list when blockAllGlobalKeys is true (comma-separated).");
-                
-                CE_AllowSkillDrain = config(skills, "AllowSkillDrain", true, "Enable skill drain (boolean).");
-                CE_UseAbsoluteSkillDrain = config(skills, "UseAbsoluteSkillDrain", false, "Reduce skills by a set value (boolean).");
-                CE_AbsoluteSkillDrain = config(skills, "AbsoluteSkillDrain", 1, "Reduce all skills by this value (on death) (int).");
-            
-            #endregion
+
+                AddConfig("Force Server Config", general, "Force Server Config (boolean)",
+                    true, true, ref CE_ServerConfigLocked);
+                AddConfig("Enabled", general, "Enable module (boolean).",
+                    true, true, ref CE_ModEnabled);
+
+                AddConfig("BlockAllGlobalKeys", general,
+                    "Whether to stop all global keys from being added to the global list (boolean).",
+                    true, true, ref CE_BlockAllGlobalKeys);
+                AddConfig("BlockedGlobalKeys", general,
+                    "Stop only these keys being added to the global list when BlockAllGlobalKeys is false (comma-separated).",
+                    true, "", ref CE_BlockedGlobalKeys);
+                AddConfig("AllowedGlobalKeys", general,
+                    "Allow only these keys being added to the global list when BlockAllGlobalKeys is true (comma-separated).",
+                    true, "", ref CE_AllowedGlobalKeys);
+
+
+                AddConfig("AllowSkillDrain", skills, "Enable skill drain (boolean).",
+                    true, true, ref CE_AllowSkillDrain);
+                AddConfig("UseAbsoluteSkillDrain", skills, "Reduce skills by a set value (boolean).",
+                    true, false, ref CE_UseAbsoluteSkillDrain);
+                AddConfig("AbsoluteSkillDrain", skills, "Reduce all skills by this value (on death) (int).",
+                    true, 1, ref CE_AbsoluteSkillDrain);
+
+                #endregion
 
             if (!CE_ModEnabled.Value)
                 return;
-            
+
             VentureProgressionLogger.LogInfo("Initializing Progression configurations...");
-            
+
             try
             {
                 ProgressionManager.Instance.Initialize(GetBlockAllGlobalKeys(), GetBlockedGlobalKeys(), GetAllowedGlobalKeys());
@@ -116,7 +106,7 @@ namespace VentureValheim.Progression
                 VentureProgressionLogger.LogError(e);
                 return;
             }
-            
+
             try
             {
                 SkillsManager.Instance.Initialize(GetAllowSkillDrain(), GetUseAbsoluteSkillDrain(), GetAbsoluteSkillDrain());
@@ -129,7 +119,7 @@ namespace VentureValheim.Progression
                 VentureProgressionLogger.LogError(e);
                 return;
             }
-            
+
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
             SetupWatcher();
