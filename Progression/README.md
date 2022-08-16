@@ -16,6 +16,10 @@ World Advancement and Progression lets you fine tune world settings. Ideal to us
 
 ## Changelog
 
+### 0.0.4
+
+* Packaged ServerSync into the main dll.
+
 ### 0.0.3
 
 * Added new dependency for Venture ServerSync.
@@ -35,4 +39,4 @@ All issues can be reported on the project Github. To report issues please be as 
 1. Version of this mod you are using.
 2. List of the other mods being used.
 
-All ideas and requests are welcome! You can message me on the [Odin Plus](https://discord.gg/vYfFHxpJgN) discord, or at my discord [VentureGaming](https://discord.gg/tAd5hapt88).
+All ideas and requests are welcome! You can message me on the [Odin Plus](https://discord.gg/vYfFHxpJgN) discord, or at my discord [Venture Gaming](https://discord.gg/tAd5hapt88).

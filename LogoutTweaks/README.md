@@ -16,6 +16,10 @@ Logout Tweaks reapplies rested bonus on logout, more features to come!
 
 ## Changelog
 
+### 0.0.2
+
+* Packaged ServerSync into the main dll.
+
 ### 0.0.1
 
 * Added ability to reapply your rested bonus from your last logout
@@ -27,4 +31,4 @@ All issues can be reported on the project Github. To report issues please be as 
 1. Version of this mod you are using.
 2. List of the other mods being used.
 
-All ideas and requests are welcome! You can message me on the [Odin Plus](https://discord.gg/vYfFHxpJgN) discord, or at my discord [VentureGaming](https://discord.gg/tAd5hapt88).
+All ideas and requests are welcome! You can message me on the [Odin Plus](https://discord.gg/vYfFHxpJgN) discord, or at my discord [Venture Gaming](https://discord.gg/tAd5hapt88).

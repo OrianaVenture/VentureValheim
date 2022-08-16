@@ -5,7 +5,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using VentureValheim.ServerSync;
+using ServerSync;
 
 namespace VentureValheim.LogoutTweaks
 {
@@ -13,7 +13,7 @@ namespace VentureValheim.LogoutTweaks
     public class LogoutTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "LogoutTweaks";
-        private const string ModVersion = "0.0.1";
+        private const string ModVersion = "0.0.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ModVersion + ".cfg";
@@ -24,38 +24,48 @@ namespace VentureValheim.LogoutTweaks
         public static readonly ManualLogSource LogoutTweaksLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         #region ConfigurationEntries
-        
-        internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
-            
-        internal static ConfigEntry<bool> CE_ModEnabled = null!;
-        
-        private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
-        {
-            string extendedDescription = ConfigSync.Instance.GetExtendedDescription(description, synced);
-            configEntry = Config.Bind(section, key, value, extendedDescription);
-            ConfigSync.Instance.AddConfigEntry(configEntry, synced);
-        }
-            
+
+            private static readonly ConfigSync ConfigurationSync = new(ModGUID)
+            { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
+
+            internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
+
+            internal static ConfigEntry<bool> CE_ModEnabled = null!;
+
+            private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
+            {
+                string extendedDescription = GetExtendedDescription(description, synced);
+                configEntry = Config.Bind(section, key, value, extendedDescription);
+
+                SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
+                syncedConfigEntry.SynchronizedConfig = synced;
+            }
+
+            public string GetExtendedDescription(string description, bool synchronizedSetting)
+            {
+                return description + (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]");
+            }
+
         #endregion
 
         public void Awake()
         {
             #region Configuration
-            
+
                 const string general = "General";
 
                 AddConfig("Force Server Config", general, "Force Server Config (boolean).",
                     true, true, ref CE_ServerConfigLocked);
-                AddConfig("Enabled", general,"Enable module (boolean).", 
+                AddConfig("Enabled", general,"Enable module (boolean).",
                     true, true, ref CE_ModEnabled);
-            
+
             #endregion
 
             if (!CE_ModEnabled.Value)
                 return;
-            
+
             LogoutTweaksLogger.LogInfo("Initializing LogoutTweaks configurations...");
-            
+
             try
             {
                 LogoutTweaks.Instance.Initialize();
@@ -66,7 +76,7 @@ namespace VentureValheim.LogoutTweaks
                 LogoutTweaksLogger.LogError(e);
                 return;
             }
-            
+
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
             SetupWatcher();

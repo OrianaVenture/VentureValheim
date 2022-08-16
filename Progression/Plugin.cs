@@ -5,7 +5,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using VentureValheim.ServerSync;
+using ServerSync;
 
 namespace VentureValheim.Progression
 {
@@ -13,7 +13,7 @@ namespace VentureValheim.Progression
     public class ProgressionPlugin : BaseUnityPlugin
     {
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.3";
+        private const string ModVersion = "0.0.4";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + "." + ModVersion + ".cfg";
@@ -24,6 +24,9 @@ namespace VentureValheim.Progression
         public static readonly ManualLogSource VentureProgressionLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         #region ConfigurationEntries
+
+            private static readonly ConfigSync ConfigurationSync = new(ModGUID)
+            { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
 
             private ConfigEntry<bool> CE_ServerConfigLocked = null!;
 
@@ -49,9 +52,16 @@ namespace VentureValheim.Progression
 
             private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
             {
-                string extendedDescription = ConfigSync.Instance.GetExtendedDescription(description, synced);
+                string extendedDescription = GetExtendedDescription(description, synced);
                 configEntry = Config.Bind(section, key, value, extendedDescription);
-                ConfigSync.Instance.AddConfigEntry(configEntry, synced);
+
+                SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
+                syncedConfigEntry.SynchronizedConfig = synced;
+            }
+
+            public string GetExtendedDescription(string description, bool synchronizedSetting)
+            {
+                return description + (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]");
             }
 
         #endregion
@@ -86,7 +96,7 @@ namespace VentureValheim.Progression
                 AddConfig("AbsoluteSkillDrain", skills, "Reduce all skills by this value (on death) (int).",
                     true, 1, ref CE_AbsoluteSkillDrain);
 
-                #endregion
+            #endregion
 
             if (!CE_ModEnabled.Value)
                 return;
