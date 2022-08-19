@@ -16,6 +16,10 @@ World Advancement and Progression lets you fine tune world settings. Ideal to us
 
 ## Changelog
 
+### 0.0.5
+
+* Added additional Skill Drain configuration option. Ability to use the minimum or maximum Skill Drain value (absolute skill drain vs vanilla).
+
 ### 0.0.4
 
 * Packaged ServerSync into the main dll.

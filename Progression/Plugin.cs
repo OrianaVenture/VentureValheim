@@ -13,7 +13,7 @@ namespace VentureValheim.Progression
     public class ProgressionPlugin : BaseUnityPlugin
     {
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.4";
+        private const string ModVersion = "0.0.5";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + "." + ModVersion + ".cfg";
@@ -45,10 +45,14 @@ namespace VentureValheim.Progression
             private static ConfigEntry<bool> CE_AllowSkillDrain = null!;
             private static ConfigEntry<bool> CE_UseAbsoluteSkillDrain = null!;
             private static ConfigEntry<int> CE_AbsoluteSkillDrain = null!;
+            private static ConfigEntry<bool> CE_CompareAndSelectDrain = null!;
+            private static ConfigEntry<bool> CE_CompareUseMinimumDrain = null!;
 
             private bool GetAllowSkillDrain() => CE_AllowSkillDrain.Value;
             private bool GetUseAbsoluteSkillDrain() => CE_UseAbsoluteSkillDrain.Value;
             private int GetAbsoluteSkillDrain() => CE_AbsoluteSkillDrain.Value;
+            private bool GetCompareAndSelectDrain() => CE_CompareAndSelectDrain.Value;
+            private bool GetCompareUseMinimumDrain() => CE_CompareUseMinimumDrain.Value;
 
             private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
             {
@@ -95,6 +99,10 @@ namespace VentureValheim.Progression
                     true, false, ref CE_UseAbsoluteSkillDrain);
                 AddConfig("AbsoluteSkillDrain", skills, "Reduce all skills by this value (on death) (int).",
                     true, 1, ref CE_AbsoluteSkillDrain);
+                AddConfig("CompareAndSelectDrain", skills, "Enable comparing skill drain values (if Absolute Skill Drain is enabled) (boolean).",
+                    true, false, ref CE_CompareAndSelectDrain);
+                AddConfig("CompareUseMinimumDrain", skills, "If to compare, \'true\' to use the lower value, \'false\' to use the higher value (boolean).",
+                    true, true, ref CE_CompareUseMinimumDrain);
 
             #endregion
 
@@ -119,9 +127,11 @@ namespace VentureValheim.Progression
 
             try
             {
-                SkillsManager.Instance.Initialize(GetAllowSkillDrain(), GetUseAbsoluteSkillDrain(), GetAbsoluteSkillDrain());
+                SkillsManager.Instance.Initialize(GetAllowSkillDrain(), GetUseAbsoluteSkillDrain(), GetAbsoluteSkillDrain(),
+                    GetCompareAndSelectDrain(), GetCompareUseMinimumDrain());
                 VentureProgressionLogger.LogDebug($"Skill gain: {GetAllowSkillDrain()}. Using custom skill drain: " +
-                    $"{GetUseAbsoluteSkillDrain()} with a value of {GetAbsoluteSkillDrain()}");
+                    $"{GetUseAbsoluteSkillDrain()} with a value of {GetAbsoluteSkillDrain()}. " +
+                    $"Will compare values: {GetCompareAndSelectDrain()}, and will use minimum drain: {GetCompareUseMinimumDrain()}.");
             }
             catch (Exception e)
             {
