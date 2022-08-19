@@ -16,6 +16,10 @@ Logout Tweaks reapplies rested bonus on logout, more features to come!
 
 ## Changelog
 
+### 0.0.3
+
+* Minor refactoring to the code, no feature changes. Changed the patch for loading saved rested bonus data to be more correct. Reset file data on load to prevent an possible incorrect state. Moved the call to get the rested bonus data to a prefix to ensure the data is more accurate.
+
 ### 0.0.2
 
 * Packaged ServerSync into the main dll.

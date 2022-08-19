@@ -27,7 +27,7 @@ namespace VentureValheim.ProgressionTests
         [TestCase(false, true, skillDrainAbsolute)]
         public void GetSkillDrain_HappyPaths(bool a, bool b, float expected)
         {
-            SkillsManager.Instance.Initialize(a, b, skillDrainAbsolute);
+            SkillsManager.Instance.Initialize(a, b, skillDrainAbsolute, false, true);
             Assert.AreEqual(expected, SkillsManager.Instance.GetSkillDrain(midSkill, minSkill, skillDrain));
         }
         
@@ -38,7 +38,7 @@ namespace VentureValheim.ProgressionTests
         [TestCase(aboveMaxSkill, maxSkill, aboveMaxSkill * skillDrain)]
         public void GetSkillDrain_Vanilla(float level, float floor, float expected)
         {
-            SkillsManager.Instance.Initialize(true, false, skillDrainAbsolute);
+            SkillsManager.Instance.Initialize(true, false, skillDrainAbsolute, false, true);
             Assert.AreEqual(expected, SkillsManager.Instance.GetSkillDrain(level, floor, skillDrain));
         }
         
@@ -49,8 +49,22 @@ namespace VentureValheim.ProgressionTests
         [TestCase(aboveMaxSkill, maxSkill, skillDrainAbsolute)]
         public void GetSkillDrain_Flavor(float level, float floor, float expected)
         {
-            SkillsManager.Instance.Initialize(true, true, skillDrainAbsolute);
+            SkillsManager.Instance.Initialize(true, true, skillDrainAbsolute, false, true);
             Assert.AreEqual(expected, SkillsManager.Instance.GetSkillDrain(level, floor, skillDrain));
+        }
+
+        [Test]
+        public void GetSkillDrain_CompareMin()
+        {
+            SkillsManager.Instance.Initialize(true, true, 0f, true, true);
+            Assert.AreEqual(0f, SkillsManager.Instance.GetSkillDrain(midSkill, minSkill, skillDrain));
+        }
+
+        [Test]
+        public void GetSkillDrain_CompareMax()
+        {
+            SkillsManager.Instance.Initialize(true, true, 0f, true, false);
+            Assert.AreEqual(midSkill * skillDrain, SkillsManager.Instance.GetSkillDrain(midSkill, minSkill, skillDrain));
         }
 
         [TestCase(belowMinSkill, minSkill)]

@@ -9,7 +9,9 @@ namespace VentureValheim.Progression
         public static bool AllowSkillDrain { get; private set; }
         public static bool UseAbsoluteSkillDrain { get; private set; }
         public static float AbsoluteSkillDrain { get; private set; }
-        
+        public static bool CompareAndSelectDrain { get; private set; }
+        public static bool CompareUseMinimumDrain { get; private set; }
+
         private SkillsManager() {}
         private static readonly SkillsManager _instance = new SkillsManager();
 
@@ -18,13 +20,16 @@ namespace VentureValheim.Progression
             get => _instance;
         }
 
-        public void Initialize(bool allowSkillDrain, bool useAbsoluteSkillDrain, float absoluteSkillDrain)
+        public void Initialize(bool allowSkillDrain, bool useAbsoluteSkillDrain, float absoluteSkillDrain,
+            bool compareAndSelectDrain, bool compareUseMinimumDrain)
         {
             AllowSkillDrain = allowSkillDrain;
             UseAbsoluteSkillDrain = useAbsoluteSkillDrain;
             AbsoluteSkillDrain = absoluteSkillDrain;
+            CompareAndSelectDrain = compareAndSelectDrain;
+            CompareUseMinimumDrain = compareUseMinimumDrain;
         }
-        
+
         [HarmonyPatch(typeof(Skills), nameof(Skills.LowerAllSkills))]
         public static class Patch_Skills_LowerAllSkills
         {
@@ -40,14 +45,14 @@ namespace VentureValheim.Progression
                         skillDatum.Value.m_accumulator = 0f;
                     }
                     __instance.m_player.Message(MessageHud.MessageType.TopLeft, "$msg_skills_lowered");
-                    
+
                     return false; // Skip original method
                 }
 
                 return false; // Skip original method
             }
         }
-        
+
         [HarmonyPatch(typeof(Skills.Skill), nameof(Skills.Skill.Raise))]
         public static class Patch_Skills_Skill_Raise
         {
@@ -55,9 +60,9 @@ namespace VentureValheim.Progression
             {
                 var increase = __instance.m_info.m_increseStep * factor;
                 var ceiling = ProgressionManager.Instance.GetSkillGainCeiling(__instance.m_level);
-                
+
                 float accumulation = _instance.GetSkillAccumulationGain(__instance.m_level, ceiling, increase);
-                
+
                 if (__instance.m_accumulator + accumulation >= __instance.GetNextLevelRequirement())
                 {
                     __instance.m_level = _instance.NormalizeSkillLevel(++__instance.m_level);
@@ -87,15 +92,29 @@ namespace VentureValheim.Progression
             {
                 if (UseAbsoluteSkillDrain)
                 {
+                    if (CompareAndSelectDrain)
+                    {
+                        if (CompareUseMinimumDrain)
+                        {
+                            return Mathf.Min(level * factor, AbsoluteSkillDrain);
+                        }
+                        else
+                        {
+                            return Mathf.Max(level * factor, AbsoluteSkillDrain);
+                        }
+                    }
+
                     return AbsoluteSkillDrain;
                 }
-                
-                return level * factor;
+                else
+                {
+                    return level * factor;
+                }
             }
 
             return 0f;
         }
-        
+
         /// <summary>
         /// Get the accumulation gain for a skill.
         /// </summary>
@@ -107,7 +126,7 @@ namespace VentureValheim.Progression
         {
             return ceiling > level ? increase : 0f;
         }
-        
+
         /// <summary>
         /// Normalize a skill by making sure it is within the minimum and maximum skill bounds.
         /// </summary>
