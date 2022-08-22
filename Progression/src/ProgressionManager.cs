@@ -10,7 +10,7 @@ namespace VentureValheim.Progression
         public static bool BlockAllGlobalKeys { get; private set; }
         public static List<string>? BlockedGlobalKeysList  { get; private set; }
         public static List<string>? AllowedGlobalKeysList  { get; private set; }
-        
+
         private ProgressionManager() {}
         private static readonly ProgressionManager _instance = new ProgressionManager();
 
@@ -18,13 +18,13 @@ namespace VentureValheim.Progression
         {
             get => _instance;
         }
-        
+
         public void Initialize(bool blockAllGlobalKeys, string blockedGlobalKeys, string allowedGlobalKeys)
         {
             BlockAllGlobalKeys = blockAllGlobalKeys;
             BlockedGlobalKeysList = null;
             AllowedGlobalKeysList = null;
-            
+
             if (!blockedGlobalKeys.IsNullOrWhiteSpace())
             {
                 BlockedGlobalKeysList = blockedGlobalKeys.Split(',').ToList();
@@ -33,7 +33,7 @@ namespace VentureValheim.Progression
                     BlockedGlobalKeysList[lcv] = BlockedGlobalKeysList[lcv].Trim();
                 }
             }
-            
+
             if (!allowedGlobalKeys.IsNullOrWhiteSpace())
             {
                 AllowedGlobalKeysList = allowedGlobalKeys.Split(',').ToList();
@@ -72,16 +72,16 @@ namespace VentureValheim.Progression
             {
                 return !AllowedGlobalKeysList?.Contains(globalKey) ?? true;
             }
-            
+
             return BlockedGlobalKeysList?.Contains(globalKey) ?? false;
         }
-        
+
         public float GetSkillDrainFloor(float level)
         {
             // TODO: calculate skill floor based on global and player keys
             return 0f;
         }
-        
+
         public float GetSkillGainCeiling(float level)
         {
             // TODO: calculate skill ceiling based on global and player keys
