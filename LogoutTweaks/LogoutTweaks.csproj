@@ -9,7 +9,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.LogoutTweaks</RootNamespace>
         <AssemblyName>VentureValheim.LogoutTweaks</AssemblyName>
-        <Version>0.0.3</Version>
+        <Version>0.0.4</Version>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>

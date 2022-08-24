@@ -6,15 +6,20 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 This mod is in Beta: Use at your own risk! (make a backup of your data before you update). You will likely need to generate a fresh config file.
 
-Logout Tweaks reapplies rested bonus on logout, more features to come!
+Logout Tweaks reapplies previously untracked data from your last logout.
 
 ## Features
 
 * Reapply your rested bonus from your last logout
+* Reapply your stamina from your last logout
 * Saves your data to a new file
 * ServerSync included
 
 ## Changelog
+
+### 0.0.4
+
+* Added ability to restore stamina from last logout with regen delay of 5 seconds. Added more config options. Changed file storage structure, expect a warning on version upgrade.
 
 ### 0.0.3
 
@@ -35,4 +40,4 @@ All issues can be reported on the project Github. To report issues please be as 
 1. Version of this mod you are using.
 2. List of the other mods being used.
 
-All ideas and requests are welcome! You can message me on the [Odin Plus](https://discord.gg/vYfFHxpJgN) discord, or at my discord [Venture Gaming](https://discord.gg/tAd5hapt88).
+All feedback, ideas, and requests are welcome! You can message me on the [Odin Plus](https://discord.gg/vYfFHxpJgN) discord, or at my discord [Venture Gaming](https://discord.gg/tAd5hapt88).

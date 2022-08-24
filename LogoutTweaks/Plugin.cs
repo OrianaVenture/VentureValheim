@@ -13,7 +13,7 @@ namespace VentureValheim.LogoutTweaks
     public class LogoutTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "LogoutTweaks";
-        private const string ModVersion = "0.0.3";
+        private const string ModVersion = "0.0.4";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ModVersion + ".cfg";
@@ -25,26 +25,32 @@ namespace VentureValheim.LogoutTweaks
 
         #region ConfigurationEntries
 
-            private static readonly ConfigSync ConfigurationSync = new(ModGUID)
-            { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
+        private static readonly ConfigSync ConfigurationSync = new(ModGUID)
+        { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
 
-            internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
+        internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
 
-            internal static ConfigEntry<bool> CE_ModEnabled = null!;
+        internal static ConfigEntry<bool> CE_ModEnabled = null!;
 
-            private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
-            {
-                string extendedDescription = GetExtendedDescription(description, synced);
-                configEntry = Config.Bind(section, key, value, extendedDescription);
+        internal static ConfigEntry<bool> CE_UseRestedBonus = null!;
+        internal static ConfigEntry<bool> CE_UseStamina = null!;
 
-                SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
-                syncedConfigEntry.SynchronizedConfig = synced;
-            }
+        public static bool GetUseRestedBonus() => CE_UseRestedBonus.Value;
+        public static bool GetUseStamina() => CE_UseStamina.Value;
 
-            public string GetExtendedDescription(string description, bool synchronizedSetting)
-            {
-                return description + (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]");
-            }
+        private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
+        {
+            string extendedDescription = GetExtendedDescription(description, synced);
+            configEntry = Config.Bind(section, key, value, extendedDescription);
+
+            SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
+            syncedConfigEntry.SynchronizedConfig = synced;
+        }
+
+        public string GetExtendedDescription(string description, bool synchronizedSetting)
+        {
+            return description + (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]");
+        }
 
         #endregion
 
@@ -52,12 +58,17 @@ namespace VentureValheim.LogoutTweaks
         {
             #region Configuration
 
-                const string general = "General";
+            const string general = "General";
 
-                AddConfig("Force Server Config", general, "Force Server Config (boolean).",
-                    true, true, ref CE_ServerConfigLocked);
-                AddConfig("Enabled", general,"Enable module (boolean).",
-                    true, true, ref CE_ModEnabled);
+            AddConfig("Force Server Config", general, "Force Server Config (boolean).",
+                true, true, ref CE_ServerConfigLocked);
+            AddConfig("Enabled", general,"Enable module (boolean).",
+                true, true, ref CE_ModEnabled);
+
+            AddConfig("UseRestedBonus", general, "Apply rested bonus from last logout (boolean).",
+                true, true, ref CE_UseRestedBonus);
+            AddConfig("UseStamina", general, "Apply stamina from last logout with regen delay (boolean).",
+                true, true, ref CE_UseStamina);
 
             #endregion
 
@@ -85,6 +96,7 @@ namespace VentureValheim.LogoutTweaks
         private void OnDestroy()
         {
             Config.Save();
+            HarmonyInstance.UnpatchSelf();
         }
 
         private void SetupWatcher()
