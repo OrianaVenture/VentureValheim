@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using BepInEx;
 using HarmonyLib;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace VentureValheim.LogoutTweaks
 {
@@ -20,6 +22,22 @@ namespace VentureValheim.LogoutTweaks
         private const string Rested = "Rested";
         private string _filepath = "";
         private string _fileDirectory = "";
+
+        private readonly struct FileData
+        {
+            public bool IsRested { get; }
+            public float RestedTime { get; }
+            public float RestedTimePassed { get; }
+            public float Stamina { get; }
+
+            public FileData(bool rested, float time, float passed, float stamina)
+            {
+                IsRested = rested;
+                RestedTime = time;
+                RestedTimePassed = passed;
+                Stamina = stamina;
+            }
+        }
 
         private string GetNewFilePath(string original)
         {
@@ -51,49 +69,81 @@ namespace VentureValheim.LogoutTweaks
                 __state = player.m_seman.GetStatusEffect(Rested);
             }
 
-            private static void Postfix(PlayerProfile __instance, StatusEffect __state)
+            private static void Postfix(Player player, PlayerProfile __instance, StatusEffect __state)
             {
-                LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Patch_PlayerProfile_SavePlayerData postfix called.");
-                if (_instance.SetFilePaths(__instance.m_fileSource, __instance.GetPath()))
+                try
                 {
-                    if (__state)
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Patch_PlayerProfile_SavePlayerData postfix called.");
+                    if (_instance.SetFilePaths(__instance.m_fileSource, __instance.GetPath()))
                     {
-                        LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Saving to file: rested bonus is {true}, {__state.m_ttl} total, {__state.m_time} time passed.");
-                        _instance.SaveFile(__instance.m_fileSource, true, __state.m_ttl, __state.m_time);
+                        if (__state)
+                        {
+                            LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Saving to file: rested bonus is {true}, {__state.m_ttl} total, {__state.m_time} time passed. Stamina: {player.m_stamina}");
+                            FileData fileData = new FileData(true, __state.m_ttl, __state.m_time, player.m_stamina);
+                            _instance.SaveFile(__instance.m_fileSource, fileData);
+                        }
+                        else
+                        {
+                            LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Saving to file: rested bonus is {false}, {0} total, {0} time passed. Stamina: {0}");
+                            FileData fileData = new FileData(false, 0f, 0f, 0f);
+                            _instance.SaveFile(__instance.m_fileSource, fileData);
+                        }
                     }
-                    else
-                    {
-                        LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Saving to file: rested bonus is {false}, {0} total, {0} time passed.");
-                        _instance.SaveFile(__instance.m_fileSource, false, 0f, 0f);
-                    }
+                }
+                catch (Exception e)
+                {
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError("Error saving extra data from file.");
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError(e);
                 }
             }
         }
 
-        [HarmonyPatch(typeof(Player), nameof(Player.SetLocalPlayer))]
-        public static class Patch_Player_SetLocalPlayer
-        {
-            private static void Postfix(Player __instance)
+        [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.LoadPlayerData))]
+        public static class Patch_PlayerProfile_LoadPlayerData
+        { 
+            private static void Postfix(Player player)
             {
-                LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Patch_Player_SetLocalPlayer called.");
-                var profile = Game.instance.GetPlayerProfile();
-                if (!_instance.SetFilePaths(profile.m_fileSource, profile.GetPath())) return;
-
-                var restedBonus = _instance.LoadFile(profile.m_fileSource);
-                LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug(
-                    $"Found from file: rested bonus is {restedBonus.rested}, {restedBonus.time} total, {restedBonus.passed} time passed.");
-                if (restedBonus.rested)
+                if (!SceneManager.GetActiveScene().name.Equals("main") || !(LogoutTweaksPlugin.GetUseRestedBonus() || LogoutTweaksPlugin.GetUseStamina()))
                 {
-                    __instance.m_seman.AddStatusEffect(Rested, true);
-                    StatusEffect statusEffect = __instance.m_seman.GetStatusEffect(Rested);
+                    return;
+                }
 
-                    statusEffect.m_ttl = restedBonus.time;
-                    statusEffect.m_time = restedBonus.passed;
+                try
+                {
+                    var profile = Game.instance.GetPlayerProfile();
+                    if (!_instance.SetFilePaths(profile.m_fileSource, profile.GetPath())) return;
 
-                    Hud.instance.UpdateStatusEffects(__instance.m_seman.m_statusEffects);
+                    var fileData = _instance.LoadFile(profile.m_fileSource);
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug(
+                        $"Loaded file. Rested bonus is {fileData.IsRested}, {fileData.RestedTime} time total, {fileData.RestedTimePassed} time passed. " +
+                        $"Stamina: {fileData.Stamina}");
 
-                    _instance.SaveFile(profile.m_fileSource, false, 0f, 0f);
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Added rested bonus from file.");
+                    if (LogoutTweaksPlugin.GetUseRestedBonus() && fileData.IsRested)
+                    {
+                        player.m_seman.AddStatusEffect(Rested, true);
+                        StatusEffect statusEffect = player.m_seman.GetStatusEffect(Rested);
+
+                        statusEffect.m_ttl = fileData.RestedTime;
+                        statusEffect.m_time = fileData.RestedTimePassed;
+
+                        Hud.instance.UpdateStatusEffects(player.m_seman.m_statusEffects);
+
+                        LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Added rested bonus from file.");
+                    }
+
+                    if (LogoutTweaksPlugin.GetUseStamina())
+                    {
+                        player.m_stamina = Mathf.Clamp(fileData.Stamina, 0f, player.m_maxStamina);
+                        player.m_staminaRegenTimer = 5f;
+                    }
+
+                    FileData wipe = new FileData(false, 0f, 0f, 0f);
+                    _instance.SaveFile(profile.m_fileSource, wipe);
+                }
+                catch (Exception e)
+                {
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError("Error loading extra data from file.");
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError(e);
                 }
             }
         }
@@ -107,7 +157,7 @@ namespace VentureValheim.LogoutTweaks
             }
         }
 
-        private void SaveFile(FileHelpers.FileSource filesource, bool rested, float time, float passed)
+        private void SaveFile(FileHelpers.FileSource filesource, FileData fileData)
         {
             FileHelpers.CheckMove(ref filesource, GetFilePath(_filepath));
             if (!Directory.Exists(_fileDirectory) && filesource != FileHelpers.FileSource.SteamCloud)
@@ -117,9 +167,10 @@ namespace VentureValheim.LogoutTweaks
 
             // Create ZPackage
             ZPackage zPackage = new ZPackage();
-            zPackage.Write(rested);
-            zPackage.Write(time);
-            zPackage.Write(passed);
+            zPackage.Write(fileData.IsRested);
+            zPackage.Write(fileData.RestedTime);
+            zPackage.Write(fileData.RestedTimePassed);
+            zPackage.Write(fileData.Stamina);
 
             // Save ZPackage
             FileWriter fileWriter = new FileWriter(GetNewFilePath(_filepath), FileHelpers.FileHelperType.Binary, filesource);
@@ -133,7 +184,7 @@ namespace VentureValheim.LogoutTweaks
             FileHelpers.ReplaceOldFile(GetFilePath(_filepath), GetNewFilePath(_filepath), GetOldFilePath(_filepath), filesource);
         }
 
-        private (bool rested, float time, float passed) LoadFile(FileHelpers.FileSource filesource)
+        private FileData LoadFile(FileHelpers.FileSource filesource)
         {
             FileReader? fileReader = null;
             try
@@ -153,16 +204,16 @@ namespace VentureValheim.LogoutTweaks
                 bool rested = package.ReadBool();
                 float time = package.ReadSingle();
                 float passed = package.ReadSingle();
+                float stamina = package.ReadSingle();
                 fileReader.Dispose();
 
-                return (rested, time, passed);
+                return new FileData(rested, time, passed, stamina);
             }
             catch (Exception e)
             {
                 LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"Failed to load Source: {filesource}, Path: {GetFilePath(_filepath)}");
-                LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning(e);
                 fileReader?.Dispose();
-                return (false, 0f, 0f);
+                return new FileData(false, 0f, 0f, 0f);
             }
         }
 
