@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerSync", "ServerSync\Se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogoutTweaks", "LogoutTweaks\LogoutTweaks.csproj", "{D19D40C6-9069-40E0-823D-ACEDD32A7821}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoSeasonalRestrictions", "NoSeasonalRestrictions\NoSeasonalRestrictions.csproj", "{4DAFB458-BCCC-4956-B374-4B5AFA7F762C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{D19D40C6-9069-40E0-823D-ACEDD32A7821}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D19D40C6-9069-40E0-823D-ACEDD32A7821}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D19D40C6-9069-40E0-823D-ACEDD32A7821}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DAFB458-BCCC-4956-B374-4B5AFA7F762C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DAFB458-BCCC-4956-B374-4B5AFA7F762C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DAFB458-BCCC-4956-B374-4B5AFA7F762C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DAFB458-BCCC-4956-B374-4B5AFA7F762C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
