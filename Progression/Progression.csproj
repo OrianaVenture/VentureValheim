@@ -9,7 +9,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.Progression</RootNamespace>
         <AssemblyName>VentureValheim.Progression</AssemblyName>
-        <Version>0.0.6</Version>
+        <Version>0.0.7</Version>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>
@@ -101,11 +101,12 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Plugin.cs" />
-        <Compile Include="src\ProgressionManager.cs" />
-        <Compile Include="src\SkillsManager.cs" />
-        <Compile Include="src\WorldConfiguration.cs" />
-        <Compile Include="src\ProgressionManager.cs" />
-        <Compile Include="src\CreatureConfiguration.cs" />
+        <Compile Include="src\*.cs" />
+        <!-- <Compile Include="src\ProgressionManager.cs" /> -->
+        <!-- <Compile Include="src\SkillsManager.cs" /> -->
+        <!-- <Compile Include="src\WorldConfiguration.cs" /> -->
+        <!-- <Compile Include="src\CreatureConfiguration.cs" /> -->
+        <!-- <Compile Include="src\ProgressionAPI.cs" /> -->
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>

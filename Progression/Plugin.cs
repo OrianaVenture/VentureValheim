@@ -13,7 +13,7 @@ namespace VentureValheim.Progression
     public class ProgressionPlugin : BaseUnityPlugin
     {
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.6";
+        private const string ModVersion = "0.0.7";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + "." + ModVersion + ".cfg";
@@ -21,7 +21,17 @@ namespace VentureValheim.Progression
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
-        public static readonly ManualLogSource VentureProgressionLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
+        private readonly ManualLogSource VentureProgressionLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
+
+        public static ManualLogSource GetProgressionLogger() => Instance.VentureProgressionLogger;
+
+        private ProgressionPlugin() { }
+        private static readonly ProgressionPlugin _instance = new ProgressionPlugin();
+
+        public static ProgressionPlugin Instance
+        {
+            get => _instance;
+        }
 
         #region ConfigurationEntries
 
@@ -60,6 +70,7 @@ namespace VentureValheim.Progression
         private static ConfigEntry<float> CE_AutoScaleFactor = null!;
         private static ConfigEntry<bool> CE_AutoScaleCreatures = null!;
         private static ConfigEntry<string> CE_AutoScaleCreatureHealth = null!;
+        private static ConfigEntry<string> CE_AutoScaleCreatureDamage = null!;
         private static ConfigEntry<bool> CE_AutoScaleItems = null!;
 
         private bool GetUseAutoScaling() => CE_AutoScaling.Value;
@@ -67,6 +78,7 @@ namespace VentureValheim.Progression
         private float GetAutoScaleFactor() => CE_AutoScaleFactor.Value;
         private bool GetAutoScaleCreatures() => CE_AutoScaleCreatures.Value;
         private string GetAutoScaleCreatureHealth() => CE_AutoScaleCreatureHealth.Value;
+        private string GetAutoScaleCreatureDamage() => CE_AutoScaleCreatureDamage.Value;
         private bool GetAutoScaleItems() => CE_AutoScaleItems.Value;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
@@ -129,6 +141,8 @@ namespace VentureValheim.Progression
                 true, true, ref CE_AutoScaleCreatures);
             AddConfig("AutoScaleCreaturesHealth", autoScaling, "Override the Base Health distribution for Creatures (comma-separated list of 6 integers) (string).",
                 true, "", ref CE_AutoScaleCreatureHealth);
+            AddConfig("AutoScaleCreaturesDamage", autoScaling, "Override the Base Damage distribution for Creatures (comma-separated list of 6 integers) (string).",
+                true, "", ref CE_AutoScaleCreatureDamage);
             AddConfig("AutoScaleItems", autoScaling, "Auto-scale Items (boolean).",
                 true, true, ref CE_AutoScaleItems);
 
@@ -137,20 +151,20 @@ namespace VentureValheim.Progression
             if (!CE_ModEnabled.Value)
                 return;
 
-            VentureProgressionLogger.LogInfo("Initializing Progression configurations...");
+            GetProgressionLogger().LogInfo("Initializing Progression configurations...");
 
             #region Progression Manager
             try
             {
                 ProgressionManager.Instance.Initialize(GetBlockAllGlobalKeys(), GetBlockedGlobalKeys(), GetAllowedGlobalKeys());
-                VentureProgressionLogger.LogInfo(ProgressionManager.BlockAllGlobalKeys
+                GetProgressionLogger().LogInfo(ProgressionManager.BlockAllGlobalKeys
                     ? $"Blocking all keys except {ProgressionManager.AllowedGlobalKeysList?.Count ?? 0} globally allowed keys.."
                     : $"Allowing all keys except {ProgressionManager.BlockedGlobalKeysList?.Count ?? 0} globally blocked keys..");
             }
             catch (Exception e)
             {
-                VentureProgressionLogger.LogError("Error configuring ProgressionManager, aborting...");
-                VentureProgressionLogger.LogError(e);
+                GetProgressionLogger().LogError("Error configuring ProgressionManager, aborting...");
+                GetProgressionLogger().LogError(e);
                 return;
             }
             #endregion
@@ -160,14 +174,14 @@ namespace VentureValheim.Progression
             {
                 SkillsManager.Instance.Initialize(GetAllowSkillDrain(), GetUseAbsoluteSkillDrain(), GetAbsoluteSkillDrain(),
                     GetCompareAndSelectDrain(), GetCompareUseMinimumDrain());
-                VentureProgressionLogger.LogDebug($"Skill gain: {GetAllowSkillDrain()}. Using custom skill drain: " +
+                GetProgressionLogger().LogDebug($"Skill gain: {GetAllowSkillDrain()}. Using custom skill drain: " +
                     $"{GetUseAbsoluteSkillDrain()} with a value of {GetAbsoluteSkillDrain()}. " +
                     $"Will compare values: {GetCompareAndSelectDrain()}, with minimum drain: {GetCompareUseMinimumDrain()}.");
             }
             catch (Exception e)
             {
-                VentureProgressionLogger.LogError("Error configuring SkillsManager, aborting...");
-                VentureProgressionLogger.LogError(e);
+                GetProgressionLogger().LogError("Error configuring SkillsManager, aborting...");
+                GetProgressionLogger().LogError(e);
                 return;
             }
             #endregion
@@ -188,7 +202,7 @@ namespace VentureValheim.Progression
                         scale = (int)WorldConfiguration.Scaling.Linear;
                     }
 
-                    VentureProgressionLogger.LogDebug($"WorldConfiguration Initializing with scale: {scale}, factor: {factor}.");
+                    GetProgressionLogger().LogDebug($"WorldConfiguration Initializing with scale: {scale}, factor: {factor}.");
                     WorldConfiguration.Instance.Initialize(scale, factor);
 
                     if (GetAutoScaleCreatures())
@@ -202,34 +216,50 @@ namespace VentureValheim.Progression
                                 var copy = new int[list.Length];
                                 for (var lcv = 0; lcv < list.Length; lcv++)
                                 {
-                                    copy[lcv] = Int32.Parse(list[lcv].Trim());
+                                    copy[lcv] = int.Parse(list[lcv].Trim());
                                 }
 
-                                CreatureConfiguration.Instance.Initialize(copy);
+                                CreatureConfiguration.Instance.SetBaseHealth(copy);
                             }
                             catch
                             {
-                                VentureProgressionLogger.LogWarning("Issue parsing Creature Health configuration, using defaults.");
-                                CreatureConfiguration.Instance.Initialize();
+                                GetProgressionLogger().LogWarning("Issue parsing Creature Health configuration, using defaults.");
                             }
                         }
-                        else
+
+                        var damageString = GetAutoScaleCreatureDamage();
+                        if (!damageString.IsNullOrWhiteSpace())
                         {
-                            CreatureConfiguration.Instance.Initialize();
+                            try
+                            {
+                                var list = damageString.Split(',');
+                                var copy = new int[list.Length];
+                                for (var lcv = 0; lcv < list.Length; lcv++)
+                                {
+                                    copy[lcv] = int.Parse(list[lcv].Trim());
+                                }
+
+                                CreatureConfiguration.Instance.SetBaseDamage(copy);
+                            }
+                            catch
+                            {
+                                GetProgressionLogger().LogWarning("Issue parsing Creature Damage configuration, using defaults.");
+                            }
                         }
 
+                        CreatureConfiguration.Instance.Initialize();
                     }
 
                     if (GetAutoScaleItems())
                     {
-                        //ItemConfiguration.Instance.Initialize();
+                        ItemConfiguration.Instance.Initialize();
                     }
                 }
             }
             catch (Exception e)
             {
-                VentureProgressionLogger.LogError("Error configuring Auto-Scaling features, aborting...");
-                VentureProgressionLogger.LogError(e);
+                GetProgressionLogger().LogError("Error configuring Auto-Scaling features, aborting...");
+                GetProgressionLogger().LogError(e);
                 return;
             }
             #endregion
@@ -261,12 +291,12 @@ namespace VentureValheim.Progression
             if (!File.Exists(ConfigFileFullPath)) return;
             try
             {
-                VentureProgressionLogger.LogDebug("Attempting to reload configuration...");
+                GetProgressionLogger().LogDebug("Attempting to reload configuration...");
                 Config.Reload();
             }
             catch
             {
-                VentureProgressionLogger.LogError($"There was an issue loading {ConfigFileName}");
+                GetProgressionLogger().LogError($"There was an issue loading {ConfigFileName}");
             }
         }
     }

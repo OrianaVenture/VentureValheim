@@ -40,9 +40,9 @@ Planned features include: Implementing a skill floor and ceiling controlled by p
 
 The world is scaled according to the natural vanilla game progression by default. To customize the built in automatic scaling feature you will have to have a basic understanding of linear and exponential scaling. Set the type of scaling and the rate in the config files. Disable/Enable the scaling feature for Creatures/Items individually in the configs.
 
-Linear scaling by default is a 75% growth (0.75). This means your 1st biome (Black Forest) will have a scaling factor of 1.75, and 7th (Mistland) will be 6.25 for calculations. All items naturally found in these areas will have this scaling applied to them.
+Linear scaling by default is a 75% growth (0.75). This means your 1st biome (Black Forest, Meadows is 0th) will have a scaling factor of 1.75, and 7th will be 6.25 for calculations. All items naturally found in these areas will have this scaling applied to them.
 
-To use Exponential scaling (the ideal scaling method in my opinion) more care must be taken with the config in order not to generate huge numbers that break everything. Given that there are by default only 7 biomes to scale, the maximum scaling value you can input is roughly 21 without blatantly breaking the code generating the values (for 12 biomes this number is about 6). However, 21 is a much, much bigger number than you could ever want. Recommended values for exponential scaling are in a range of 0.25 - 1 (if only using 7 biome difficulties). For example, an exponential scaling of 0.75 will set the 1st biome to 1.75x harder, 7th biome to be about 50x harder than the base biome. This is in stark contrast to the values set by linear scaling and is the ideal way to naturally enforce "Biome Locking" (which is the main reason why this mod exists).
+To use Exponential scaling (the ideal scaling method in my opinion) more care must be taken with the config in order not to generate huge numbers that break everything. Given that there are by default only 8 biomes to scale, the maximum scaling value you can input is roughly 21 without blatantly breaking the code generating the values (for 12 biomes this number is about 6). However, 21 is a much, much bigger number than you could ever want. Recommended values for exponential scaling are in a range of 0.25 - 1 (if only using 8 biome difficulties). For example, an exponential scaling of 0.75 will set the 1st biome to 1.75x harder, 7th biome to be about 50x harder than the base biome. This is in stark contrast to the values set by linear scaling and is the ideal way to naturally enforce "Biome Locking" (which is the main reason why this mod exists).
 
 Planned features include: Finishing the auto scaling to work for all aspects of the game balance (creatures, armor, weapons, etc).
 
@@ -52,7 +52,7 @@ Planned features include: Define your own biomes and add them to the scaling sys
 
 Examples:
 
-* To add a Biome '10' that is one biome harder than Mistland (7th hardest by default) use: AddBiome(10, 8)
+* To add a Biome '10' that is one biome harder than Plains (4th hardest by default, Meadows is 0th) use: AddBiome(10, 5)
 * To add a Biome '10' that is 250% harder than the baseline use: AddCustomBiome(10, 2.5)
 * To override Meadow's difficulty after it has been initialized: AddBiome(0, 8, true) or AddCustomBiome(0, 1.3, true)
 
@@ -74,6 +74,10 @@ Biomes are given the following int codes:
 * ServerSync included
 
 ## Changelog
+
+### 0.0.7
+
+* Added ability to scale creature damage. Tweaked difficulty defaults for some creatures.
 
 ### 0.0.6
 
@@ -106,4 +110,4 @@ All issues can be reported on the project Github. To report issues please be as 
 1. Version of this mod you are using.
 2. List of the other mods being used.
 
-All feedback, ideas, and requests are welcome! You can message me on the [Odin Plus](https://discord.gg/vYfFHxpJgN) discord, or at my discord [Venture Gaming](https://discord.gg/tAd5hapt88).
+All feedback, ideas, and requests are welcome! You can message me at my discord [Venture Gaming](https://discord.gg/tAd5hapt88).

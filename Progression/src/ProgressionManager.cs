@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
 using HarmonyLib;
+using UnityEngine.SceneManagement;
 
 namespace VentureValheim.Progression
 {
@@ -51,11 +52,11 @@ namespace VentureValheim.Progression
             {
                 if (Instance.BlockGlobalKey(name))
                 {
-                    ProgressionPlugin.VentureProgressionLogger.LogDebug($"Skipping adding global key: {name}.");
+                    ProgressionPlugin.GetProgressionLogger().LogDebug($"Skipping adding global key: {name}.");
                     return false; // Skip adding the global key
                 }
 
-                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Adding global key: {name}.");
+                ProgressionPlugin.GetProgressionLogger().LogDebug($"Adding global key: {name}.");
                 return true; // Continue adding the global key
             }
         }
