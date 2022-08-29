@@ -5,13 +5,6 @@ namespace VentureValheim.Progression
 {
     public class WorldConfiguration
     {
-        // TODO
-        // Ability to set biome order for scaling calculations
-        // Biomes can share difficulty
-        // This should be able to change with the configs (live?)
-        // This can make all biomes the same scale
-        // Ability to set minimum difficulty? => how does that change the line above?
-
         public enum Biome
         {
             Undefined = -1,
@@ -36,12 +29,13 @@ namespace VentureValheim.Progression
         public enum Difficulty
         {
             Undefined = -1,
-            Harmless = 0,
-            Novice = 1,
-            Average = 2,
-            Intermediate = 3,
-            Expert = 4,
-            Boss = 5
+            Vanilla = 0,
+            Harmless = 1,
+            Novice = 2,
+            Average = 3,
+            Intermediate = 4,
+            Expert = 5,
+            Boss = 6
         }
 
         public class BiomeData
@@ -87,16 +81,15 @@ namespace VentureValheim.Progression
 
         public void Initialize()
         {
-            // TODO consider different datatype to store this info
-            AddBiome((int)Biome.Meadow);
-            AddBiome((int)Biome.BlackForest);
-            AddBiome((int)Biome.Swamp);
-            AddBiome((int)Biome.Mountain);
-            AddBiome((int)Biome.Plain);
-            AddBiome((int)Biome.AshLand);
-            AddBiome((int)Biome.DeepNorth);
-            AddBiome((int)Biome.Mistland);
-            AddBiome((int)Biome.Ocean);
+            AddBiome(Biome.Meadow, 0);
+            AddBiome(Biome.BlackForest, 1);
+            AddBiome(Biome.Swamp, 2);
+            AddBiome(Biome.Mountain, 3);
+            AddBiome(Biome.Plain, 4);
+            AddBiome(Biome.AshLand, 5);
+            AddBiome(Biome.DeepNorth, 6);
+            AddBiome(Biome.Mistland, 7);
+            AddBiome(Biome.Ocean, 1);
         }
 
         public void Initialize(int worldScale, float factor)
@@ -122,30 +115,40 @@ namespace VentureValheim.Progression
             }
             catch (Exception e)
             {
-                // TODO log message
+                ProgressionPlugin.GetProgressionLogger().LogDebug($"Biome data not found for biome {biome}.");
                 return null;
             }
         }
 
         /// <summary>
-        /// Adds a configuration for the given biome with default scaling order.
+        /// Adds a configuration for the given biome with scaling order.
         /// </summary>
-        /// <param name="biome"></param>
-        /// <param name="overrideBiome"></param>
-        public void AddBiome(int biome, bool overrideBiome = false)
+        public void AddBiome(Biome biome, int order, bool overrideBiome = false)
         {
-            AddBiome(biome, -1, overrideBiome);
+            AddBiome((int)biome, order, overrideBiome);
         }
 
         /// <summary>
         /// Adds a configuration for the given biome with the specified scaling order.
         /// </summary>
         /// <param name="biome"></param>
-        /// <param name="order">The difficulty order, 0 for lowest difficulty, -1 to use default order</param>
+        /// <param name="order">The difficulty order, 0 for lowest difficulty</param>
         /// <param name="overrideBiome"></param>
         public void AddBiome(int biome, int order, bool overrideBiome = false)
         {
             BiomeData data = CreateBiomeData(biome, order);
+            AddBiomeData(data, overrideBiome);
+        }
+
+        /// <summary>
+        /// Adds a configuration for the given biome with the specified custom scaling value.
+        /// </summary>
+        /// <param name="biome"></param>
+        /// <param name="customScale"></param>
+        /// <param name="overrideBiome"></param>
+        public void AddCustomBiome(Biome biome, float customScale, bool overrideBiome = false)
+        {
+            BiomeData data = new BiomeData((int)biome, customScale);
             AddBiomeData(data, overrideBiome);
         }
 
@@ -161,8 +164,13 @@ namespace VentureValheim.Progression
             AddBiomeData(data, overrideBiome);
         }
 
-        private void AddBiomeData(BiomeData data, bool overrideBiome = false)
+        private void AddBiomeData(BiomeData? data, bool overrideBiome = false)
         {
+            if (data == null)
+            {
+                return;
+            }
+
             try
             {
                 _biomeData.Add(data.BiomeType, data);
@@ -176,7 +184,7 @@ namespace VentureValheim.Progression
                 }
                 else
                 {
-                    // TODO log message warning
+                    ProgressionPlugin.GetProgressionLogger().LogWarning("Biome not added since configuration already exists, did you mean to override it?");
                 }
             }
         }
@@ -187,55 +195,33 @@ namespace VentureValheim.Progression
         /// <param name="biome"></param>
         /// <param name="order">default -1 to use built-in scale order</param>
         /// <returns></returns>
-        private BiomeData CreateBiomeData(int biome, int order = -1)
+        private BiomeData CreateBiomeData(int biome, int order)
         {
-            float scale = -1;
             if (order < 0)
             {
-                switch (biome)
-                {
-                    case (int)Biome.Meadow:
-                        scale = GetScaling(0, _scaleFactor);
-                        break;
-                    case (int)Biome.BlackForest:
-                        scale = GetScaling(1, _scaleFactor);
-                        break;
-                    case (int)Biome.Swamp:
-                        scale = GetScaling(2, _scaleFactor);
-                        break;
-                    case (int)Biome.Mountain:
-                        scale = GetScaling(3, _scaleFactor);
-                        break;
-                    case (int)Biome.Plain:
-                        scale = GetScaling(4, _scaleFactor);
-                        break;
-                    case (int)Biome.AshLand:
-                        scale = GetScaling(5, _scaleFactor);
-                        break;
-                    case (int)Biome.DeepNorth:
-                        scale = GetScaling(6, _scaleFactor);
-                        break;
-                    case (int)Biome.Mistland:
-                        scale = GetScaling(7, _scaleFactor);
-                        break;
-                    case (int)Biome.Ocean:
-                        scale = GetScaling(0, _scaleFactor);
-                        break;
-                }
-            }
-            else
-            {
-                scale = GetScaling(order, _scaleFactor);
+                ProgressionPlugin.GetProgressionLogger().LogWarning($"Biome {biome} not added since order {order} is not valid.");
+                return null;
             }
 
-            if (scale == -1)
+            var scale = GetScaling(order, _scaleFactor);
+
+            if (scale < 0)
             {
-                // Error, biome is not in the defaults/vanilla list and was not set by argument
-                // Log warning, set scale to 1
-                // or is this an exception?
+                ProgressionPlugin.GetProgressionLogger().LogWarning($"Biome {biome} not added since scale {scale} is not valid.");
+                return null;
             }
 
             return new BiomeData(biome, scale);
+        }
+
+        /// <summary>
+        /// Returns the scaling value for the specified biome
+        /// </summary>
+        /// <param name="biome"></param>
+        /// <returns>Value or 1 if not found</returns>
+        public static float GetBiomeScaling(Biome biome)
+        {
+            return GetBiomeScaling((int)biome);
         }
 
         /// <summary>
@@ -249,7 +235,7 @@ namespace VentureValheim.Progression
 
             if (data == null)
             {
-                ProgressionPlugin.VentureProgressionLogger.LogDebug("Biome data not found, returning 1.");
+                ProgressionPlugin.GetProgressionLogger().LogDebug("Biome data not found, returning 1.");
                 return 1f;
             }
 
