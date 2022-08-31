@@ -13,6 +13,10 @@ The good people of Florida hate seasons. If you also hate seasons install this m
 
 ## Changelog
 
+### 0.1.1
+
+* Fixed bug that would not enable recipes. Midsummer crown should now be available.
+
 ### 0.1.0
 
 * First release
@@ -24,4 +28,4 @@ All issues can be reported on the project Github. To report issues please be as 
 1. Version of this mod you are using.
 2. List of the other mods being used.
 
-All feedback, ideas, and requests are welcome! You can message me on the [Odin Plus](https://discord.gg/vYfFHxpJgN) discord, or at my discord [Venture Gaming](https://discord.gg/tAd5hapt88).
+All feedback, ideas, and requests are welcome! You can message me at my discord [Venture Gaming](https://discord.gg/tAd5hapt88).

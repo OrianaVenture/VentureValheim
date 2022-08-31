@@ -58,29 +58,40 @@ namespace VentureValheim.NoSeasonalRestrictions
             {
                 var obj = ZNetScene.m_instance.GetPrefab(name);
                 obj.GetComponent<Piece>().m_enabled = true;
+                return;
             }
             catch (Exception e)
             {
-                NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Skipping configuring Piece: {name}");
+                NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogWarning($"Error, skipping configuring Piece: {name}");
             }
+
+            NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogWarning($"Not found, skipping configuring Piece: {name}");
         }
 
         /// <summary>
         /// Enables the given Recipe if found
         /// </summary>
-        /// <param name="name">Name found in the prefab's ItemData</param>
+        /// <param name="name">The Item's shared name for identifying the recipe</param>
         private static void EnableRecipe(string name)
         {
             try
             {
-                var recipeData = new ItemDrop.ItemData();
-                recipeData.m_shared.m_name = name;
-                ObjectDB.instance.GetRecipe(recipeData).m_enabled = true;
+                for (int lcv = 0; lcv < ObjectDB.instance.m_recipes.Count; lcv++)
+                {
+                    var recipe = ObjectDB.instance.m_recipes[lcv];
+                    if (recipe.m_item != null && recipe.m_item.m_itemData.m_shared.m_name.Equals(name))
+                    {
+                        ObjectDB.instance.m_recipes[lcv].m_enabled = true;
+                        return;
+                    }
+                }
             }
             catch (Exception e)
             {
-                NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Skipping configuring Recipe: {name}");
+                NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogWarning($"Error, skipping configuring Recipe: {name}");
             }
+
+            NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogInfo($"Not found, skipping configuring Recipe: {name}");
         }
 
         /// <summary>
