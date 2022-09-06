@@ -9,7 +9,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.NoSeasonalRestrictions</RootNamespace>
         <AssemblyName>VentureValheim.NoSeasonalRestrictions</AssemblyName>
-        <Version>0.1.1</Version>
+        <Version>0.1.2</Version>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>

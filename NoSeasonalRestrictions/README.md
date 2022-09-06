@@ -13,6 +13,10 @@ The good people of Florida hate seasons. If you also hate seasons install this m
 
 ## Changelog
 
+### 0.1.2
+
+* Update for assembly information and new logo. No feature changes.
+
 ### 0.1.1
 
 * Fixed bug that would not enable recipes. Midsummer crown should now be available.
