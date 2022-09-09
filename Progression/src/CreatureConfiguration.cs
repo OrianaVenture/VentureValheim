@@ -1,7 +1,7 @@
-using BepInEx;
-using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using BepInEx;
+using HarmonyLib;
 using UnityEngine.SceneManagement;
 
 namespace VentureValheim.Progression
@@ -30,18 +30,6 @@ namespace VentureValheim.Progression
                 CreatureDifficulty = creatureDifficulty;
                 Attacks = attacks;
             }
-
-            /// <summary>
-            /// Calculates the base health based on the assigned biome and difficulty of a Creature
-            /// </summary>
-            /// <returns></returns>
-            public static int CalculateHealth(CreatureClassification cc)
-            {
-                var scale = WorldConfiguration.GetBiomeScaling(cc.BiomeType);
-                int baseHealth = GetBaseHealth(cc.CreatureDifficulty);
-
-                return (int)(scale * baseHealth);
-            }
         }
 
         private Dictionary<string, CreatureClassification> _creatureData;
@@ -63,9 +51,9 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Get the base health for scaling from the default list
         /// </summary>
-        /// <param name="index"></param>
+        /// <param name="difficulty"></param>
         /// <returns></returns>
-        public static int GetBaseHealth(WorldConfiguration.Difficulty difficulty)
+        public int GetBaseHealth(WorldConfiguration.Difficulty difficulty)
         {
             switch (difficulty)
             {
@@ -88,6 +76,19 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
+        /// Calculates the health based on the assigned biome and difficulty of a Creature
+        /// </summary>
+        /// <param name="cc"></param>
+        /// <returns></returns>
+        public int CalculateHealth(CreatureClassification cc)
+        {
+            var scale = WorldConfiguration.GetBiomeScaling(cc.BiomeType);
+            int baseHealth = GetBaseHealth(cc.CreatureDifficulty);
+
+            return (int)(scale * baseHealth);
+        }
+
+        /// <summary>
         /// Replaces the base damage distribution values if in the correct format.
         /// </summary>
         /// <param name="values"></param>
@@ -104,7 +105,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public static int GetBaseDamage(WorldConfiguration.Difficulty difficulty)
+        public int GetBaseTotalDamage(WorldConfiguration.Difficulty difficulty)
         {
             switch (difficulty)
             {
@@ -133,10 +134,9 @@ namespace VentureValheim.Progression
         public void Configure(ref Character character)
         {
             var creatureClass = _creatureData[character.name];
-            float health;
             if (creatureClass != null)
             {
-                health = WorldConfiguration.PrettifyNumber(CreatureClassification.CalculateHealth(creatureClass));
+                float health = WorldConfiguration.PrettifyNumber(CalculateHealth(creatureClass));
                 ProgressionPlugin.GetProgressionLogger().LogDebug($"{character.name} with {character.m_health} health updated to {health}.");
                 character.m_health = health;
             }
@@ -156,9 +156,9 @@ namespace VentureValheim.Progression
 
             try
             {
-                float maxDamage = GetMaxCreatureDamage(cc);
+                float maxTotalDamage = GetMaxCreatureDamage(cc);
 
-                if (maxDamage <= 0)
+                if (maxTotalDamage <= 0)
                 {
                     ProgressionPlugin.GetProgressionLogger().LogDebug($"Attacks for {cc.Name} have no damage components. Skipping.");
                     return;
@@ -169,7 +169,7 @@ namespace VentureValheim.Progression
                     ItemDrop? item = null;
                     if (!cc.Attacks[lcv].IsNullOrWhiteSpace())
                     {
-                        item = GetItemDrop(cc.Attacks[lcv]);
+                        item = ProgressionAPI.GetItemDrop(cc.Attacks[lcv]);
                     }
 
                     if (item == null)
@@ -180,14 +180,13 @@ namespace VentureValheim.Progression
                     else
                     {
                         var original = item.m_itemData.m_shared.m_damages;
-                        float sumDamage = ItemConfiguration.ItemClassification.GetTotalDamage(original, false);
-                        var ratio = sumDamage / maxDamage;
-                        var newDamage = GetBaseDamage(cc.CreatureDifficulty);
-                        item.m_itemData.m_shared.m_damages = ItemConfiguration.ItemClassification.CalculateDamageTypes(cc.BiomeType, original, newDamage, ratio, false);
+                        float sumDamage = ItemConfiguration.Instance.GetTotalDamage(original, false);
+                        var baseTotalDamage = GetBaseTotalDamage(cc.CreatureDifficulty);
+                        item.m_itemData.m_shared.m_damages = ItemConfiguration.Instance.CalculateCreatureDamageTypes(cc.BiomeType, original, baseTotalDamage, maxTotalDamage);
 
-                        float newSumDamage = ItemConfiguration.ItemClassification.GetTotalDamage(item.m_itemData.m_shared.m_damages, false);
+                        float newSumDamage = ItemConfiguration.Instance.GetTotalDamage(item.m_itemData.m_shared.m_damages, false);
                         ProgressionPlugin.GetProgressionLogger().LogDebug(
-                            $"{item.name} updated with new scaled damage values. Debug values: {ratio}, {sumDamage} to {newSumDamage}");
+                            $"{item.name} updated with new scaled damage values. Total damage changed from {sumDamage} to {newSumDamage}");
                     }
                 }
             }
@@ -212,12 +211,12 @@ namespace VentureValheim.Progression
                 ItemDrop? item = null;
                 if (!cc.Attacks[lcv].IsNullOrWhiteSpace())
                 {
-                    item = GetItemDrop(cc.Attacks[lcv]);
+                    item = ProgressionAPI.GetItemDrop(cc.Attacks[lcv]);
                 }
 
                 if (item != null)
                 {
-                    var damage = ItemConfiguration.ItemClassification.GetTotalDamage(item.m_itemData.m_shared.m_damages, false);
+                    var damage = ItemConfiguration.Instance.GetTotalDamage(item.m_itemData.m_shared.m_damages, false);
 
                     if (damage > maxDamage)
                     {
@@ -227,25 +226,6 @@ namespace VentureValheim.Progression
             }
 
             return maxDamage;
-        }
-
-        /// <summary>
-        /// Attempts to get the ItemDrop by the given name's hashcode, if not found searches by string.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        private ItemDrop? GetItemDrop(string name)
-        {
-            ItemDrop? item = null;
-            try
-            {
-                item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode()).GetComponent<ItemDrop>(); // Try hash code
-            }
-            catch
-            {
-                item = ObjectDB.instance.GetItemPrefab(name).GetComponent<ItemDrop>(); // Failed, try slow search
-            }
-            return item;
         }
 
         /// <summary>
@@ -367,9 +347,10 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Adds a new CreatureClassification for scaling or replaces the existing if a configuration already exists.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">Prefab Name</param>
         /// <param name="biome"></param>
         /// <param name="difficulty"></param>
+        /// <param name="attacks"></param>
         public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty, List<string>? attacks)
         {
             try
@@ -378,7 +359,7 @@ namespace VentureValheim.Progression
             }
             catch (Exception e)
             {
-                ProgressionPlugin.GetProgressionLogger().LogInfo($"Creature Configuration already exists, replacing value for {name}.");
+                // Replace exisitng configuration
                 _creatureData[name] = new CreatureClassification(name, biome, difficulty, attacks);
             }
         }

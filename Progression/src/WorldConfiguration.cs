@@ -115,7 +115,6 @@ namespace VentureValheim.Progression
             }
             catch (Exception e)
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug($"Biome data not found for biome {biome}.");
                 return null;
             }
         }
@@ -182,10 +181,6 @@ namespace VentureValheim.Progression
                 {
                     _biomeData[data.BiomeType] = data;
                 }
-                else
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogWarning("Biome not added since configuration already exists, did you mean to override it?");
-                }
             }
         }
 
@@ -199,7 +194,6 @@ namespace VentureValheim.Progression
         {
             if (order < 0)
             {
-                ProgressionPlugin.GetProgressionLogger().LogWarning($"Biome {biome} not added since order {order} is not valid.");
                 return null;
             }
 
@@ -207,7 +201,6 @@ namespace VentureValheim.Progression
 
             if (scale < 0)
             {
-                ProgressionPlugin.GetProgressionLogger().LogWarning($"Biome {biome} not added since scale {scale} is not valid.");
                 return null;
             }
 
@@ -235,7 +228,6 @@ namespace VentureValheim.Progression
 
             if (data == null)
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug("Biome data not found, returning 1.");
                 return 1f;
             }
 

@@ -30,6 +30,9 @@ namespace VentureValheim.Progression
             CompareUseMinimumDrain = compareUseMinimumDrain;
         }
 
+        /// <summary>
+        /// Changes how Skills are lowered based on the configured skill floor.
+        /// </summary>
         [HarmonyPatch(typeof(Skills), nameof(Skills.LowerAllSkills))]
         public static class Patch_Skills_LowerAllSkills
         {
@@ -53,6 +56,9 @@ namespace VentureValheim.Progression
             }
         }
 
+        /// <summary>
+        /// Changes how skills are raised based on the configured skill ceiling.
+        /// </summary>
         [HarmonyPatch(typeof(Skills.Skill), nameof(Skills.Skill.Raise))]
         public static class Patch_Skills_Skill_Raise
         {
