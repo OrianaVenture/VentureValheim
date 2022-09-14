@@ -8,7 +8,6 @@ namespace VentureValheim.Progression
 {
     public class ProgressionManager
     {
-        public static bool BlockAllGlobalKeys { get; private set; }
         public static List<string>? BlockedGlobalKeysList  { get; private set; }
         public static List<string>? AllowedGlobalKeysList  { get; private set; }
 
@@ -20,9 +19,8 @@ namespace VentureValheim.Progression
             get => _instance;
         }
 
-        public void Initialize(bool blockAllGlobalKeys, string blockedGlobalKeys, string allowedGlobalKeys)
+        public void Initialize(string blockedGlobalKeys, string allowedGlobalKeys)
         {
-            BlockAllGlobalKeys = blockAllGlobalKeys;
             BlockedGlobalKeysList = null;
             AllowedGlobalKeysList = null;
 
@@ -69,24 +67,12 @@ namespace VentureValheim.Progression
         /// or when default unblocked and key is in the blocked list.</returns>
         public bool BlockGlobalKey(string globalKey)
         {
-            if (BlockAllGlobalKeys)
+            if (ProgressionPlugin.Instance.GetBlockAllGlobalKeys())
             {
                 return !AllowedGlobalKeysList?.Contains(globalKey) ?? true;
             }
 
             return BlockedGlobalKeysList?.Contains(globalKey) ?? false;
-        }
-
-        public float GetSkillDrainFloor(float level)
-        {
-            // TODO: calculate skill floor based on global and player keys
-            return 0f;
-        }
-
-        public float GetSkillGainCeiling(float level)
-        {
-            // TODO: calculate skill ceiling based on global and player keys
-            return 100f;
         }
     }
 }

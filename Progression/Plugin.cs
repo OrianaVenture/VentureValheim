@@ -13,10 +13,10 @@ namespace VentureValheim.Progression
     public class ProgressionPlugin : BaseUnityPlugin
     {
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.8";
+        private const string ModVersion = "0.0.9";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
-        private static string ConfigFileName = ModGUID + "." + ModVersion + ".cfg";
+        private static string ConfigFileName = ModGUID + ".cfg";
         private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
@@ -47,22 +47,32 @@ namespace VentureValheim.Progression
         private static ConfigEntry<string> CE_BlockedGlobalKeys = null!;
         private static ConfigEntry<string> CE_AllowedGlobalKeys = null!;
 
-        private bool GetBlockAllGlobalKeys() => CE_BlockAllGlobalKeys.Value;
-        private string GetBlockedGlobalKeys() => CE_BlockedGlobalKeys.Value;
-        private string GetAllowedGlobalKeys() => CE_AllowedGlobalKeys.Value;
+        public virtual bool GetBlockAllGlobalKeys() => CE_BlockAllGlobalKeys.Value;
+        public virtual string GetBlockedGlobalKeys() => CE_BlockedGlobalKeys.Value;
+        public virtual string GetAllowedGlobalKeys() => CE_AllowedGlobalKeys.Value;
 
         // Skills Manager
+        private static ConfigEntry<bool> CE_EnableSkillManager = null!;
         private static ConfigEntry<bool> CE_AllowSkillDrain = null!;
         private static ConfigEntry<bool> CE_UseAbsoluteSkillDrain = null!;
         private static ConfigEntry<int> CE_AbsoluteSkillDrain = null!;
         private static ConfigEntry<bool> CE_CompareAndSelectDrain = null!;
         private static ConfigEntry<bool> CE_CompareUseMinimumDrain = null!;
+        private static ConfigEntry<bool> CE_OverrideMaximumSkillLevel = null!;
+        private static ConfigEntry<int> CE_MaximumSkillLevel = null!;
+        private static ConfigEntry<bool> CE_OverrideMinimumSkillLevel = null!;
+        private static ConfigEntry<int> CE_MinimumSkillLevel = null!;
 
-        private bool GetAllowSkillDrain() => CE_AllowSkillDrain.Value;
-        private bool GetUseAbsoluteSkillDrain() => CE_UseAbsoluteSkillDrain.Value;
-        private int GetAbsoluteSkillDrain() => CE_AbsoluteSkillDrain.Value;
-        private bool GetCompareAndSelectDrain() => CE_CompareAndSelectDrain.Value;
-        private bool GetCompareUseMinimumDrain() => CE_CompareUseMinimumDrain.Value;
+        public virtual bool GetEnableSkillManager() => CE_EnableSkillManager.Value;
+        public virtual bool GetAllowSkillDrain() => CE_AllowSkillDrain.Value;
+        public virtual bool GetUseAbsoluteSkillDrain() => CE_UseAbsoluteSkillDrain.Value;
+        public virtual int GetAbsoluteSkillDrain() => CE_AbsoluteSkillDrain.Value;
+        public virtual bool GetCompareAndSelectDrain() => CE_CompareAndSelectDrain.Value;
+        public virtual bool GetCompareUseMinimumDrain() => CE_CompareUseMinimumDrain.Value;
+        public virtual bool GetOverrideMaximumSkillLevel() => CE_OverrideMaximumSkillLevel.Value;
+        public virtual int GetMaximumSkillLevel() => CE_MaximumSkillLevel.Value;
+        public virtual bool GetOverrideMinimumSkillLevel() => CE_OverrideMinimumSkillLevel.Value;
+        public virtual int GetMinimumSkillLevel() => CE_MinimumSkillLevel.Value;
 
         // Auto-Scaling Configuration
         private static ConfigEntry<bool> CE_AutoScaling = null!;
@@ -73,13 +83,13 @@ namespace VentureValheim.Progression
         private static ConfigEntry<string> CE_AutoScaleCreatureDamage = null!;
         private static ConfigEntry<bool> CE_AutoScaleItems = null!;
 
-        private bool GetUseAutoScaling() => CE_AutoScaling.Value;
-        private string GetAutoScaleType() => CE_AutoScaleType.Value;
-        private float GetAutoScaleFactor() => CE_AutoScaleFactor.Value;
-        private bool GetAutoScaleCreatures() => CE_AutoScaleCreatures.Value;
-        private string GetAutoScaleCreatureHealth() => CE_AutoScaleCreatureHealth.Value;
-        private string GetAutoScaleCreatureDamage() => CE_AutoScaleCreatureDamage.Value;
-        private bool GetAutoScaleItems() => CE_AutoScaleItems.Value;
+        public virtual bool GetUseAutoScaling() => CE_AutoScaling.Value;
+        public virtual string GetAutoScaleType() => CE_AutoScaleType.Value;
+        public virtual float GetAutoScaleFactor() => CE_AutoScaleFactor.Value;
+        public virtual bool GetAutoScaleCreatures() => CE_AutoScaleCreatures.Value;
+        public virtual string GetAutoScaleCreatureHealth() => CE_AutoScaleCreatureHealth.Value;
+        public virtual string GetAutoScaleCreatureDamage() => CE_AutoScaleCreatureDamage.Value;
+        public virtual bool GetAutoScaleItems() => CE_AutoScaleItems.Value;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
@@ -111,7 +121,7 @@ namespace VentureValheim.Progression
                 true, true, ref CE_ModEnabled);
 
             AddConfig("BlockAllGlobalKeys", general,
-                "Whether to stop all global keys from being added to the global list (boolean).",
+                "True to stop all global keys from being added to the global list (boolean).",
                 true, true, ref CE_BlockAllGlobalKeys);
             AddConfig("BlockedGlobalKeys", general,
                 "Stop only these keys being added to the global list when BlockAllGlobalKeys is false (comma-separated).",
@@ -120,30 +130,57 @@ namespace VentureValheim.Progression
                 "Allow only these keys being added to the global list when BlockAllGlobalKeys is true (comma-separated).",
                 true, "", ref CE_AllowedGlobalKeys);
 
-            AddConfig("AllowSkillDrain", skills, "Enable skill drain (boolean).",
+            AddConfig("EnableSkillManager", skills,
+                "Enable the Skill Manager feature (boolean).",
+                true, true, ref CE_EnableSkillManager);
+            AddConfig("AllowSkillDrain", skills,
+                "Enable skill drain on death (boolean).",
                 true, true, ref CE_AllowSkillDrain);
-            AddConfig("UseAbsoluteSkillDrain", skills, "Reduce skills by a set value (boolean).",
+            AddConfig("UseAbsoluteSkillDrain", skills,
+                "Reduce skills by a set number of levels (boolean).",
                 true, false, ref CE_UseAbsoluteSkillDrain);
-            AddConfig("AbsoluteSkillDrain", skills, "Reduce all skills by this value (on death) (int).",
+            AddConfig("AbsoluteSkillDrain", skills,
+                "The number of levels (When UseAbsoluteSkillDrain is true) (int).",
                 true, 1, ref CE_AbsoluteSkillDrain);
-            AddConfig("CompareAndSelectDrain", skills, "Enable comparing skill drain values (if Absolute Skill Drain is enabled) (boolean).",
+            AddConfig("CompareAndSelectDrain", skills,
+                "Enable comparing skill drain original vs absolute value (When UseAbsoluteSkillDrain is true) (boolean).",
                 true, false, ref CE_CompareAndSelectDrain);
-            AddConfig("CompareUseMinimumDrain", skills, "If to compare, \'true\' to use the lower value, \'false\' to use the higher value (boolean).",
+            AddConfig("CompareUseMinimumDrain", skills,
+                "True to use the smaller value (When CompareAndSelectDrain is true) (boolean).",
                 true, true, ref CE_CompareUseMinimumDrain);
+            AddConfig("OverrideMaximumSkillLevel", skills,
+                "Override the maximum (ceiling) skill level for all skill gain (boolean).",
+                true, false, ref CE_OverrideMaximumSkillLevel);
+            AddConfig("MaximumSkillLevel", skills,
+                "If overridden, the maximum (ceiling) skill level for all skill gain (int).",
+                true, (int)SkillsManager.SKILL_MAXIMUM, ref CE_MaximumSkillLevel);
+            AddConfig("OverrideMinimumSkillLevel", skills,
+                "Override the minimum (floor) skill level for all skill loss (boolean).",
+                true, false, ref CE_OverrideMinimumSkillLevel);
+            AddConfig("MinimumSkillLevel", skills,
+                "If overridden, the minimum (floor) skill level for all skill loss (int).",
+                true, (int)SkillsManager.SKILL_MINIMUM, ref CE_MinimumSkillLevel);
 
-            AddConfig("AutoScale", autoScaling, "Use Auto-scaling (boolean).",
+            AddConfig("AutoScale", autoScaling,
+                "Use Auto-scaling (boolean).",
                 true, false, ref CE_AutoScaling);
-            AddConfig("AutoScaleType", autoScaling, "Auto-scaling type: Vanilla, Linear, or Exponential (string).",
+            AddConfig("AutoScaleType", autoScaling,
+                "Auto-scaling type: Vanilla, Linear, or Exponential (string).",
                 true, "Vanilla", ref CE_AutoScaleType);
-            AddConfig("AutoScaleFactor", autoScaling, "Auto-scaling factor, 0.75 = 75% growth per biome \"difficulty order\" (float).",
+            AddConfig("AutoScaleFactor", autoScaling,
+                "Auto-scaling factor, 0.75 = 75% growth per biome \"difficulty order\" (float).",
                 true, 0.75f, ref CE_AutoScaleFactor);
-            AddConfig("AutoScaleCreatures", autoScaling, "Auto-scale Creatures (boolean).",
+            AddConfig("AutoScaleCreatures", autoScaling,
+                "Auto-scale Creatures (boolean).",
                 true, true, ref CE_AutoScaleCreatures);
-            AddConfig("AutoScaleCreaturesHealth", autoScaling, "Override the Base Health distribution for Creatures (comma-separated list of 6 integers) (string).",
+            AddConfig("AutoScaleCreaturesHealth", autoScaling,
+                "Override the Base Health distribution for Creatures (comma-separated list of 6 integers) (string).",
                 true, "", ref CE_AutoScaleCreatureHealth);
-            AddConfig("AutoScaleCreaturesDamage", autoScaling, "Override the Base Damage distribution for Creatures (comma-separated list of 6 integers) (string).",
+            AddConfig("AutoScaleCreaturesDamage", autoScaling,
+                "Override the Base Damage distribution for Creatures (comma-separated list of 6 integers) (string).",
                 true, "", ref CE_AutoScaleCreatureDamage);
-            AddConfig("AutoScaleItems", autoScaling, "Auto-scale Items (boolean).",
+            AddConfig("AutoScaleItems", autoScaling,
+                "Auto-scale Items (boolean).",
                 true, true, ref CE_AutoScaleItems);
 
             #endregion
@@ -151,13 +188,25 @@ namespace VentureValheim.Progression
             if (!CE_ModEnabled.Value)
                 return;
 
+            if (!ConfigureAllModules())
+            {
+                return;
+            }
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            HarmonyInstance.PatchAll(assembly);
+            SetupWatcher();
+        }
+
+        public bool ConfigureAllModules()
+        {
             GetProgressionLogger().LogInfo("Initializing Progression configurations...");
 
             #region Progression Manager
             try
             {
-                ProgressionManager.Instance.Initialize(GetBlockAllGlobalKeys(), GetBlockedGlobalKeys(), GetAllowedGlobalKeys());
-                GetProgressionLogger().LogInfo(ProgressionManager.BlockAllGlobalKeys
+                ProgressionManager.Instance.Initialize(GetBlockedGlobalKeys(), GetAllowedGlobalKeys());
+                GetProgressionLogger().LogInfo(GetBlockAllGlobalKeys()
                     ? $"Blocking all keys except {ProgressionManager.AllowedGlobalKeysList?.Count ?? 0} globally allowed keys.."
                     : $"Allowing all keys except {ProgressionManager.BlockedGlobalKeysList?.Count ?? 0} globally blocked keys..");
             }
@@ -165,24 +214,27 @@ namespace VentureValheim.Progression
             {
                 GetProgressionLogger().LogError("Error configuring ProgressionManager, aborting...");
                 GetProgressionLogger().LogError(e);
-                return;
+                return false;
             }
             #endregion
 
             #region Skills Manager
             try
             {
-                SkillsManager.Instance.Initialize(GetAllowSkillDrain(), GetUseAbsoluteSkillDrain(), GetAbsoluteSkillDrain(),
-                    GetCompareAndSelectDrain(), GetCompareUseMinimumDrain());
-                GetProgressionLogger().LogDebug($"Skill gain: {GetAllowSkillDrain()}. Using custom skill drain: " +
-                    $"{GetUseAbsoluteSkillDrain()} with a value of {GetAbsoluteSkillDrain()}. " +
-                    $"Will compare values: {GetCompareAndSelectDrain()}, with minimum drain: {GetCompareUseMinimumDrain()}.");
+                GetProgressionLogger().LogInfo($"Skill Manager is " + (GetEnableSkillManager() == true ? "Enabled" : "Disabled") + ".");
+                if (GetEnableSkillManager())
+                {
+                    SkillsManager.Instance.Initialize();
+                    GetProgressionLogger().LogDebug($"Skill loss is {GetAllowSkillDrain()}.");
+                    GetProgressionLogger().LogDebug($"Maximum level for gain is " + (GetOverrideMaximumSkillLevel() ? GetMaximumSkillLevel() : SkillsManager.SKILL_MAXIMUM) + ".");
+                    GetProgressionLogger().LogDebug($"Minimum level for loss is " + (GetOverrideMinimumSkillLevel() ? GetMinimumSkillLevel() : SkillsManager.SKILL_MINIMUM) + ".");
+                }
             }
             catch (Exception e)
             {
                 GetProgressionLogger().LogError("Error configuring SkillsManager, aborting...");
                 GetProgressionLogger().LogError(e);
-                return;
+                return false;
             }
             #endregion
 
@@ -192,14 +244,14 @@ namespace VentureValheim.Progression
                 if (GetUseAutoScaling())
                 {
                     float factor = GetAutoScaleFactor();
-                    int scale = (int)WorldConfiguration.Scaling.Vanilla;
+                    var scale = WorldConfiguration.Scaling.Vanilla;
                     if (GetAutoScaleType().ToLower().Equals("exponential"))
                     {
-                        scale = (int)WorldConfiguration.Scaling.Exponential;
+                        scale = WorldConfiguration.Scaling.Exponential;
                     }
                     else if (GetAutoScaleType().ToLower().Equals("linear"))
                     {
-                        scale = (int)WorldConfiguration.Scaling.Linear;
+                        scale = WorldConfiguration.Scaling.Linear;
                     }
 
                     GetProgressionLogger().LogDebug($"WorldConfiguration Initializing with scale: {scale}, factor: {factor}.");
@@ -260,13 +312,11 @@ namespace VentureValheim.Progression
             {
                 GetProgressionLogger().LogError("Error configuring Auto-Scaling features, aborting...");
                 GetProgressionLogger().LogError(e);
-                return;
+                return false;
             }
             #endregion
 
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            HarmonyInstance.PatchAll(assembly);
-            SetupWatcher();
+            return true;
         }
 
         private void OnDestroy()

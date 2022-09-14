@@ -56,10 +56,10 @@ namespace VentureValheim.Progression
             }
         }
 
-        private int _worldScale = (int)Scaling.Vanilla;
+        private Scaling _worldScale = Scaling.Vanilla;
         private float _scaleFactor = 0.75f;
 
-        public int GetWorldScale()
+        public Scaling GetWorldScale()
         {
             return _worldScale;
         }
@@ -92,7 +92,7 @@ namespace VentureValheim.Progression
             AddBiome(Biome.Ocean, 1);
         }
 
-        public void Initialize(int worldScale, float factor)
+        public void Initialize(Scaling worldScale, float factor)
         {
             _worldScale = worldScale;
             _scaleFactor = factor;
@@ -247,15 +247,15 @@ namespace VentureValheim.Progression
                 return 1f;
             }
 
-            if (_worldScale == (int)Scaling.Vanilla)
+            if (_worldScale == Scaling.Vanilla)
             {
                 return 1f;
             }
-            else if (_worldScale == (int)Scaling.Exponential)
+            else if (_worldScale == Scaling.Exponential)
             {
                 return (float)Math.Round(Math.Pow((double)(1 + factor), order), 2);
             }
-            else if (_worldScale == (int)Scaling.Linear)
+            else if (_worldScale == Scaling.Linear)
             {
                 return 1 + (float)Math.Round((double)(factor * order), 2);
             }

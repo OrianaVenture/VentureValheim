@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine.SceneManagement;
-using static VentureValheim.Progression.CreatureConfiguration;
 
 namespace VentureValheim.Progression
 {
@@ -547,12 +546,16 @@ namespace VentureValheim.Progression
         {
             private static void Prefix()
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug("CreatureConfiguration.Patch_ObjectDB_Awake called.");
+                if (!ProgressionPlugin.Instance.GetAutoScaleItems())
+                {
+                    return;
+                }
 
                 if (SceneManager.GetActiveScene().name.Equals("main"))
                 {
                     if (WorldConfiguration.Instance.GetWorldScale() != (int)WorldConfiguration.Scaling.Vanilla)
                     {
+                        ProgressionPlugin.GetProgressionLogger().LogDebug("Updating Item Configurations with auto-scaling.");
                         UpdateItems();
                     }
                 }

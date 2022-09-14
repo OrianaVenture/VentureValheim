@@ -147,6 +147,10 @@ namespace VentureValheim.Progression
             }
         }
 
+        /// <summary>
+        /// Finds the original creature prefab and configures the health and damage
+        /// </summary>
+        /// <param name="cc"></param>
         public void ConfigureAttacks(CreatureClassification cc)
         {
             if (cc.CreatureDifficulty == WorldConfiguration.Difficulty.Vanilla || cc.Attacks == null || cc.Attacks.Count < 1)
@@ -399,7 +403,10 @@ namespace VentureValheim.Progression
         {
             private static void Prefix()
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug("CreatureConfiguration.Patch_ObjectDB_Awake called.");
+                if (!ProgressionPlugin.Instance.GetAutoScaleCreatures())
+                {
+                    return;
+                }
 
                 try
                 {
@@ -407,6 +414,7 @@ namespace VentureValheim.Progression
                     {
                         if (WorldConfiguration.Instance.GetWorldScale() != (int)WorldConfiguration.Scaling.Vanilla)
                         {
+                            ProgressionPlugin.GetProgressionLogger().LogDebug("Updating Creature Configurations with auto-scaling...");
                             UpdateCreatures();
                         }
                     }
