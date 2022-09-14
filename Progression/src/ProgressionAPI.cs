@@ -134,6 +134,25 @@ namespace VentureValheim.Progression
         }*/
 
         /// <summary>
+        /// Attempts to get the ItemDrop by the given name's hashcode, if not found searches by string.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static ItemDrop? GetItemDrop(string name)
+        {
+            ItemDrop? item = null;
+            try
+            {
+                item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode()).GetComponent<ItemDrop>(); // Try hash code
+            }
+            catch
+            {
+                item = ObjectDB.instance.GetItemPrefab(name).GetComponent<ItemDrop>(); // Failed, try slow search
+            }
+            return item;
+        }
+
+        /// <summary>
         /// Prints out useful game data to json files
         /// </summary>
         /// <param name="overwrite"></param>

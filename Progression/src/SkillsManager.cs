@@ -6,11 +6,8 @@ namespace VentureValheim.Progression
 {
     public class SkillsManager
     {
-        public static bool AllowSkillDrain { get; private set; }
-        public static bool UseAbsoluteSkillDrain { get; private set; }
-        public static float AbsoluteSkillDrain { get; private set; }
-        public static bool CompareAndSelectDrain { get; private set; }
-        public static bool CompareUseMinimumDrain { get; private set; }
+        public const float SKILL_MINIMUM = 0f;
+        public const float SKILL_MAXIMUM = 100f;
 
         private SkillsManager() {}
         private static readonly SkillsManager _instance = new SkillsManager();
@@ -20,26 +17,28 @@ namespace VentureValheim.Progression
             get => _instance;
         }
 
-        public void Initialize(bool allowSkillDrain, bool useAbsoluteSkillDrain, float absoluteSkillDrain,
-            bool compareAndSelectDrain, bool compareUseMinimumDrain)
+        public void Initialize()
         {
-            AllowSkillDrain = allowSkillDrain;
-            UseAbsoluteSkillDrain = useAbsoluteSkillDrain;
-            AbsoluteSkillDrain = absoluteSkillDrain;
-            CompareAndSelectDrain = compareAndSelectDrain;
-            CompareUseMinimumDrain = compareUseMinimumDrain;
         }
 
+        /// <summary>
+        /// Changes how Skills are lowered based on the configured skill floor.
+        /// </summary>
         [HarmonyPatch(typeof(Skills), nameof(Skills.LowerAllSkills))]
         public static class Patch_Skills_LowerAllSkills
         {
             private static bool Prefix(Skills __instance, float factor)
             {
-                if (AllowSkillDrain)
+                if (!ProgressionPlugin.Instance.GetEnableSkillManager())
+                {
+                    return true; // Do nothing
+                }
+
+                if (ProgressionPlugin.Instance.GetAllowSkillDrain())
                 {
                     foreach (KeyValuePair<Skills.SkillType, Skills.Skill> skillDatum in __instance.m_skillData)
                     {
-                        var floor = ProgressionManager.Instance.GetSkillDrainFloor(skillDatum.Value.m_level);
+                        var floor = Instance.GetSkillDrainFloor();
                         var skillDrain = _instance.GetSkillDrain(skillDatum.Value.m_level, floor, factor);
                         skillDatum.Value.m_level = _instance.NormalizeSkillLevel(skillDatum.Value.m_level - skillDrain);
                         skillDatum.Value.m_accumulator = 0f;
@@ -53,13 +52,21 @@ namespace VentureValheim.Progression
             }
         }
 
+        /// <summary>
+        /// Changes how skills are raised based on the configured skill ceiling.
+        /// </summary>
         [HarmonyPatch(typeof(Skills.Skill), nameof(Skills.Skill.Raise))]
         public static class Patch_Skills_Skill_Raise
         {
             private static bool Prefix(Skills.Skill __instance, float factor, ref bool __result)
             {
+                if (!ProgressionPlugin.Instance.GetEnableSkillManager())
+                {
+                    return true; // Do nothing
+                }
+
                 var increase = __instance.m_info.m_increseStep * factor;
-                var ceiling = ProgressionManager.Instance.GetSkillGainCeiling(__instance.m_level);
+                var ceiling = _instance.GetSkillGainCeiling();
 
                 float accumulation = _instance.GetSkillAccumulationGain(__instance.m_level, ceiling, increase);
 
@@ -90,21 +97,23 @@ namespace VentureValheim.Progression
         {
             if (floor < level)
             {
-                if (UseAbsoluteSkillDrain)
+                if (ProgressionPlugin.Instance.GetUseAbsoluteSkillDrain())
                 {
-                    if (CompareAndSelectDrain)
+                    var drain = ProgressionPlugin.Instance.GetAbsoluteSkillDrain();
+
+                    if (ProgressionPlugin.Instance.GetCompareAndSelectDrain())
                     {
-                        if (CompareUseMinimumDrain)
+                        if (ProgressionPlugin.Instance.GetCompareUseMinimumDrain())
                         {
-                            return Mathf.Min(level * factor, AbsoluteSkillDrain);
+                            return Mathf.Min(level * factor, drain);
                         }
                         else
                         {
-                            return Mathf.Max(level * factor, AbsoluteSkillDrain);
+                            return Mathf.Max(level * factor, drain);
                         }
                     }
 
-                    return AbsoluteSkillDrain;
+                    return drain;
                 }
                 else
                 {
@@ -128,14 +137,46 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Normalize a skill by making sure it is within the minimum and maximum skill bounds.
+        /// Normalize a skill by making sure it is within the minimum (0) and maximum skill bounds.
         /// </summary>
         /// <param name="level"></param>
         /// <returns>level or closest bound for the skill</returns>
         public float NormalizeSkillLevel(float level)
         {
-            // TODO: Set min/max level
-            return Mathf.Clamp(level, 0f, 100f);
+            var maximum = SKILL_MAXIMUM;
+
+            if (ProgressionPlugin.Instance.GetOverrideMaximumSkillLevel())
+            {
+                maximum = ProgressionPlugin.Instance.GetMaximumSkillLevel();
+            }
+
+            return Mathf.Clamp(level, SKILL_MINIMUM, maximum);
+        }
+
+        public float GetSkillDrainFloor()
+        {
+            // TODO: calculate skill floor based on global and player keys
+            var minimum = SKILL_MINIMUM;
+
+            if (ProgressionPlugin.Instance.GetOverrideMinimumSkillLevel())
+            {
+                minimum = ProgressionPlugin.Instance.GetMinimumSkillLevel();
+            }
+
+            return minimum;
+        }
+
+        public float GetSkillGainCeiling()
+        {
+            // TODO: calculate skill ceiling based on global and player keys
+            var maximum = SKILL_MAXIMUM;
+
+            if (ProgressionPlugin.Instance.GetOverrideMaximumSkillLevel())
+            {
+                maximum = ProgressionPlugin.Instance.GetMaximumSkillLevel();
+            }
+
+            return maximum;
         }
     }
 }
