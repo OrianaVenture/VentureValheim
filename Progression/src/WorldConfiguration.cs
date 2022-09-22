@@ -1,3 +1,5 @@
+using BepInEx;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 
@@ -285,6 +287,93 @@ namespace VentureValheim.Progression
             else
             {
                 return number - remainder;
+            }
+        }
+
+        public void Setup()
+        {
+            try
+            {
+                if (ProgressionPlugin.Instance.GetUseAutoScaling())
+                {
+                    float factor = ProgressionPlugin.Instance.GetAutoScaleFactor();
+                    var scale = Scaling.Vanilla;
+                    if (ProgressionPlugin.Instance.GetAutoScaleType().ToLower().Equals("exponential"))
+                    {
+                        scale = Scaling.Exponential;
+                    }
+                    else if (ProgressionPlugin.Instance.GetAutoScaleType().ToLower().Equals("linear"))
+                    {
+                        scale = Scaling.Linear;
+                    }
+
+                    ProgressionPlugin.GetProgressionLogger().LogDebug($"WorldConfiguration Initializing with scale: {scale}, factor: {factor}.");
+                    Instance.Initialize(scale, factor);
+
+                    if (ProgressionPlugin.Instance.GetAutoScaleCreatures())
+                    {
+                        var healthString = ProgressionPlugin.Instance.GetAutoScaleCreatureHealth();
+                        if (!healthString.IsNullOrWhiteSpace())
+                        {
+                            try
+                            {
+                                var list = healthString.Split(',');
+                                var copy = new int[list.Length];
+                                for (var lcv = 0; lcv < list.Length; lcv++)
+                                {
+                                    copy[lcv] = int.Parse(list[lcv].Trim());
+                                }
+
+                                CreatureConfiguration.Instance.SetBaseHealth(copy);
+                            }
+                            catch
+                            {
+                                ProgressionPlugin.GetProgressionLogger().LogWarning("Issue parsing Creature Health configuration, using defaults.");
+                            }
+                        }
+
+                        var damageString = ProgressionPlugin.Instance.GetAutoScaleCreatureDamage();
+                        if (!damageString.IsNullOrWhiteSpace())
+                        {
+                            try
+                            {
+                                var list = damageString.Split(',');
+                                var copy = new int[list.Length];
+                                for (var lcv = 0; lcv < list.Length; lcv++)
+                                {
+                                    copy[lcv] = int.Parse(list[lcv].Trim());
+                                }
+
+                                CreatureConfiguration.Instance.SetBaseDamage(copy);
+                            }
+                            catch
+                            {
+                                ProgressionPlugin.GetProgressionLogger().LogWarning("Issue parsing Creature Damage configuration, using defaults.");
+                            }
+                        }
+
+                        CreatureConfiguration.Instance.Initialize();
+                    }
+
+                    if (ProgressionPlugin.Instance.GetAutoScaleItems())
+                    {
+                        ItemConfiguration.Instance.Initialize();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ProgressionPlugin.GetProgressionLogger().LogError("Error configuring Auto-Scaling features, your game may behave unexpectedly.");
+                ProgressionPlugin.GetProgressionLogger().LogError(e);
+            }
+        }
+
+        [HarmonyPatch(typeof(ZNet), nameof(ZNet.Awake))]
+        public static class Patch_ZNet_Awake
+        {
+            private static void Postfix()
+            {
+                Instance.Setup();
             }
         }
     }

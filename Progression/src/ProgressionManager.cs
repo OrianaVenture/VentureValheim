@@ -1,17 +1,26 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
 using HarmonyLib;
-using UnityEngine.SceneManagement;
 
 namespace VentureValheim.Progression
 {
     public class ProgressionManager
     {
+        public static string BlockedGlobalKeys { get; private set; }
+        public static string AllowedGlobalKeys { get; private set; }
         public static List<string>? BlockedGlobalKeysList  { get; private set; }
         public static List<string>? AllowedGlobalKeysList  { get; private set; }
 
-        private ProgressionManager() {}
+        private ProgressionManager()
+        {
+            BlockedGlobalKeys = "";
+            AllowedGlobalKeys = "";
+            BlockedGlobalKeysList = null;
+            AllowedGlobalKeysList = null;
+        }
+
         private static readonly ProgressionManager _instance = new ProgressionManager();
 
         public static ProgressionManager Instance
@@ -21,33 +30,45 @@ namespace VentureValheim.Progression
 
         public void Initialize(string blockedGlobalKeys, string allowedGlobalKeys)
         {
-            BlockedGlobalKeysList = null;
-            AllowedGlobalKeysList = null;
-
-            if (!blockedGlobalKeys.IsNullOrWhiteSpace())
+            if (!BlockedGlobalKeys.Equals(blockedGlobalKeys))
             {
-                BlockedGlobalKeysList = blockedGlobalKeys.Split(',').ToList();
-                for (var lcv = 0; lcv < BlockedGlobalKeysList.Count; lcv++)
+                BlockedGlobalKeysList = null;
+
+                if (!blockedGlobalKeys.IsNullOrWhiteSpace())
                 {
-                    BlockedGlobalKeysList[lcv] = BlockedGlobalKeysList[lcv].Trim();
+                    BlockedGlobalKeysList = blockedGlobalKeys.Split(',').ToList();
+                    for (var lcv = 0; lcv < BlockedGlobalKeysList.Count; lcv++)
+                    {
+                        BlockedGlobalKeysList[lcv] = BlockedGlobalKeysList[lcv].Trim();
+                    }
                 }
             }
 
-            if (!allowedGlobalKeys.IsNullOrWhiteSpace())
+            if (!AllowedGlobalKeys.Equals(allowedGlobalKeys))
             {
-                AllowedGlobalKeysList = allowedGlobalKeys.Split(',').ToList();
-                for (var lcv = 0; lcv < AllowedGlobalKeysList.Count; lcv++)
+                AllowedGlobalKeysList = null;
+
+                if (!allowedGlobalKeys.IsNullOrWhiteSpace())
                 {
-                    AllowedGlobalKeysList[lcv] = AllowedGlobalKeysList[lcv].Trim();
+                    AllowedGlobalKeysList = allowedGlobalKeys.Split(',').ToList();
+                    for (var lcv = 0; lcv < AllowedGlobalKeysList.Count; lcv++)
+                    {
+                        AllowedGlobalKeysList[lcv] = AllowedGlobalKeysList[lcv].Trim();
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Skips the original ZoneSystem.SetGlobalKey method if a key is blocked.
+        /// </summary>
         [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.SetGlobalKey))]
         public static class Patch_ZoneSystem_SetGlobalKey
         {
             private static bool Prefix(string name)
             {
+                // TODO initialize on config changes only
+                Instance.Initialize(ProgressionPlugin.Instance.GetBlockedGlobalKeys(), ProgressionPlugin.Instance.GetAllowedGlobalKeys());
                 if (Instance.BlockGlobalKey(name))
                 {
                     ProgressionPlugin.GetProgressionLogger().LogDebug($"Skipping adding global key: {name}.");

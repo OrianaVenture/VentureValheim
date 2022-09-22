@@ -13,7 +13,7 @@ namespace VentureValheim.Progression
     public class ProgressionPlugin : BaseUnityPlugin
     {
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.9";
+        private const string ModVersion = "0.0.10";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -117,6 +117,8 @@ namespace VentureValheim.Progression
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean)",
                 true, true, ref CE_ServerConfigLocked);
+            ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
+
             AddConfig("Enabled", general, "Enable module (boolean).",
                 true, true, ref CE_ModEnabled);
 
@@ -188,135 +190,9 @@ namespace VentureValheim.Progression
             if (!CE_ModEnabled.Value)
                 return;
 
-            if (!ConfigureAllModules())
-            {
-                return;
-            }
-
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
             SetupWatcher();
-        }
-
-        public bool ConfigureAllModules()
-        {
-            GetProgressionLogger().LogInfo("Initializing Progression configurations...");
-
-            #region Progression Manager
-            try
-            {
-                ProgressionManager.Instance.Initialize(GetBlockedGlobalKeys(), GetAllowedGlobalKeys());
-                GetProgressionLogger().LogInfo(GetBlockAllGlobalKeys()
-                    ? $"Blocking all keys except {ProgressionManager.AllowedGlobalKeysList?.Count ?? 0} globally allowed keys.."
-                    : $"Allowing all keys except {ProgressionManager.BlockedGlobalKeysList?.Count ?? 0} globally blocked keys..");
-            }
-            catch (Exception e)
-            {
-                GetProgressionLogger().LogError("Error configuring ProgressionManager, aborting...");
-                GetProgressionLogger().LogError(e);
-                return false;
-            }
-            #endregion
-
-            #region Skills Manager
-            try
-            {
-                GetProgressionLogger().LogInfo($"Skill Manager is " + (GetEnableSkillManager() == true ? "Enabled" : "Disabled") + ".");
-                if (GetEnableSkillManager())
-                {
-                    SkillsManager.Instance.Initialize();
-                    GetProgressionLogger().LogDebug($"Skill loss is {GetAllowSkillDrain()}.");
-                    GetProgressionLogger().LogDebug($"Maximum level for gain is " + (GetOverrideMaximumSkillLevel() ? GetMaximumSkillLevel() : SkillsManager.SKILL_MAXIMUM) + ".");
-                    GetProgressionLogger().LogDebug($"Minimum level for loss is " + (GetOverrideMinimumSkillLevel() ? GetMinimumSkillLevel() : SkillsManager.SKILL_MINIMUM) + ".");
-                }
-            }
-            catch (Exception e)
-            {
-                GetProgressionLogger().LogError("Error configuring SkillsManager, aborting...");
-                GetProgressionLogger().LogError(e);
-                return false;
-            }
-            #endregion
-
-            #region Auto-Scaling
-            try
-            {
-                if (GetUseAutoScaling())
-                {
-                    float factor = GetAutoScaleFactor();
-                    var scale = WorldConfiguration.Scaling.Vanilla;
-                    if (GetAutoScaleType().ToLower().Equals("exponential"))
-                    {
-                        scale = WorldConfiguration.Scaling.Exponential;
-                    }
-                    else if (GetAutoScaleType().ToLower().Equals("linear"))
-                    {
-                        scale = WorldConfiguration.Scaling.Linear;
-                    }
-
-                    GetProgressionLogger().LogDebug($"WorldConfiguration Initializing with scale: {scale}, factor: {factor}.");
-                    WorldConfiguration.Instance.Initialize(scale, factor);
-
-                    if (GetAutoScaleCreatures())
-                    {
-                        var healthString = GetAutoScaleCreatureHealth();
-                        if (!healthString.IsNullOrWhiteSpace())
-                        {
-                            try
-                            {
-                                var list = healthString.Split(',');
-                                var copy = new int[list.Length];
-                                for (var lcv = 0; lcv < list.Length; lcv++)
-                                {
-                                    copy[lcv] = int.Parse(list[lcv].Trim());
-                                }
-
-                                CreatureConfiguration.Instance.SetBaseHealth(copy);
-                            }
-                            catch
-                            {
-                                GetProgressionLogger().LogWarning("Issue parsing Creature Health configuration, using defaults.");
-                            }
-                        }
-
-                        var damageString = GetAutoScaleCreatureDamage();
-                        if (!damageString.IsNullOrWhiteSpace())
-                        {
-                            try
-                            {
-                                var list = damageString.Split(',');
-                                var copy = new int[list.Length];
-                                for (var lcv = 0; lcv < list.Length; lcv++)
-                                {
-                                    copy[lcv] = int.Parse(list[lcv].Trim());
-                                }
-
-                                CreatureConfiguration.Instance.SetBaseDamage(copy);
-                            }
-                            catch
-                            {
-                                GetProgressionLogger().LogWarning("Issue parsing Creature Damage configuration, using defaults.");
-                            }
-                        }
-
-                        CreatureConfiguration.Instance.Initialize();
-                    }
-
-                    if (GetAutoScaleItems())
-                    {
-                        ItemConfiguration.Instance.Initialize();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                GetProgressionLogger().LogError("Error configuring Auto-Scaling features, aborting...");
-                GetProgressionLogger().LogError(e);
-                return false;
-            }
-            #endregion
-
-            return true;
         }
 
         private void OnDestroy()

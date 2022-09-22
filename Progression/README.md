@@ -34,7 +34,7 @@ Planned features include: Implementing a player key system separate from the glo
 
 ### Skill Manager
 
-Customize skill drain by turning it off entirely, setting to an absolute number, or using a comparison to choose the lower/higher skill drain (the absolute or original value). Set the server wide maximum level for skill gain and minimum level for skill loss (set OverrideMaximumSkillLevel and/or OverrideMinimumSkillLevel to True). Any skills that are already above the maximum skill cap will remain "frozen" and will not gain, but can still be lowered on death.
+Customize skill drain by turning it off entirely, setting to an absolute number, or using a comparison to choose the lower/higher skill drain (the absolute or original value). Set the server wide maximum level for skill gain and minimum level for skill loss (set OverrideMaximumSkillLevel and/or OverrideMinimumSkillLevel to True). Any skills that are already above the maximum skill cap will remain "frozen" and will not gain, but can still be lowered on death. Console cheats will still work as intended.
 
 Warning: Other mods that change how skill gain and loss functions may cause unexpected behaviors. Turn off this feature if using another mod for skill management if you see mod conflicts.
 
@@ -101,6 +101,10 @@ Biomes are given the following int codes:
 Coming ASAP!
 
 ## Changelog
+
+### 0.0.10
+
+* Updated ServerSync to V1.10. Fixed an issue with Server Sync config not locking. Refactored code to support live config changes.
 
 ### 0.0.9
 
