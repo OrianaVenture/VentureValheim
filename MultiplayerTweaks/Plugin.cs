@@ -13,10 +13,10 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.1.1";
+        private const string ModVersion = "0.1.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
-        private static string ConfigFileName = ModGUID + ModVersion + ".cfg";
+        private static string ConfigFileName = ModGUID + ".cfg";
         private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
@@ -48,16 +48,8 @@ namespace VentureValheim.MultiplayerTweaks
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
-            if (synced)
-            {
-                string extendedDescription = GetExtendedDescription(description, synced);
-                configEntry = Config.Bind(section, key, value, extendedDescription);
-            }
-            else
-            {
-                configEntry = Config.Bind(section, key, value, description);
-            }
-            
+            string extendedDescription = GetExtendedDescription(description, synced);
+            configEntry = Config.Bind(section, key, value, extendedDescription);
 
             SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
             syncedConfigEntry.SynchronizedConfig = synced;
@@ -78,6 +70,8 @@ namespace VentureValheim.MultiplayerTweaks
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean).",
                 true, true, ref CE_ServerConfigLocked);
+            ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
+
             AddConfig("Enabled", general,"Enable module (boolean).",
                 true, true, ref CE_ModEnabled);
             AddConfig("MaximumPlayers", general, "Maximum Players for Server (integer).",
@@ -100,18 +94,7 @@ namespace VentureValheim.MultiplayerTweaks
             if (!CE_ModEnabled.Value)
                 return;
 
-            MultiplayerTweaksLogger.LogInfo("Initializing MultiplayerTweaks configurations...");
-
-            try
-            {
-                MultiplayerTweaks.Instance.Initialize();
-            }
-            catch (Exception e)
-            {
-                MultiplayerTweaksLogger.LogError("Error configuring MultiplayerTweaks, aborting...");
-                MultiplayerTweaksLogger.LogError(e);
-                return;
-            }
+            MultiplayerTweaksLogger.LogInfo("Initializing MultiplayerTweaks!");
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);

@@ -31,6 +31,10 @@ This mod gives you the ability to block the Haldor trader map pin from showing o
 
 ## Changelog
 
+### 0.1.2
+
+* Updated ServerSync to V1.10. Fixed an issue with Server Sync config not locking.
+
 ### 0.1.1
 
 * Assembly update, copy and pasting projects makes mistakes lol

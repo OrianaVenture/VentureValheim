@@ -11,18 +11,12 @@ namespace VentureValheim.MultiplayerTweaks
 {
     public class MultiplayerTweaks
     {
-        private MultiplayerTweaks()
-        {
-        }
+        private MultiplayerTweaks() {}
         private static readonly MultiplayerTweaks _instance = new MultiplayerTweaks();
 
         public static MultiplayerTweaks Instance
         {
             get => _instance;
-        }
-
-        public void Initialize()
-        {
         }
 
         /// <summary>
@@ -166,6 +160,11 @@ namespace VentureValheim.MultiplayerTweaks
         {
             private static void Postfix(ZNet __instance)
             {
+                if (!__instance.IsServer())
+                {
+                    return;
+                }
+
                 try
                 {
                     int number = MultiplayerTweaksPlugin.GetMaximumPlayers();
@@ -175,6 +174,7 @@ namespace VentureValheim.MultiplayerTweaks
                     }
 
                     __instance.m_serverPlayerLimit = number;
+                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogInfo($"Maximum Server Player Count set to {number}.");
                 }
                 catch (Exception e)
                 {
