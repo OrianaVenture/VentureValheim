@@ -1,4 +1,3 @@
-using System;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -7,18 +6,12 @@ namespace VentureValheim.NoSeasonalRestrictions
 {
     public class NoSeasonalRestrictions
     {
-        private NoSeasonalRestrictions()
-        {
-        }
+        private NoSeasonalRestrictions() {}
         private static readonly NoSeasonalRestrictions _instance = new NoSeasonalRestrictions();
 
         public static NoSeasonalRestrictions Instance
         {
             get => _instance;
-        }
-
-        public void Initialize()
-        {
         }
 
         [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.Awake))]
@@ -60,7 +53,7 @@ namespace VentureValheim.NoSeasonalRestrictions
                 obj.GetComponent<Piece>().m_enabled = true;
                 return;
             }
-            catch (Exception e)
+            catch
             {
                 NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogWarning($"Error, skipping configuring Piece: {name}");
             }
@@ -86,7 +79,7 @@ namespace VentureValheim.NoSeasonalRestrictions
                     }
                 }
             }
-            catch (Exception e)
+            catch
             {
                 NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogWarning($"Error, skipping configuring Recipe: {name}");
             }
@@ -95,7 +88,7 @@ namespace VentureValheim.NoSeasonalRestrictions
         }
 
         /// <summary>
-        /// Helper method to identify diabled entities
+        /// Helper method to identify disabled entities
         /// </summary>
         private static void ListDisabledItems()
         {
@@ -112,7 +105,7 @@ namespace VentureValheim.NoSeasonalRestrictions
                         }
                     }
                 }
-                catch (Exception e)
+                catch
                 {
                     NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Error with ListDisabledItems: {obj.name}");
                 }
@@ -127,7 +120,7 @@ namespace VentureValheim.NoSeasonalRestrictions
                         NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Found Disabled Piece: {obj.name}");
                     }
                 }
-                catch (Exception e)
+                catch
                 {
                     NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Error with ListDisabledItems: {obj.name}");
                 }

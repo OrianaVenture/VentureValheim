@@ -9,9 +9,12 @@ The good people of Florida hate seasons. If you also hate seasons install this m
 ## Features
 
 * Enable all seasonal items in the game
-* ServerSync included
 
 ## Changelog
+
+### 0.1.3
+
+* Removed ServerSync. Decided not to expand this mod any further. (Expect updates for new game items!)
 
 ### 0.1.2
 
