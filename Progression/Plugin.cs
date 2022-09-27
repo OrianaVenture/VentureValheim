@@ -13,7 +13,7 @@ namespace VentureValheim.Progression
     public class ProgressionPlugin : BaseUnityPlugin
     {
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.10";
+        private const string ModVersion = "0.0.12";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";

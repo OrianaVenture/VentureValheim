@@ -102,6 +102,14 @@ Coming ASAP!
 
 ## Changelog
 
+### 0.0.12
+
+* Update for game patch 0.211.7 Crossplay. Reverted ServerSync to 1.6.
+
+### 0.0.11
+
+* Changed how ServerSync project is bundled to fix config not locking.
+
 ### 0.0.10
 
 * Updated ServerSync to V1.10. Fixed an issue with Server Sync config not locking. Refactored code to support live config changes.
@@ -125,10 +133,6 @@ Coming ASAP!
 ### 0.0.5
 
 * Added additional Skill Drain configuration option. Ability to use the minimum or maximum Skill Drain value (absolute skill drain vs vanilla).
-
-### 0.0.4
-
-* Packaged ServerSync into the main dll.
 
 See all patch notes on Github.
 
