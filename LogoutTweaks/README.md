@@ -17,6 +17,14 @@ Logout Tweaks reapplies previously untracked data from your last logout.
 
 ## Changelog
 
+### 0.1.0
+
+* Update for game patch 0.211.7 Crossplay. Reverted ServerSync to 1.6.
+
+### 0.0.5
+
+* Updated ServerSync to V1.10. Fixed an issue with Server Sync config not locking.
+
 ### 0.0.4
 
 * Added ability to restore stamina from last logout with regen delay of 5 seconds. Added more config options. Changed file storage structure, expect a warning on version upgrade.

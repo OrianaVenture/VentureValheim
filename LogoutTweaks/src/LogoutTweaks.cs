@@ -159,8 +159,8 @@ namespace VentureValheim.LogoutTweaks
 
         private void SaveFile(FileHelpers.FileSource filesource, FileData fileData)
         {
-            FileHelpers.CheckMove(ref filesource, GetFilePath(_filepath));
-            if (!Directory.Exists(_fileDirectory) && filesource != FileHelpers.FileSource.SteamCloud)
+            FileHelpers.CheckMove(ref filesource, GetFilePath(_filepath), DateTime.Now);
+            if (!Directory.Exists(_fileDirectory) && filesource != FileHelpers.FileSource.Cloud)
             {
                 Directory.CreateDirectory(_fileDirectory);
             }
