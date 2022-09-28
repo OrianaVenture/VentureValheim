@@ -153,38 +153,6 @@ namespace VentureValheim.MultiplayerTweaks
         }
 
         /// <summary>
-        /// Patch the maximum player number for accepting new connections
-        /// </summary>
-        [HarmonyPatch(typeof(ZNet), nameof(ZNet.Awake))]
-        public static class Patch_ZNet_Awake
-        {
-            private static void Postfix(ZNet __instance)
-            {
-                if (!__instance.IsServer())
-                {
-                    return;
-                }
-
-                try
-                {
-                    int number = MultiplayerTweaksPlugin.GetMaximumPlayers();
-                    if (number < 1)
-                    {
-                        number = 1;
-                    }
-
-                    __instance.m_serverPlayerLimit = number;
-                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogInfo($"Maximum Server Player Count set to {number}.");
-                }
-                catch (Exception e)
-                {
-                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError("Error patching ZNet.Awake with maximum player count.");
-                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError(e);
-                }
-            }
-        }
-
-        /// <summary>
         /// Patch the maximum player number for SteamGameServer
         /// </summary>
         [HarmonyPatch(typeof(SteamGameServer), nameof(SteamGameServer.SetMaxPlayerCount))]
@@ -194,13 +162,8 @@ namespace VentureValheim.MultiplayerTweaks
             {
                 try
                 {
-                    int number = MultiplayerTweaksPlugin.GetMaximumPlayers();
-                    if (number < 1)
-                    {
-                        number = 1;
-                    }
-
-                    cPlayersMax = number;
+                    cPlayersMax = GetMaximumPlayers();
+                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogInfo($"Steam Maximum Server Player Count set to {cPlayersMax}.");
                 }
                 catch (Exception e)
                 {
@@ -208,6 +171,45 @@ namespace VentureValheim.MultiplayerTweaks
                     MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError(e);
                 }
             }
+        }
+        
+        /// <summary>
+        /// Patch the maximum player number for ZNet
+        /// </summary>
+        [HarmonyPatch(typeof(ZNet), nameof(ZNet.RPC_PeerInfo))]
+        public static class Patch_ZNet_RPC_PeerInfo
+        {
+            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                var codes = new List<CodeInstruction>(instructions);
+                for (var lcv = 1; lcv < codes.Count; lcv++)
+                {
+                    if (codes[lcv].opcode == OpCodes.Ldc_I4_S)
+                    {
+                        var method = AccessTools.Method(typeof(ZNet), nameof(ZNet.GetNrOfPlayers));
+                        if (codes[lcv - 1].operand.Equals(method))
+                        {
+                            var methodCall = AccessTools.Method(typeof(MultiplayerTweaks), nameof(MultiplayerTweaks.GetMaximumPlayers));
+                            codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
+                            break;
+                        }
+                    }
+                }
+
+                return codes.AsEnumerable();
+            }
+        }
+
+        private static sbyte GetMaximumPlayers()
+        {
+            sbyte number = (sbyte)MultiplayerTweaksPlugin.GetMaximumPlayers();
+
+            if (number < 1)
+            {
+                number = 1;
+            }
+
+            return number;
         }
     }
 }

@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VentureValheim.MultiplayerTweaks</RootNamespace>
     <AssemblyName>VentureValheim.MultiplayerTweaks</AssemblyName>
-    <Version>0.1.2</Version>
+    <Version>0.2.0</Version>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>
@@ -88,26 +88,14 @@
     <Reference Include="UnityEngine.ImageConversionModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
-    <Reference Include="ServerSync, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>lib\ServerSync.dll</HintPath>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>$(GamePath)\valheim_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\*.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="lib\ServerSync.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Fody" Version="6.6.3">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="ILMerge.Fody" Version="1.23.0" PrivateAssets="All" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

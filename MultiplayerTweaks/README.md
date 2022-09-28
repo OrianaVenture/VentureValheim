@@ -31,6 +31,18 @@ This mod gives you the ability to block the Haldor trader map pin from showing o
 
 ## Changelog
 
+### 0.2.0
+
+* Update for latest game patch 0.211.7 Crossplay: added back ability to patch number of players on a server.
+
+### 0.1.4
+
+* Temporary update for game patch 0.211.7 Crossplay: removed max player check patch. Reverted ServerSync to 1.6.
+
+### 0.1.3
+
+* Changed how ServerSync project is bundled to fix config not locking.
+
 ### 0.1.2
 
 * Updated ServerSync to V1.10. Fixed an issue with Server Sync config not locking.
