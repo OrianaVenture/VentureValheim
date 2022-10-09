@@ -16,9 +16,9 @@ The main feature of this mod is to have an easy way to fully customize the world
 
 Below are some explanations of features and how to configure them. To see details generate the config file by launching the game once with this mod installed.
 
-### Public Key Management
+### Public & Private Key Management
 
-By default this mod will prevent/block public keys from being added to the global list. BlockAllGlobalKeys is true by default; To use Vanilla behavior change BlockAllGlobalKeys to false. Configure AllowedGlobalKeys or BlockedGlobalKeys lists to allow/block keys ONLY depending on the value of BlockAllGlobalKeys. To see details generate the config file. These keys are case sensitive and MUST match the value exactly or it will not work. This feature will work with other mods that add in custom keys.
+By default this mod will prevent/block public keys from being added to the global list: Set BlockAllGlobalKeys to false to use vanilla behavior. Configure AllowedGlobalKeys or BlockedGlobalKeys lists to allow/block keys ONLY depending on the value of BlockAllGlobalKeys. To see details generate the config file. These keys are case sensitive and MUST match the value exactly or it will not work. This feature will work with other mods that add in custom keys.
 
 Examples of Vanilla Public Keys:
 * defeated_eikthyr
@@ -30,15 +30,31 @@ Examples of Vanilla Public Keys:
 * killed_surtling
 * KilledBat
 
-Planned features include: Implementing a player key system separate from the global key system. For developers: define your own player keys and use them in your mods!
+This mod adds a private player key system in which data is saved to a new file for each character. This feature is still being developed, so please report any issues that might arise while using it. Currently the only feature using private keys is skills, see the next section for more information.
+
+There are 4 new commands added that work similar to the public key commands. Currently only your local player can be updated, but commands for server management will be added later: setprivatekey, removeprivatekey, resetprivatekeys, listprivatekeys.
+
+For developers (In Progress): define your own player keys and use them in your mods!
 
 ### Skill Manager
 
-Customize skill drain by turning it off entirely, setting to an absolute number, or using a comparison to choose the lower/higher skill drain (the absolute or original value). Set the server wide maximum level for skill gain and minimum level for skill loss (set OverrideMaximumSkillLevel and/or OverrideMinimumSkillLevel to True). Any skills that are already above the maximum skill cap will remain "frozen" and will not gain, but can still be lowered on death. Console cheats will still work as intended.
+Have more control over Skill loss and gain. Here is a quick guide to the Skill configuration options:
+
+* EnableSkillManager must be set to True to enable these features.
+* AllowSkillDrain: Set to False to turn off all skill loss on death.
+* UseAbsoluteSkillDrain: Set to True to use an absolute number (AbsoluteSkillDrain) for skill loss. (Vanilla uses a percentage for skill loss, so you will lose more skill the higher the skill is)
+* CompareAndSelectDrain: Set to true to use the minimum or maximum value between the vanilla skill loss and the absolute skill loss. Set CompareUseMinimumDrain to False to use the maximum of these two values as the skill loss.
+* OverrideMaximumSkillLevel: True to set a server wide skill level ceiling for gaining skill to the value of MaximumSkillLevel. For example, if this value is 50 then you will not gain skill once you reach level 50+ in that skill.
+* OverrideMinimumSkillLevel: True to set a server wide skill level floor for skill loss to the value of MinimumSkillLevel. For example, if this value is 10 then you will not lose skill on death until you reach level 10 in that skill, so your skills will not drop below 10.
+
+Under the Keys category there are more configuration options for skills. This feature will only work if you DO NOT override the minimum and/or maximum skill levels as described above. Overridden values will take precedence.
+
+* UseBossKeysForSkillLevel: Set this to true to use a more dynamic skill control dependant on boss completion. Skill minimum will start at 0 and increase by BossKeysSkillPerKey (default 10) for each boss defeated. Skill maximum will be capped at [ 100 - (number of bosses: 5) * (BossKeysSkillPerKey: 10) = 50 ] with the current game state. For example, if you defeat one boss then your skill minimum for loss will be raised to 10, and your skill maximum will be raised to 60.
+* UsePrivateBossKeysForSkillLevel: Set this to True to use player keys to determine skill behavior per individual player, set to False to use the public key system to set a server wide configuration.
+
+Notes: Any skills that are already above the maximum skill cap will remain "frozen" and will not gain, but can still be lowered on death. Console cheats will still work as intended.
 
 Warning: Other mods that change how skill gain and loss functions may cause unexpected behaviors. Turn off this feature if using another mod for skill management if you see mod conflicts.
-
-Planned features include: Implementing a skill floor and ceiling controlled by public and player keys.
 
 ### World Scaling (In Progress)
 
@@ -54,7 +70,7 @@ Planned features include: Finishing the auto scaling to work for item upgrades a
 
 #### Creature Scaling
 
-To enable scaling of creatures set AutoScaleCreatures to true. To change the base health distribution enter a list of numbers for AutoScaleCreaturesHealth. Likewise, to scale the damage a creature can do enter a list of number for AutoScaleCreaturesDamage. The total damage will be scaled and then distributed to individual damage types for each attack; scaling will maintain the ratio for creatures with more than one attack (some attacks are stronger, some are weaker, scaling maintains this). All values for chop and pickaxe damage are ignored for creatures and will retain their original values without affecting scaling (The bosses were weird, decided not to touch this for now).
+To enable scaling of creatures set AutoScaleCreatures to true. To change the base health distribution enter a list of numbers for AutoScaleCreaturesHealth. Likewise, to scale the damage a creature can do enter a list of numbers for AutoScaleCreaturesDamage. The total damage will be scaled and then distributed to individual damage types for each attack; scaling will maintain the ratio for creatures with more than one attack (some attacks are stronger, some are weaker, scaling maintains this). All values for chop and pickaxe damage are ignored for creatures and will retain their original values without affecting scaling (The bosses were weird, decided not to touch this for now).
 
 The list for configs is in the format (for difficulty spread): Harmless, Novice, Average, Intermediate, Expert, Boss
 
@@ -101,6 +117,11 @@ Biomes are given the following int codes:
 Coming ASAP!
 
 ## Changelog
+
+### 0.0.13
+
+* Added options to track boss completion for skill management.
+* Moved the Key configurations to a new section.
 
 ### 0.0.12
 

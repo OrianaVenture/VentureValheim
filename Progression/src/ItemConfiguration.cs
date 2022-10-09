@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using HarmonyLib;
-using UnityEngine.SceneManagement;
+using BepInEx;
 
 namespace VentureValheim.Progression
 {
@@ -112,9 +111,9 @@ namespace VentureValheim.Progression
             }
         }
 
-        private Dictionary<string, ItemClassification> _weaponData;
-        private Dictionary<string, ItemClassification> _armorData;
-        private Dictionary<string, ItemClassification> _shieldData;
+        private Dictionary<string, ItemClassification> _weaponData = new Dictionary<string, ItemClassification>();
+        private Dictionary<string, ItemClassification> _armorData = new Dictionary<string, ItemClassification>();
+        private Dictionary<string, ItemClassification> _shieldData = new Dictionary<string, ItemClassification>();
 
         /// <summary>
         /// Get the total damage for a Player or Creature.
@@ -294,10 +293,6 @@ namespace VentureValheim.Progression
         /// </summary>
         public void Initialize()
         {
-            _weaponData = new Dictionary<string, ItemClassification>();
-            _armorData = new Dictionary<string, ItemClassification>();
-            _shieldData = new Dictionary<string, ItemClassification>();
-
             // TODO
             // BombOoze
 
@@ -429,14 +424,7 @@ namespace VentureValheim.Progression
         /// <param name="itemType"></param>
         public void AddWeaponConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType)
         {
-            try
-            {
-                _weaponData.Add(name, new ItemClassification(name, biome, itemType));
-            }
-            catch (Exception e)
-            {
-                _weaponData[name] = new ItemClassification(name, biome, itemType);
-            }
+            AddItemConfiguration(name, biome, itemType, ref _weaponData);
         }
 
         /// <summary>
@@ -447,14 +435,7 @@ namespace VentureValheim.Progression
         /// <param name="itemType"></param>
         public void AddArmorConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType)
         {
-            try
-            {
-                _armorData.Add(name, new ItemClassification(name, biome, itemType));
-            }
-            catch (Exception e)
-            {
-                _armorData[name] = new ItemClassification(name, biome, itemType);
-            }
+            AddItemConfiguration(name, biome, itemType, ref _armorData);
         }
 
         /// <summary>
@@ -465,20 +446,39 @@ namespace VentureValheim.Progression
         /// <param name="itemType"></param>
         public void AddShieldConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType)
         {
+            AddItemConfiguration(name, biome, itemType, ref _shieldData);
+        }
+
+        private void AddItemConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType, 
+            ref Dictionary<string, ItemClassification> dataList)
+        {
             try
             {
-                _shieldData.Add(name, new ItemClassification(name, biome, itemType));
+                if (!name.IsNullOrWhiteSpace())
+                {
+                    dataList.Add(name, new ItemClassification(name, biome, itemType));
+                }
             }
-            catch (Exception e)
+            catch (ArgumentException)
             {
-                _shieldData[name] = new ItemClassification(name, biome, itemType);
+                dataList[name] = new ItemClassification(name, biome, itemType);
             }
         }
 
         /// <summary>
-        /// Apply Auto-Scaling to all Creatures found in the game by Prefab name.
+        /// Apply Auto-Scaling to all Items found in the game.
         /// </summary>
-        private static void UpdateItems()
+        public void UpdateItems()
+        {
+            UpdateWeapons();
+            UpdateArmor();
+            UpdateShields();
+        }
+
+        /// <summary>
+        /// Apply Auto-Scaling to all Weapons by Prefab name.
+        /// </summary>
+        public void UpdateWeapons()
         {
             foreach (ItemClassification data in Instance._weaponData.Values)
             {
@@ -501,7 +501,13 @@ namespace VentureValheim.Progression
                         $"{item.name} updated with new scaled damage values. Total damage changed from {sumDamage} to {newSumDamage}");
                 }
             }
+        }
 
+        /// <summary>
+        /// Apply Auto-Scaling to all armor by Prefab name.
+        /// </summary>
+        public void UpdateArmor()
+        {
             foreach (ItemClassification data in Instance._armorData.Values)
             {
                 ItemDrop? item = ProgressionAPI.GetItemDrop(data.Name);
@@ -520,7 +526,13 @@ namespace VentureValheim.Progression
                         $"{item.name} updated with new scaled armor values. Total armor changed from {original} to {newArmor}");
                 }
             }
+        }
 
+        /// <summary>
+        /// Apply Auto-Scaling to all Shields by Prefab name.
+        /// </summary>
+        public void UpdateShields()
+        {
             foreach (ItemClassification data in Instance._shieldData.Values)
             {
                 ItemDrop? item = ProgressionAPI.GetItemDrop(data.Name);
@@ -537,31 +549,6 @@ namespace VentureValheim.Progression
 
                     ProgressionPlugin.GetProgressionLogger().LogDebug(
                         $"{item.name} updated with new scaled block values. Total block changed from {original} to {newArmor}");
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.Awake))]
-        public static class Patch_ObjectDB_Awake
-        {
-            private static void Prefix()
-            {
-                if (!ProgressionPlugin.Instance.GetAutoScaleItems())
-                {
-                    return;
-                }
-
-                if (SceneManager.GetActiveScene().name.Equals("main"))
-                {
-                    if (WorldConfiguration.Instance.GetWorldScale() != (int)WorldConfiguration.Scaling.Vanilla)
-                    {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug("Updating Item Configurations with auto-scaling.");
-                        UpdateItems();
-                    }
-                }
-                else
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogDebug("Skipping generating data because not in the main scene.");
                 }
             }
         }

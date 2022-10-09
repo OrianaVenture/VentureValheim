@@ -13,7 +13,7 @@ namespace VentureValheim.Progression
     public class ProgressionPlugin : BaseUnityPlugin
     {
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.12";
+        private const string ModVersion = "0.0.13";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -46,10 +46,16 @@ namespace VentureValheim.Progression
         private static ConfigEntry<bool> CE_BlockAllGlobalKeys = null!;
         private static ConfigEntry<string> CE_BlockedGlobalKeys = null!;
         private static ConfigEntry<string> CE_AllowedGlobalKeys = null!;
+        private static ConfigEntry<bool> CE_UseBossKeysForSkillLevel = null!;
+        private static ConfigEntry<bool> CE_UsePrivateBossKeysForSkillLevel = null!;
+        private static ConfigEntry<int> CE_BossKeysSkillPerKey = null!;
 
         public virtual bool GetBlockAllGlobalKeys() => CE_BlockAllGlobalKeys.Value;
         public virtual string GetBlockedGlobalKeys() => CE_BlockedGlobalKeys.Value;
         public virtual string GetAllowedGlobalKeys() => CE_AllowedGlobalKeys.Value;
+        public virtual bool GetUseBossKeysForSkillLevel() => CE_UseBossKeysForSkillLevel.Value;
+        public virtual bool GetUsePrivateBossKeysForSkillLevel() => CE_UsePrivateBossKeysForSkillLevel.Value;
+        public virtual int GetBossKeysSkillPerKey() => CE_BossKeysSkillPerKey.Value;
 
         // Skills Manager
         private static ConfigEntry<bool> CE_EnableSkillManager = null!;
@@ -112,6 +118,7 @@ namespace VentureValheim.Progression
             #region Configuration
 
             const string general = "General";
+            const string keys = "Keys";
             const string skills = "Skills";
             const string autoScaling = "Auto-Scaling";
 
@@ -122,15 +129,24 @@ namespace VentureValheim.Progression
             AddConfig("Enabled", general, "Enable module (boolean).",
                 true, true, ref CE_ModEnabled);
 
-            AddConfig("BlockAllGlobalKeys", general,
+            AddConfig("BlockAllGlobalKeys", keys,
                 "True to stop all global keys from being added to the global list (boolean).",
                 true, true, ref CE_BlockAllGlobalKeys);
-            AddConfig("BlockedGlobalKeys", general,
+            AddConfig("BlockedGlobalKeys", keys,
                 "Stop only these keys being added to the global list when BlockAllGlobalKeys is false (comma-separated).",
                 true, "", ref CE_BlockedGlobalKeys);
-            AddConfig("AllowedGlobalKeys", general,
+            AddConfig("AllowedGlobalKeys", keys,
                 "Allow only these keys being added to the global list when BlockAllGlobalKeys is true (comma-separated).",
                 true, "", ref CE_AllowedGlobalKeys);
+            AddConfig("UseBossKeysForSkillLevel", keys,
+                "True to use private player boss keys to control skill floor/ceiling values (boolean).",
+                true, false, ref CE_UseBossKeysForSkillLevel);
+            AddConfig("UsePrivateBossKeysForSkillLevel", keys,
+                "True to use private player keys, False to use the public key system (When UseBossKeysForSkillLevel is true) (boolean).",
+                true, true, ref CE_UsePrivateBossKeysForSkillLevel);
+            AddConfig("BossKeysSkillPerKey", keys,
+                "Skill drain floor and skill gain ceiling increased this amount per boss defeated (boolean).",
+                true, 10, ref CE_BossKeysSkillPerKey);
 
             AddConfig("EnableSkillManager", skills,
                 "Enable the Skill Manager feature (boolean).",
@@ -198,7 +214,6 @@ namespace VentureValheim.Progression
         private void OnDestroy()
         {
             Config.Save();
-            HarmonyInstance.UnpatchSelf();
         }
 
         private void SetupWatcher()

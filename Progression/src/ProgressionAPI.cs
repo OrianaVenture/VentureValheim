@@ -3,6 +3,7 @@ using BepInEx;
 using System.IO;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace VentureValheim.Progression
 {
@@ -230,6 +231,11 @@ namespace VentureValheim.Progression
                     }
                 }
             }
+        }
+
+        public static bool IsInTheMainScene()
+        {
+            return SceneManager.GetActiveScene().name.Equals("main");
         }
     }
 }

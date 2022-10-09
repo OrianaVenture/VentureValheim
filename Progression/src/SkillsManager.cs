@@ -9,6 +9,11 @@ namespace VentureValheim.Progression
         public const float SKILL_MINIMUM = 0f;
         public const float SKILL_MAXIMUM = 100f;
 
+        private float _cachedSkillCeiling, _cachedSkillFloor;
+
+        private static float _timer = 0f;
+        private readonly float _update = 5f;
+
         private SkillsManager() {}
         private static readonly SkillsManager _instance = new SkillsManager();
 
@@ -19,6 +24,71 @@ namespace VentureValheim.Progression
 
         public void Initialize()
         {
+        }
+
+        /// <summary>
+        /// Updates class data if cached values have expired.
+        /// </summary>
+        public void Update()
+        {
+            var time = Time.time;
+            var delta = time - _timer;
+
+            if (delta - _timer > _update)
+            {
+                ProgressionPlugin.GetProgressionLogger().LogDebug($"Updating cached Skill Information: {delta} time passed.");
+                UpdateSkillCeiling();
+                UpdateSkillFloor();
+
+                _timer = time;
+            }
+        }
+
+        /// <summary>
+        /// Calculates and caches the Skill Ceiling for skill gain based on boss progression skill configurations.
+        /// </summary>
+        private void UpdateSkillCeiling()
+        {
+            int bossesDefeated;
+            if (ProgressionPlugin.Instance.GetUsePrivateBossKeysForSkillLevel())
+            {
+                bossesDefeated = KeyManager.Instance.GetPrivateBossKeysCount();
+            }
+            else
+            {
+                bossesDefeated = KeyManager.Instance.GetPublicBossKeysCount();
+            }
+
+            int totalBosses = KeyManager.Instance.BossKeys.Length;
+            int skill = ProgressionPlugin.Instance.GetBossKeysSkillPerKey();
+            float ceiling = SKILL_MAXIMUM - (skill * (totalBosses - bossesDefeated));
+            ProgressionPlugin.GetProgressionLogger().LogDebug($"Skill ceiling calculated: {ceiling}.");
+
+            _cachedSkillCeiling = NormalizeSkillLevel(ceiling);
+        }
+
+
+        /// <summary>
+        /// Calculates and caches the Skill Floor for skill loss based on boss progression skill configurations.
+        /// </summary>
+        private void UpdateSkillFloor()
+        {
+            int bossesDefeated;
+            if (ProgressionPlugin.Instance.GetUsePrivateBossKeysForSkillLevel())
+            {
+                bossesDefeated = KeyManager.Instance.GetPrivateBossKeysCount();
+            }
+            else
+            {
+                bossesDefeated = KeyManager.Instance.GetPublicBossKeysCount();
+            }
+
+            int skill = ProgressionPlugin.Instance.GetBossKeysSkillPerKey();
+            var floor = skill * bossesDefeated;
+
+            ProgressionPlugin.GetProgressionLogger().LogDebug($"Skill floor calculated: {floor}.");
+
+            _cachedSkillFloor = NormalizeSkillLevel(floor);
         }
 
         /// <summary>
@@ -153,27 +223,43 @@ namespace VentureValheim.Progression
             return Mathf.Clamp(level, SKILL_MINIMUM, maximum);
         }
 
+        /// <summary>
+        /// Calculates the minimum a skill can be lowered based off configurations.
+        /// </summary>
+        /// <returns></returns>
         public float GetSkillDrainFloor()
         {
-            // TODO: calculate skill floor based on global and player keys
             var minimum = SKILL_MINIMUM;
 
             if (ProgressionPlugin.Instance.GetOverrideMinimumSkillLevel())
             {
                 minimum = ProgressionPlugin.Instance.GetMinimumSkillLevel();
             }
+            else if (ProgressionPlugin.Instance.GetUseBossKeysForSkillLevel())
+            {
+                Update();
+                return _cachedSkillFloor;
+            }
 
             return minimum;
         }
 
+        /// <summary>
+        /// Calculates the maximum a skill can be raised based off configurations.
+        /// </summary>
+        /// <returns></returns>
         public float GetSkillGainCeiling()
         {
-            // TODO: calculate skill ceiling based on global and player keys
             var maximum = SKILL_MAXIMUM;
 
             if (ProgressionPlugin.Instance.GetOverrideMaximumSkillLevel())
             {
                 maximum = ProgressionPlugin.Instance.GetMaximumSkillLevel();
+            }
+            else if (ProgressionPlugin.Instance.GetUseBossKeysForSkillLevel())
+            {
+                Update();
+                return _cachedSkillCeiling;
             }
 
             return maximum;

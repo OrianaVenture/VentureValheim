@@ -81,6 +81,8 @@ namespace VentureValheim.Progression
             get => _instance;
         }
 
+        private bool _initialized = false;
+
         public void Initialize()
         {
             AddBiome(Biome.Meadow, 0);
@@ -290,7 +292,10 @@ namespace VentureValheim.Progression
             }
         }
 
-        public void Setup()
+        /// <summary>
+        /// Read Configuration values and update the Scaling systems and game data with scaling settings.
+        /// </summary>
+        public void SetupScaling()
         {
             try
             {
@@ -307,8 +312,11 @@ namespace VentureValheim.Progression
                         scale = Scaling.Linear;
                     }
 
-                    ProgressionPlugin.GetProgressionLogger().LogDebug($"WorldConfiguration Initializing with scale: {scale}, factor: {factor}.");
+                    ProgressionPlugin.GetProgressionLogger().LogInfo($"WorldConfiguration Initializing with scale: {scale}, factor: {factor}.");
                     Instance.Initialize(scale, factor);
+
+                    // Skip generating data if scaling is set to Vanilla
+                    if (scale == Scaling.Vanilla) return;
 
                     if (ProgressionPlugin.Instance.GetAutoScaleCreatures())
                     {
@@ -353,11 +361,15 @@ namespace VentureValheim.Progression
                         }
 
                         CreatureConfiguration.Instance.Initialize();
+                        ProgressionPlugin.GetProgressionLogger().LogInfo("Updating Creature Configurations with auto-scaling...");
+                        CreatureConfiguration.Instance.UpdateCreatures();
                     }
 
                     if (ProgressionPlugin.Instance.GetAutoScaleItems())
                     {
                         ItemConfiguration.Instance.Initialize();
+                        ProgressionPlugin.GetProgressionLogger().LogInfo("Updating Item Configurations with auto-scaling...");
+                        ItemConfiguration.Instance.UpdateItems();
                     }
                 }
             }
@@ -368,12 +380,22 @@ namespace VentureValheim.Progression
             }
         }
 
-        [HarmonyPatch(typeof(ZNet), nameof(ZNet.Awake))]
-        public static class Patch_ZNet_Awake
+        /// <summary>
+        /// Configure World settings on Player's first spawn.
+        /// </summary>
+        [HarmonyPriority(Priority.First)]
+        [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
+        public static class Patch_Player_OnSpawned
         {
-            private static void Postfix()
+            private static void Prefix()
             {
-                Instance.Setup();
+                if (!Instance._initialized)
+                {
+                    ProgressionPlugin.GetProgressionLogger().LogInfo("Setting up world configurations...");
+                    Instance.SetupScaling();
+                    Instance._initialized = true;
+                    ProgressionPlugin.GetProgressionLogger().LogInfo("Done setting up world configurations.");
+                }
             }
         }
     }

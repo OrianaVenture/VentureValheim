@@ -32,7 +32,7 @@ namespace VentureValheim.Progression
             }
         }
 
-        private Dictionary<string, CreatureClassification> _creatureData;
+        private Dictionary<string, CreatureClassification> _creatureData = new Dictionary<string, CreatureClassification>();
         private int[] _baseHealth = { 5, 10, 30, 50, 200, 500 };
         private int[] _baseDamage = { 0, 5, 10, 12, 15, 20 };
 
@@ -239,8 +239,6 @@ namespace VentureValheim.Progression
         {
             // Notes: Many attacks do not do any damage, if that changes they will need to be added in
 
-            _creatureData = new Dictionary<string, CreatureClassification>();
-
             // Meadow Defaults
             var biome = WorldConfiguration.Biome.Meadow;
             AddCreatureConfiguration("Eikthyr", biome, WorldConfiguration.Difficulty.Boss,
@@ -371,7 +369,7 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Apply Auto-Scaling to all Creatures found in the game by Prefab name.
         /// </summary>
-        private static void UpdateCreatures()
+        public void UpdateCreatures()
         {
             var prefabs = ZNetScene.m_instance.m_prefabs;
             for (int lcv = 0; lcv < prefabs.Count; lcv++)
@@ -395,39 +393,6 @@ namespace VentureValheim.Progression
             foreach (CreatureClassification data in Instance._creatureData.Values)
             {
                 Instance.ConfigureAttacks(data);
-            }
-        }
-
-        [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.Awake))]
-        public static class Patch_ObjectDB_Awake
-        {
-            private static void Prefix()
-            {
-                if (!ProgressionPlugin.Instance.GetAutoScaleCreatures())
-                {
-                    return;
-                }
-
-                try
-                {
-                    if (SceneManager.GetActiveScene().name.Equals("main"))
-                    {
-                        if (WorldConfiguration.Instance.GetWorldScale() != (int)WorldConfiguration.Scaling.Vanilla)
-                        {
-                            ProgressionPlugin.GetProgressionLogger().LogDebug("Updating Creature Configurations with auto-scaling...");
-                            UpdateCreatures();
-                        }
-                    }
-                    else
-                    {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug("Skipping generating data because not in the main scene.");
-                    }
-                }
-                catch (Exception e)
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogError($"Failure configuring Creature data. Game may behave unexpectedly.");
-                    ProgressionPlugin.GetProgressionLogger().LogError(e);
-                }
             }
         }
     }
