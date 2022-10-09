@@ -17,6 +17,10 @@ Logout Tweaks reapplies previously untracked data from your last logout.
 
 ## Changelog
 
+### 0.1.1
+
+* Small code refactoring, no feature changes.
+
 ### 0.1.0
 
 * Update for game patch 0.211.7 Crossplay. Reverted ServerSync to 1.6.
