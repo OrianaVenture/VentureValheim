@@ -11,7 +11,7 @@ namespace VentureValheim.MultiplayerTweaks
 {
     public class MultiplayerTweaks
     {
-        private MultiplayerTweaks() {}
+        private MultiplayerTweaks() { }
         private static readonly MultiplayerTweaks _instance = new MultiplayerTweaks();
 
         public static MultiplayerTweaks Instance
@@ -51,6 +51,7 @@ namespace VentureValheim.MultiplayerTweaks
         /// When Tutorials disabled adds the tutorial to the seen list.
         /// This enables tutorial tracking even when Hugin is disabled.
         /// </summary>
+        [HarmonyPriority(Priority.Last)]
         [HarmonyPatch(typeof(Player), nameof(Player.ShowTutorial))]
         public static class Patch_Player_ShowTutorial
         {
@@ -59,10 +60,10 @@ namespace VentureValheim.MultiplayerTweaks
                 if (!MultiplayerTweaksPlugin.GetEnableHuginTutorials())
                 {
                     __instance.SetSeenTutorial(name);
-                    return true; // Skip original
+                    return false; // Skip original
                 }
 
-                return false; // Continue
+                return true; // Continue
             }
         }
 
@@ -71,7 +72,7 @@ namespace VentureValheim.MultiplayerTweaks
         /// This will skip the Hugin tips at the beginning of the game.
         /// </summary>
         [HarmonyPatch(typeof(Raven), nameof(Raven.Awake))]
-        public static class Patch_Game_Awake
+        public static class Patch_Raven_Awake
         {
             private static void Prefix()
             {
@@ -111,6 +112,7 @@ namespace VentureValheim.MultiplayerTweaks
                 return codes.AsEnumerable();
             }
 
+            [HarmonyPriority(Priority.First)]
             private static void Prefix(Game __instance, out bool __state)
             {
                 __state = __instance.m_firstSpawn;
@@ -140,6 +142,7 @@ namespace VentureValheim.MultiplayerTweaks
         /// <summary>
         /// Disables the Valkrie on first spawn.
         /// </summary>
+        [HarmonyPriority(Priority.Last)]
         [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
         public static class Patch_Player_OnSpawned
         {
@@ -172,7 +175,7 @@ namespace VentureValheim.MultiplayerTweaks
                 }
             }
         }
-        
+
         /// <summary>
         /// Patch the maximum player number for ZNet
         /// </summary>
@@ -210,6 +213,58 @@ namespace VentureValheim.MultiplayerTweaks
             }
 
             return number;
+        }
+
+        /// <summary>
+        /// Skips Player map pins updates if overriden and configured always off.
+        /// </summary>
+        [HarmonyPriority(Priority.Last)]
+        [HarmonyPatch(typeof(Minimap), nameof(Minimap.UpdatePlayerPins))]
+        public static class Patch_Minimap_UpdatePlayerPins
+        {
+            private static bool Prefix()
+            {
+                if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins() && !MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn())
+                {
+                    return false; // Skip original
+                }
+
+                return true; // Continue
+            }
+        }
+
+        /// <summary>
+        /// Set the Player position as public or private if overriden.
+        /// </summary>
+        [HarmonyPriority(Priority.Last)]
+        [HarmonyPatch(typeof(Minimap), nameof(Minimap.SetMapData))]
+        public static class Patch_Minimap_SetMapData
+        {
+            private static void Postfix()
+            {
+                if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins())
+                {
+                    ZNet.instance.SetPublicReferencePosition(MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Disable the Player map pin toggle if overriden.
+        /// </summary>
+        [HarmonyPriority(Priority.Last)]
+        [HarmonyPatch(typeof(Minimap), nameof(Minimap.OnTogglePublicPosition))]
+        public static class Patch_Minimap_OnTogglePublicPosition
+        {
+            private static bool Prefix()
+            {
+                if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins())
+                {
+                    return false; // Skip original
+                }
+
+                return true; // Continue
+            }
         }
     }
 }

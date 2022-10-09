@@ -13,7 +13,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.2.0";
+        private const string ModVersion = "0.3.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -37,6 +37,8 @@ namespace VentureValheim.MultiplayerTweaks
         internal static ConfigEntry<bool> CE_EnableArrivalMessage = null!;
         internal static ConfigEntry<bool> CE_EnableArrivalMessageShout = null!;
         internal static ConfigEntry<string> CE_OverrideArrivalMessage = null!;
+        internal static ConfigEntry<bool> CE_OverridePlayerMapPins = null!;
+        internal static ConfigEntry<bool> CE_ForcePlayerMapPinsOn = null!;
 
         public static int GetMaximumPlayers() => CE_MaximumPlayers.Value;
         public static bool GetEnableValkrie() => CE_EnableValkrie.Value;
@@ -45,6 +47,8 @@ namespace VentureValheim.MultiplayerTweaks
         public static bool GetEnableArrivalMessage() => CE_EnableArrivalMessage.Value;
         public static bool GetEnableArrivalMessageShout() => CE_EnableArrivalMessageShout.Value;
         public static string GetOverrideArrivalMessage() => CE_OverrideArrivalMessage.Value;
+        public static bool GetOverridePlayerMapPins() => CE_OverridePlayerMapPins.Value;
+        public static bool GetForcePlayerMapPinsOn() => CE_ForcePlayerMapPinsOn.Value;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
@@ -67,6 +71,7 @@ namespace VentureValheim.MultiplayerTweaks
             #region Configuration
 
             const string general = "General";
+            const string pins = "Pins";
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean).",
                 true, true, ref CE_ServerConfigLocked);
@@ -80,14 +85,19 @@ namespace VentureValheim.MultiplayerTweaks
                 true, false, ref CE_EnableValkrie);
             AddConfig("EnableHugin", general, "Enable Hugin tutorials (boolean).",
                 false, true, ref CE_EnableHuginTutorials);
-            AddConfig("EnableHaldorMapPin", general, "Enable Haldor Map Pin on Minimap (boolean).",
-                true, false, ref CE_EnableHaldorMapPin);
             AddConfig("EnableArrivalMessage", general, "Enable Arrival Message on new server connection (boolean).",
                 true, false, ref CE_EnableArrivalMessage);
             AddConfig("UseArrivalShout", general, "True to Shout arrival message, False to use Normal message (boolean).",
                 true, false, ref CE_EnableArrivalMessageShout);
             AddConfig("OverrideArrivalMessage", general, "Override arrival message, leave blank to use default (string).",
                 true, "", ref CE_OverrideArrivalMessage);
+
+            AddConfig("EnableHaldorMapPin", pins, "Enable Haldor map pin on Minimap (boolean).",
+                true, false, ref CE_EnableHaldorMapPin);
+            AddConfig("OverridePlayerMapPins", pins, "Override Player map pins behavior for Minimap (boolean).",
+                true, false, ref CE_OverridePlayerMapPins);
+            AddConfig("ForcePlayerMapPinsOn", pins, "True to always show Player map pins on Minimap, False to always hide (boolean).",
+                true, true, ref CE_ForcePlayerMapPinsOn);
 
             #endregion
 
@@ -104,7 +114,6 @@ namespace VentureValheim.MultiplayerTweaks
         private void OnDestroy()
         {
             Config.Save();
-            HarmonyInstance.UnpatchSelf();
         }
 
         private void SetupWatcher()
