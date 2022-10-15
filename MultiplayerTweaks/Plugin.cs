@@ -13,7 +13,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.3.0";
+        private const string ModVersion = "0.3.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";

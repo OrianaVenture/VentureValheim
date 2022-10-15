@@ -139,18 +139,29 @@ namespace VentureValheim.MultiplayerTweaks
             }
         }
 
-        /// <summary>
-        /// Disables the Valkrie on first spawn.
-        /// </summary>
         [HarmonyPriority(Priority.Last)]
         [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
         public static class Patch_Player_OnSpawned
         {
+            /// <summary>
+            /// Disables the Valkrie on first spawn.
+            /// </summary>
             private static void Prefix(Player __instance)
             {
                 if (!MultiplayerTweaksPlugin.GetEnableValkrie())
                 {
                     __instance.m_firstSpawn = false;
+                }
+            }
+
+            /// <summary>
+            /// Set the Player position as public or private if overriden.
+            /// </summary>
+            private static void Postfix()
+            {
+                if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins())
+                {
+                    ZNet.instance.SetPublicReferencePosition(MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn());
                 }
             }
         }
@@ -230,22 +241,6 @@ namespace VentureValheim.MultiplayerTweaks
                 }
 
                 return true; // Continue
-            }
-        }
-
-        /// <summary>
-        /// Set the Player position as public or private if overriden.
-        /// </summary>
-        [HarmonyPriority(Priority.Last)]
-        [HarmonyPatch(typeof(Minimap), nameof(Minimap.SetMapData))]
-        public static class Patch_Minimap_SetMapData
-        {
-            private static void Postfix()
-            {
-                if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins())
-                {
-                    ZNet.instance.SetPublicReferencePosition(MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn());
-                }
             }
         }
 

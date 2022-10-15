@@ -36,9 +36,14 @@ Force player map pins always on or always off. To use set OverridePlayerMapPins 
 
 ## Changelog
 
+### 0.3.1
+
+* Fixed a server sync issue for new player map pin feature not syncing on first connection.
+
 ### 0.3.0
 
-* Added ability to force player map pins on or off. Added new config section for map pins.
+* Added ability to force player map pins on or off.
+* Added new config section for map pins.
 
 ### 0.2.0
 
