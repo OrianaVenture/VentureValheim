@@ -315,7 +315,7 @@ namespace VentureValheim.Progression
         {
             private static void Postfix()
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug("Patch_Player_Awake postfix called.");
+                ProgressionPlugin.GetProgressionLogger().LogDebug("Resetting Player Key Manager.");
                 Instance.ResetPlayer();
             }
         }
@@ -330,6 +330,7 @@ namespace VentureValheim.Progression
             if (Directory.Exists(_filepath) && !Instance._fileLoaded)
             {
                 // Do not override an existing file that has not been loaded yet.
+                ProgressionPlugin.GetProgressionLogger().LogDebug("Skipping Saving Player Keys.");
                 return;
             }
 

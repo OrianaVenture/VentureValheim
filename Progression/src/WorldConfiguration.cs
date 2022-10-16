@@ -81,8 +81,6 @@ namespace VentureValheim.Progression
             get => _instance;
         }
 
-        private bool _initialized = false;
-
         public void Initialize()
         {
             AddBiome(Biome.Meadow, 0);
@@ -180,7 +178,6 @@ namespace VentureValheim.Progression
             }
             catch (Exception e)
             {
-
                 if (overrideBiome)
                 {
                     _biomeData[data.BiomeType] = data;
@@ -384,16 +381,15 @@ namespace VentureValheim.Progression
         /// Configure World settings on Player's first spawn.
         /// </summary>
         [HarmonyPriority(Priority.First)]
-        [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
-        public static class Patch_Player_OnSpawned
+        [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
+        public static class Patch_Player_Awake
         {
-            private static void Prefix()
+            private static void Postfix()
             {
-                if (!Instance._initialized)
+                if (ProgressionAPI.IsInTheMainScene())
                 {
                     ProgressionPlugin.GetProgressionLogger().LogInfo("Setting up world configurations...");
                     Instance.SetupScaling();
-                    Instance._initialized = true;
                     ProgressionPlugin.GetProgressionLogger().LogInfo("Done setting up world configurations.");
                 }
             }

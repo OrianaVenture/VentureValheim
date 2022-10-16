@@ -118,6 +118,10 @@ Coming ASAP!
 
 ## Changelog
 
+### 0.0.14
+
+* Fixed a server sync issue for auto scaling features.
+
 ### 0.0.13
 
 * Added options to track boss completion for skill management.
