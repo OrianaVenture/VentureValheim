@@ -1,34 +1,60 @@
 using System;
 using System.Collections.Generic;
 using BepInEx;
+using static VentureValheim.Progression.ItemConfiguration;
 
 namespace VentureValheim.Progression
 {
-    public class ItemConfiguration
+    public interface IItemConfiguration
     {
-        private ItemConfiguration() { }
-        private static readonly ItemConfiguration _instance = new ItemConfiguration();
+        public ItemCategory GetItemCategory(ItemType itemType);
+        public float GetTotalDamage(HitData.DamageTypes OriginalDamage, bool playerItem);
+        public HitData.DamageTypes CalculateCreatureDamageTypes(
+            WorldConfiguration.BiomeData biomeData, HitData.DamageTypes OriginalDamage, float baseTotalDamage, float maxTotalDamage);
+        public HitData.DamageTypes CalculateItemDamageTypes(WorldConfiguration.BiomeData biomeData, HitData.DamageTypes OriginalDamage, float baseTotalDamage);
+        public float CalculateArmor(ItemClassification ic);
+        public float CalculateArmorPerLevel(ItemClassification ic);
+        public void UpdateWeapon(ItemDrop item, HitData.DamageTypes? value, bool playerItem = true);
+        public void UpdateArmor(ItemDrop item, float value);
+        public void UpdateShield(ItemDrop item, float value);
+        public void UpdateItems();
+        public void VanillaReset();
+    }
+
+    public class ItemConfiguration : IItemConfiguration
+    {
+        static ItemConfiguration() { }
+        protected ItemConfiguration() { }
+        private static readonly IItemConfiguration _instance = new ItemConfiguration();
 
         public static ItemConfiguration Instance
         {
-            get => _instance;
+            get => _instance as ItemConfiguration;
+        }
+
+        public enum ItemCategory
+        {
+            Undefined = -1,
+            Weapon = 0,
+            Armor = 1,
+            Shield = 2,
         }
 
         public enum ItemType
-		{
+        {
             Undefined = -1,
-			None = 0,
-			Shield = 1,
-			Helmet = 2,
-			Chest = 3,
-			Legs = 4,
-			Shoulder = 5,
-			Utility = 6,
-			Tool = 7,
+            None = 0,
+            Shield = 1,
+            Helmet = 2,
+            Chest = 3,
+            Legs = 4,
+            Shoulder = 5,
+            Utility = 6,
+            Tool = 7,
             PickAxe = 8,
             Axe = 9,
-			Bow = 10,
-			Ammo = 11,
+            Bow = 10,
+            Ammo = 11,
             Sword = 20,
             Knife = 21,
             Mace = 22,
@@ -38,62 +64,68 @@ namespace VentureValheim.Progression
             Primative = 27,
             Spear = 28,
             TowerShield = 29,
-            BucklerShield = 30
+            BucklerShield = 30,
+            PrimativeArmor = 31
         }
 
-        public static float GetBasePlayerDamage(ItemType itemType)
+        public ItemCategory GetItemCategory(ItemType itemType)
         {
             switch (itemType)
             {
-                case ItemType.Tool:
-                    return 0f;
-                case ItemType.PickAxe:
-                    return 10f;
+                case ItemType.BucklerShield:
+                case ItemType.Shield:
+                case ItemType.TowerShield:
+                    return ItemCategory.Shield;
+                case ItemType.Shoulder:
+                case ItemType.PrimativeArmor:
+                case ItemType.Helmet:
+                case ItemType.Chest:
+                case ItemType.Legs:
+                case ItemType.Utility:
+                    return ItemCategory.Armor;
                 case ItemType.Primative:
-                    return 8f;
                 case ItemType.Knife:
-                    return 8f;
+                case ItemType.Ammo:
+                case ItemType.PickAxe:
                 case ItemType.Sword:
                 case ItemType.Mace:
                 case ItemType.Spear:
                 case ItemType.Axe:
-                    return 12f;
-                case ItemType.Bow:
-                    return 22f;
-                case ItemType.Ammo:
-                    return 10f;
                 case ItemType.Sledge:
                 case ItemType.Atgeir:
                 case ItemType.Battleaxe:
-                    return 15f;
+                case ItemType.Bow:
+                case ItemType.Tool:
+                    return ItemCategory.Weapon;
                 default:
-                    return 0f;
+                    return ItemCategory.Undefined;
             }
         }
 
-        public static float GetBasePlayerArmor(ItemType itemType)
+        protected float GetBaseItemValue(ItemType itemType)
         {
-            switch (itemType)
+            try
             {
-                case ItemType.Shield:
-                    return 10f;
-                case ItemType.BucklerShield:
-                    return 8f;
-                case ItemType.TowerShield:
-                    return 15f;
-                case ItemType.Helmet:
-                    return 4f;
-                case ItemType.Chest:
-                    return 4f;
-                case ItemType.Legs:
-                    return 4f;
-                case ItemType.Shoulder:
-                    return 1f;
-                case ItemType.Primative:
-                    return 2f;
-                case ItemType.Utility:
-                default:
-                    return 0f;
+                return _itemBaseValues[itemType];
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        public void AddBaseItemValue(ItemType type, float value, bool overrideData = false)
+        {
+            try
+            {
+                _itemBaseValues.Add(type, value);
+            }
+            catch
+            {
+                if (overrideData)
+                {
+                    _itemBaseValues[type] = value;
+                }
             }
         }
 
@@ -102,18 +134,38 @@ namespace VentureValheim.Progression
             public string Name;
             public WorldConfiguration.Biome BiomeType;
             public ItemType ItemType;
+            public ItemCategory ItemCategory;
+            public float ItemValue;
+            public float VanillaValue;
+            public HitData.DamageTypes? VanillaDamageValue;
 
-            public ItemClassification(string name, WorldConfiguration.Biome biomeType, ItemType itemType)
+            public ItemClassification(string name, WorldConfiguration.Biome biomeType, ItemType itemType, ItemCategory itemCategory, float value)
             {
                 Name = name;
                 BiomeType = biomeType;
                 ItemType = itemType;
+                ItemCategory = itemCategory;
+                ItemValue = value;
+                VanillaValue = 0;
+                VanillaDamageValue = null;
+            }
+
+            public void SetVanillaValue(float value)
+            {
+                VanillaValue = value;
+            }
+
+            public void SetVanillaValue(HitData.DamageTypes value)
+            {
+                VanillaDamageValue = value;
             }
         }
 
-        private Dictionary<string, ItemClassification> _weaponData = new Dictionary<string, ItemClassification>();
-        private Dictionary<string, ItemClassification> _armorData = new Dictionary<string, ItemClassification>();
-        private Dictionary<string, ItemClassification> _shieldData = new Dictionary<string, ItemClassification>();
+        private Dictionary<ItemType, float> _itemBaseValues = new Dictionary<ItemType, float>();
+        private Dictionary<string, ItemClassification> _itemData = new Dictionary<string, ItemClassification>();
+        protected bool _vanillaBackupCreated;
+
+        #region Damage
 
         /// <summary>
         /// Get the total damage for a Player or Creature.
@@ -152,16 +204,15 @@ namespace VentureValheim.Progression
         /// <param name="baseTotalDamage">New base damage to be scaled.</param>
         /// <param name="maxTotalDamage">Maximum damage by any attack this creature has.</param>
         /// <returns></returns>
-        public HitData.DamageTypes CalculateCreatureDamageTypes(WorldConfiguration.Biome biome, HitData.DamageTypes OriginalDamage, float baseTotalDamage, float maxTotalDamage)
+        public HitData.DamageTypes CalculateCreatureDamageTypes(WorldConfiguration.BiomeData biomeData, HitData.DamageTypes OriginalDamage, float baseTotalDamage, float maxTotalDamage)
         {
-            var scale = WorldConfiguration.GetBiomeScaling((int)biome);
             Normalize(ref OriginalDamage);
 
             // Consider the maximum total damage this creature can do when auto-scaling for multiple attacks.
             float totalDamage = GetTotalDamage(OriginalDamage, false);
             float ratio = DamageRatio(totalDamage, maxTotalDamage);
 
-            var multiplier = ratio * scale;
+            var multiplier = ratio * biomeData.ScaleValue;
 
             return CalculateDamageTypesFinal(OriginalDamage, baseTotalDamage, multiplier, false);
         }
@@ -173,14 +224,12 @@ namespace VentureValheim.Progression
         /// <param name="biome"></param>
         /// <param name="OriginalDamage"></param>
         /// <param name="baseTotalDamage">New base damage to be scaled.</param>
-        /// <param name="maxTotalDamage">Maximum damage by any attack this creature has.</param>
         /// <returns></returns>
-        public HitData.DamageTypes CalculateItemDamageTypes(WorldConfiguration.Biome biome, HitData.DamageTypes OriginalDamage, float baseTotalDamage)
+        public HitData.DamageTypes CalculateItemDamageTypes(WorldConfiguration.BiomeData biomeData, HitData.DamageTypes OriginalDamage, float baseTotalDamage)
         {
-            var scale = WorldConfiguration.GetBiomeScaling((int)biome);
             Normalize(ref OriginalDamage);
 
-            return CalculateDamageTypesFinal(OriginalDamage, baseTotalDamage, scale, true);
+            return CalculateDamageTypesFinal(OriginalDamage, baseTotalDamage, biomeData.ScaleValue, true);
         }
 
         /// <summary>
@@ -200,6 +249,11 @@ namespace VentureValheim.Progression
                 // If a mob item leave the chop and pickaxe damage alone because it's a little weird for auto-scaling
                 damageTypes.m_chop = ScaleDamage(OriginalDamage.m_chop, baseTotalDamage, multiplier);
                 damageTypes.m_pickaxe = ScaleDamage(OriginalDamage.m_pickaxe, baseTotalDamage, multiplier);
+            }
+            else
+            {
+                damageTypes.m_chop = OriginalDamage.m_chop;
+                damageTypes.m_pickaxe = OriginalDamage.m_pickaxe;
             }
 
             damageTypes.m_damage = ScaleDamage(OriginalDamage.m_damage, baseTotalDamage, multiplier);
@@ -221,14 +275,14 @@ namespace VentureValheim.Progression
         /// <param name="totalDamage"></param>
         /// <param name="maxDamageOfAnyAttackType"></param>
         /// <returns></returns>
-        private float DamageRatio(float totalDamage, float maxDamageOfAnyAttackType)
+        protected float DamageRatio(float totalDamage, float maxDamageOfAnyAttackType)
         {
             if (totalDamage == 0f || maxDamageOfAnyAttackType == 0f)
             {
                 return 0f;
             }
 
-            return maxDamageOfAnyAttackType / totalDamage;
+            return totalDamage / maxDamageOfAnyAttackType;
         }
 
         /// <summary>
@@ -238,12 +292,13 @@ namespace VentureValheim.Progression
         /// <param name="baseTotalDamage"></param>
         /// <param name="multiplier"></param>
         /// <returns></returns>
-        private float ScaleDamage(float original, float baseTotalDamage, float multiplier)
+        protected float ScaleDamage(float original, float baseTotalDamage, float multiplier)
         {
             if (original <= 0f || baseTotalDamage <= 0f)
             {
                 return 0f;
             }
+
             var value = baseTotalDamage * multiplier;
             return (int)value;
         }
@@ -277,16 +332,44 @@ namespace VentureValheim.Progression
             return num;
         }
 
+        #endregion
+
+        #region Armor
+
+        /// <summary>
+        /// Calculates the new item armor or block value based off global scale.
+        /// </summary>
+        /// <param name="ic"></param>
+        /// <returns></returns>
         public float CalculateArmor(ItemClassification ic)
         {
-            var scale = WorldConfiguration.GetBiomeScaling((int)ic.BiomeType);
-            return (int)(GetBasePlayerArmor(ic.ItemType) * scale);
+            var scale = WorldConfiguration.Instance.GetBiomeScaling(ic.BiomeType);
+            return (int)(ic.ItemValue * scale);
         }
 
-        /*public float CalculateArmorPerLevel(ItemClassification ic)
+        public float CalculateArmorPerLevel(ItemClassification ic)
         {
+            // TODO
+            var scale = WorldConfiguration.Instance.GetBiomeScaling(ic.BiomeType);
+            var nextBiome = WorldConfiguration.Instance.GetNextBiome(ic.BiomeType);
+            var nextScale = nextBiome.ScaleValue;
+
+            var startValue = (int)(ic.ItemValue * scale);
+            var endValue = (int)(ic.ItemValue * nextScale);
+            var range = endValue - startValue;
+
+            if (range > 0f)
+            {
+                int upgrades = 3; // TODO find value or make config
+                return range / upgrades;
+            }
+
             return 1f;
-        }*/
+        }
+
+        #endregion
+
+        #region Game Configuration
 
         /// <summary>
         /// Set the default values for Vanilla Player Items.
@@ -296,172 +379,199 @@ namespace VentureValheim.Progression
             // TODO
             // BombOoze
 
-            // Weapons
+            InitializeBaseValues();
+            InitializeWeapons();
+            InitializeArmor();
+            InitializeShields();
 
-            AddWeaponConfiguration("Club", WorldConfiguration.Biome.Meadow, ItemType.Primative);
-            AddWeaponConfiguration("AxeStone", WorldConfiguration.Biome.Meadow, ItemType.Primative);
-            AddWeaponConfiguration("PickaxeStone", WorldConfiguration.Biome.Meadow, ItemType.Primative);
+            if (_vanillaBackupCreated) return;
+            CreateVanillaBackup();
+        }
 
-            AddWeaponConfiguration("AxeFlint", WorldConfiguration.Biome.Meadow, ItemType.Axe);
-            AddWeaponConfiguration("AxeBronze", WorldConfiguration.Biome.BlackForest, ItemType.Axe);
-            AddWeaponConfiguration("AxeIron", WorldConfiguration.Biome.Swamp, ItemType.Axe);
-            AddWeaponConfiguration("AxeBlackMetal", WorldConfiguration.Biome.Plain, ItemType.Axe);
+        private void InitializeWeapons()
+        {
+            AddItemConfiguration("Club", WorldConfiguration.Biome.Meadow, ItemType.Primative);
+            AddItemConfiguration("AxeStone", WorldConfiguration.Biome.Meadow, ItemType.Primative);
+            AddItemConfiguration("PickaxeStone", WorldConfiguration.Biome.Meadow, ItemType.Primative);
 
-            AddWeaponConfiguration("PickaxeAntler", WorldConfiguration.Biome.Meadow, ItemType.PickAxe);
-            AddWeaponConfiguration("PickaxeBronze", WorldConfiguration.Biome.BlackForest, ItemType.PickAxe);
-            AddWeaponConfiguration("PickaxeIron", WorldConfiguration.Biome.Swamp, ItemType.PickAxe);
+            AddItemConfiguration("AxeFlint", WorldConfiguration.Biome.Meadow, ItemType.Axe);
+            AddItemConfiguration("AxeBronze", WorldConfiguration.Biome.BlackForest, ItemType.Axe);
+            AddItemConfiguration("AxeIron", WorldConfiguration.Biome.Swamp, ItemType.Axe);
+            AddItemConfiguration("AxeBlackMetal", WorldConfiguration.Biome.Plain, ItemType.Axe);
 
-            AddWeaponConfiguration("KnifeChitin", WorldConfiguration.Biome.Ocean, ItemType.Knife);
-            AddWeaponConfiguration("KnifeFlint", WorldConfiguration.Biome.Meadow, ItemType.Knife);
-            AddWeaponConfiguration("KnifeCopper", WorldConfiguration.Biome.BlackForest, ItemType.Knife);
-            AddWeaponConfiguration("KnifeSilver", WorldConfiguration.Biome.Mountain, ItemType.Knife);
-            AddWeaponConfiguration("KnifeBlackMetal", WorldConfiguration.Biome.Plain, ItemType.Knife);
+            AddItemConfiguration("PickaxeAntler", WorldConfiguration.Biome.Meadow, ItemType.PickAxe);
+            AddItemConfiguration("PickaxeBronze", WorldConfiguration.Biome.BlackForest, ItemType.PickAxe);
+            AddItemConfiguration("PickaxeIron", WorldConfiguration.Biome.Swamp, ItemType.PickAxe);
 
-            AddWeaponConfiguration("MaceBronze", WorldConfiguration.Biome.BlackForest, ItemType.Mace);
-            AddWeaponConfiguration("MaceIron", WorldConfiguration.Biome.Swamp, ItemType.Mace);
-            AddWeaponConfiguration("MaceSilver", WorldConfiguration.Biome.Mountain, ItemType.Mace);
-            AddWeaponConfiguration("MaceNeedle", WorldConfiguration.Biome.Plain, ItemType.Mace);
+            AddItemConfiguration("KnifeChitin", WorldConfiguration.Biome.Ocean, ItemType.Knife);
+            AddItemConfiguration("KnifeFlint", WorldConfiguration.Biome.Meadow, ItemType.Knife);
+            AddItemConfiguration("KnifeCopper", WorldConfiguration.Biome.BlackForest, ItemType.Knife);
+            AddItemConfiguration("KnifeSilver", WorldConfiguration.Biome.Mountain, ItemType.Knife);
+            AddItemConfiguration("KnifeBlackMetal", WorldConfiguration.Biome.Plain, ItemType.Knife);
 
-            AddWeaponConfiguration("SwordBronze", WorldConfiguration.Biome.BlackForest, ItemType.Sword);
-            AddWeaponConfiguration("SwordIron", WorldConfiguration.Biome.Swamp, ItemType.Sword);
-            AddWeaponConfiguration("SwordIronFire", WorldConfiguration.Biome.Swamp, ItemType.Sword);
-            AddWeaponConfiguration("SwordSilver", WorldConfiguration.Biome.Mountain, ItemType.Sword);
-            AddWeaponConfiguration("SwordBlackmetal", WorldConfiguration.Biome.Plain, ItemType.Sword);
+            AddItemConfiguration("MaceBronze", WorldConfiguration.Biome.BlackForest, ItemType.Mace);
+            AddItemConfiguration("MaceIron", WorldConfiguration.Biome.Swamp, ItemType.Mace);
+            AddItemConfiguration("MaceSilver", WorldConfiguration.Biome.Mountain, ItemType.Mace);
+            AddItemConfiguration("MaceNeedle", WorldConfiguration.Biome.Plain, ItemType.Mace);
 
-            AddWeaponConfiguration("AtgeirBronze", WorldConfiguration.Biome.BlackForest, ItemType.Atgeir);
-            AddWeaponConfiguration("AtgeirIron", WorldConfiguration.Biome.Swamp, ItemType.Atgeir);
-            AddWeaponConfiguration("AtgeirBlackmetal", WorldConfiguration.Biome.Plain, ItemType.Atgeir);
+            AddItemConfiguration("SwordBronze", WorldConfiguration.Biome.BlackForest, ItemType.Sword);
+            AddItemConfiguration("SwordIron", WorldConfiguration.Biome.Swamp, ItemType.Sword);
+            AddItemConfiguration("SwordIronFire", WorldConfiguration.Biome.Swamp, ItemType.Sword);
+            AddItemConfiguration("SwordSilver", WorldConfiguration.Biome.Mountain, ItemType.Sword);
+            AddItemConfiguration("SwordBlackmetal", WorldConfiguration.Biome.Plain, ItemType.Sword);
 
-            AddWeaponConfiguration("Battleaxe", WorldConfiguration.Biome.Swamp, ItemType.Battleaxe);
-            AddWeaponConfiguration("BattleaxeCrystal", WorldConfiguration.Biome.Mountain, ItemType.Battleaxe);
+            AddItemConfiguration("AtgeirBronze", WorldConfiguration.Biome.BlackForest, ItemType.Atgeir);
+            AddItemConfiguration("AtgeirIron", WorldConfiguration.Biome.Swamp, ItemType.Atgeir);
+            AddItemConfiguration("AtgeirBlackmetal", WorldConfiguration.Biome.Plain, ItemType.Atgeir);
 
-            AddWeaponConfiguration("SledgeStagbreaker", WorldConfiguration.Biome.Meadow, ItemType.Sledge);
-            AddWeaponConfiguration("SledgeIron", WorldConfiguration.Biome.Swamp, ItemType.Sledge);
+            AddItemConfiguration("Battleaxe", WorldConfiguration.Biome.Swamp, ItemType.Battleaxe);
+            AddItemConfiguration("BattleaxeCrystal", WorldConfiguration.Biome.Mountain, ItemType.Battleaxe);
 
-            AddWeaponConfiguration("SpearChitin", WorldConfiguration.Biome.Ocean, ItemType.Spear);
-            AddWeaponConfiguration("SpearFlint", WorldConfiguration.Biome.Meadow, ItemType.Spear);
-            AddWeaponConfiguration("SpearBronze", WorldConfiguration.Biome.BlackForest, ItemType.Spear);
-            AddWeaponConfiguration("SpearElderbark", WorldConfiguration.Biome.Swamp, ItemType.Spear);
-            AddWeaponConfiguration("SpearWolfFang", WorldConfiguration.Biome.Mountain, ItemType.Spear);
+            AddItemConfiguration("SledgeStagbreaker", WorldConfiguration.Biome.Meadow, ItemType.Sledge);
+            AddItemConfiguration("SledgeIron", WorldConfiguration.Biome.Swamp, ItemType.Sledge);
 
-            AddWeaponConfiguration("Bow", WorldConfiguration.Biome.Meadow, ItemType.Bow);
-            AddWeaponConfiguration("BowFineWood", WorldConfiguration.Biome.BlackForest, ItemType.Bow);
-            AddWeaponConfiguration("BowHuntsman", WorldConfiguration.Biome.Swamp, ItemType.Bow);
-            AddWeaponConfiguration("BowDraugrFang", WorldConfiguration.Biome.Mountain, ItemType.Bow);
+            AddItemConfiguration("SpearChitin", WorldConfiguration.Biome.Ocean, ItemType.Spear);
+            AddItemConfiguration("SpearFlint", WorldConfiguration.Biome.Meadow, ItemType.Spear);
+            AddItemConfiguration("SpearBronze", WorldConfiguration.Biome.BlackForest, ItemType.Spear);
+            AddItemConfiguration("SpearElderbark", WorldConfiguration.Biome.Swamp, ItemType.Spear);
+            AddItemConfiguration("SpearWolfFang", WorldConfiguration.Biome.Mountain, ItemType.Spear);
 
-            AddWeaponConfiguration("ArrowWood", WorldConfiguration.Biome.Meadow, ItemType.Ammo);
-            AddWeaponConfiguration("ArrowFlint", WorldConfiguration.Biome.Meadow, ItemType.Ammo);
-            AddWeaponConfiguration("ArrowFire", WorldConfiguration.Biome.Meadow, ItemType.Ammo);
-            AddWeaponConfiguration("ArrowBronze", WorldConfiguration.Biome.BlackForest, ItemType.Ammo);
-            AddWeaponConfiguration("ArrowIron", WorldConfiguration.Biome.Plain, ItemType.Ammo);
-            AddWeaponConfiguration("ArrowSilver", WorldConfiguration.Biome.Mountain, ItemType.Ammo);
-            AddWeaponConfiguration("ArrowPoison", WorldConfiguration.Biome.Mountain, ItemType.Ammo);
-            AddWeaponConfiguration("ArrowObsidian", WorldConfiguration.Biome.Mountain, ItemType.Ammo);
-            AddWeaponConfiguration("ArrowFrost", WorldConfiguration.Biome.Mountain, ItemType.Ammo);
-            AddWeaponConfiguration("ArrowNeedle", WorldConfiguration.Biome.Plain, ItemType.Ammo);
+            AddItemConfiguration("Bow", WorldConfiguration.Biome.Meadow, ItemType.Bow);
+            AddItemConfiguration("BowFineWood", WorldConfiguration.Biome.BlackForest, ItemType.Bow);
+            AddItemConfiguration("BowHuntsman", WorldConfiguration.Biome.Swamp, ItemType.Bow);
+            AddItemConfiguration("BowDraugrFang", WorldConfiguration.Biome.Mountain, ItemType.Bow);
 
-            // Armor
+            AddItemConfiguration("ArrowWood", WorldConfiguration.Biome.Meadow, ItemType.Ammo);
+            AddItemConfiguration("ArrowFlint", WorldConfiguration.Biome.Meadow, ItemType.Ammo);
+            AddItemConfiguration("ArrowFire", WorldConfiguration.Biome.Meadow, ItemType.Ammo);
+            AddItemConfiguration("ArrowBronze", WorldConfiguration.Biome.BlackForest, ItemType.Ammo);
+            AddItemConfiguration("ArrowIron", WorldConfiguration.Biome.Plain, ItemType.Ammo);
+            AddItemConfiguration("ArrowSilver", WorldConfiguration.Biome.Mountain, ItemType.Ammo);
+            AddItemConfiguration("ArrowPoison", WorldConfiguration.Biome.Mountain, ItemType.Ammo);
+            AddItemConfiguration("ArrowObsidian", WorldConfiguration.Biome.Mountain, ItemType.Ammo);
+            AddItemConfiguration("ArrowFrost", WorldConfiguration.Biome.Mountain, ItemType.Ammo);
+            AddItemConfiguration("ArrowNeedle", WorldConfiguration.Biome.Plain, ItemType.Ammo);
+        }
 
-            AddArmorConfiguration("ArmorRagsChest", WorldConfiguration.Biome.Meadow, ItemType.Primative);
-            AddArmorConfiguration("ArmorRagsLegs", WorldConfiguration.Biome.Meadow, ItemType.Primative);
+        private void InitializeArmor()
+        {
+            AddItemConfiguration("ArmorRagsChest", WorldConfiguration.Biome.Meadow, ItemType.Primative);
+            AddItemConfiguration("ArmorRagsLegs", WorldConfiguration.Biome.Meadow, ItemType.Primative);
 
-            AddArmorConfiguration("HelmetLeather", WorldConfiguration.Biome.Meadow, ItemType.Helmet);
-            AddArmorConfiguration("ArmorLeatherChest", WorldConfiguration.Biome.Meadow, ItemType.Chest);
-            AddArmorConfiguration("ArmorLeatherLegs", WorldConfiguration.Biome.Meadow, ItemType.Legs);
+            AddItemConfiguration("HelmetLeather", WorldConfiguration.Biome.Meadow, ItemType.Helmet);
+            AddItemConfiguration("ArmorLeatherChest", WorldConfiguration.Biome.Meadow, ItemType.Chest);
+            AddItemConfiguration("ArmorLeatherLegs", WorldConfiguration.Biome.Meadow, ItemType.Legs);
 
-            AddArmorConfiguration("HelmetBronze", WorldConfiguration.Biome.BlackForest, ItemType.Helmet);
-            AddArmorConfiguration("ArmorBronzeChest", WorldConfiguration.Biome.BlackForest, ItemType.Chest);
-            AddArmorConfiguration("ArmorBronzeLegs", WorldConfiguration.Biome.BlackForest, ItemType.Legs);
+            AddItemConfiguration("HelmetBronze", WorldConfiguration.Biome.BlackForest, ItemType.Helmet);
+            AddItemConfiguration("ArmorBronzeChest", WorldConfiguration.Biome.BlackForest, ItemType.Chest);
+            AddItemConfiguration("ArmorBronzeLegs", WorldConfiguration.Biome.BlackForest, ItemType.Legs);
 
-            AddArmorConfiguration("HelmetTrollLeather", WorldConfiguration.Biome.BlackForest, ItemType.Helmet);
-            AddArmorConfiguration("ArmorTrollLeatherChest", WorldConfiguration.Biome.BlackForest, ItemType.Chest);
-            AddArmorConfiguration("ArmorTrollLeatherLegs", WorldConfiguration.Biome.BlackForest, ItemType.Legs);
+            AddItemConfiguration("HelmetTrollLeather", WorldConfiguration.Biome.BlackForest, ItemType.Helmet);
+            AddItemConfiguration("ArmorTrollLeatherChest", WorldConfiguration.Biome.BlackForest, ItemType.Chest);
+            AddItemConfiguration("ArmorTrollLeatherLegs", WorldConfiguration.Biome.BlackForest, ItemType.Legs);
 
-            AddArmorConfiguration("HelmetIron", WorldConfiguration.Biome.Swamp, ItemType.Helmet);
-            AddArmorConfiguration("ArmorIronChest", WorldConfiguration.Biome.Swamp, ItemType.Chest);
-            AddArmorConfiguration("ArmorIronLegs", WorldConfiguration.Biome.Swamp, ItemType.Legs);
+            AddItemConfiguration("HelmetIron", WorldConfiguration.Biome.Swamp, ItemType.Helmet);
+            AddItemConfiguration("ArmorIronChest", WorldConfiguration.Biome.Swamp, ItemType.Chest);
+            AddItemConfiguration("ArmorIronLegs", WorldConfiguration.Biome.Swamp, ItemType.Legs);
 
-            AddArmorConfiguration("HelmetRoot", WorldConfiguration.Biome.Swamp, ItemType.Helmet);
-            AddArmorConfiguration("ArmorRootChest", WorldConfiguration.Biome.Swamp, ItemType.Chest);
-            AddArmorConfiguration("ArmorRootLegs", WorldConfiguration.Biome.Swamp, ItemType.Legs);
+            AddItemConfiguration("HelmetRoot", WorldConfiguration.Biome.Swamp, ItemType.Helmet);
+            AddItemConfiguration("ArmorRootChest", WorldConfiguration.Biome.Swamp, ItemType.Chest);
+            AddItemConfiguration("ArmorRootLegs", WorldConfiguration.Biome.Swamp, ItemType.Legs);
 
-            AddArmorConfiguration("HelmetFenring", WorldConfiguration.Biome.Mountain, ItemType.Helmet);
-            AddArmorConfiguration("ArmorFenringChest", WorldConfiguration.Biome.Mountain, ItemType.Chest);
-            AddArmorConfiguration("ArmorFenringLegs", WorldConfiguration.Biome.Mountain, ItemType.Legs);
+            AddItemConfiguration("HelmetFenring", WorldConfiguration.Biome.Mountain, ItemType.Helmet);
+            AddItemConfiguration("ArmorFenringChest", WorldConfiguration.Biome.Mountain, ItemType.Chest);
+            AddItemConfiguration("ArmorFenringLegs", WorldConfiguration.Biome.Mountain, ItemType.Legs);
 
-            AddArmorConfiguration("HelmetDrake", WorldConfiguration.Biome.Mountain, ItemType.Helmet);
-            AddArmorConfiguration("ArmorWolfChest", WorldConfiguration.Biome.Mountain, ItemType.Chest);
-            AddArmorConfiguration("ArmorWolfLegs", WorldConfiguration.Biome.Mountain, ItemType.Legs);
+            AddItemConfiguration("HelmetDrake", WorldConfiguration.Biome.Mountain, ItemType.Helmet);
+            AddItemConfiguration("ArmorWolfChest", WorldConfiguration.Biome.Mountain, ItemType.Chest);
+            AddItemConfiguration("ArmorWolfLegs", WorldConfiguration.Biome.Mountain, ItemType.Legs);
 
-            AddArmorConfiguration("HelmetPadded", WorldConfiguration.Biome.Plain, ItemType.Helmet);
-            AddArmorConfiguration("ArmorPaddedCuirass", WorldConfiguration.Biome.Plain, ItemType.Chest);
-            AddArmorConfiguration("ArmorPaddedGreaves", WorldConfiguration.Biome.Plain, ItemType.Legs);
+            AddItemConfiguration("HelmetPadded", WorldConfiguration.Biome.Plain, ItemType.Helmet);
+            AddItemConfiguration("ArmorPaddedCuirass", WorldConfiguration.Biome.Plain, ItemType.Chest);
+            AddItemConfiguration("ArmorPaddedGreaves", WorldConfiguration.Biome.Plain, ItemType.Legs);
+        }
 
-            // Shields
+        private void InitializeShields()
+        {
+            AddItemConfiguration("ShieldBronzeBuckler", WorldConfiguration.Biome.BlackForest, ItemType.BucklerShield);
+            AddItemConfiguration("ShieldIronBuckler", WorldConfiguration.Biome.Swamp, ItemType.BucklerShield);
 
-            AddShieldConfiguration("ShieldBronzeBuckler", WorldConfiguration.Biome.BlackForest, ItemType.BucklerShield);
-            AddShieldConfiguration("ShieldIronBuckler", WorldConfiguration.Biome.Swamp, ItemType.BucklerShield);
+            AddItemConfiguration("ShieldWood", WorldConfiguration.Biome.Meadow, ItemType.Shield);
+            AddItemConfiguration("ShieldBanded", WorldConfiguration.Biome.Swamp, ItemType.Shield);
+            AddItemConfiguration("ShieldKnight", WorldConfiguration.Biome.Swamp, ItemType.Shield);
+            AddItemConfiguration("ShieldSilver", WorldConfiguration.Biome.Swamp, ItemType.Shield);
+            AddItemConfiguration("ShieldBlackmetal", WorldConfiguration.Biome.Plain, ItemType.Shield);
 
-            AddShieldConfiguration("ShieldWood", WorldConfiguration.Biome.Meadow, ItemType.Shield);
-            AddShieldConfiguration("ShieldBanded", WorldConfiguration.Biome.Swamp, ItemType.Shield);
-            AddShieldConfiguration("ShieldKnight", WorldConfiguration.Biome.Swamp, ItemType.Shield);
-            AddShieldConfiguration("ShieldSilver", WorldConfiguration.Biome.Swamp, ItemType.Shield);
-            AddShieldConfiguration("ShieldBlackmetal", WorldConfiguration.Biome.Plain, ItemType.Shield);
+            AddItemConfiguration("ShieldSerpentscale", WorldConfiguration.Biome.Ocean, ItemType.TowerShield);
+            AddItemConfiguration("ShieldWoodTower", WorldConfiguration.Biome.Meadow, ItemType.TowerShield);
+            AddItemConfiguration("ShieldBoneTower", WorldConfiguration.Biome.BlackForest, ItemType.TowerShield);
+            AddItemConfiguration("ShieldIronSquare", WorldConfiguration.Biome.Swamp, ItemType.TowerShield);
+            AddItemConfiguration("ShieldIronTower", WorldConfiguration.Biome.Swamp, ItemType.TowerShield);
+            AddItemConfiguration("ShieldBlackmetalTower", WorldConfiguration.Biome.Plain, ItemType.TowerShield);
+        }
 
-            AddShieldConfiguration("ShieldSerpentscale", WorldConfiguration.Biome.Ocean, ItemType.TowerShield);
-            AddShieldConfiguration("ShieldWoodTower", WorldConfiguration.Biome.Meadow, ItemType.TowerShield);
-            AddShieldConfiguration("ShieldBoneTower", WorldConfiguration.Biome.BlackForest, ItemType.TowerShield);
-            AddShieldConfiguration("ShieldIronSquare", WorldConfiguration.Biome.Swamp, ItemType.TowerShield);
-            AddShieldConfiguration("ShieldIronTower", WorldConfiguration.Biome.Swamp, ItemType.TowerShield);
-            AddShieldConfiguration("ShieldBlackmetalTower", WorldConfiguration.Biome.Plain, ItemType.TowerShield);
+        private void InitializeBaseValues()
+        {
+            // TODO error handling
+            AddBaseItemValue(ItemType.Shoulder, 1f);
+            AddBaseItemValue(ItemType.PrimativeArmor, 2f);
+            AddBaseItemValue(ItemType.Helmet, 4f);
+            AddBaseItemValue(ItemType.Chest, 4f);
+            AddBaseItemValue(ItemType.Legs, 4f);
+            AddBaseItemValue(ItemType.BucklerShield, 8f);
+            AddBaseItemValue(ItemType.Shield, 10f);
+            AddBaseItemValue(ItemType.TowerShield, 15f);
+            AddBaseItemValue(ItemType.Primative, 8f);
+            AddBaseItemValue(ItemType.Knife, 8f);
+            AddBaseItemValue(ItemType.Ammo, 10f);
+            AddBaseItemValue(ItemType.PickAxe, 10f);
+            AddBaseItemValue(ItemType.Sword, 12f);
+            AddBaseItemValue(ItemType.Mace, 12f);
+            AddBaseItemValue(ItemType.Spear, 12f);
+            AddBaseItemValue(ItemType.Axe, 12f);
+            AddBaseItemValue(ItemType.Sledge, 15f);
+            AddBaseItemValue(ItemType.Atgeir, 15f);
+            AddBaseItemValue(ItemType.Battleaxe, 15f);
+            AddBaseItemValue(ItemType.Bow, 22f);
+            AddBaseItemValue(ItemType.Tool, 0f);
+            AddBaseItemValue(ItemType.Utility, 0f);
+            AddBaseItemValue(ItemType.None, 0f);
+            AddBaseItemValue(ItemType.Undefined, 0f);
         }
 
         /// <summary>
-        /// Adds a new weapon ItemClassification for scaling or replaces the existing if a configuration already exists.
+        /// Adds a ItemClassification for scaling or replaces the existing if a configuration already exists.
+        /// Uses default base configurations for item Category and item Value.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="biome"></param>
         /// <param name="itemType"></param>
-        public void AddWeaponConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType)
+        private void AddItemConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType)
         {
-            AddItemConfiguration(name, biome, itemType, ref _weaponData);
+            AddItemConfiguration(name, biome, itemType, GetItemCategory(itemType), GetBaseItemValue(itemType));
         }
 
         /// <summary>
-        /// Adds a new armor ItemClassification for scaling or replaces the existing if a configuration already exists.
+        /// Adds a ItemClassification for scaling or replaces the existing if a configuration already exists.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="biome"></param>
         /// <param name="itemType"></param>
-        public void AddArmorConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType)
+        /// <param name="category"></param>
+        /// <param name="value"></param>
+        private void AddItemConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType, ItemCategory category, float value)
         {
-            AddItemConfiguration(name, biome, itemType, ref _armorData);
-        }
-
-        /// <summary>
-        /// Adds a new armor ItemClassification for scaling or replaces the existing if a configuration already exists.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="biome"></param>
-        /// <param name="itemType"></param>
-        public void AddShieldConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType)
-        {
-            AddItemConfiguration(name, biome, itemType, ref _shieldData);
-        }
-
-        private void AddItemConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType, 
-            ref Dictionary<string, ItemClassification> dataList)
-        {
-            try
+            if (!name.IsNullOrWhiteSpace())
             {
-                if (!name.IsNullOrWhiteSpace())
+                var item = new ItemClassification(name, biome, itemType, category, value);
+                try
                 {
-                    dataList.Add(name, new ItemClassification(name, biome, itemType));
+                    _itemData.Add(name, item);
                 }
-            }
-            catch (ArgumentException)
-            {
-                dataList[name] = new ItemClassification(name, biome, itemType);
+                catch (ArgumentException)
+                {
+                    _itemData[name] = item;
+                }
             }
         }
 
@@ -470,87 +580,144 @@ namespace VentureValheim.Progression
         /// </summary>
         public void UpdateItems()
         {
-            UpdateWeapons();
-            UpdateArmor();
-            UpdateShields();
-        }
-
-        /// <summary>
-        /// Apply Auto-Scaling to all Weapons by Prefab name.
-        /// </summary>
-        public void UpdateWeapons()
-        {
-            foreach (ItemClassification data in Instance._weaponData.Values)
+            foreach (ItemClassification data in _itemData.Values)
             {
-                ItemDrop? item = ProgressionAPI.GetItemDrop(data.Name);
+                ItemDrop item = ProgressionAPI.Instance.GetItemDrop(data.Name);
 
                 if (item == null)
                 {
-                    ProgressionPlugin.GetProgressionLogger().LogWarning($"Failed to configure {data.Name}.");
+                    ProgressionPlugin.GetProgressionLogger().LogWarning($"Failed to configure Item: {data.Name}.");
                 }
                 else
                 {
-                    var original = item.m_itemData.m_shared.m_damages;
-                    float sumDamage = Instance.GetTotalDamage(original, false);
-                    var baseTotalDamage = GetBasePlayerDamage(data.ItemType);
+                    if (data.ItemCategory == ItemCategory.Weapon)
+                    {
+                        var original = item.m_itemData.m_shared.m_damages;
+                        var baseTotalDamage = GetBaseItemValue(data.ItemType);
 
-                    item.m_itemData.m_shared.m_damages = Instance.CalculateItemDamageTypes(data.BiomeType, original, baseTotalDamage);
-
-                    float newSumDamage = Instance.GetTotalDamage(item.m_itemData.m_shared.m_damages, false);
-                    ProgressionPlugin.GetProgressionLogger().LogDebug(
-                        $"{item.name} updated with new scaled damage values. Total damage changed from {sumDamage} to {newSumDamage}");
+                        UpdateWeapon(item, CalculateItemDamageTypes(WorldConfiguration.Instance.GetBiome(data.BiomeType), original, baseTotalDamage));
+                    }
+                    else if (data.ItemCategory == ItemCategory.Armor)
+                    {
+                        UpdateArmor(item, CalculateArmor(data));
+                    }
+                    else if (data.ItemCategory == ItemCategory.Shield)
+                    {
+                        UpdateShield(item, CalculateArmor(data));
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Apply Auto-Scaling to all armor by Prefab name.
+        /// Apply Auto-Scaling to the Weapon by Prefab name.
         /// </summary>
-        public void UpdateArmor()
+        /// <param name="item"></param>
+        /// <param name="value">The new total damage.</param>
+        public void UpdateWeapon(ItemDrop item, HitData.DamageTypes? value, bool playerItem = true)
         {
-            foreach (ItemClassification data in Instance._armorData.Values)
+            if (value == null)
             {
-                ItemDrop? item = ProgressionAPI.GetItemDrop(data.Name);
-
-                if (item == null)
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogWarning($"Failed to configure {data.Name}.");
-                }
-                else
-                {
-                    var original = item.m_itemData.m_shared.m_armor;
-                    item.m_itemData.m_shared.m_armor = Instance.CalculateArmor(data);
-                    var newArmor = item.m_itemData.m_shared.m_armor;
-
-                    ProgressionPlugin.GetProgressionLogger().LogDebug(
-                        $"{item.name} updated with new scaled armor values. Total armor changed from {original} to {newArmor}");
-                }
+                // TODO error message
+                return;
             }
+
+            var original = item.m_itemData.m_shared.m_damages;
+            float sumDamage = GetTotalDamage(original, playerItem);
+
+            item.m_itemData.m_shared.m_damages = value.Value;
+
+            ProgressionPlugin.GetProgressionLogger().LogDebug(
+                $"{item.name} updated with new scaled damage values. Total damage changed from {sumDamage} to {value}");
         }
 
         /// <summary>
-        /// Apply Auto-Scaling to all Shields by Prefab name.
+        /// Apply Auto-Scaling to the armor by Prefab name.
         /// </summary>
-        public void UpdateShields()
+        /// <param name="item"></param>
+        /// <param name="value">The new armor value.</param>
+        public void UpdateArmor(ItemDrop item, float value)
         {
-            foreach (ItemClassification data in Instance._shieldData.Values)
+            var original = item.m_itemData.m_shared.m_armor;
+            item.m_itemData.m_shared.m_armor = value;
+
+            ProgressionPlugin.GetProgressionLogger().LogDebug(
+                $"{item.name} updated with new scaled armor values. Total armor changed from {original} to {value}");
+        }
+
+        /// <summary>
+        /// Apply Auto-Scaling to the shield by Prefab name.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="value">The new block power.</param>
+        public void UpdateShield(ItemDrop item, float value)
+        {
+            var original = item.m_itemData.m_shared.m_blockPower;
+            item.m_itemData.m_shared.m_blockPower = value;
+
+            ProgressionPlugin.GetProgressionLogger().LogDebug(
+                $"{item.name} updated with new scaled block values. Total block changed from {original} to {value}");
+        }
+
+        private void CreateVanillaBackup()
+        {
+            if (_vanillaBackupCreated) return;
+
+            foreach (ItemClassification data in _itemData.Values)
             {
-                ItemDrop? item = ProgressionAPI.GetItemDrop(data.Name);
+                ItemDrop item = ProgressionAPI.Instance.GetItemDrop(data.Name);
 
-                if (item == null)
+                if (item != null)
                 {
-                    ProgressionPlugin.GetProgressionLogger().LogWarning($"Failed to configure {data.Name}.");
-                }
-                else
-                {
-                    var original = item.m_itemData.m_shared.m_blockPower;
-                    item.m_itemData.m_shared.m_blockPower = Instance.CalculateArmor(data);
-                    var newArmor = item.m_itemData.m_shared.m_blockPower;
-
-                    ProgressionPlugin.GetProgressionLogger().LogDebug(
-                        $"{item.name} updated with new scaled block values. Total block changed from {original} to {newArmor}");
+                    if (data.ItemCategory == ItemCategory.Weapon)
+                    {
+                        data.VanillaDamageValue = item.m_itemData.m_shared.m_damages;
+                    }
+                    else if (data.ItemCategory == ItemCategory.Armor)
+                    {
+                        data.VanillaValue = item.m_itemData.m_shared.m_armor;
+                    }
+                    else if (data.ItemCategory == ItemCategory.Shield)
+                    {
+                        data.VanillaValue = item.m_itemData.m_shared.m_blockPower;
+                    }
                 }
             }
+
+            _vanillaBackupCreated = true;
         }
+
+        public void VanillaReset()
+        {
+            if (_vanillaBackupCreated)
+            {
+                foreach (ItemClassification data in _itemData.Values)
+                {
+                    ItemDrop item = ProgressionAPI.Instance.GetItemDrop(data.Name);
+
+                    if (item != null)
+                    {
+                        if (data.ItemCategory == ItemCategory.Weapon)
+                        {
+                            UpdateWeapon(item, data.VanillaDamageValue);
+                        }
+                        else if (data.ItemCategory == ItemCategory.Armor)
+                        {
+                            UpdateArmor(item, data.VanillaValue);
+                        }
+                        else if (data.ItemCategory == ItemCategory.Shield)
+                        {
+                            UpdateShield(item, data.VanillaValue);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                CreateVanillaBackup();
+            }
+        }
+
+        #endregion
     }
 }

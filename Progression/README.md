@@ -118,6 +118,16 @@ Coming ASAP!
 
 ## Changelog
 
+### 0.0.15
+
+* Upgraded ServerSync to V1.11: Crossplay compatibility upgrade for config sync.
+* ServerSync patch for game patch 0.211.11.
+* Major rework for testing purposes, added more unit tests, general code cleanup.
+* Fixed a few bugs with autoscaling values calculated incorrectly.
+* Added ability to restore vanilla game data without a game restart for autoscaling (in testing).
+* Optimization for Key and Skills managers caching.
+* Fixed biome ordering for Mistland, Ashland, DeepNorth.
+
 ### 0.0.14
 
 * Fixed a server sync issue for auto scaling features.

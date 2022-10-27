@@ -10,7 +10,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.Progression</RootNamespace>
         <AssemblyName>VentureValheim.Progression</AssemblyName>
-        <Version>0.0.14</Version>
+        <Version>0.0.15</Version>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>
@@ -102,7 +102,7 @@
     <ItemGroup>
         <Compile Include="Plugin.cs" />
         <Compile Include="src\*.cs" />
-        <Compile Include="..\ConfigSync.cs" />
+        <Compile Include="..\ServerSync\ConfigSync.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

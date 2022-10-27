@@ -1,59 +1,59 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using BepInEx;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace VentureValheim.Progression
 {
-    public class KeyManager
+    public interface IKeyManager
     {
-        public string BlockedGlobalKeys { get; private set; }
-        public string AllowedGlobalKeys { get; private set; }
-        public HashSet<string> BlockedGlobalKeysList  { get; private set; }
-        public HashSet<string> AllowedGlobalKeysList  { get; private set; }
-        public HashSet<string> PrivateKeysList { get; private set; }
+        string BlockedGlobalKeys { get; }
+        string AllowedGlobalKeys { get; }
+        HashSet<string> BlockedGlobalKeysList { get; }
+        HashSet<string> AllowedGlobalKeysList { get; }
+        HashSet<string> PrivateKeysList { get; }
+        public int GetPublicBossKeysCount();
+        public int GetPrivateBossKeysCount();
+        public bool BlockGlobalKey(bool blockAll, string globalKey);
+        public bool HasPrivateKey(string key);
+    }
 
-        public readonly string[] BossKeys = new string[]
-        { "defeated_eikthyr", "defeated_gdking", "defeated_bonemass", "defeated_dragon", "defeated_goblinking" };
-
-        private string _filepath = "";
-        private bool _fileLoaded = false;
-
-        private int _cachedPublicBossKeys = -1;
-        private int _cachedPrivateBossKeys = -1;
-
-        public int GetPublicBossKeysCount()
-        {
-            Update();
-            return _cachedPublicBossKeys;
-        }
-
-        public int GetPrivateBossKeysCount()
-        {
-            Update();
-            return _cachedPrivateBossKeys;
-        }
-
-        private float _timer = 0f;
-        private readonly float _update = 5f;
-
-        private KeyManager()
+    public class KeyManager : IKeyManager
+    {
+        static KeyManager() { }
+        protected KeyManager()
         {
             ResetPlayer();
         }
 
-        private static readonly KeyManager _instance = new KeyManager();
+        protected static readonly IKeyManager _instance = new KeyManager();
 
         public static KeyManager Instance
         {
-            get => _instance;
+            get => _instance as KeyManager;
         }
 
-        private void ResetPlayer()
+        public string BlockedGlobalKeys { get; protected set; }
+        public string AllowedGlobalKeys { get; protected set; }
+        public HashSet<string> BlockedGlobalKeysList  { get; protected set; }
+        public HashSet<string> AllowedGlobalKeysList  { get; protected set; }
+        public HashSet<string> PrivateKeysList { get; protected set; }
+
+        public readonly string[] BossKeys = new string[TOTAL_BOSSES] { "defeated_eikthyr", "defeated_gdking", "defeated_bonemass", "defeated_dragon", "defeated_goblinking" };
+        public const int TOTAL_BOSSES = 5;
+
+        private static string _filepath = "";
+        private static bool _fileLoaded = false;
+
+        private static int _cachedPublicBossKeys = -1;
+        private static int _cachedPrivateBossKeys = -1;
+
+        private static float _lastUpdateTime = 0f;
+        private static readonly float _updateInterval = 5f;
+
+        protected void ResetPlayer()
         {
             try
             {
@@ -75,24 +75,42 @@ namespace VentureValheim.Progression
             }
         }
 
+        public int GetPublicBossKeysCount()
+        {
+            Update();
+            return _cachedPublicBossKeys;
+        }
+
+        public int GetPrivateBossKeysCount()
+        {
+            Update();
+            return _cachedPrivateBossKeys;
+        }
+
+        private void UpdateConfigs(float delta)
+        {
+            UpdateGlobalKeyConfiguration(ProgressionPlugin.Instance.GetBlockedGlobalKeys(), ProgressionPlugin.Instance.GetAllowedGlobalKeys());
+            ProgressionPlugin.GetProgressionLogger().LogDebug($"Updating chached Key Information: {delta} time passed.");
+        }
+
         /// <summary>
         /// Updates class data if chached values have expired.
         /// </summary>
-        public static void Update()
+        private float Update()
         {
             var time = Time.time;
-            var delta = time - Instance._timer;
+            var delta = time - _lastUpdateTime;
 
-            if (delta - Instance._timer > Instance._update)
+            if (delta  > _updateInterval)
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug($"Updating chached Key Information: {delta} time passed.");
-                UpdateGlobalKeyConfiguration(ProgressionPlugin.Instance.GetBlockedGlobalKeys(),
-                    ProgressionPlugin.Instance.GetAllowedGlobalKeys());
-                Instance._cachedPublicBossKeys = CountPublicBossKeys();
-                Instance._cachedPrivateBossKeys = CountPrivateBossKeys();
+                UpdateConfigs(delta);
+                _cachedPublicBossKeys = CountPublicBossKeys();
+                _cachedPrivateBossKeys = CountPrivateBossKeys();
 
-                Instance._timer = time;
+                _lastUpdateTime = time;
             }
+
+            return delta;
         }
 
         /// <summary>
@@ -100,34 +118,18 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="blockedGlobalKeys"></param>
         /// <param name="allowedGlobalKeys"></param>
-        private static void UpdateGlobalKeyConfiguration(string blockedGlobalKeys, string allowedGlobalKeys)
+        protected void UpdateGlobalKeyConfiguration(string blockedGlobalKeys, string allowedGlobalKeys)
         {
-            if (!Instance.BlockedGlobalKeys.Equals(blockedGlobalKeys))
+            if (!BlockedGlobalKeys.Equals(blockedGlobalKeys))
             {
-                Instance.BlockedGlobalKeysList = new HashSet<string>();
-
-                if (!blockedGlobalKeys.IsNullOrWhiteSpace())
-                {
-                    var keys = blockedGlobalKeys.Split(',').ToList();
-                    for (var lcv = 0; lcv < Instance.BlockedGlobalKeysList.Count; lcv++)
-                    {
-                        Instance.BlockedGlobalKeysList.Add(keys[lcv].Trim());
-                    }
-                }
+                BlockedGlobalKeys = blockedGlobalKeys;
+                BlockedGlobalKeysList = ProgressionAPI.Instance.StringToSet(blockedGlobalKeys);
             }
 
-            if (!Instance.AllowedGlobalKeys.Equals(allowedGlobalKeys))
+            if (!AllowedGlobalKeys.Equals(allowedGlobalKeys))
             {
-                Instance.AllowedGlobalKeysList = new HashSet<string>();
-
-                if (!allowedGlobalKeys.IsNullOrWhiteSpace())
-                {
-                    var keys = allowedGlobalKeys.Split(',').ToList();
-                    for (var lcv = 0; lcv < Instance.AllowedGlobalKeysList.Count; lcv++)
-                    {
-                        Instance.AllowedGlobalKeysList.Add(keys[lcv].Trim());
-                    }
-                }
+                AllowedGlobalKeys = allowedGlobalKeys;
+                AllowedGlobalKeysList = ProgressionAPI.Instance.StringToSet(allowedGlobalKeys);
             }
         }
 
@@ -147,46 +149,24 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Skips the original ZoneSystem.SetGlobalKey method if a key is blocked.
-        /// </summary>
-        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.SetGlobalKey))]
-        public static class Patch_ZoneSystem_SetGlobalKey
-        {
-            [HarmonyPriority(Priority.Last)]
-            private static bool Prefix(string name)
-            {
-                Update();
-                if (Instance.BlockGlobalKey(name))
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogDebug($"Skipping adding global key: {name}.");
-                    return false; // Skip adding the global key
-                }
-
-                ProgressionPlugin.GetProgressionLogger().LogDebug($"Adding global key: {name}.");
-                return true; // Continue adding the global key
-            }
-
-            private static void Postfix(string name)
-            {
-                ProgressionPlugin.GetProgressionLogger().LogDebug($"Adding private key: {name}.");
-                AddPrivateKey(name);
-            }
-        }
-
-        /// <summary>
         /// Whether to block a Global Key based on configuration settings.
         /// </summary>
         /// <param name="globalKey"></param>
         /// <returns>True when default blocked and does not exist in the allowed list,
         /// or when default unblocked and key is in the blocked list.</returns>
-        public bool BlockGlobalKey(string globalKey)
+        public bool BlockGlobalKey(bool blockAll, string globalKey)
         {
-            if (ProgressionPlugin.Instance.GetBlockAllGlobalKeys())
+            if (globalKey.IsNullOrWhiteSpace())
             {
-                return !AllowedGlobalKeysList?.Contains(globalKey) ?? true;
+                return true;
             }
 
-            return BlockedGlobalKeysList?.Contains(globalKey) ?? false;
+            if (blockAll)
+            {
+                return (AllowedGlobalKeysList.Count > 0) ? !AllowedGlobalKeysList.Contains(globalKey) : true;
+            }
+
+            return (BlockedGlobalKeysList.Count > 0) ? BlockedGlobalKeysList.Contains(globalKey) : false;
         }
 
         /// <summary>
@@ -203,13 +183,13 @@ namespace VentureValheim.Progression
         /// Counts all the boss keys in the Player's private list.
         /// </summary>
         /// <returns></returns>
-        private static int CountPrivateBossKeys()
+        protected int CountPrivateBossKeys()
         {
             int count = 0;
 
-            foreach (string key in Instance.BossKeys)
+            for (int lcv = 0; lcv < BossKeys.Length; lcv++)
             {
-                if (Instance.PrivateKeysList.Contains(key))
+                if (PrivateKeysList.Contains(BossKeys[lcv]))
                 {
                     count++;
                 }
@@ -222,12 +202,13 @@ namespace VentureValheim.Progression
         /// Counts all the boss keys in the public list.
         /// </summary>
         /// <returns></returns>
-        private static int CountPublicBossKeys()
+        private int CountPublicBossKeys()
         {
             int count = 0;
-            foreach (string key in Instance.BossKeys)
+
+            for (int lcv = 0; lcv < BossKeys.Length; lcv++)
             {
-                if (ZoneSystem.instance.GetGlobalKey(key))
+                if (HasGlobalKey(BossKeys[lcv]))
                 {
                     count++;
                 }
@@ -236,88 +217,35 @@ namespace VentureValheim.Progression
             return count;
         }
 
+        protected virtual bool HasGlobalKey(string key)
+        {
+            return ProgressionAPI.Instance.GetGlobalKey(key);
+        }
+
         /// <summary>
         /// Attempts to add the given key to the Player's private list.
         /// </summary>
         /// <param name="key"></param>
-        public static void AddPrivateKey(string key)
+        public void AddPrivateKey(string key)
         {
-            Instance.PrivateKeysList.Add(key);
+            PrivateKeysList.Add(key);
         }
 
         /// <summary>
         /// Attempts to remove the given key from the Player's private list.
         /// </summary>
         /// <param name="key"></param>
-        public static void RemovePrivateKey(string key)
+        public void RemovePrivateKey(string key)
         {
-            Instance.PrivateKeysList.Remove(key);
+            PrivateKeysList.Remove(key);
         }
 
         /// <summary>
         /// Reset the private key list for the Player.
         /// </summary>
-        public static void ResetPrivateKeys()
+        public void ResetPrivateKeys()
         {
-            Instance.PrivateKeysList = new HashSet<string>();
-        }
-
-        [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.SavePlayerData))]
-        public static class Patch_PlayerProfile_SavePlayerData
-        {
-            private static void Postfix(Player player, PlayerProfile __instance)
-            {
-                try
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogDebug("Patch_PlayerProfile_SavePlayerData postfix called.");
-                    if (Instance.SetFilePaths(__instance.m_fileSource, __instance.GetPath()))
-                    {
-                        Instance.SaveFile(__instance.m_fileSource, Instance.PrivateKeysList);
-                    }
-                }
-                catch (Exception e)
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogError("Error saving key data from file.");
-                    ProgressionPlugin.GetProgressionLogger().LogError(e);
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.LoadPlayerData))]
-        public static class Patch_PlayerProfile_LoadPlayerData
-        {
-            private static void Postfix(Player player)
-            {
-                if (!ProgressionAPI.IsInTheMainScene() || Instance._fileLoaded)
-                {
-                    return;
-                }
-
-                try
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogDebug("Patch_PlayerProfile_LoadPlayerData postfix called.");
-                    var profile = Game.instance.GetPlayerProfile();
-                    if (Instance.SetFilePaths(profile.m_fileSource, profile.GetPath()))
-                    {
-                        Instance.PrivateKeysList = Instance.LoadFile(profile.m_fileSource);
-                    }
-                }
-                catch (Exception e)
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogError("Error loading key data from file.");
-                    ProgressionPlugin.GetProgressionLogger().LogError(e);
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
-        public static class Patch_Player_Awake
-        {
-            private static void Postfix()
-            {
-                ProgressionPlugin.GetProgressionLogger().LogDebug("Resetting Player Key Manager.");
-                Instance.ResetPlayer();
-            }
+            PrivateKeysList = new HashSet<string>();
         }
 
         /// <summary>
@@ -327,7 +255,7 @@ namespace VentureValheim.Progression
         /// <param name="keys"></param>
         private void SaveFile(FileHelpers.FileSource filesource, HashSet<string> keys)
         {
-            if (Directory.Exists(_filepath) && !Instance._fileLoaded)
+            if (Directory.Exists(_filepath) && !_fileLoaded)
             {
                 // Do not override an existing file that has not been loaded yet.
                 ProgressionPlugin.GetProgressionLogger().LogDebug("Skipping Saving Player Keys.");
@@ -363,7 +291,7 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         private HashSet<string> LoadFile(FileHelpers.FileSource filesource)
         {
-            FileReader? fileReader = null;
+            FileReader fileReader = null;
             HashSet<string> keys = new HashSet<string>();
             try
             {
@@ -387,7 +315,7 @@ namespace VentureValheim.Progression
                 }
 
                 // Set the loaded flag for use when saving, this will help prevent data loss on error
-                Instance._fileLoaded = true;
+                _fileLoaded = true;
 
                 fileReader.Dispose();
             }
@@ -402,22 +330,121 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Set the file path if defined.
+        /// Set the file path if not already defined.
         /// </summary>
-        /// <param name="filesource"></param>
         /// <param name="path"></param>
         /// <returns>Returns true if the file path is defined.</returns>
-        private bool SetFilePaths(FileHelpers.FileSource filesource, string path)
+        protected bool SetFilePaths(string path)
         {
-            if (Instance._filepath.IsNullOrWhiteSpace())
+            if (_filepath.IsNullOrWhiteSpace())
             {
-                Instance._filepath = path;
+                if(!path.IsNullOrWhiteSpace())
+                {
+                    _filepath = path;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        #region Patches
+
+        /// <summary>
+        /// Skips the original ZoneSystem.SetGlobalKey method if a key is blocked.
+        /// </summary>
+        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.SetGlobalKey))]
+        public static class Patch_ZoneSystem_SetGlobalKey
+        {
+            [HarmonyPriority(Priority.Last)]
+            private static bool Prefix(string name)
+            {
+                Instance.Update();
+                if (Instance.BlockGlobalKey(ProgressionPlugin.Instance.GetBlockAllGlobalKeys(), name))
+                {
+                    ProgressionPlugin.GetProgressionLogger().LogDebug($"Skipping adding global key: {name}.");
+                    return false; // Skip adding the global key
+                }
+
+                ProgressionPlugin.GetProgressionLogger().LogDebug($"Adding global key: {name}.");
+                return true; // Continue adding the global key
             }
 
-            if (!Instance._filepath.IsNullOrWhiteSpace()) return true;
+            private static void Postfix(string name)
+            {
+                ProgressionPlugin.GetProgressionLogger().LogDebug($"Adding private key: {name}.");
+                Instance.AddPrivateKey(name);
+            }
+        }
 
-            ProgressionPlugin.GetProgressionLogger().LogWarning($"File paths could not be set for FileSource: {filesource}, keys data may not load or save correctly.");
-            return false;
+        [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.SavePlayerData))]
+        public static class Patch_PlayerProfile_SavePlayerData
+        {
+            private static void Postfix(PlayerProfile __instance)
+            {
+                try
+                {
+                    ProgressionPlugin.GetProgressionLogger().LogDebug("Patch_PlayerProfile_SavePlayerData postfix called. Saving Keys.");
+                    if (Instance.SetFilePaths(__instance.GetPath()))
+                    {
+                        Instance.SaveFile(__instance.m_fileSource, Instance.PrivateKeysList);
+                    }
+                }
+                catch (Exception e)
+                {
+                    ProgressionPlugin.GetProgressionLogger().LogError("Error saving key data from file.");
+                    ProgressionPlugin.GetProgressionLogger().LogError(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.LoadPlayerData))]
+        public static class Patch_PlayerProfile_LoadPlayerData
+        {
+            private static void Postfix(PlayerProfile __instance)
+            {
+                if (!ProgressionAPI.Instance.IsInTheMainScene() || _fileLoaded)
+                {
+                    return;
+                }
+
+                try
+                {
+                    ProgressionPlugin.GetProgressionLogger().LogDebug("Patch_PlayerProfile_LoadPlayerData postfix called. Loading keys.");
+                    // TODO test
+                    //var profile = Game.instance.GetPlayerProfile();
+                    var profile = __instance;
+                    if (Instance.SetFilePaths(profile.GetPath()))
+                    {
+                        Instance.PrivateKeysList = Instance.LoadFile(profile.m_fileSource);
+                    }
+                    else
+                    {
+                        ProgressionPlugin.GetProgressionLogger().LogWarning($"File paths could not be set for FileSource: {profile.m_fileSource}, keys data may not load or save correctly.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    ProgressionPlugin.GetProgressionLogger().LogError("Error loading key data from file.");
+                    ProgressionPlugin.GetProgressionLogger().LogError(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
+        public static class Patch_Player_Awake
+        {
+            private static void Postfix()
+            {
+                ProgressionPlugin.GetProgressionLogger().LogDebug("Resetting Player Key Manager.");
+                Instance.ResetPlayer();
+            }
         }
 
         /// <summary>
@@ -445,7 +472,7 @@ namespace VentureValheim.Progression
                 {
                     if (args.Length >= 2)
                     {
-                        AddPrivateKey(args[1]);
+                        Instance.AddPrivateKey(args[1]);
                         args.Context.AddString("Setting private key " + args[1]);
                     }
                     else
@@ -457,7 +484,7 @@ namespace VentureValheim.Progression
                 {
                     if (args.Length >= 2)
                     {
-                        RemovePrivateKey(args[1]);
+                        Instance.RemovePrivateKey(args[1]);
                         args.Context.AddString("Removing private key " + args[1]);
                     }
                     else
@@ -467,7 +494,7 @@ namespace VentureValheim.Progression
                 }, isCheat: true, isNetwork: false, onlyServer: true);
                 new Terminal.ConsoleCommand("resetprivatekeys", "[name]", delegate (Terminal.ConsoleEventArgs args)
                 {
-                    ResetPrivateKeys();
+                    Instance.ResetPrivateKeys();
                     args.Context.AddString("Private keys cleared");
                 }, isCheat: true, isNetwork: false, onlyServer: true);
                 new Terminal.ConsoleCommand("listprivatekeys", "", delegate (Terminal.ConsoleEventArgs args)
@@ -480,5 +507,7 @@ namespace VentureValheim.Progression
                 }, isCheat: true, isNetwork: false, onlyServer: true);
             }
         }
+
+        #endregion
     }
 }

@@ -12,8 +12,17 @@ namespace VentureValheim.Progression
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class ProgressionPlugin : BaseUnityPlugin
     {
+        static ProgressionPlugin() { }
+        private ProgressionPlugin() { }
+        private static readonly ProgressionPlugin _instance = new ProgressionPlugin();
+
+        public static ProgressionPlugin Instance
+        {
+            get => _instance;
+        }
+
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.14";
+        private const string ModVersion = "0.0.15";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -24,14 +33,6 @@ namespace VentureValheim.Progression
         private readonly ManualLogSource VentureProgressionLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         public static ManualLogSource GetProgressionLogger() => Instance.VentureProgressionLogger;
-
-        private ProgressionPlugin() { }
-        private static readonly ProgressionPlugin _instance = new ProgressionPlugin();
-
-        public static ProgressionPlugin Instance
-        {
-            get => _instance;
-        }
 
         #region ConfigurationEntries
 
