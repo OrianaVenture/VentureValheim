@@ -38,6 +38,14 @@ Force player map pins always on or always off. To use set OverridePlayerMapPins 
 
 ### 0.3.1
 
+* ServerSync patch for game patch 0.211.11.
+
+### 0.3.0
+
+* Upgraded ServerSync to V1.11: Crossplay compatibility upgrade for config sync.
+
+### 0.3.1
+
 * Fixed a server sync issue for new player map pin feature not syncing on first connection.
 
 ### 0.3.0
