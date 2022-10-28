@@ -11,18 +11,12 @@ namespace VentureValheim.MultiplayerTweaks
 {
     public class MultiplayerTweaks
     {
-        private MultiplayerTweaks()
-        {
-        }
+        private MultiplayerTweaks() { }
         private static readonly MultiplayerTweaks _instance = new MultiplayerTweaks();
 
         public static MultiplayerTweaks Instance
         {
             get => _instance;
-        }
-
-        public void Initialize()
-        {
         }
 
         /// <summary>
@@ -57,6 +51,7 @@ namespace VentureValheim.MultiplayerTweaks
         /// When Tutorials disabled adds the tutorial to the seen list.
         /// This enables tutorial tracking even when Hugin is disabled.
         /// </summary>
+        [HarmonyPriority(Priority.Last)]
         [HarmonyPatch(typeof(Player), nameof(Player.ShowTutorial))]
         public static class Patch_Player_ShowTutorial
         {
@@ -65,10 +60,10 @@ namespace VentureValheim.MultiplayerTweaks
                 if (!MultiplayerTweaksPlugin.GetEnableHuginTutorials())
                 {
                     __instance.SetSeenTutorial(name);
-                    return true; // Skip original
+                    return false; // Skip original
                 }
 
-                return false; // Continue
+                return true; // Continue
             }
         }
 
@@ -77,7 +72,7 @@ namespace VentureValheim.MultiplayerTweaks
         /// This will skip the Hugin tips at the beginning of the game.
         /// </summary>
         [HarmonyPatch(typeof(Raven), nameof(Raven.Awake))]
-        public static class Patch_Game_Awake
+        public static class Patch_Raven_Awake
         {
             private static void Prefix()
             {
@@ -117,6 +112,7 @@ namespace VentureValheim.MultiplayerTweaks
                 return codes.AsEnumerable();
             }
 
+            [HarmonyPriority(Priority.First)]
             private static void Prefix(Game __instance, out bool __state)
             {
                 __state = __instance.m_firstSpawn;
@@ -143,12 +139,13 @@ namespace VentureValheim.MultiplayerTweaks
             }
         }
 
-        /// <summary>
-        /// Disables the Valkrie on first spawn.
-        /// </summary>
+        [HarmonyPriority(Priority.Last)]
         [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
         public static class Patch_Player_OnSpawned
         {
+            /// <summary>
+            /// Disables the Valkrie on first spawn.
+            /// </summary>
             private static void Prefix(Player __instance)
             {
                 if (!MultiplayerTweaksPlugin.GetEnableValkrie())
@@ -156,30 +153,15 @@ namespace VentureValheim.MultiplayerTweaks
                     __instance.m_firstSpawn = false;
                 }
             }
-        }
 
-        /// <summary>
-        /// Patch the maximum player number for accepting new connections
-        /// </summary>
-        [HarmonyPatch(typeof(ZNet), nameof(ZNet.Awake))]
-        public static class Patch_ZNet_Awake
-        {
-            private static void Postfix(ZNet __instance)
+            /// <summary>
+            /// Set the Player position as public or private if overriden.
+            /// </summary>
+            private static void Postfix()
             {
-                try
+                if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins())
                 {
-                    int number = MultiplayerTweaksPlugin.GetMaximumPlayers();
-                    if (number < 1)
-                    {
-                        number = 1;
-                    }
-
-                    __instance.m_serverPlayerLimit = number;
-                }
-                catch (Exception e)
-                {
-                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError("Error patching ZNet.Awake with maximum player count.");
-                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError(e);
+                    ZNet.instance.SetPublicReferencePosition(MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn());
                 }
             }
         }
@@ -194,19 +176,89 @@ namespace VentureValheim.MultiplayerTweaks
             {
                 try
                 {
-                    int number = MultiplayerTweaksPlugin.GetMaximumPlayers();
-                    if (number < 1)
-                    {
-                        number = 1;
-                    }
-
-                    cPlayersMax = number;
+                    cPlayersMax = GetMaximumPlayers();
+                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogInfo($"Steam Maximum Server Player Count set to {cPlayersMax}.");
                 }
                 catch (Exception e)
                 {
                     MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError("Error patching SteamGameServer.SetMaxPlayerCount with maximum player count.");
                     MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError(e);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Patch the maximum player number for ZNet
+        /// </summary>
+        [HarmonyPatch(typeof(ZNet), nameof(ZNet.RPC_PeerInfo))]
+        public static class Patch_ZNet_RPC_PeerInfo
+        {
+            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                var codes = new List<CodeInstruction>(instructions);
+                for (var lcv = 1; lcv < codes.Count; lcv++)
+                {
+                    if (codes[lcv].opcode == OpCodes.Ldc_I4_S)
+                    {
+                        var method = AccessTools.Method(typeof(ZNet), nameof(ZNet.GetNrOfPlayers));
+                        if (codes[lcv - 1].operand.Equals(method))
+                        {
+                            var methodCall = AccessTools.Method(typeof(MultiplayerTweaks), nameof(MultiplayerTweaks.GetMaximumPlayers));
+                            codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
+                            break;
+                        }
+                    }
+                }
+
+                return codes.AsEnumerable();
+            }
+        }
+
+        private static sbyte GetMaximumPlayers()
+        {
+            sbyte number = (sbyte)MultiplayerTweaksPlugin.GetMaximumPlayers();
+
+            if (number < 1)
+            {
+                number = 1;
+            }
+
+            return number;
+        }
+
+        /// <summary>
+        /// Skips Player map pins updates if overriden and configured always off.
+        /// </summary>
+        [HarmonyPriority(Priority.Last)]
+        [HarmonyPatch(typeof(Minimap), nameof(Minimap.UpdatePlayerPins))]
+        public static class Patch_Minimap_UpdatePlayerPins
+        {
+            private static bool Prefix()
+            {
+                if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins() && !MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn())
+                {
+                    return false; // Skip original
+                }
+
+                return true; // Continue
+            }
+        }
+
+        /// <summary>
+        /// Disable the Player map pin toggle if overriden.
+        /// </summary>
+        [HarmonyPriority(Priority.Last)]
+        [HarmonyPatch(typeof(Minimap), nameof(Minimap.OnTogglePublicPosition))]
+        public static class Patch_Minimap_OnTogglePublicPosition
+        {
+            private static bool Prefix()
+            {
+                if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins())
+                {
+                    return false; // Skip original
+                }
+
+                return true; // Continue
             }
         }
     }

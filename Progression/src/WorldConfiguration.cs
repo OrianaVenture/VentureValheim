@@ -1,10 +1,51 @@
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using static UnityEngine.UI.GridLayoutGroup;
+using static VentureValheim.Progression.WorldConfiguration;
 
 namespace VentureValheim.Progression
 {
-    public class WorldConfiguration
+    public interface IWorldConfiguration
     {
+        public Scaling WorldScale { get; }
+        public float ScaleFactor { get; }
+        public BiomeData GetBiome(int biome);
+        public void AddBiome(Biome biome, int order, bool overrideBiome = false);
+        public void AddBiome(int biome, int order, bool overrideBiome = false);
+        public void AddCustomBiome(Biome biome, float customScale, int order = -1, bool overrideBiome = false);
+        public void AddCustomBiome(int biome, float customScale, int order = -1, bool overrideBiome = false);
+        public float GetBiomeScaling(Biome biome);
+        public float GetBiomeScaling(int biome);
+        public float GetScaling(int order, float factor);
+        public BiomeData GetNextBiome(Biome originalBiome);
+    }
+
+    public class WorldConfiguration : IWorldConfiguration
+    {
+        static WorldConfiguration() { }
+        protected WorldConfiguration()
+        {
+            WorldScale = Scaling.Vanilla;
+            ScaleFactor = 0.75f;
+        }
+        private static readonly IWorldConfiguration _instance = new WorldConfiguration();
+
+        public static WorldConfiguration Instance
+        {
+            get => _instance as WorldConfiguration;
+        }
+
+        public Scaling WorldScale { get; protected set; }
+        public float ScaleFactor { get; protected set; }
+
+        public const int MAX_BIOME_ORDER = 100;
+
+        private Dictionary<int, BiomeData> _biomeData = new Dictionary<int, BiomeData>();
+
+        #region Biome, Scaling & Difficulty
+
         public enum Biome
         {
             Undefined = -1,
@@ -41,63 +82,42 @@ namespace VentureValheim.Progression
         public class BiomeData
         {
             public int BiomeType;
+            public int BiomeOrder;
             public float ScaleValue;
 
-            public BiomeData()
-            {
-                BiomeType = (int)Biome.Undefined;
-                ScaleValue = 1f;
-            }
-
-            public BiomeData(int biomeType, float scaleValue)
+            public BiomeData(int biomeType, int biomeOrder, float scaleValue)
             {
                 BiomeType = biomeType;
+                BiomeOrder = biomeOrder;
                 ScaleValue = scaleValue;
             }
         }
 
-        private Scaling _worldScale = Scaling.Vanilla;
-        private float _scaleFactor = 0.75f;
-
-        public Scaling GetWorldScale()
-        {
-            return _worldScale;
-        }
-
-        public float GetWorldScaleFactor()
-        {
-            return _scaleFactor;
-        }
-
-        private Dictionary<int, BiomeData> _biomeData = new Dictionary<int, BiomeData>();
-
-        private WorldConfiguration() {}
-        private static readonly WorldConfiguration _instance = new WorldConfiguration();
-
-        public static WorldConfiguration Instance
-        {
-            get => _instance;
-        }
-
-        public void Initialize()
+        private void Initialize()
         {
             AddBiome(Biome.Meadow, 0);
             AddBiome(Biome.BlackForest, 1);
             AddBiome(Biome.Swamp, 2);
             AddBiome(Biome.Mountain, 3);
             AddBiome(Biome.Plain, 4);
-            AddBiome(Biome.AshLand, 5);
-            AddBiome(Biome.DeepNorth, 6);
-            AddBiome(Biome.Mistland, 7);
+            AddBiome(Biome.Mistland, 5);
+            AddBiome(Biome.AshLand, 6);
+            AddBiome(Biome.DeepNorth, 7);
             AddBiome(Biome.Ocean, 1);
         }
 
-        public void Initialize(Scaling worldScale, float factor)
+        protected void Initialize(Scaling worldScale, float factor)
         {
-            _worldScale = worldScale;
-            _scaleFactor = factor;
+            WorldScale = worldScale;
+            ScaleFactor = factor;
             // TODO warnings for custom set values that can break things with large numbers
+            _biomeData = new Dictionary<int, BiomeData>();
             Initialize();
+        }
+
+        public BiomeData GetBiome(Biome biome)
+        {
+            return GetBiome((int)(biome));
         }
 
         /// <summary>
@@ -105,15 +125,13 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="biome"></param>
         /// <returns></returns>
-        public static BiomeData? GetBiome(int biome)
+        public BiomeData GetBiome(int biome)
         {
             try
             {
-                BiomeData data;
-                _instance._biomeData.TryGetValue(biome, out data);
-                return data;
+                return _biomeData[biome];
             }
-            catch (Exception e)
+            catch
             {
                 return null;
             }
@@ -145,9 +163,9 @@ namespace VentureValheim.Progression
         /// <param name="biome"></param>
         /// <param name="customScale"></param>
         /// <param name="overrideBiome"></param>
-        public void AddCustomBiome(Biome biome, float customScale, bool overrideBiome = false)
+        public void AddCustomBiome(Biome biome, float customScale, int order = -1, bool overrideBiome = false)
         {
-            BiomeData data = new BiomeData((int)biome, customScale);
+            BiomeData data = new BiomeData((int)biome, order, customScale);
             AddBiomeData(data, overrideBiome);
         }
 
@@ -157,13 +175,18 @@ namespace VentureValheim.Progression
         /// <param name="biome"></param>
         /// <param name="customScale"></param>
         /// <param name="overrideBiome"></param>
-        public void AddCustomBiome(int biome, float customScale, bool overrideBiome = false)
+        public void AddCustomBiome(int biome, float customScale, int order = -1, bool overrideBiome = false)
         {
-            BiomeData data = new BiomeData(biome, customScale);
+            BiomeData data = new BiomeData(biome, order, customScale);
             AddBiomeData(data, overrideBiome);
         }
 
-        private void AddBiomeData(BiomeData? data, bool overrideBiome = false)
+        /// <summary>
+        /// Adds or updates the BiomeData if not null.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="overrideBiome">True to update an existing entry.</param>
+        private void AddBiomeData(BiomeData data, bool overrideBiome = false)
         {
             if (data == null)
             {
@@ -174,9 +197,8 @@ namespace VentureValheim.Progression
             {
                 _biomeData.Add(data.BiomeType, data);
             }
-            catch (Exception e)
+            catch (ArgumentException)
             {
-
                 if (overrideBiome)
                 {
                     _biomeData[data.BiomeType] = data;
@@ -186,6 +208,7 @@ namespace VentureValheim.Progression
 
         /// <summary>
         /// Create BiomeData with the specified order of difficulty.
+        /// If the order is greater than the maximum it will set to the maximum value.
         /// </summary>
         /// <param name="biome"></param>
         /// <param name="order">default -1 to use built-in scale order</param>
@@ -197,14 +220,19 @@ namespace VentureValheim.Progression
                 return null;
             }
 
-            var scale = GetScaling(order, _scaleFactor);
+            if (order > MAX_BIOME_ORDER)
+            {
+                order = MAX_BIOME_ORDER;
+            }
+
+            var scale = GetScaling(order, ScaleFactor);
 
             if (scale < 0)
             {
                 return null;
             }
 
-            return new BiomeData(biome, scale);
+            return new BiomeData(biome, order, scale);
         }
 
         /// <summary>
@@ -212,7 +240,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="biome"></param>
         /// <returns>Value or 1 if not found</returns>
-        public static float GetBiomeScaling(Biome biome)
+        public float GetBiomeScaling(Biome biome)
         {
             return GetBiomeScaling((int)biome);
         }
@@ -222,7 +250,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="biome"></param>
         /// <returns>Value or 1 if not found</returns>
-        public static float GetBiomeScaling(int biome)
+        public float GetBiomeScaling(int biome)
         {
             var data = GetBiome(biome);
 
@@ -247,15 +275,15 @@ namespace VentureValheim.Progression
                 return 1f;
             }
 
-            if (_worldScale == Scaling.Vanilla)
+            if (WorldScale == Scaling.Vanilla)
             {
                 return 1f;
             }
-            else if (_worldScale == Scaling.Exponential)
+            else if (WorldScale == Scaling.Exponential)
             {
                 return (float)Math.Round(Math.Pow((double)(1 + factor), order), 2);
             }
-            else if (_worldScale == Scaling.Linear)
+            else if (WorldScale == Scaling.Linear)
             {
                 return 1 + (float)Math.Round((double)(factor * order), 2);
             }
@@ -264,28 +292,183 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Rounds a number up or down to the nearest roundTo value. Rounds up to the nearest 5 by default.
+        /// Searches biome data for the next occuring biome.
         /// </summary>
-        /// <param name="number"></param>
-        /// <param name="roundTo">5 by default</param>
-        /// <param name="roundUp">true by default</param>
+        /// <param name="originalBiome"></param>
         /// <returns></returns>
-        public static int PrettifyNumber(int number, int roundTo = 5, bool roundUp = true)
+        public BiomeData GetNextBiome(Biome originalBiome)
         {
-            var remainder = number % roundTo;
-            if (remainder == 0)
+            return GetNextBiome(GetBiome((int)originalBiome).BiomeOrder);
+        }
+
+        /// <summary>
+        /// Recursivly searches biome data for the next occuring biome.
+        /// </summary>
+        /// <param name="originalOrder"></param>
+        /// <returns></returns>
+        protected BiomeData GetNextBiome(int originalOrder)
+        {
+            if (originalOrder >= MAX_BIOME_ORDER)
             {
-                return number;
+                return null;
             }
 
-            if (roundUp)
+            var next = GetBiomeByOrder(originalOrder + 1);
+
+            if (next == null)
             {
-                return number + (roundTo - remainder);
+                return GetNextBiome(originalOrder + 1);
             }
-            else
+
+            return next;
+        }
+
+        /// <summary>
+        /// Searches the biome data for a biome with the given order.
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        protected BiomeData GetBiomeByOrder(int order)
+        {
+            foreach (var biome in _biomeData.Values)
             {
-                return number - remainder;
+                if (biome.BiomeOrder == order)
+                {
+                    return biome;
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Setup
+
+        /// <summary>
+        /// Read Configuration values and update the Scaling systems and game data with scaling settings.
+        /// </summary>
+        public void SetupScaling()
+        {
+            try
+            {
+                if (ProgressionPlugin.Instance.GetUseAutoScaling())
+                {
+                    SetupWorld(ProgressionPlugin.Instance.GetAutoScaleType(), ProgressionPlugin.Instance.GetAutoScaleFactor());
+
+                    if (WorldScale == Scaling.Vanilla)
+                    {
+                        ProgressionPlugin.GetProgressionLogger().LogInfo("Restoring Vanilla Values...");
+                        CreatureConfiguration.Instance.VanillaReset();
+                        ItemConfiguration.Instance.VanillaReset();
+                        return;
+                    }
+
+                    ProgressionPlugin.GetProgressionLogger().LogInfo(
+                        $"WorldConfiguration Initializing with scale: {WorldScale}, factor: {ScaleFactor}.");
+
+                    if (ProgressionPlugin.Instance.GetAutoScaleCreatures())
+                    {
+                        SetupCreatures();
+                    }
+
+                    if (ProgressionPlugin.Instance.GetAutoScaleItems())
+                    {
+                        SetupItems();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ProgressionPlugin.GetProgressionLogger().LogError("Error configuring Auto-Scaling features, your game may behave unexpectedly.");
+                ProgressionPlugin.GetProgressionLogger().LogError(e);
             }
         }
+
+        private void SetupWorld(string type, float factor)
+        {
+            var scale = Scaling.Vanilla;
+            type = type.Trim().ToLower();
+
+            if (type.Equals("exponential"))
+            {
+                scale = Scaling.Exponential;
+            }
+            else if (type.Equals("linear"))
+            {
+                scale = Scaling.Linear;
+            }
+
+            Initialize(scale, factor);
+        }
+
+        private void SetupCreatures()
+        {
+            try
+            {
+                var healthString = ProgressionPlugin.Instance.GetAutoScaleCreatureHealth();
+                var arr = ProgressionAPI.Instance.StringToIntArray(healthString);
+                CreatureConfiguration.Instance.SetBaseHealth(arr);
+            }
+            catch
+            {
+                ProgressionPlugin.GetProgressionLogger().LogWarning("Issue parsing Creature Health configuration, using defaults.");
+            }
+
+            try
+            {
+                var damageString = ProgressionPlugin.Instance.GetAutoScaleCreatureDamage();
+                var arr = ProgressionAPI.Instance.StringToIntArray(damageString);
+                CreatureConfiguration.Instance.SetBaseDamage(arr);
+            }
+            catch
+            {
+                ProgressionPlugin.GetProgressionLogger().LogWarning("Issue parsing Creature Damage configuration, using defaults.");
+            }
+
+            ProgressionPlugin.GetProgressionLogger().LogInfo("Updating Creature Configurations with auto-scaling...");
+            CreatureConfiguration.Instance.Initialize();
+
+            // Debugging logs
+            // TODO remove or improve
+            var prefabs = ZNetScene.m_instance.m_prefabs;
+            for (int lcv = 0; lcv < prefabs.Count; lcv++)
+            {
+                var name = prefabs[lcv].name;
+                if (!CreatureConfiguration.Instance.ContainsCreature(name))
+                {
+                    ProgressionPlugin.GetProgressionLogger().LogDebug($"No configuration found for GameObject, skipping: {name}.");
+                }
+            }
+
+            CreatureConfiguration.Instance.UpdateCreatures();
+        }
+
+        private void SetupItems()
+        {
+            ProgressionPlugin.GetProgressionLogger().LogInfo("Updating Item Configurations with auto-scaling...");
+            ItemConfiguration.Instance.Initialize();
+            ItemConfiguration.Instance.UpdateItems();
+        }
+
+        /// <summary>
+        /// Configure World settings on Player's first spawn.
+        /// </summary>
+        [HarmonyPriority(Priority.First)]
+        [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
+        public static class Patch_Player_Awake
+        {
+            private static void Postfix()
+            {
+                if (ProgressionAPI.Instance.IsInTheMainScene())
+                {
+                    ProgressionPlugin.GetProgressionLogger().LogInfo("Setting up world configurations...");
+                    Instance.SetupScaling();
+                    ProgressionPlugin.GetProgressionLogger().LogInfo("Done setting up world configurations.");
+                }
+            }
+        }
+
+        #endregion
     }
 }

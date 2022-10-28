@@ -1,28 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <ProjectGuid>{37598C70-6E0C-4466-B59D-152814A8350A}</ProjectGuid>
+        <ProjectGuid>{E16C3332-50B4-4DA6-9E8A-A590C4E5CD49}</ProjectGuid>
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
-        <RootNamespace>VentureValheim.ServerSync</RootNamespace>
-        <AssemblyName>VentureValheim.ServerSync</AssemblyName>
-        <Version>1.0.0</Version>
-        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <RootNamespace>ServerSync</RootNamespace>
+        <AssemblyName>ServerSync</AssemblyName>
+        <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
-        <LangVersion>10.0</LangVersion>
+        <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Deterministic>true</Deterministic>
+        <GamePath><!-- Set GamePath manually --></GamePath>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-        <AssemblyName>VentureValheim.ServerSync.$(Version)</AssemblyName>
         <PlatformTarget>AnyCPU</PlatformTarget>
         <DebugSymbols>true</DebugSymbols>
         <DebugType>full</DebugType>
-        <Optimize>true</Optimize>
+        <Optimize>false</Optimize>
         <OutputPath>bin\Debug\</OutputPath>
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
@@ -54,22 +51,20 @@
             </PropertyGroup>
         </When>
     </Choose>
-    <PropertyGroup>
-        <PostBuildDir>..\Progression\bin\Debug</PostBuildDir>
-        <PostBuildDir>..\ProgressionTests\bin\Debug</PostBuildDir>
-    </PropertyGroup>
     <ItemGroup>
-        <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(GamePath)\BepInEx\core\0Harmony.dll</HintPath>
-        </Reference>
-        <Reference Include="BepInEx, Version=5.4.19.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(GamePath)\BepInEx\core\BepInEx.dll</HintPath>
+        <Reference Include="0Harmony, Version=2.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+          <SpecificVersion>False</SpecificVersion>
+          <HintPath>$(GamePath)\BepInEx\core\0Harmony.dll</HintPath>
         </Reference>
         <Reference Include="assembly_utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\assembly_utils_publicized.dll</HintPath>
+          <HintPath>$(GamePath)\valheim_Data\Managed\assembly_utils.dll</HintPath>
         </Reference>
         <Reference Include="assembly_valheim, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\assembly_valheim_publicized.dll</HintPath>
+          <HintPath>$(GamePath)\valheim_Data\Managed\assembly_valheim.dll</HintPath>
+        </Reference>
+        <Reference Include="BepInEx, Version=5.4.8.0, Culture=neutral, processorArchitecture=MSIL">
+          <SpecificVersion>False</SpecificVersion>
+          <HintPath>$(GamePath)\BepInEx\core\BepInEx.dll</HintPath>
         </Reference>
         <Reference Include="System" />
         <Reference Include="System.Core" />
@@ -88,10 +83,9 @@
     <ItemGroup>
         <Compile Include="ConfigSync.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="src\*.cs" />
     </ItemGroup>
     <ItemGroup>
-      <Content Include="README.md" />
+      <Content Include="README.txt" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

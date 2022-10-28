@@ -1,11 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using ServerSync;
 
 namespace VentureValheim.NoSeasonalRestrictions
 {
@@ -13,7 +11,7 @@ namespace VentureValheim.NoSeasonalRestrictions
     public class NoSeasonalRestrictionsPlugin : BaseUnityPlugin
     {
         private const string ModName = "NoSeasonalRestrictions";
-        private const string ModVersion = "0.1.2";
+        private const string ModVersion = "0.1.3";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ModVersion + ".cfg";
@@ -25,57 +23,24 @@ namespace VentureValheim.NoSeasonalRestrictions
 
         #region ConfigurationEntries
 
-        private static readonly ConfigSync ConfigurationSync = new(ModGUID)
-        { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
-
-        internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
-
         internal static ConfigEntry<bool> CE_ModEnabled = null!;
 
-        private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
+        private void AddConfig<T>(string key, string section, string description, T value, ref ConfigEntry<T> configEntry)
         {
-            string extendedDescription = GetExtendedDescription(description, synced);
-            configEntry = Config.Bind(section, key, value, extendedDescription);
-
-            SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
-            syncedConfigEntry.SynchronizedConfig = synced;
-        }
-
-        public string GetExtendedDescription(string description, bool synchronizedSetting)
-        {
-            return description + (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]");
+            configEntry = Config.Bind(section, key, value, description);
         }
 
         #endregion
 
         public void Awake()
         {
-            #region Configuration
-
-            const string general = "General";
-
-            AddConfig("Force Server Config", general, "Force Server Config (boolean).",
-                true, true, ref CE_ServerConfigLocked);
-            AddConfig("Enabled", general,"Enable module (boolean).",
-                true, true, ref CE_ModEnabled);
-
-            #endregion
+            AddConfig("Enabled", "General", "Enable module (boolean).",
+                true, ref CE_ModEnabled);
 
             if (!CE_ModEnabled.Value)
                 return;
 
-            NoSeasonalRestrictionsLogger.LogInfo("Initializing NoSeasonalRestrictions configurations...");
-
-            try
-            {
-                NoSeasonalRestrictions.Instance.Initialize();
-            }
-            catch (Exception e)
-            {
-                NoSeasonalRestrictionsLogger.LogError("Error configuring NoSeasonalRestrictions, aborting...");
-                NoSeasonalRestrictionsLogger.LogError(e);
-                return;
-            }
+            NoSeasonalRestrictionsLogger.LogInfo("Initializing NoSeasonalRestrictions, the weather is hot and snowy!");
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);

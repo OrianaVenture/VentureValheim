@@ -3,15 +3,21 @@ using BepInEx;
 using System.IO;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace VentureValheim.Progression
 {
-    [PublicAPI]
-    public class ProgressionAPI
+    public interface IProgressionAPI
     {
-        private ProgressionAPI()
-        {
-        }
+    }
+
+    [PublicAPI]
+    public class ProgressionAPI : IProgressionAPI
+    {
+        static ProgressionAPI() { }
+        protected ProgressionAPI() { }
         private static readonly ProgressionAPI _instance = new ProgressionAPI();
 
         public static ProgressionAPI Instance
@@ -41,10 +47,10 @@ namespace VentureValheim.Progression
         /// <param name="biome"></param>
         /// <param name="scale"></param>
         /// <param name="overrideBiome"></param>
-        public void AddCustomBiome(Heightmap.Biome biome, float scale, bool overrideBiome = false)
+        public void AddCustomBiome(Heightmap.Biome biome, int order, float scale, bool overrideBiome = false)
         {
             var internalBiome = GetProgressionBiome(biome);
-            WorldConfiguration.Instance.AddCustomBiome(internalBiome, scale, overrideBiome);
+            WorldConfiguration.Instance.AddCustomBiome(internalBiome, scale, order, overrideBiome);
         }
 
         /// <summary>
@@ -138,25 +144,59 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static ItemDrop? GetItemDrop(string name)
+        public ItemDrop GetItemDrop(string name)
         {
-            ItemDrop? item = null;
+            ItemDrop item = null;
+
             try
             {
-                item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode()).GetComponent<ItemDrop>(); // Try hash code
+                // Try hash code
+                item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode()).GetComponent<ItemDrop>();
             }
             catch
             {
-                item = ObjectDB.instance.GetItemPrefab(name).GetComponent<ItemDrop>(); // Failed, try slow search
+                // Failed, try slow search
+                item = ObjectDB.instance.GetItemPrefab(name).GetComponent<ItemDrop>();
             }
             return item;
+        }
+
+        /// <summary>
+        /// Attempts to get the Humanoid by the given name's hashcode, if not found searches by string.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public Humanoid GetHumanoid(string name)
+        {
+            Humanoid character = null;
+
+            try
+            {
+                // Try hash code
+                var gameObject = ZNetScene.m_instance.m_namedPrefabs[name.GetStableHashCode()];
+                character = gameObject.GetComponent<Humanoid>();
+            }
+            catch
+            {
+                // Failed, try slow search
+                var prefabs = ZNetScene.m_instance.m_prefabs;
+                for (int lcv = 0; lcv < prefabs.Count; lcv++)
+                {
+                    if (prefabs[lcv].name == name)
+                    {
+                        character = prefabs[lcv].GetComponent<Humanoid>();
+                    }
+                }
+            }
+
+            return character;
         }
 
         /// <summary>
         /// Prints out useful game data to json files
         /// </summary>
         /// <param name="overwrite"></param>
-        public static void GenerateData(bool overwrite = false)
+        public void GenerateData(bool overwrite = false)
         {
             var path = $"{Paths.ConfigPath}{Path.DirectorySeparatorChar}{"ItemDropData"}";
             if (!Directory.Exists(path) || overwrite == true)
@@ -177,7 +217,7 @@ namespace VentureValheim.Progression
                         File.WriteAllText(filePath, JsonUtility.ToJson(damage, true));
                         ProgressionPlugin.GetProgressionLogger().LogDebug($"{itemDrop.name} damage data written to file: {filePath}.");
                     }
-                    catch (Exception e)
+                    catch
                     {
                         ProgressionPlugin.GetProgressionLogger().LogDebug($"Failed to write to file for GameObject: {obj.name}.");
                     }
@@ -198,7 +238,7 @@ namespace VentureValheim.Progression
                         File.WriteAllText(filePath, JsonUtility.ToJson(itemDrop, true));
                         ProgressionPlugin.GetProgressionLogger().LogDebug($"{itemDrop.name} data written to file: {filePath}.");
                     }
-                    catch (Exception e)
+                    catch
                     {
                         ProgressionPlugin.GetProgressionLogger().LogDebug($"Failed to write to file for GameObject: {obj.name}.");
                     }
@@ -224,11 +264,94 @@ namespace VentureValheim.Progression
                         }
 
                     }
-                    catch (Exception e)
+                    catch
                     {
                         ProgressionPlugin.GetProgressionLogger().LogDebug($"Failed to write to file for GameObject: {obj.name}.");
                     }
                 }
+            }
+        }
+
+        public bool IsInTheMainScene()
+        {
+            return SceneManager.GetActiveScene().name.Equals("main");
+        }
+
+        /// <summary>
+        /// Converts a comma seperated string to a HashSet of strings.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public HashSet<string> StringToSet(string str)
+        {
+            var set = new HashSet<string>();
+
+            if (!str.IsNullOrWhiteSpace())
+            {
+                List<string> keys = str.Split(',').ToList();
+                for (var lcv = 0; lcv < keys.Count; lcv++)
+                {
+                    set.Add(keys[lcv].Trim());
+                }
+            }
+
+            return set;
+        }
+
+        /// <summary>
+        /// Converts a comma seperated string to an int[].
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public int[] StringToIntArray(string str)
+        {
+            if (!str.IsNullOrWhiteSpace())
+            {
+                var list = str.Split(',');
+                var copy = new int[list.Length];
+                for (var lcv = 0; lcv < list.Length; lcv++)
+                {
+                    copy[lcv] = int.Parse(list[lcv].Trim());
+                }
+
+                return copy;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Whether a Global Key is contianed in the Global game list.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool GetGlobalKey(string key)
+        {
+            return ZoneSystem.instance.GetGlobalKey(key);
+        }
+
+        /// <summary>
+        /// Rounds a number up or down to the nearest roundTo value. Rounds up to the nearest 5 by default.
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="roundTo">5 by default</param>
+        /// <param name="roundUp">true by default</param>
+        /// <returns></returns>
+        public int PrettifyNumber(int number, int roundTo = 5, bool roundUp = true)
+        {
+            var remainder = number % roundTo;
+            if (remainder == 0)
+            {
+                return number;
+            }
+
+            if (roundUp)
+            {
+                return number + (roundTo - remainder);
+            }
+            else
+            {
+                return number - remainder;
             }
         }
     }

@@ -6,47 +6,130 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace VentureValheim.ServerSync;
+namespace ServerSync;
+
+[PublicAPI]
+public abstract class OwnConfigEntryBase
+{
+	public object? LocalBaseValue;
+	public abstract ConfigEntryBase BaseConfig { get; }
+
+	public bool SynchronizedConfig = true;
+}
+
+[PublicAPI]
+public class SyncedConfigEntry<T> : OwnConfigEntryBase
+{
+	public override ConfigEntryBase BaseConfig => SourceConfig;
+	public readonly ConfigEntry<T> SourceConfig;
+
+	public SyncedConfigEntry(ConfigEntry<T> sourceConfig)
+	{
+		SourceConfig = sourceConfig;
+	}
+
+	public T Value
+	{
+		get => SourceConfig.Value;
+		set => SourceConfig.Value = value;
+	}
+
+	public void AssignLocalValue(T value)
+	{
+		if (LocalBaseValue == null)
+		{
+			Value = value;
+		}
+		else
+		{
+			LocalBaseValue = value;
+		}
+	}
+}
+
+public abstract class CustomSyncedValueBase
+{
+	public event Action? ValueChanged;
+
+	public object? LocalBaseValue;
+
+	public readonly string Identifier;
+	public readonly Type Type;
+
+	private object? boxedValue;
+
+	public object? BoxedValue
+	{
+		get => boxedValue;
+		set
+		{
+			boxedValue = value;
+			ValueChanged?.Invoke();
+		}
+	}
+
+	protected bool localIsOwner;
+
+	protected CustomSyncedValueBase(ConfigSync configSync, string identifier, Type type)
+	{
+		Identifier = identifier;
+		Type = type;
+		configSync.AddCustomValue(this);
+		localIsOwner = configSync.IsSourceOfTruth;
+		configSync.SourceOfTruthChanged += truth => localIsOwner = truth;
+	}
+}
+
+[PublicAPI]
+public sealed class CustomSyncedValue<T> : CustomSyncedValueBase
+{
+	public T Value
+	{
+		get => (T)BoxedValue!;
+		set => BoxedValue = value;
+	}
+
+	public CustomSyncedValue(ConfigSync configSync, string identifier, T value = default!) : base(configSync, identifier, typeof(T))
+	{
+		Value = value;
+	}
+
+	public void AssignLocalValue(T value)
+	{
+		if (localIsOwner)
+		{
+			Value = value;
+		}
+		else
+		{
+			LocalBaseValue = value;
+		}
+	}
+}
+
+internal class ConfigurationManagerAttributes
+{
+	[UsedImplicitly] public bool? ReadOnly = false;
+}
 
 [PublicAPI]
 public class ConfigSync
 {
-	private ConfigSync(string name)
-	{
-		ModGUID = name;
-	}
-
-	private ConfigSync()
-	{
-		ModGUID = "org.bepinex.helpers.ServerSync";
-	}
-
-	private static readonly ConfigSync _instance;
-
-	public static ConfigSync Instance
-	{
-		get => _instance;
-	}
-
-	public string GetExtendedDescription(string description, bool synchronizedSetting)
-	{
-		return description + (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]");
-	}
-	
 	public static bool ProcessingServerUpdate = false;
 
-	public readonly string ModGUID;
+	public readonly string Name;
 	public string? DisplayName;
 	public string? CurrentVersion;
 	public string? MinimumRequiredVersion;
+	public bool ModRequired = false;
 
 	private bool? forceConfigLocking;
 
@@ -75,13 +158,12 @@ public class ConfigSync
 
 	public event Action<bool>? SourceOfTruthChanged;
 
-	// private static readonly HashSet<ConfigSync> configSyncs = new();
+	private static readonly HashSet<ConfigSync> configSyncs = new();
 
 	private readonly HashSet<OwnConfigEntryBase> allConfigs = new();
 	private readonly HashSet<CustomSyncedValueBase> allCustomValues = new();
 
 	private static bool isServer;
-	private static string? connectionError;
 
 	private static bool lockExempt = false;
 
@@ -90,36 +172,22 @@ public class ConfigSync
 
 	static ConfigSync()
 	{
-		_instance = new ConfigSync();
-		BepInEx.ThreadingHelper.Instance.StartSyncInvoke(() =>
-		{
-			if (PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), "Awake"))?.Postfixes.Count(p => p.PatchMethod.DeclaringType == typeof(RegisterRPCPatch)) > 0)
-			{
-				return;
-			}
-
-			Harmony harmony = new("org.bepinex.helpers.ServerSync");
-			foreach (Type type in typeof(ConfigSync).GetNestedTypes(BindingFlags.NonPublic).Where(t => t.IsClass))
-			{
-				harmony.PatchAll(type);
-			}
-		});
+		RuntimeHelpers.RunClassConstructor(typeof(VersionCheck).TypeHandle);
 	}
 
-	public SyncedConfigEntry<T> AddConfigEntry<T>(ConfigEntry<T> configEntry, bool synchronizedSetting = false)
+	public ConfigSync(string name)
 	{
-		if (synchronizedSetting && lockedConfig != null)
-		{
-			throw new Exception($"Cannot initialize {configEntry.Definition}: ConfigEntry already defined.");
-		}
-		
+		Name = name;
+		configSyncs.Add(this);
+		_ = new VersionCheck(this);
+	}
+
+	public SyncedConfigEntry<T> AddConfigEntry<T>(ConfigEntry<T> configEntry)
+	{
 		if (configData(configEntry) is not SyncedConfigEntry<T> syncedEntry)
 		{
 			syncedEntry = new SyncedConfigEntry<T>(configEntry);
-			AccessTools.DeclaredField(typeof(ConfigDescription), "<Tags>k__BackingField").SetValue(
-				configEntry.Description, 
-				new object[] { new ConfigurationManagerAttributes() }.Concat(configEntry.Description.Tags ?? 
-				    Array.Empty<object>()).Concat(new[] { syncedEntry }).ToArray());
+			AccessTools.DeclaredField(typeof(ConfigDescription), "<Tags>k__BackingField").SetValue(configEntry.Description, new object[] { new ConfigurationManagerAttributes() }.Concat(configEntry.Description.Tags ?? Array.Empty<object>()).Concat(new[] { syncedEntry }).ToArray());
 			configEntry.SettingChanged += (_, _) =>
 			{
 				if (!ProcessingServerUpdate && syncedEntry.SynchronizedConfig)
@@ -127,24 +195,30 @@ public class ConfigSync
 					Broadcast(ZRoutedRpc.Everybody, configEntry);
 				}
 			};
-			syncedEntry.SynchronizedConfig = synchronizedSetting;
 			allConfigs.Add(syncedEntry);
-		}
-		
-		if (synchronizedSetting)
-		{
-			//TODO fix this method
-			//syncedEntry.SettingChanged += (_, _) => lockedConfigChanged?.Invoke();
 		}
 
 		return syncedEntry;
 	}
 
+	public SyncedConfigEntry<T> AddLockingConfigEntry<T>(ConfigEntry<T> lockingConfig) where T : IConvertible
+	{
+		if (lockedConfig != null)
+		{
+			throw new Exception("Cannot initialize locking ConfigEntry twice");
+		}
+
+		lockedConfig = AddConfigEntry(lockingConfig);
+		lockingConfig.SettingChanged += (_, _) => lockedConfigChanged?.Invoke();
+
+		return (SyncedConfigEntry<T>)lockedConfig;
+	}
+
 	internal void AddCustomValue(CustomSyncedValueBase customValue)
 	{
-		if (allCustomValues.Select(v => v.Identifier).Concat(new[] { "serverversion", "requiredversion" }).Contains(customValue.Identifier))
+		if (allCustomValues.Select(v => v.Identifier).Concat(new[] { "serverversion" }).Contains(customValue.Identifier))
 		{
-			throw new Exception("Cannot have multiple settings with the same name or with a reserved name (serverversion or requiredversion)");
+			throw new Exception("Cannot have multiple settings with the same name or with a reserved name (serverversion)");
 		}
 
 		allCustomValues.Add(customValue);
@@ -162,25 +236,28 @@ public class ConfigSync
 	{
 		public static ZRpc? currentRpc;
 
+		[HarmonyPrefix]
 		private static void Prefix(ZRpc __instance) => currentRpc = __instance;
 	}
 
 	[HarmonyPatch(typeof(ZNet), "Awake")]
-	private static class RegisterRPCPatch
+	internal static class RegisterRPCPatch
 	{
+		[HarmonyPostfix]
 		private static void Postfix(ZNet __instance)
 		{
-			connectionError = null;
 
 			isServer = __instance.IsServer();
-			
-			_instance.IsSourceOfTruth = __instance.IsDedicated() || __instance.IsServer();
-			ZRoutedRpc.instance.Register<ZPackage>(_instance.ModGUID + " ConfigSync", _instance.RPC_ConfigSync);
-			if (isServer)
+			foreach (ConfigSync configSync in configSyncs)
 			{
-				Debug.Log($"Registered '{_instance.ModGUID} ConfigSync' RPC - waiting for incoming connections");
+				configSync.IsSourceOfTruth = __instance.IsDedicated() || __instance.IsServer();
+				ZRoutedRpc.instance.Register<ZPackage>(configSync.Name + " ConfigSync", configSync.RPC_ConfigSync);
+				if (isServer)
+				{
+					Debug.Log($"Registered '{configSync.Name} ConfigSync' RPC - waiting for incoming connections");
+				}
 			}
-			
+
 			IEnumerator WatchAdminListChanges()
 			{
 				SyncedList adminList = (SyncedList)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance);
@@ -199,7 +276,10 @@ public class ConfigSync
 								new PackageEntry { section = "Internal", key = "lockexempt", type = typeof(bool), value = isAdmin }
 							});
 
-							ZNet.instance.StartCoroutine(_instance.sendZPackage(peers, package));
+							if (configSyncs.First() is { } configSync)
+							{
+								ZNet.instance.StartCoroutine(configSync.sendZPackage(peers, package));
+							}
 						}
 
 						List<ZNetPeer> adminPeer = ZNet.instance.GetPeers().Where(p => adminList.Contains(p.m_rpc.GetSocket().GetHostName())).ToList();
@@ -221,11 +301,15 @@ public class ConfigSync
 	[HarmonyPatch(typeof(ZNet), "OnNewConnection")]
 	private static class RegisterClientRPCPatch
 	{
+		[HarmonyPostfix]
 		private static void Postfix(ZNet __instance, ZNetPeer peer)
 		{
 			if (!__instance.IsServer())
 			{
-				peer.m_rpc.Register<ZPackage>(_instance.ModGUID + " ConfigSync", _instance.RPC_InitialConfigSync);
+				foreach (ConfigSync configSync in configSyncs)
+				{
+					peer.m_rpc.Register<ZPackage>(configSync.Name + " ConfigSync", configSync.RPC_InitialConfigSync);
+				}
 			}
 		}
 	}
@@ -245,8 +329,7 @@ public class ConfigSync
 		{
 			if (isServer && IsLocked)
 			{
-				bool? exempt = ((SyncedList?)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance))?
-					.Contains(SnatchCurrentlyHandlingRPC.currentRpc?.GetSocket()?.GetHostName());
+				bool? exempt = ((SyncedList?)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance))?.Contains(SnatchCurrentlyHandlingRPC.currentRpc?.GetSocket()?.GetHostName());
 				if (exempt == false)
 				{
 					return;
@@ -348,7 +431,7 @@ public class ConfigSync
 
 			if (!isServer)
 			{
-				Debug.Log($"Received {configs.configValues.Count} configs and {configs.customValues.Count} custom values from the server for mod {DisplayName ?? ModGUID}");
+				Debug.Log($"Received {configs.configValues.Count} configs and {configs.customValues.Count} custom values from the server for mod {DisplayName ?? Name}");
 
 				serverLockedSettingChanged(); // Re-evaluate for intial locking
 			}
@@ -368,8 +451,7 @@ public class ConfigSync
 	private ParsedConfigs ReadConfigsFromPackage(ZPackage package)
 	{
 		ParsedConfigs configs = new();
-		Dictionary<string, OwnConfigEntryBase> configMap = allConfigs.Where(c => c.SynchronizedConfig)
-			.ToDictionary(c => c.BaseConfig.Definition.Section + "_" + c.BaseConfig.Definition.Key, c => c);
+		Dictionary<string, OwnConfigEntryBase> configMap = allConfigs.Where(c => c.SynchronizedConfig).ToDictionary(c => c.BaseConfig.Definition.Section + "_" + c.BaseConfig.Definition.Key, c => c);
 
 		Dictionary<string, CustomSyncedValueBase> customValueMap = allCustomValues.ToDictionary(c => c.Identifier, c => c);
 
@@ -390,7 +472,7 @@ public class ConfigSync
 				}
 				catch (InvalidDeserializationTypeException e)
 				{
-					Debug.LogWarning($"Got unexpected struct internal type {e.received} for field {e.field} struct {typeName} for {configName} in section {groupName} for mod {DisplayName ?? ModGUID}, expecting {e.expected}");
+					Debug.LogWarning($"Got unexpected struct internal type {e.received} for field {e.field} struct {typeName} for {configName} in section {groupName} for mod {DisplayName ?? Name}, expecting {e.expected}");
 					continue;
 				}
 				if (groupName == "Internal")
@@ -400,18 +482,6 @@ public class ConfigSync
 						if (value?.ToString() != CurrentVersion)
 						{
 							Debug.LogWarning($"Received server version is not equal: server version = {value?.ToString() ?? "null"}; local version = {CurrentVersion ?? "unknown"}");
-						}
-					}
-					else if (configName == "requiredversion")
-					{
-						// ReSharper disable RedundantNameQualifier
-						if (CurrentVersion == null || new System.Version(value?.ToString() ?? "0.0.0") > new System.Version(CurrentVersion))
-						{
-							// ReSharper restore RedundantNameQualifier
-							Debug.LogError($"Received minimum version is higher than required version: minimum required version = {value?.ToString() ?? "0.0.0"}; local version = {CurrentVersion ?? "unknown"}");
-							Game.instance.Logout();
-							AccessTools.DeclaredField(typeof(ZNet), "m_connectionStatus").SetValue(null, ZNet.ConnectionStatus.ErrorVersion);
-							connectionError = $"Mod {DisplayName ?? ModGUID} requires minimum {value}. Installed is version {CurrentVersion}.";
 						}
 					}
 					else if (configName == "lockexempt")
@@ -429,7 +499,7 @@ public class ConfigSync
 						}
 						else
 						{
-							Debug.LogWarning($"Got unexpected type {typeName} for internal value {configName} for mod {DisplayName ?? ModGUID}, expecting {config.Type.AssemblyQualifiedName}");
+							Debug.LogWarning($"Got unexpected type {typeName} for internal value {configName} for mod {DisplayName ?? Name}, expecting {config.Type.AssemblyQualifiedName}");
 						}
 					}
 				}
@@ -442,12 +512,12 @@ public class ConfigSync
 					}
 					else
 					{
-						Debug.LogWarning($"Got unexpected type {typeName} for {configName} in section {groupName} for mod {DisplayName ?? ModGUID}, expecting {expectedType.AssemblyQualifiedName}");
+						Debug.LogWarning($"Got unexpected type {typeName} for {configName} in section {groupName} for mod {DisplayName ?? Name}, expecting {expectedType.AssemblyQualifiedName}");
 					}
 				}
 				else
 				{
-					Debug.LogWarning($"Received unknown config entry {configName} in section {groupName} for mod {DisplayName ?? ModGUID}. This may happen if client and server versions of the mod do not match.");
+					Debug.LogWarning($"Received unknown config entry {configName} in section {groupName} for mod {DisplayName ?? Name}. This may happen if client and server versions of the mod do not match.");
 				}
 			}
 			else
@@ -460,39 +530,29 @@ public class ConfigSync
 		return configs;
 	}
 
-	[HarmonyPatch(typeof(FejdStartup), "ShowConnectError")]
-	private class ShowConnectionError
-	{
-		private static void Postfix(FejdStartup __instance)
-		{
-			if (__instance.m_connectionFailedPanel.activeSelf && connectionError != null)
-			{
-				__instance.m_connectionFailedError.text += "\n" + connectionError;
-			}
-		}
-	}
-
 	[HarmonyPatch(typeof(ZNet), "Shutdown")]
 	private class ResetConfigsOnShutdown
 	{
+		[HarmonyPostfix]
 		private static void Postfix()
 		{
 			ProcessingServerUpdate = true;
-			_instance.resetConfigsFromServer();
+			foreach (ConfigSync serverSync in configSyncs)
+			{
+				serverSync.resetConfigsFromServer();
+			}
 			ProcessingServerUpdate = false;
 		}
 	}
 
 	private static bool isWritableConfig(OwnConfigEntryBase config)
 	{
-		/*if (configSyncs.FirstOrDefault(cs => cs.allConfigs.Contains(config)) is not { } configSync)
+		if (configSyncs.FirstOrDefault(cs => cs.allConfigs.Contains(config)) is not { } configSync)
 		{
 			return true;
 		}
 
-		return configSync.IsSourceOfTruth || !config.SynchronizedConfig || config.LocalBaseValue == null || (!configSync.IsLocked && (config != configSync.lockedConfig || lockExempt));*/
-		//TODO
-		return true;
+		return configSync.IsSourceOfTruth || !config.SynchronizedConfig || config.LocalBaseValue == null || (!configSync.IsLocked && (config != configSync.lockedConfig || lockExempt));
 	}
 
 	private void serverLockedSettingChanged()
@@ -553,7 +613,7 @@ public class ConfigSync
 
 		void SendPackage(ZPackage pkg)
 		{
-			string method = ModGUID + " ConfigSync";
+			string method = Name + " ConfigSync";
 			if (isServer)
 			{
 				peer.m_rpc.Invoke(method, pkg);
@@ -681,23 +741,29 @@ public class ConfigSync
 			public int GetHostPort() => Original.GetHostPort();
 			public bool Flush() => Original.Flush();
 			public string GetHostName() => Original.GetHostName();
+            public void VersionMatch() => Original.VersionMatch();
 
-			public void Send(ZPackage pkg)
+            public void Send(ZPackage pkg)
 			{
+				int oldPos = pkg.GetPos();
 				pkg.SetPos(0);
 				int methodHash = pkg.ReadInt();
 				if ((methodHash == "PeerInfo".GetStableHashCode() || methodHash == "RoutedRPC".GetStableHashCode() || methodHash == "ZDOData".GetStableHashCode()) && !finished)
 				{
-					Package.Add(new ZPackage(pkg.GetArray())); // the original ZPackage gets reused, create a new one
+					ZPackage newPkg = new(pkg.GetArray());
+					newPkg.SetPos(oldPos);
+					Package.Add(newPkg); // the original ZPackage gets reused, create a new one
 				}
 				else
 				{
+					pkg.SetPos(oldPos);
 					Original.Send(pkg);
 				}
 			}
 		}
 
 		[HarmonyPriority(Priority.First)]
+		[HarmonyPrefix]
 		private static void Prefix(ref Dictionary<Assembly, BufferingSocket>? __state, ZNet __instance, ZRpc rpc)
 		{
 			if (__instance.IsServer())
@@ -710,6 +776,7 @@ public class ConfigSync
 			}
 		}
 
+		[HarmonyPostfix]
 		private static void Postfix(Dictionary<Assembly, BufferingSocket> __state, ZNet __instance, ZRpc rpc)
 		{
 			if (!__instance.IsServer())
@@ -741,23 +808,24 @@ public class ConfigSync
 
 			IEnumerator sendAsync()
 			{
-				List<PackageEntry> entries = new();
-				if (_instance.CurrentVersion != null)
+				foreach (ConfigSync configSync in configSyncs)
 				{
-					entries.Add(new PackageEntry { section = "Internal", key = "serverversion", type = typeof(string), value = _instance.CurrentVersion });
+					List<PackageEntry> entries = new();
+					if (configSync.CurrentVersion != null)
+					{
+						entries.Add(new PackageEntry { section = "Internal", key = "serverversion", type = typeof(string), value = configSync.CurrentVersion });
+					}
+
+					MethodInfo? listContainsId = AccessTools.DeclaredMethod(typeof(ZNet), "ListContainsId");
+					SyncedList adminList = (SyncedList)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance);
+					entries.Add(new PackageEntry { section = "Internal", key = "lockexempt", type = typeof(bool), value = listContainsId is null ? adminList.Contains(rpc.GetSocket().GetHostName()) : listContainsId.Invoke(ZNet.instance, new object[] { adminList, rpc.GetSocket().GetHostName() }) });
+
+					ZPackage package = ConfigsToPackage(configSync.allConfigs.Select(c => c.BaseConfig), configSync.allCustomValues, entries, false);
+
+					yield return __instance.StartCoroutine(configSync.sendZPackage(new List<ZNetPeer> { peer }, package));
+
 				}
 
-				if (_instance.MinimumRequiredVersion != null)
-				{
-					entries.Add(new PackageEntry { section = "Internal", key = "requiredversion", type = typeof(string), value = _instance.MinimumRequiredVersion });
-				}
-
-				entries.Add(new PackageEntry { section = "Internal", key = "lockexempt", type = typeof(bool), value = ((SyncedList)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance)).Contains(rpc.GetSocket().GetHostName()) });
-
-				ZPackage package = ConfigsToPackage(_instance.allConfigs.Select(c => c.BaseConfig), _instance.allCustomValues, entries, false);
-
-				yield return __instance.StartCoroutine(_instance.sendZPackage(new List<ZNetPeer> { peer }, package));
-				
 				SendBufferedData();
 			}
 
@@ -813,6 +881,7 @@ public class ConfigSync
 	[HarmonyPatch(typeof(ConfigEntryBase), nameof(ConfigEntryBase.GetSerializedValue))]
 	private static class PreventSavingServerInfo
 	{
+		[HarmonyPrefix]
 		private static bool Prefix(ConfigEntryBase __instance, ref string __result)
 		{
 			if (configData(__instance) is not { } data || isWritableConfig(data))
@@ -828,6 +897,7 @@ public class ConfigSync
 	[HarmonyPatch(typeof(ConfigEntryBase), nameof(ConfigEntryBase.SetSerializedValue))]
 	private static class PreventConfigRereadChangingValues
 	{
+		[HarmonyPrefix]
 		private static bool Prefix(ConfigEntryBase __instance, string value)
 		{
 			if (configData(__instance) is not { } data || data.LocalBaseValue == null)
@@ -972,5 +1042,290 @@ public class ConfigSync
 		public string expected = null!;
 		public string received = null!;
 		public string field = "";
+	}
+}
+
+[PublicAPI]
+[HarmonyPatch]
+public class VersionCheck
+{
+	private static readonly HashSet<VersionCheck> versionChecks = new();
+	private static readonly Dictionary<string, string> notProcessedNames = new();
+
+	public string Name;
+
+	private string? displayName;
+
+	public string DisplayName
+	{
+		get => displayName ?? Name;
+		set => displayName = value;
+	}
+
+	private string? currentVersion;
+
+	public string CurrentVersion
+	{
+		get => currentVersion ?? "0.0.0";
+		set => currentVersion = value;
+	}
+
+	private string? minimumRequiredVersion;
+
+	public string MinimumRequiredVersion
+	{
+		get => minimumRequiredVersion ?? (ModRequired ? CurrentVersion : "0.0.0");
+		set => minimumRequiredVersion = value;
+	}
+
+	public bool ModRequired = true;
+
+	private string? ReceivedCurrentVersion;
+
+	private string? ReceivedMinimumRequiredVersion;
+
+	// Tracks which clients have passed the version check (only for servers).
+	private readonly List<ZRpc> ValidatedClients = new();
+
+	// Optional backing field to use ConfigSync values (will override other fields).
+	private ConfigSync? ConfigSync;
+	
+	private static void PatchServerSync()
+	{
+		if (PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), "Awake"))?.Postfixes.Count(p => p.PatchMethod.DeclaringType == typeof(ConfigSync.RegisterRPCPatch)) > 0)
+		{
+			return;
+		}
+
+		Harmony harmony = new("org.bepinex.helpers.ServerSync");
+		foreach (Type type in typeof(ConfigSync).GetNestedTypes(BindingFlags.NonPublic).Concat(new[] { typeof(VersionCheck) }).Where(t => t.IsClass))
+		{
+			harmony.PatchAll(type);
+		}
+	}
+
+	static VersionCheck()
+	{
+		typeof(ThreadingHelper).GetMethod("StartSyncInvoke")!.Invoke(ThreadingHelper.Instance, new object[] { (Action)PatchServerSync });
+	}
+
+	public VersionCheck(string name)
+	{
+		Name = name;
+		ModRequired = true;
+		versionChecks.Add(this);
+	}
+
+	public VersionCheck(ConfigSync configSync)
+	{
+		ConfigSync = configSync;
+		Name = ConfigSync.Name;
+		versionChecks.Add(this);
+	}
+
+	public void Initialize()
+	{
+		ReceivedCurrentVersion = null;
+		ReceivedMinimumRequiredVersion = null;
+		if (ConfigSync == null)
+		{
+			return;
+		}
+		Name = ConfigSync.Name;
+		DisplayName = ConfigSync.DisplayName!;
+		CurrentVersion = ConfigSync.CurrentVersion!;
+		MinimumRequiredVersion = ConfigSync.MinimumRequiredVersion!;
+		ModRequired = ConfigSync.ModRequired;
+	}
+
+	private bool IsVersionOk()
+	{
+		if (ReceivedMinimumRequiredVersion == null || ReceivedCurrentVersion == null)
+		{
+			return !ModRequired;
+		}
+		bool myVersionOk = new System.Version(CurrentVersion) >= new System.Version(ReceivedMinimumRequiredVersion);
+		bool otherVersionOk = new System.Version(ReceivedCurrentVersion) >= new System.Version(MinimumRequiredVersion);
+		return myVersionOk && otherVersionOk;
+	}
+
+	private string ErrorClient()
+	{
+		if (ReceivedMinimumRequiredVersion == null)
+		{
+			return $"Mod {DisplayName} must not be installed.";
+		}
+		bool myVersionOk = new System.Version(CurrentVersion) >= new System.Version(ReceivedMinimumRequiredVersion);
+		return myVersionOk ? $"Mod {DisplayName} requires maximum {ReceivedCurrentVersion}. Installed is version {CurrentVersion}." : $"Mod {DisplayName} requires minimum {ReceivedMinimumRequiredVersion}. Installed is version {CurrentVersion}.";
+	}
+
+	private string ErrorServer(ZRpc rpc)
+	{
+		return $"Disconnect: The client ({rpc.GetSocket().GetHostName()}) doesn't have the correct {DisplayName} version {MinimumRequiredVersion}";
+	}
+
+	private string Error(ZRpc? rpc = null)
+	{
+		return rpc == null ? ErrorClient() : ErrorServer(rpc);
+	}
+
+	private static VersionCheck[] GetFailedClient()
+	{
+		return versionChecks.Where(check => !check.IsVersionOk()).ToArray();
+	}
+
+	private static VersionCheck[] GetFailedServer(ZRpc rpc)
+	{
+		return versionChecks.Where(check => check.ModRequired && !check.ValidatedClients.Contains(rpc)).ToArray();
+	}
+
+	private static void Logout()
+	{
+		Game.instance.Logout();
+		AccessTools.DeclaredField(typeof(ZNet), "m_connectionStatus").SetValue(null, ZNet.ConnectionStatus.ErrorVersion);
+	}
+
+	private static void DisconnectClient(ZRpc rpc)
+	{
+		rpc.Invoke("Error", (int)ZNet.ConnectionStatus.ErrorVersion);
+	}
+
+	private static void CheckVersion(ZRpc rpc, ZPackage pkg) => CheckVersion(rpc, pkg, null);
+	private static void CheckVersion(ZRpc rpc, ZPackage pkg, Action<ZRpc, ZPackage>? original)
+	{
+		string guid = pkg.ReadString();
+		string minimumRequiredVersion = pkg.ReadString();
+		string currentVersion = pkg.ReadString();
+
+		bool matched = false;
+
+		foreach (VersionCheck check in versionChecks)
+		{
+			if (guid != check.Name)
+			{
+				continue;
+			}
+
+			Debug.Log($"Received {check.DisplayName} version {currentVersion} and minimum version {minimumRequiredVersion} from the {(ZNet.instance.IsServer() ? "client" : "server")}.");
+
+			check.ReceivedMinimumRequiredVersion = minimumRequiredVersion;
+			check.ReceivedCurrentVersion = currentVersion;
+			if (ZNet.instance.IsServer() && check.IsVersionOk())
+			{
+				check.ValidatedClients.Add(rpc);
+			}
+
+			matched = true;
+		}
+
+		if (!matched)
+		{
+			pkg.SetPos(0);
+			if (original is not null)
+			{
+				original(rpc, pkg);
+				if (pkg.GetPos() == 0)
+				{
+					notProcessedNames.Add(guid, currentVersion);
+				}
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(ZNet), "RPC_PeerInfo"), HarmonyPrefix]
+	private static bool RPC_PeerInfo(ZRpc rpc, ZNet __instance)
+	{
+		VersionCheck[] failedChecks = __instance.IsServer() ? GetFailedServer(rpc) : GetFailedClient();
+		if (failedChecks.Length == 0)
+		{
+			return true;
+		}
+
+		foreach (VersionCheck check in failedChecks)
+		{
+			Debug.LogWarning(check.Error(rpc));
+		}
+
+		if (__instance.IsServer())
+		{
+			DisconnectClient(rpc);
+		}
+		else
+		{
+			Logout();
+		}
+		return false;
+	}
+
+	[HarmonyPatch(typeof(ZNet), "OnNewConnection"), HarmonyPrefix]
+	private static void RegisterAndCheckVersion(ZNetPeer peer, ZNet __instance)
+	{
+		notProcessedNames.Clear();
+
+		IDictionary rpcFunctions = (IDictionary)typeof(ZRpc).GetField("m_functions", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(peer.m_rpc);
+		if (rpcFunctions.Contains("ServerSync VersionCheck".GetStableHashCode()))
+		{
+			object function = rpcFunctions["ServerSync VersionCheck".GetStableHashCode()];
+			Action<ZRpc, ZPackage> action = (Action<ZRpc, ZPackage>)function.GetType().GetField("m_action", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(function);
+			peer.m_rpc.Register<ZPackage>("ServerSync VersionCheck", (rpc, pkg) => CheckVersion(rpc, pkg, action));
+		}
+		else
+		{
+			peer.m_rpc.Register<ZPackage>("ServerSync VersionCheck", CheckVersion);
+		}
+
+		foreach (VersionCheck check in versionChecks)
+		{
+			check.Initialize();
+			// If the mod is not required, then it's enough for only one side to do the check.
+			if (!check.ModRequired && !__instance.IsServer())
+			{
+				continue;
+			}
+
+			Debug.Log($"Sending {check.DisplayName} version {check.CurrentVersion} and minimum version {check.MinimumRequiredVersion} to the {(__instance.IsServer() ? "client" : "server")}.");
+
+			ZPackage zpackage = new();
+			zpackage.Write(check.Name);
+			zpackage.Write(check.MinimumRequiredVersion);
+			zpackage.Write(check.CurrentVersion);
+			peer.m_rpc.Invoke("ServerSync VersionCheck", zpackage);
+		}
+	}
+
+	[HarmonyPatch(typeof(ZNet), nameof(ZNet.Disconnect)), HarmonyPrefix]
+	private static void RemoveDisconnected(ZNetPeer peer, ZNet __instance)
+	{
+		if (!__instance.IsServer())
+		{
+			return;
+		}
+		foreach (VersionCheck check in versionChecks)
+		{
+			check.ValidatedClients.Remove(peer.m_rpc);
+		}
+	}
+
+	[HarmonyPatch(typeof(FejdStartup), "ShowConnectError"), HarmonyPostfix]
+	private static void ShowConnectionError(FejdStartup __instance)
+	{
+		if (!__instance.m_connectionFailedPanel.activeSelf || ZNet.GetConnectionStatus() != ZNet.ConnectionStatus.ErrorVersion)
+		{
+			return;
+		}
+		VersionCheck[] failedChecks = GetFailedClient();
+		if (failedChecks.Length > 0)
+		{
+			string error = string.Join("\n", failedChecks.Select(check => check.Error()));
+			__instance.m_connectionFailedError.text += "\n" + error;
+		}
+
+		foreach (KeyValuePair<string, string> kv in notProcessedNames.OrderBy(kv => kv.Key))
+		{
+			if (!__instance.m_connectionFailedError.text.Contains(kv.Key))
+			{
+				__instance.m_connectionFailedError.text += $"\n{kv.Key} (Version: {kv.Value})";
+			}
+		}
 	}
 }

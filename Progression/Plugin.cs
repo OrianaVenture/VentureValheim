@@ -12,8 +12,17 @@ namespace VentureValheim.Progression
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class ProgressionPlugin : BaseUnityPlugin
     {
+        static ProgressionPlugin() { }
+        private ProgressionPlugin() { }
+        private static readonly ProgressionPlugin _instance = new ProgressionPlugin();
+
+        public static ProgressionPlugin Instance
+        {
+            get => _instance;
+        }
+
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.9";
+        private const string ModVersion = "0.0.15";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -24,14 +33,6 @@ namespace VentureValheim.Progression
         private readonly ManualLogSource VentureProgressionLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         public static ManualLogSource GetProgressionLogger() => Instance.VentureProgressionLogger;
-
-        private ProgressionPlugin() { }
-        private static readonly ProgressionPlugin _instance = new ProgressionPlugin();
-
-        public static ProgressionPlugin Instance
-        {
-            get => _instance;
-        }
 
         #region ConfigurationEntries
 
@@ -46,10 +47,16 @@ namespace VentureValheim.Progression
         private static ConfigEntry<bool> CE_BlockAllGlobalKeys = null!;
         private static ConfigEntry<string> CE_BlockedGlobalKeys = null!;
         private static ConfigEntry<string> CE_AllowedGlobalKeys = null!;
+        private static ConfigEntry<bool> CE_UseBossKeysForSkillLevel = null!;
+        private static ConfigEntry<bool> CE_UsePrivateBossKeysForSkillLevel = null!;
+        private static ConfigEntry<int> CE_BossKeysSkillPerKey = null!;
 
         public virtual bool GetBlockAllGlobalKeys() => CE_BlockAllGlobalKeys.Value;
         public virtual string GetBlockedGlobalKeys() => CE_BlockedGlobalKeys.Value;
         public virtual string GetAllowedGlobalKeys() => CE_AllowedGlobalKeys.Value;
+        public virtual bool GetUseBossKeysForSkillLevel() => CE_UseBossKeysForSkillLevel.Value;
+        public virtual bool GetUsePrivateBossKeysForSkillLevel() => CE_UsePrivateBossKeysForSkillLevel.Value;
+        public virtual int GetBossKeysSkillPerKey() => CE_BossKeysSkillPerKey.Value;
 
         // Skills Manager
         private static ConfigEntry<bool> CE_EnableSkillManager = null!;
@@ -112,23 +119,35 @@ namespace VentureValheim.Progression
             #region Configuration
 
             const string general = "General";
+            const string keys = "Keys";
             const string skills = "Skills";
             const string autoScaling = "Auto-Scaling";
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean)",
                 true, true, ref CE_ServerConfigLocked);
+            ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
+
             AddConfig("Enabled", general, "Enable module (boolean).",
                 true, true, ref CE_ModEnabled);
 
-            AddConfig("BlockAllGlobalKeys", general,
+            AddConfig("BlockAllGlobalKeys", keys,
                 "True to stop all global keys from being added to the global list (boolean).",
                 true, true, ref CE_BlockAllGlobalKeys);
-            AddConfig("BlockedGlobalKeys", general,
+            AddConfig("BlockedGlobalKeys", keys,
                 "Stop only these keys being added to the global list when BlockAllGlobalKeys is false (comma-separated).",
                 true, "", ref CE_BlockedGlobalKeys);
-            AddConfig("AllowedGlobalKeys", general,
+            AddConfig("AllowedGlobalKeys", keys,
                 "Allow only these keys being added to the global list when BlockAllGlobalKeys is true (comma-separated).",
                 true, "", ref CE_AllowedGlobalKeys);
+            AddConfig("UseBossKeysForSkillLevel", keys,
+                "True to use private player boss keys to control skill floor/ceiling values (boolean).",
+                true, false, ref CE_UseBossKeysForSkillLevel);
+            AddConfig("UsePrivateBossKeysForSkillLevel", keys,
+                "True to use private player keys, False to use the public key system (When UseBossKeysForSkillLevel is true) (boolean).",
+                true, true, ref CE_UsePrivateBossKeysForSkillLevel);
+            AddConfig("BossKeysSkillPerKey", keys,
+                "Skill drain floor and skill gain ceiling increased this amount per boss defeated (boolean).",
+                true, 10, ref CE_BossKeysSkillPerKey);
 
             AddConfig("EnableSkillManager", skills,
                 "Enable the Skill Manager feature (boolean).",
@@ -188,141 +207,14 @@ namespace VentureValheim.Progression
             if (!CE_ModEnabled.Value)
                 return;
 
-            if (!ConfigureAllModules())
-            {
-                return;
-            }
-
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
             SetupWatcher();
         }
 
-        public bool ConfigureAllModules()
-        {
-            GetProgressionLogger().LogInfo("Initializing Progression configurations...");
-
-            #region Progression Manager
-            try
-            {
-                ProgressionManager.Instance.Initialize(GetBlockedGlobalKeys(), GetAllowedGlobalKeys());
-                GetProgressionLogger().LogInfo(GetBlockAllGlobalKeys()
-                    ? $"Blocking all keys except {ProgressionManager.AllowedGlobalKeysList?.Count ?? 0} globally allowed keys.."
-                    : $"Allowing all keys except {ProgressionManager.BlockedGlobalKeysList?.Count ?? 0} globally blocked keys..");
-            }
-            catch (Exception e)
-            {
-                GetProgressionLogger().LogError("Error configuring ProgressionManager, aborting...");
-                GetProgressionLogger().LogError(e);
-                return false;
-            }
-            #endregion
-
-            #region Skills Manager
-            try
-            {
-                GetProgressionLogger().LogInfo($"Skill Manager is " + (GetEnableSkillManager() == true ? "Enabled" : "Disabled") + ".");
-                if (GetEnableSkillManager())
-                {
-                    SkillsManager.Instance.Initialize();
-                    GetProgressionLogger().LogDebug($"Skill loss is {GetAllowSkillDrain()}.");
-                    GetProgressionLogger().LogDebug($"Maximum level for gain is " + (GetOverrideMaximumSkillLevel() ? GetMaximumSkillLevel() : SkillsManager.SKILL_MAXIMUM) + ".");
-                    GetProgressionLogger().LogDebug($"Minimum level for loss is " + (GetOverrideMinimumSkillLevel() ? GetMinimumSkillLevel() : SkillsManager.SKILL_MINIMUM) + ".");
-                }
-            }
-            catch (Exception e)
-            {
-                GetProgressionLogger().LogError("Error configuring SkillsManager, aborting...");
-                GetProgressionLogger().LogError(e);
-                return false;
-            }
-            #endregion
-
-            #region Auto-Scaling
-            try
-            {
-                if (GetUseAutoScaling())
-                {
-                    float factor = GetAutoScaleFactor();
-                    var scale = WorldConfiguration.Scaling.Vanilla;
-                    if (GetAutoScaleType().ToLower().Equals("exponential"))
-                    {
-                        scale = WorldConfiguration.Scaling.Exponential;
-                    }
-                    else if (GetAutoScaleType().ToLower().Equals("linear"))
-                    {
-                        scale = WorldConfiguration.Scaling.Linear;
-                    }
-
-                    GetProgressionLogger().LogDebug($"WorldConfiguration Initializing with scale: {scale}, factor: {factor}.");
-                    WorldConfiguration.Instance.Initialize(scale, factor);
-
-                    if (GetAutoScaleCreatures())
-                    {
-                        var healthString = GetAutoScaleCreatureHealth();
-                        if (!healthString.IsNullOrWhiteSpace())
-                        {
-                            try
-                            {
-                                var list = healthString.Split(',');
-                                var copy = new int[list.Length];
-                                for (var lcv = 0; lcv < list.Length; lcv++)
-                                {
-                                    copy[lcv] = int.Parse(list[lcv].Trim());
-                                }
-
-                                CreatureConfiguration.Instance.SetBaseHealth(copy);
-                            }
-                            catch
-                            {
-                                GetProgressionLogger().LogWarning("Issue parsing Creature Health configuration, using defaults.");
-                            }
-                        }
-
-                        var damageString = GetAutoScaleCreatureDamage();
-                        if (!damageString.IsNullOrWhiteSpace())
-                        {
-                            try
-                            {
-                                var list = damageString.Split(',');
-                                var copy = new int[list.Length];
-                                for (var lcv = 0; lcv < list.Length; lcv++)
-                                {
-                                    copy[lcv] = int.Parse(list[lcv].Trim());
-                                }
-
-                                CreatureConfiguration.Instance.SetBaseDamage(copy);
-                            }
-                            catch
-                            {
-                                GetProgressionLogger().LogWarning("Issue parsing Creature Damage configuration, using defaults.");
-                            }
-                        }
-
-                        CreatureConfiguration.Instance.Initialize();
-                    }
-
-                    if (GetAutoScaleItems())
-                    {
-                        ItemConfiguration.Instance.Initialize();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                GetProgressionLogger().LogError("Error configuring Auto-Scaling features, aborting...");
-                GetProgressionLogger().LogError(e);
-                return false;
-            }
-            #endregion
-
-            return true;
-        }
-
         private void OnDestroy()
         {
             Config.Save();
-            HarmonyInstance.UnpatchSelf();
         }
 
         private void SetupWatcher()
