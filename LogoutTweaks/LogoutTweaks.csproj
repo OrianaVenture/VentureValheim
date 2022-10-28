@@ -10,7 +10,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.LogoutTweaks</RootNamespace>
         <AssemblyName>VentureValheim.LogoutTweaks</AssemblyName>
-        <Version>0.1.1</Version>
+        <Version>0.2.1</Version>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>
@@ -97,7 +97,7 @@
         <Compile Include="Plugin.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="src\*.cs" />
-        <Compile Include="..\ConfigSync.cs" />
+        <Compile Include="..\ServerSync\ConfigSync.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

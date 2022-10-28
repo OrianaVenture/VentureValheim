@@ -4,18 +4,25 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-This mod is in Beta: Use at your own risk! (make a backup of your data before you update). You will likely need to generate a fresh config file.
-
-Logout Tweaks reapplies previously untracked data from your last logout.
+Apply your rested bonus and stamina from your last logout. Use on servers to prevent "stamina logging".
 
 ## Features
 
+Tracks your rested bonus and stamina values from your last logout and saves to a new file for next login. Helps prevent "stamina logging" where players will log out to replenish their stamina faster or in places where it is impossible like in the ocean.
+
 * Reapply your rested bonus from your last logout
 * Reapply your stamina from your last logout
-* Saves your data to a new file
 * ServerSync included
 
 ## Changelog
+
+### 0.2.1
+
+* ServerSync patch for game patch 0.211.11.
+
+### 0.2.0
+
+* Upgraded ServerSync to V1.11: Crossplay compatibility upgrade for config sync.
 
 ### 0.1.1
 

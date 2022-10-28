@@ -61,7 +61,7 @@ namespace VentureValheim.LogoutTweaks
         [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.SavePlayerData))]
         public static class Patch_PlayerProfile_SavePlayerData
         {
-            private static void Prefix(Player player, PlayerProfile __instance, out StatusEffect __state)
+            private static void Prefix(Player player, out StatusEffect __state)
             {
                 LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Patch_PlayerProfile_SavePlayerData prefix called.");
                 __state = player.m_seman.GetStatusEffect(Rested);
@@ -206,7 +206,7 @@ namespace VentureValheim.LogoutTweaks
 
                 return new FileData(rested, time, passed, stamina);
             }
-            catch (Exception e)
+            catch
             {
                 LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"Failed to load Source: {filesource}, Path: {GetFilePath(_filepath)}");
                 fileReader?.Dispose();
