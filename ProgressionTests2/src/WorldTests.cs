@@ -15,18 +15,15 @@ namespace VentureValheim.ProgressionTests
         }
 
         private const float _factor = 0.1f;
-        private Mock<IWorldConfiguration> mockWorld;
-        private TestWorldConfiguration worldConfiguration;
 
-        private void Setup(WorldConfiguration.Scaling a, float b)
+        private TestWorldConfiguration Setup(WorldConfiguration.Scaling a, float b)
         {
-            mockWorld = new Mock<IWorldConfiguration>();
+            var mockWorld = new Mock<IWorldConfiguration>();
             mockWorld.SetupGet(x => x.WorldScale).Returns(a);
             mockWorld.SetupGet(x => x.ScaleFactor).Returns(b);
 
-            worldConfiguration = new TestWorldConfiguration(mockWorld.Object);
+            return new TestWorldConfiguration(mockWorld.Object);
         }
-
 
         [Theory]
         [InlineData(0, _factor, 1f)]
@@ -37,10 +34,9 @@ namespace VentureValheim.ProgressionTests
         [InlineData(100, _factor, 11f)]
         public void GetScalingLinear_HappyPaths(int order, float factor, float expected)
         {
-            Setup(WorldConfiguration.Scaling.Linear, factor);
+            var worldConfiguration = Setup(WorldConfiguration.Scaling.Linear, factor);
             Assert.Equal(expected, worldConfiguration.GetScaling(order, factor));
         }
-
 
         [Theory]
         [InlineData(0, _factor, 1f)]
@@ -51,10 +47,9 @@ namespace VentureValheim.ProgressionTests
         [InlineData(100, _factor, 13780.64f)]
         public void GetScalingExponential_HappyPaths(int order, float factor, float expected)
         {
-            Setup(WorldConfiguration.Scaling.Exponential, factor);
+            var worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, factor);
             Assert.Equal(expected, worldConfiguration.GetScaling(order, factor));
         }
-
 
         [Theory]
         [InlineData(0, _factor, 1f)]
@@ -63,8 +58,45 @@ namespace VentureValheim.ProgressionTests
         [InlineData(100, _factor, 1f)]
         public void GetScalingVanilla_HappyPaths(int order, float factor, float expected)
         {
-            Setup(WorldConfiguration.Scaling.Vanilla, factor);
+            var worldConfiguration = Setup(WorldConfiguration.Scaling.Vanilla, factor);
             Assert.Equal(expected, worldConfiguration.GetScaling(order, factor));
+        }
+
+        [Theory]
+        [InlineData(WorldConfiguration.Biome.Meadow, (int)WorldConfiguration.Biome.BlackForest)]
+        [InlineData(WorldConfiguration.Biome.BlackForest, (int)WorldConfiguration.Biome.Swamp)]
+        [InlineData(WorldConfiguration.Biome.Swamp, (int)WorldConfiguration.Biome.Mountain)]
+        [InlineData(WorldConfiguration.Biome.Mountain, (int)WorldConfiguration.Biome.Plain)]
+        [InlineData(WorldConfiguration.Biome.Plain, (int)WorldConfiguration.Biome.Mistland)]
+        [InlineData(WorldConfiguration.Biome.Mistland, (int)WorldConfiguration.Biome.AshLand)]
+        [InlineData(WorldConfiguration.Biome.AshLand, (int)WorldConfiguration.Biome.DeepNorth)]
+        public void GetNextBiome_HappyPaths(WorldConfiguration.Biome biome, int expected)
+        {
+            var worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, 0.75f);
+            Assert.Equal(expected, worldConfiguration.GetNextBiome(biome).BiomeType);
+        }
+
+        [Fact]
+        public void GetNextBiome_NotFound()
+        {
+            var worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, 0.75f);
+            Assert.Null(worldConfiguration.GetNextBiome(WorldConfiguration.Biome.DeepNorth));
+        }
+
+        [Theory]
+        [InlineData(WorldConfiguration.Biome.Meadow, 1.75f)]
+        [InlineData(WorldConfiguration.Biome.BlackForest, 3.06f)]
+        [InlineData(WorldConfiguration.Biome.Swamp, 5.36f)]
+        [InlineData(WorldConfiguration.Biome.Mountain, 9.38f)]
+        [InlineData(WorldConfiguration.Biome.Plain, 16.41f)]
+        [InlineData(WorldConfiguration.Biome.Mistland, 28.72f)]
+        [InlineData(WorldConfiguration.Biome.AshLand, 50.27f)]
+        [InlineData(WorldConfiguration.Biome.DeepNorth, 87.96f)]
+        public void GetNextBiomeScaling_HappyPaths(WorldConfiguration.Biome biome, float expected)
+        {
+            var worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, 0.75f);
+            float result = worldConfiguration.GetNextBiomeScale(biome);
+            Assert.Equal(expected, result);
         }
     }
 }

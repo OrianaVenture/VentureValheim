@@ -1,8 +1,6 @@
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using static UnityEngine.UI.GridLayoutGroup;
 using static VentureValheim.Progression.WorldConfiguration;
 
 namespace VentureValheim.Progression
@@ -225,9 +223,9 @@ namespace VentureValheim.Progression
                 order = MAX_BIOME_ORDER;
             }
 
-            var scale = GetScaling(order, ScaleFactor);
+            float scale = GetScaling(order, ScaleFactor);
 
-            if (scale < 0)
+            if (scale < 0f)
             {
                 return null;
             }
@@ -281,11 +279,11 @@ namespace VentureValheim.Progression
             }
             else if (WorldScale == Scaling.Exponential)
             {
-                return (float)Math.Round(Math.Pow((double)(1 + factor), order), 2);
+                return (float)Math.Round(Math.Pow((double)(1f + factor), order), 2);
             }
             else if (WorldScale == Scaling.Linear)
             {
-                return 1 + (float)Math.Round((double)(factor * order), 2);
+                return 1f + (float)Math.Round((double)(factor * order), 2);
             }
 
             return -1f;
@@ -302,7 +300,26 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Recursivly searches biome data for the next occuring biome.
+        /// Searches biome scale data for the next occurring biome,
+        /// if not found calculates based off configurations.
+        /// </summary>
+        /// <param name="originalBiome"></param>
+        /// <returns></returns>
+        public float GetNextBiomeScale(Biome originalBiome)
+        {
+            var biome = GetBiome(originalBiome);
+            var next = GetNextBiome(biome.BiomeOrder);
+
+            if (next == null)
+            {
+                return GetScaling(biome.BiomeOrder + 1, ScaleFactor);
+            }
+
+            return next.ScaleValue;
+        }
+
+        /// <summary>
+        /// Recursively searches biome data for the next occurring biome.
         /// </summary>
         /// <param name="originalOrder"></param>
         /// <returns></returns>
@@ -428,18 +445,6 @@ namespace VentureValheim.Progression
 
             ProgressionPlugin.GetProgressionLogger().LogInfo("Updating Creature Configurations with auto-scaling...");
             CreatureConfiguration.Instance.Initialize();
-
-            // Debugging logs
-            // TODO remove or improve
-            var prefabs = ZNetScene.m_instance.m_prefabs;
-            for (int lcv = 0; lcv < prefabs.Count; lcv++)
-            {
-                var name = prefabs[lcv].name;
-                if (!CreatureConfiguration.Instance.ContainsCreature(name))
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogDebug($"No configuration found for GameObject, skipping: {name}.");
-                }
-            }
 
             CreatureConfiguration.Instance.UpdateCreatures();
         }
