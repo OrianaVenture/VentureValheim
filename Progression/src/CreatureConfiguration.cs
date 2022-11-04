@@ -13,7 +13,7 @@ namespace VentureValheim.Progression
         public int CalculateHealth(CreatureClassification cc, float scale);
         public void SetBaseDamage(int[] values);
         public int GetBaseTotalDamage(WorldConfiguration.Difficulty difficulty);
-        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty, bool overrideData = false);
+        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty);
         public void UpdateCreatures();
         public void VanillaReset();
     }
@@ -44,6 +44,12 @@ namespace VentureValheim.Progression
                 CreatureDifficulty = creatureDifficulty;
                 VanillaHealth = -1;
                 VanillaAttacks = null;
+            }
+
+            public void UpdateCreature(WorldConfiguration.Biome biomeType, WorldConfiguration.Difficulty creatureDifficulty)
+            {
+                BiomeType = biomeType;
+                CreatureDifficulty = creatureDifficulty;
             }
 
             public void SetVanillaHealth(float health)
@@ -298,6 +304,8 @@ namespace VentureValheim.Progression
         /// </summary>
         public void Initialize()
         {
+            if (_vanillaBackupCreated) return;
+
             // Meadow Defaults
             var biome = WorldConfiguration.Biome.Meadow;
             AddCreatureConfiguration("Eikthyr", biome, WorldConfiguration.Difficulty.Boss);
@@ -363,17 +371,16 @@ namespace VentureValheim.Progression
 
             // TODO add options for loading configurations from a file after defaults are set
 
-            if (_vanillaBackupCreated) return;
             CreateVanillaBackup();
         }
 
         /// <summary>
-        /// Adds a new CreatureClassification for scaling or optionally replaces the existing if a configuration already exists.
+        /// Adds a new CreatureClassification for scaling or updates the existing if a configuration already exists.
         /// </summary>
         /// <param name="name">Prefab Name</param>
         /// <param name="biome"></param>
         /// <param name="difficulty"></param>
-        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty, bool overrideData = false)
+        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty)
         {
             try
             {
@@ -381,10 +388,7 @@ namespace VentureValheim.Progression
             }
             catch
             {
-                if (overrideData)
-                {
-                    _creatureData[name] = new CreatureClassification(name, biome, difficulty);
-                }
+                _creatureData[name].UpdateCreature(biome, difficulty);
             }
         }
 

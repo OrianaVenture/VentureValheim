@@ -56,7 +56,7 @@ namespace VentureValheim.ProgressionTests
 
             float sumDamage = itemConfiguration.GetTotalDamage(damageTypes, true);
 
-            Assert.Equal(110f, sumDamage);
+            Assert.Equal(90f, sumDamage);
         }
 
         [Theory]
@@ -76,9 +76,9 @@ namespace VentureValheim.ProgressionTests
                 m_chop = 10f,
                 m_pickaxe = 10f,
                 m_blunt = 10f,
-                m_slash = 0f,
+                m_slash = 10f,
                 m_pierce = 0f,
-                m_fire = 0f,
+                m_fire = 10f,
                 m_frost = 0f,
                 m_lightning = 0f,
                 m_poison = 0f,
@@ -88,12 +88,14 @@ namespace VentureValheim.ProgressionTests
             var result = itemConfiguration.CalculateItemDamageTypes(worldConfiguration.GetBiome(biome), damageTypes, 10f);
 
             var expectedDamage = new HitData.DamageTypes();
-            expectedDamage.m_chop = expected;
-            expectedDamage.m_pickaxe = expected;
+            expectedDamage.m_chop = 10f;
+            expectedDamage.m_pickaxe = 10f;
             expectedDamage.m_blunt = expected;
+            expectedDamage.m_slash = expected;
+            expectedDamage.m_fire = expected;
 
-            Assert.Equal(expected, result.m_chop);
-            Assert.Equal(expected, result.m_pickaxe);
+            Assert.Equal(10f, result.m_chop);
+            Assert.Equal(10f, result.m_pickaxe);
             Assert.Equal(expected, result.m_blunt);
             Assert.Equal(expectedDamage, result);
         }
@@ -156,8 +158,6 @@ namespace VentureValheim.ProgressionTests
         }
 
         [Theory]
-        [InlineData(WorldConfiguration.Biome.Meadow, 10f, 0, 0f)]
-        [InlineData(WorldConfiguration.Biome.Meadow, 10f, 1, 0f)]
         [InlineData(WorldConfiguration.Biome.Meadow, 10f, 2, 1f)]
         [InlineData(WorldConfiguration.Biome.BlackForest, 10f, 2, 2f)]
         [InlineData(WorldConfiguration.Biome.Swamp, 10f, 2, 4f)]
@@ -171,12 +171,12 @@ namespace VentureValheim.ProgressionTests
             HitData.DamageTypes damageTypes = new HitData.DamageTypes
             {
                 m_damage = 0f,
-                m_chop = value,
-                m_pickaxe = value,
+                m_chop = 1f,
+                m_pickaxe = 1f,
                 m_blunt = value,
-                m_slash = 0f,
+                m_slash = value,
                 m_pierce = 0f,
-                m_fire = 0f,
+                m_fire = value,
                 m_frost = 0f,
                 m_lightning = 0f,
                 m_poison = 0f,
@@ -186,12 +186,12 @@ namespace VentureValheim.ProgressionTests
             HitData.DamageTypes damageTypesExpected = new HitData.DamageTypes
             {
                 m_damage = 0f,
-                m_chop = expected,
-                m_pickaxe = expected,
+                m_chop = 1f,
+                m_pickaxe = 1f,
                 m_blunt = expected,
-                m_slash = 0f,
+                m_slash = expected,
                 m_pierce = 0f,
-                m_fire = 0f,
+                m_fire = expected,
                 m_frost = 0f,
                 m_lightning = 0f,
                 m_poison = 0f,
@@ -203,10 +203,41 @@ namespace VentureValheim.ProgressionTests
 
             var result = itemConfiguration.CalculateUpgradeValueTest(scale, nextScale, damageTypes, value, quality);
 
-            Assert.Equal(expected, result.m_chop);
-            Assert.Equal(expected, result.m_pickaxe);
+            Assert.Equal(1f, result.m_chop);
+            Assert.Equal(1f, result.m_pickaxe);
             Assert.Equal(expected, result.m_blunt);
             Assert.Equal(damageTypesExpected, result);
+        }
+
+        [Theory]
+        [InlineData(WorldConfiguration.Biome.Meadow, 10f, 0)]
+        [InlineData(WorldConfiguration.Biome.Meadow, 10f, 1)]
+        public void CalculateUpgradeValue_DamageItemsNone(WorldConfiguration.Biome biome, float value, int quality)
+        {
+            HitData.DamageTypes damageTypes = new HitData.DamageTypes
+            {
+                m_damage = 0f,
+                m_chop = 1f,
+                m_pickaxe = 1f,
+                m_blunt = value,
+                m_slash = value,
+                m_pierce = 0f,
+                m_fire = value,
+                m_frost = 0f,
+                m_lightning = 0f,
+                m_poison = 0f,
+                m_spirit = 0f
+            };
+
+            var scale = worldConfiguration.GetBiomeScaling(biome);
+            var nextScale = worldConfiguration.GetNextBiomeScale(biome);
+
+            var result = itemConfiguration.CalculateUpgradeValueTest(scale, nextScale, damageTypes, value, quality);
+
+            Assert.Equal(0f, result.m_chop);
+            Assert.Equal(0f, result.m_pickaxe);
+            Assert.Equal(0f, result.m_blunt);
+            Assert.Equal(new HitData.DamageTypes(), result);
         }
     }
 }

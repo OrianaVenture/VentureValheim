@@ -153,6 +153,14 @@ namespace VentureValheim.Progression
                 VanillaDamageValue = null;
                 VanillaUpgradeDamageValue = null;
             }
+
+            public void UpdateItem(WorldConfiguration.Biome biomeType, ItemType itemType, ItemCategory itemCategory, float value)
+            {
+                BiomeType = biomeType;
+                ItemType = itemType;
+                ItemCategory = itemCategory;
+                ItemValue = value;
+            }
         }
 
         private Dictionary<ItemType, float> _itemBaseValues = new Dictionary<ItemType, float>();
@@ -179,12 +187,12 @@ namespace VentureValheim.Progression
                 OriginalDamage.m_poison +
                 OriginalDamage.m_spirit;
 
-            if (playerItem)
+            /*if (playerItem)
             {
                 return damage +
                 OriginalDamage.m_chop +
                 OriginalDamage.m_pickaxe;
-            }
+            }*/
 
             return damage;
         }
@@ -239,17 +247,16 @@ namespace VentureValheim.Progression
             HitData.DamageTypes damageTypes = new HitData.DamageTypes();
             var sum = GetTotalDamage(OriginalDamage, playerItem);
 
-            if (playerItem)
+            /*if (playerItem)
             {
                 // If a mob item leave the chop and pickaxe damage alone because it's a little weird for auto-scaling
                 damageTypes.m_chop = ScaleDamage(sum, OriginalDamage.m_chop, baseTotalDamage, multiplier);
                 damageTypes.m_pickaxe = ScaleDamage(sum, OriginalDamage.m_pickaxe, baseTotalDamage, multiplier);
-            }
-            else
-            {
-                damageTypes.m_chop = OriginalDamage.m_chop;
-                damageTypes.m_pickaxe = OriginalDamage.m_pickaxe;
-            }
+            }*/
+
+            // Do not scale chop or pickaxe damage, makes mining stupid
+            damageTypes.m_chop = OriginalDamage.m_chop;
+            damageTypes.m_pickaxe = OriginalDamage.m_pickaxe;
 
             damageTypes.m_damage = ScaleDamage(sum, OriginalDamage.m_damage, baseTotalDamage, multiplier);
             damageTypes.m_blunt = ScaleDamage(sum, OriginalDamage.m_blunt, baseTotalDamage, multiplier);
@@ -442,6 +449,8 @@ namespace VentureValheim.Progression
             // TODO
             // BombOoze
 
+            if (_vanillaBackupCreated) return;
+
             InitializeBaseValues();
             InitializeWeapons();
             InitializeArmor();
@@ -450,7 +459,6 @@ namespace VentureValheim.Progression
             // TODO ability to override the number of upgrades?
             // TODO add options for loading configurations from a file after defaults are set
 
-            if (_vanillaBackupCreated) return;
             CreateVanillaBackup();
         }
 
@@ -617,7 +625,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Adds a ItemClassification for scaling or replaces the existing if a configuration already exists.
+        /// Adds a ItemClassification for scaling or updates the existing if a configuration already exists.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="biome"></param>
@@ -635,7 +643,7 @@ namespace VentureValheim.Progression
                 }
                 catch (ArgumentException)
                 {
-                    _itemData[name] = item;
+                    _itemData[name].UpdateItem(biome, itemType, category, value);
                 }
             }
         }
@@ -664,6 +672,12 @@ namespace VentureValheim.Progression
                         var biome = WorldConfiguration.Instance.GetBiome(data.BiomeType);
                         var newDamage = CalculateItemDamageTypes(biome, original, baseTotalDamage);
                         var upgradeAmount = CalculateUpgradeValue(data.BiomeType, original, baseTotalDamage, upgrades);
+
+                        // temp patch for pickaxe and chop damages
+                        var originalUpgrade = item.m_itemData.m_shared.m_damagesPerLevel;
+                        upgradeAmount.m_chop = originalUpgrade.m_chop;
+                        upgradeAmount.m_pickaxe = originalUpgrade.m_pickaxe;
+
                         UpdateWeapon(item, newDamage, upgrades, upgradeAmount, true);
                     }
                     else if (data.ItemCategory == ItemCategory.Armor)
