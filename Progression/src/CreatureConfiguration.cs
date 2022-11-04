@@ -13,7 +13,7 @@ namespace VentureValheim.Progression
         public int CalculateHealth(CreatureClassification cc, float scale);
         public void SetBaseDamage(int[] values);
         public int GetBaseTotalDamage(WorldConfiguration.Difficulty difficulty);
-        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty, bool overrideData = false);
+        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty);
         public void UpdateCreatures();
         public void VanillaReset();
     }
@@ -46,6 +46,12 @@ namespace VentureValheim.Progression
                 VanillaAttacks = null;
             }
 
+            public void UpdateCreature(WorldConfiguration.Biome biomeType, WorldConfiguration.Difficulty creatureDifficulty)
+            {
+                BiomeType = biomeType;
+                CreatureDifficulty = creatureDifficulty;
+            }
+
             public void SetVanillaHealth(float health)
             {
                 VanillaHealth = health;
@@ -60,16 +66,13 @@ namespace VentureValheim.Progression
                     var item = attacks[lcv].GetComponent<ItemDrop>();
                     if (item != null)
                     {
-                        var name = item.m_itemData.m_shared.m_name;
+                        var name = item.name;
                         var damage = item.m_itemData.m_shared.m_damages;
-                        if (!AddVanillaAttack(name, damage))
-                        {
-                            ProgressionPlugin.GetProgressionLogger().LogDebug($"Attack {name} was not added to creature {Name}. No damage component.");
-                        }
+                        AddVanillaAttack(name, damage);
                     }
                     else
                     {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"Attack for {Name} was not added to creature {Name}. ItemDrop not found.");
+                        ProgressionPlugin.GetProgressionLogger().LogWarning($"Vanilla attack for {attacks[lcv].name} was not added to creature {Name}. ItemDrop not found.");
                     }
                 }
             }
@@ -79,22 +82,24 @@ namespace VentureValheim.Progression
             /// </summary>
             /// <param name="name"></param>
             /// <param name="damage"></param>
-            /// <returns>True if the attack is added to the list.</returns>
-            private bool AddVanillaAttack(string name, HitData.DamageTypes damage)
+            /// <returns></returns>
+            private void AddVanillaAttack(string name, HitData.DamageTypes damage)
             {
                 try
                 {
                     if (ItemConfiguration.Instance.GetTotalDamage(damage, false) > 0)
                     {
                         VanillaAttacks.Add(name, damage);
-                        return true;
+                    }
+                    else
+                    {
+                        ProgressionPlugin.GetProgressionLogger().LogDebug($"Vanilla attack {name} was not added to creature {Name}. No damage component.");
                     }
                 }
                 catch (ArgumentException)
                 {
-                    // TODO optionally log warning
+                    ProgressionPlugin.GetProgressionLogger().LogWarning($"Vanilla attack {name} was not added to creature {Name}. Already exists.");
                 }
-                return false;
             }
         }
 
@@ -250,7 +255,11 @@ namespace VentureValheim.Progression
 
         private void ConfigureAttack(ItemDrop item, HitData.DamageTypes? value)
         {
-            ItemConfiguration.Instance.UpdateWeapon(item, value, false);
+            // Do not send upgrade information in this call, it is not used for non-player items.
+            // If player items and attacks become decoupled this will need an update to
+            // ensure that the item is not being updated twice.
+            // If attacks can be upgraded this will need to be updated.
+            ItemConfiguration.Instance.UpdateWeapon(item, value, 1, null, false);
         }
 
         /// <summary>
@@ -295,6 +304,8 @@ namespace VentureValheim.Progression
         /// </summary>
         public void Initialize()
         {
+            if (_vanillaBackupCreated) return;
+
             // Meadow Defaults
             var biome = WorldConfiguration.Biome.Meadow;
             AddCreatureConfiguration("Eikthyr", biome, WorldConfiguration.Difficulty.Boss);
@@ -360,17 +371,16 @@ namespace VentureValheim.Progression
 
             // TODO add options for loading configurations from a file after defaults are set
 
-            if (_vanillaBackupCreated) return;
             CreateVanillaBackup();
         }
 
         /// <summary>
-        /// Adds a new CreatureClassification for scaling or optionally replaces the existing if a configuration already exists.
+        /// Adds a new CreatureClassification for scaling or updates the existing if a configuration already exists.
         /// </summary>
         /// <param name="name">Prefab Name</param>
         /// <param name="biome"></param>
         /// <param name="difficulty"></param>
-        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty, bool overrideData = false)
+        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty)
         {
             try
             {
@@ -378,10 +388,7 @@ namespace VentureValheim.Progression
             }
             catch
             {
-                if (overrideData)
-                {
-                    _creatureData[name] = new CreatureClassification(name, biome, difficulty);
-                }
+                _creatureData[name].UpdateCreature(biome, difficulty);
             }
         }
 
@@ -407,39 +414,24 @@ namespace VentureValheim.Progression
 
         private void UpdateCreature(float health, ref Humanoid creature)
         {
+            var original = creature.m_health;
             creature.m_health = health;
-            ProgressionPlugin.GetProgressionLogger().LogDebug($"{creature.name} with {creature.m_health} health updated to {health}.");
+            ProgressionPlugin.GetProgressionLogger().LogDebug($"{creature.name} with {original} health updated to {creature.m_health}.");
         }
 
         private void CreateVanillaBackup()
         {
             if (_vanillaBackupCreated) return;
 
-            var prefabs = ZNetScene.m_instance.m_prefabs;
-            for (int lcv = 0; lcv < prefabs.Count; lcv++)
+            ProgressionPlugin.GetProgressionLogger().LogInfo("Configuring vanilla backup for Creature data...");
+
+            foreach (CreatureClassification creatureClass in _creatureData.Values)
             {
-                try
+                var creature = ProgressionAPI.Instance.GetHumanoid(creatureClass.Name);
+                if (creature != null)
                 {
-                    // Find and set base health
-                    Humanoid creature = prefabs[lcv].GetComponent<Humanoid>();
-                    if (creature != null)
-                    {
-                        var config = _creatureData[creature.name];
-                        if (config != null)
-                        {
-                            config.SetVanillaHealth(creature.m_health);
-
-                            // Find all attacks
-                            var attacks = new List<string>();
-                            var defaults = creature.m_defaultItems;
-
-                            config.SetVanillaAttacks(creature.m_defaultItems);
-                        }
-                    }
-                }
-                catch
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogDebug($"No configuration found for GameObject, skipping: {prefabs[lcv].name}.");
+                    creatureClass.SetVanillaHealth(creature.m_health);
+                    creatureClass.SetVanillaAttacks(creature.m_defaultItems);
                 }
             }
 

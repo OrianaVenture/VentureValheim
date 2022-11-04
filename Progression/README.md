@@ -118,6 +118,17 @@ Coming ASAP!
 
 ## Changelog
 
+### 0.0.17
+
+* Bug fix for auto-scaling where a live configuration update would override stored vanilla data
+* Removed chop and pickaxe damage from auto-scaling (I didn't like how it changed the game)
+
+### 0.0.16
+
+* Bug fix for auto-scaling item/creature damages calculating the values incorrectly.
+* Bug fix from last update for creature attacks not configuring
+* Added auto-scaling for item upgrades
+
 ### 0.0.15
 
 * Upgraded ServerSync to V1.11: Crossplay compatibility upgrade for config sync.
