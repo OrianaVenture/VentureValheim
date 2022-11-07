@@ -8,9 +8,18 @@ The good people of Florida hate seasons. If you also hate seasons install this m
 
 ## Features
 
-* Enable all seasonal items in the game
+* Enable all seasonal items in the game including:
+  * Holiday Tree
+  * Gift Boxes
+  * Jackoturnip
+  * Maypole
+  * Midsummer Crown
 
 ## Changelog
+
+### 0.1.4
+
+* Removed configuration to simplify. To disable remove the mod.
 
 ### 0.1.3
 
