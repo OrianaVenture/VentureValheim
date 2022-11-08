@@ -16,7 +16,7 @@ namespace VentureValheim.Template
         private const string ModVersion = "0.1.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
-        private static string ConfigFileName = ModGUID + ModVersion + ".cfg";
+        private static string ConfigFileName = ModGUID + ".cfg";
         private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
@@ -85,7 +85,6 @@ namespace VentureValheim.Template
         private void OnDestroy()
         {
             Config.Save();
-            HarmonyInstance.UnpatchSelf();
         }
 
         private void SetupWatcher()
