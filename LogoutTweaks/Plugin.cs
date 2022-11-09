@@ -13,10 +13,10 @@ namespace VentureValheim.LogoutTweaks
     public class LogoutTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "LogoutTweaks";
-        private const string ModVersion = "0.2.1";
+        private const string ModVersion = "0.3.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
-        private static string ConfigFileName = ModGUID + ModVersion + ".cfg";
+        private static string ConfigFileName = ModGUID + ".cfg";
         private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
@@ -32,10 +32,10 @@ namespace VentureValheim.LogoutTweaks
 
         internal static ConfigEntry<bool> CE_ModEnabled = null!;
 
-        internal static ConfigEntry<bool> CE_UseRestedBonus = null!;
+        internal static ConfigEntry<bool> CE_UseStatusEffects = null!;
         internal static ConfigEntry<bool> CE_UseStamina = null!;
 
-        public static bool GetUseRestedBonus() => CE_UseRestedBonus.Value;
+        public static bool GetUseStatusEffects() => CE_UseStatusEffects.Value;
         public static bool GetUseStamina() => CE_UseStamina.Value;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
@@ -67,8 +67,8 @@ namespace VentureValheim.LogoutTweaks
             AddConfig("Enabled", general,"Enable module (boolean).",
                 true, true, ref CE_ModEnabled);
 
-            AddConfig("UseRestedBonus", general, "Apply rested bonus from last logout (boolean).",
-                true, true, ref CE_UseRestedBonus);
+            AddConfig("UseStatusEffects", general, "Apply all status effects from last logout (boolean).",
+                true, true, ref CE_UseStatusEffects);
             AddConfig("UseStamina", general, "Apply stamina from last logout with regen delay (boolean).",
                 true, true, ref CE_UseStamina);
 
@@ -77,18 +77,7 @@ namespace VentureValheim.LogoutTweaks
             if (!CE_ModEnabled.Value)
                 return;
 
-            LogoutTweaksLogger.LogInfo("Initializing LogoutTweaks configurations...");
-
-            try
-            {
-                LogoutTweaks.Instance.Initialize();
-            }
-            catch (Exception e)
-            {
-                LogoutTweaksLogger.LogError("Error configuring LogoutTweaks, aborting...");
-                LogoutTweaksLogger.LogError(e);
-                return;
-            }
+            LogoutTweaksLogger.LogInfo("Initializing LogoutTweaks.");
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);

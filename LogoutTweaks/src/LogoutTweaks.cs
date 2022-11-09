@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using BepInEx;
 using HarmonyLib;
@@ -19,22 +20,31 @@ namespace VentureValheim.LogoutTweaks
             get => _instance;
         }
 
-        private const string Rested = "Rested";
         private string _filepath = "";
 
         private readonly struct FileData
         {
-            public bool IsRested { get; }
-            public float RestedTime { get; }
-            public float RestedTimePassed { get; }
+            public List<StatusEffectData> StatusEffects { get; }
             public float Stamina { get; }
 
-            public FileData(bool rested, float time, float passed, float stamina)
+            public FileData(float stamina, List<StatusEffectData> effects)
             {
-                IsRested = rested;
-                RestedTime = time;
-                RestedTimePassed = passed;
                 Stamina = stamina;
+                StatusEffects = effects;
+            }
+        }
+
+        private readonly struct StatusEffectData
+        {
+            public string Name { get; }
+            public float Ttl { get; }
+            public float Time { get; }
+
+            public StatusEffectData(string name, float ttl, float time)
+            {
+                Name = name;
+                Ttl = ttl;
+                Time = time;
             }
         }
 
@@ -58,116 +68,26 @@ namespace VentureValheim.LogoutTweaks
             _filepath = "";
         }
 
-        [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.SavePlayerData))]
-        public static class Patch_PlayerProfile_SavePlayerData
-        {
-            private static void Prefix(Player player, out StatusEffect __state)
-            {
-                LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Patch_PlayerProfile_SavePlayerData prefix called.");
-                __state = player.m_seman.GetStatusEffect(Rested);
-            }
-
-            private static void Postfix(Player player, PlayerProfile __instance, StatusEffect __state)
-            {
-                try
-                {
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Patch_PlayerProfile_SavePlayerData postfix called.");
-                    if (Instance.SetFilePaths(__instance.m_fileSource, __instance.GetPath()))
-                    {
-                        if (__state)
-                        {
-                            LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Saving to file: rested bonus is {true}, {__state.m_ttl} total, {__state.m_time} time passed. Stamina: {player.m_stamina}");
-                            FileData fileData = new FileData(true, __state.m_ttl, __state.m_time, player.m_stamina);
-                            Instance.SaveFile(__instance.m_fileSource, fileData);
-                        }
-                        else
-                        {
-                            LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Saving to file: rested bonus is {false}, {0} total, {0} time passed. Stamina: {0}");
-                            FileData fileData = new FileData(false, 0f, 0f, 0f);
-                            Instance.SaveFile(__instance.m_fileSource, fileData);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError("Error saving extra data from file.");
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError(e);
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.LoadPlayerData))]
-        public static class Patch_PlayerProfile_LoadPlayerData
-        { 
-            private static void Postfix(Player player)
-            {
-                if (!SceneManager.GetActiveScene().name.Equals("main") || !(LogoutTweaksPlugin.GetUseRestedBonus() || LogoutTweaksPlugin.GetUseStamina()))
-                {
-                    return;
-                }
-
-                try
-                {
-                    var profile = Game.instance.GetPlayerProfile();
-                    if (!Instance.SetFilePaths(profile.m_fileSource, profile.GetPath())) return;
-
-                    var fileData = Instance.LoadFile(profile.m_fileSource);
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug(
-                        $"Loaded file. Rested bonus is {fileData.IsRested}, {fileData.RestedTime} time total, {fileData.RestedTimePassed} time passed. " +
-                        $"Stamina: {fileData.Stamina}");
-
-                    if (LogoutTweaksPlugin.GetUseRestedBonus() && fileData.IsRested)
-                    {
-                        player.m_seman.AddStatusEffect(Rested, true);
-                        StatusEffect statusEffect = player.m_seman.GetStatusEffect(Rested);
-
-                        statusEffect.m_ttl = fileData.RestedTime;
-                        statusEffect.m_time = fileData.RestedTimePassed;
-
-                        Hud.instance.UpdateStatusEffects(player.m_seman.m_statusEffects);
-
-                        LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Added rested bonus from file.");
-                    }
-
-                    if (LogoutTweaksPlugin.GetUseStamina())
-                    {
-                        player.m_stamina = Mathf.Clamp(fileData.Stamina, 0f, player.m_maxStamina);
-                        player.m_staminaRegenTimer = 5f;
-                    }
-
-                    FileData wipe = new FileData(false, 0f, 0f, 0f);
-                    Instance.SaveFile(profile.m_fileSource, wipe);
-                }
-                catch (Exception e)
-                {
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError("Error loading extra data from file.");
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError(e);
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
-        public static class Patch_Player_Awake
-        {
-            private static void Postfix()
-            {
-                Instance.Initialize();
-            }
-        }
-
         private void SaveFile(FileHelpers.FileSource filesource, FileData fileData)
         {
-            if (Directory.Exists(_filepath))
-            {
-                return;
-            }
-
             // Create ZPackage
             ZPackage zPackage = new ZPackage();
-            zPackage.Write(fileData.IsRested);
-            zPackage.Write(fileData.RestedTime);
-            zPackage.Write(fileData.RestedTimePassed);
             zPackage.Write(fileData.Stamina);
+            if (fileData.StatusEffects == null)
+            {
+                zPackage.Write(0);
+            }
+            else
+            {
+                zPackage.Write(fileData.StatusEffects.Count);
+                for (int lcv = 0; lcv < fileData.StatusEffects.Count; lcv++)
+                {
+                    var effect = fileData.StatusEffects[lcv];
+                    zPackage.Write(effect.Name);
+                    zPackage.Write(effect.Ttl);
+                    zPackage.Write(effect.Time);
+                }
+            }
 
             // Save ZPackage
             FileWriter fileWriter = new FileWriter(GetNewFilePath(_filepath), FileHelpers.FileHelperType.Binary, filesource);
@@ -198,39 +118,204 @@ namespace VentureValheim.LogoutTweaks
 
                 var package = new ZPackage(data);
 
-                bool rested = package.ReadBool();
-                float time = package.ReadSingle();
-                float passed = package.ReadSingle();
                 float stamina = package.ReadSingle();
+                int totalEffects = package.ReadInt();
+
+                List<StatusEffectData> effects = new List<StatusEffectData>();
+                for (int lcv = 0; lcv < totalEffects; lcv++)
+                {
+                    var name = package.ReadString();
+                    var ttl = package.ReadSingle();
+                    var time = package.ReadSingle();
+                    effects.Add(new StatusEffectData(name, ttl, time));
+                }
+
                 fileReader.Dispose();
 
-                return new FileData(rested, time, passed, stamina);
+                return new FileData(stamina, effects);
             }
             catch
             {
                 LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"Failed to load Source: {filesource}, Path: {GetFilePath(_filepath)}");
                 fileReader?.Dispose();
-                return new FileData(false, 0f, 0f, 0f);
+                return new FileData(0f, null);
             }
         }
 
         /// <summary>
-        /// Set the file path if defined.
+        /// Set the file path if not already defined.
         /// </summary>
-        /// <param name="filesource"></param>
         /// <param name="path"></param>
-        /// <returns></returns>
-        private bool SetFilePaths(FileHelpers.FileSource filesource, string path)
+        /// <returns>Returns true if the file path is defined.</returns>
+        protected bool SetFilePaths(string path)
         {
-            if (Instance._filepath.IsNullOrWhiteSpace())
+            if (_filepath.IsNullOrWhiteSpace())
             {
-                Instance._filepath = path;
+                if (!path.IsNullOrWhiteSpace())
+                {
+                    _filepath = path;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        public static bool IsInTheMainScene()
+        {
+            return SceneManager.GetActiveScene().name.Equals("main");
+        }
+
+        #region Patches
+
+        [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.SavePlayerData))]
+        public static class Patch_PlayerProfile_SavePlayerData
+        {
+            private static void Prefix(Player player, out List<StatusEffect> __state)
+            {
+                LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug("Grabbing all status effects.");
+                __state = player.m_seman.GetStatusEffects(); // Should never be null
             }
 
-            if (!Instance._filepath.IsNullOrWhiteSpace()) return true;
+            private static void Postfix(Player player, PlayerProfile __instance, List<StatusEffect> __state)
+            {
+                try
+                {
+                    if (!Instance.SetFilePaths(__instance.GetPath()))
+                    {
+                        LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning("No file path was set, cannot save extra data.");
+                        return;
+                    }
 
-            LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"File paths could not be set for FileSource: {filesource}, data may not load correctly.");
-            return false;
+                    float stamina;
+
+                    if (LogoutTweaksPlugin.GetUseStamina())
+                    {
+                        stamina = player.m_stamina;
+                    }
+                    else
+                    {
+                        stamina = player.GetMaxStamina();
+                    }
+
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Stamina found: {stamina}.");
+
+                    List<StatusEffectData> data = new List<StatusEffectData>();
+
+                    if (LogoutTweaksPlugin.GetUseStatusEffects())
+                    {
+
+                        if (__state == null)
+                        {
+                            LogoutTweaksPlugin.LogoutTweaksLogger.LogInfo("Unable to determine status effects, this can indicate a mod conflict.");
+                        }
+                        else
+                        {
+                            for (int lcv = 0; lcv < __state.Count; lcv++)
+                            {
+                                string name = __state[lcv].name;
+                                float ttl = __state[lcv].m_ttl;
+                                float time = __state[lcv].m_time;
+
+                                LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Status Effect found \"{name}\": {ttl} total, {time} time passed.");
+                                StatusEffectData effect = new StatusEffectData(name, ttl, time);
+                                data.Add(effect);
+                            }
+                        }
+                    }
+
+                    FileData fileData = new FileData(stamina, data);
+                    Instance.SaveFile(__instance.m_fileSource, fileData);
+                }
+                catch (Exception e)
+                {
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError("Error trying to parse and save extra data to file.");
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError(e);
+                }
+            }
         }
+
+        [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.LoadPlayerData))]
+        public static class Patch_PlayerProfile_LoadPlayerData
+        {
+            private static void Postfix(Player player, PlayerProfile __instance)
+            {
+                try
+                {
+                    if (!IsInTheMainScene())
+                    {
+                        return;
+                    }
+
+                    if (!Instance.SetFilePaths(__instance.GetPath()))
+                    {
+                        LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning("No file path was set, cannot load extra data.");
+                        return;
+                    }
+
+
+                    var fileData = Instance.LoadFile(__instance.m_fileSource);
+
+                    if (LogoutTweaksPlugin.GetUseStamina())
+                    {
+                        player.m_staminaRegenTimer = 5f;
+                        player.m_stamina = Mathf.Clamp(fileData.Stamina, 0f, player.m_maxStamina);
+                        LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Stamina found in file: {fileData.Stamina}.");
+                    }
+
+                    if (LogoutTweaksPlugin.GetUseStatusEffects())
+                    {
+                        var effects = fileData.StatusEffects;
+                        for (int lcv = 0; lcv < effects.Count; lcv++)
+                        {
+                            string name = effects[lcv].Name;
+                            float ttl = effects[lcv].Ttl;
+                            float time = effects[lcv].Time;
+
+                            LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Status Effect found in file \"{name}\": {ttl} total, {time} time passed.");
+                            
+                            player.m_seman.AddStatusEffect(name);
+                            StatusEffect statusEffect = player.m_seman.GetStatusEffect(name);
+                            if (statusEffect != null)
+                            {
+                                statusEffect.m_ttl = ttl;
+                                statusEffect.m_time = time;
+                            }
+                            else
+                            {
+                                LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug($"Status Effect {name} could not be initialized.");
+                            }
+                        }
+
+                        Hud.instance.UpdateStatusEffects(player.m_seman.m_statusEffects);
+                    }
+
+                    // Wipe data after loading
+                    Instance.SaveFile(__instance.m_fileSource, new FileData(0f, null));
+                }
+                catch (Exception e)
+                {
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError("Error loading extra data from file.");
+                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
+        public static class Patch_Player_Awake
+        {
+            private static void Postfix()
+            {
+                Instance.Initialize();
+            }
+        }
+
+        #endregion
     }
 }

@@ -4,17 +4,32 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Apply your rested bonus and stamina from your last logout. Use on servers to prevent "stamina logging".
+Apply your stamina and status effects from your last logout. Use on servers to prevent "stamina logging".
 
 ## Features
 
-Tracks your rested bonus and stamina values from your last logout and saves to a new file for next login. Helps prevent "stamina logging" where players will log out to replenish their stamina faster or in places where it is impossible like in the ocean.
+This mod saves previously untracked data from your last logout to a new file for next login.
 
-* Reapply your rested bonus from your last logout
-* Reapply your stamina from your last logout
+### Status Effects
+
+When enabled applies all status effects from your last logout including your rested bonus.
+
+### Stamina
+
+When enabled it will apply the last stamina value from your last logout. If no file is found this value is set to 0 to prevent "stamina logging". Adds a 5 second delay to your stamina regen.
+
+### Other Features
+
 * ServerSync included
 
 ## Changelog
+
+### 0.3.0
+
+* Now tracks all status effects!
+* Fix for stamina config setting, now lets you ignore that feature entirely
+* You will need to generate a new config file
+* Changed file storage structure, expect a warning on version upgrade.
 
 ### 0.2.1
 
