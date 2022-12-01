@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using static VentureValheim.Progression.CreatureConfiguration;
 
 namespace VentureValheim.Progression
 {
@@ -27,80 +25,6 @@ namespace VentureValheim.Progression
         public static CreatureConfiguration Instance
         {
             get => _instance;
-        }
-
-        public class CreatureClassification
-        {
-            public string Name { get; private set; }
-            public WorldConfiguration.Biome BiomeType { get; private set; }
-            public WorldConfiguration.Difficulty CreatureDifficulty { get; private set; }
-            public Dictionary<string, HitData.DamageTypes> VanillaAttacks { get; private set; }
-            public float VanillaHealth { get; private set; }
-
-            public CreatureClassification(string name, WorldConfiguration.Biome biomeType, WorldConfiguration.Difficulty creatureDifficulty)
-            {
-                Name = name;
-                BiomeType = biomeType;
-                CreatureDifficulty = creatureDifficulty;
-                VanillaHealth = -1;
-                VanillaAttacks = null;
-            }
-
-            public void UpdateCreature(WorldConfiguration.Biome biomeType, WorldConfiguration.Difficulty creatureDifficulty)
-            {
-                BiomeType = biomeType;
-                CreatureDifficulty = creatureDifficulty;
-            }
-
-            public void SetVanillaHealth(float health)
-            {
-                VanillaHealth = health;
-            }
-
-            public void SetVanillaAttacks(GameObject[] attacks)
-            {
-                VanillaAttacks = new Dictionary<string, HitData.DamageTypes>();
-
-                for (int lcv = 0; lcv < attacks.Length; lcv++)
-                {
-                    var item = attacks[lcv].GetComponent<ItemDrop>();
-                    if (item != null)
-                    {
-                        var name = item.name;
-                        var damage = item.m_itemData.m_shared.m_damages;
-                        AddVanillaAttack(name, damage);
-                    }
-                    else
-                    {
-                        ProgressionPlugin.GetProgressionLogger().LogWarning($"Vanilla attack for {attacks[lcv].name} was not added to creature {Name}. ItemDrop not found.");
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Adds the given vanilla DamageTypes for an attack.
-            /// </summary>
-            /// <param name="name"></param>
-            /// <param name="damage"></param>
-            /// <returns></returns>
-            private void AddVanillaAttack(string name, HitData.DamageTypes damage)
-            {
-                try
-                {
-                    if (ItemConfiguration.Instance.GetTotalDamage(damage, false) > 0)
-                    {
-                        VanillaAttacks.Add(name, damage);
-                    }
-                    else
-                    {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"Vanilla attack {name} was not added to creature {Name}. No damage component.");
-                    }
-                }
-                catch (ArgumentException)
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogWarning($"Vanilla attack {name} was not added to creature {Name}. Already exists.");
-                }
-            }
         }
 
         private Dictionary<string, CreatureClassification> _creatureData = new Dictionary<string, CreatureClassification>();
@@ -222,34 +146,44 @@ namespace VentureValheim.Progression
 
                 if (maxTotalDamage <= 0)
                 {
-                    ProgressionPlugin.GetProgressionLogger()
+                    ProgressionPlugin.VentureProgressionLogger
                         .LogDebug($"All {totalAttacks} attacks for {cc.Name} have no damage components. Skipping attack configuration.");
                     return;
                 }
 
+                // TODO rework such that only overriden values will be touched with new settings
                 foreach (var attack in cc.VanillaAttacks)
                 {
                     ItemDrop item = ProgressionAPI.Instance.GetItemDrop(attack.Key);
                     if (item != null)
                     {
-                        var vanillaAttack = attack.Value;
-                        float vanillaAttackSum = ItemConfiguration.Instance.GetTotalDamage(vanillaAttack, false);
-                        var baseTotalDamage = GetBaseTotalDamage(cc.CreatureDifficulty);
-                        var biomeData = WorldConfiguration.Instance.GetBiome(cc.BiomeType);
-                        var damage = ItemConfiguration.Instance.CalculateCreatureDamageTypes(biomeData, vanillaAttack, baseTotalDamage, maxTotalDamage);
-                        ConfigureAttack(item, damage);
+                        if (cc.AttackOverriden(attack.Key))
+                        {
+                            // TODO
+                            ConfigureAttack(item, cc.OverrideAttacks[attack.Key]);
+                        }
+                        else
+                        {
+                            var vanillaAttack = attack.Value;
+                            float vanillaAttackSum = ItemConfiguration.Instance.GetTotalDamage(vanillaAttack);
+                            var baseTotalDamage = GetBaseTotalDamage(cc.CreatureDifficulty);
+                            var biomeData = WorldConfiguration.Instance.GetBiome(cc.BiomeType);
+                            var damage = ItemConfiguration.Instance.CalculateCreatureDamageTypes(biomeData, vanillaAttack, baseTotalDamage, maxTotalDamage);
+                            ConfigureAttack(item, damage);
+                        }
+                        
                     }
                     else
                     {
-                        ProgressionPlugin.GetProgressionLogger().LogWarning(
+                        ProgressionPlugin.VentureProgressionLogger.LogWarning(
                             $"Failed to configure \"{attack.Key}\" for {cc.Name}. Did you forget to define your custom creature attacks?");
                     }
                 }
             }
             catch (Exception e)
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug($"Error configuring attacks for {cc.Name}. Skipping.");
-                ProgressionPlugin.GetProgressionLogger().LogDebug(e);
+                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Error configuring attacks for {cc.Name}. Skipping.");
+                ProgressionPlugin.VentureProgressionLogger.LogDebug(e);
             }
         }
 
@@ -281,7 +215,7 @@ namespace VentureValheim.Progression
 
                     if (item != null)
                     {
-                        var damage = ItemConfiguration.Instance.GetTotalDamage(item.m_itemData.m_shared.m_damages, false);
+                        var damage = ItemConfiguration.Instance.GetTotalDamage(item.m_itemData.m_shared.m_damages);
 
                         if (damage > 0)
                         {
@@ -304,6 +238,7 @@ namespace VentureValheim.Progression
         /// </summary>
         public void Initialize()
         {
+            // TODO optional field to ignore defaults
             if (_vanillaBackupCreated) return;
 
             // Meadow Defaults
@@ -369,6 +304,9 @@ namespace VentureValheim.Progression
             biome = WorldConfiguration.Biome.Ocean;
             AddCreatureConfiguration("Serpent", biome, WorldConfiguration.Difficulty.Expert);
 
+            // Mistlands Creatures
+            // TODO
+
             // TODO add options for loading configurations from a file after defaults are set
 
             CreateVanillaBackup();
@@ -399,15 +337,24 @@ namespace VentureValheim.Progression
         {
             CreateVanillaBackup();
 
-            foreach (CreatureClassification creatureClass in _creatureData.Values)
+            foreach (CreatureClassification cc in _creatureData.Values)
             {
-                var creature = ProgressionAPI.Instance.GetHumanoid(creatureClass.Name);
+                var creature = ProgressionAPI.Instance.GetHumanoid(cc.Name);
                 if (creature != null)
                 {
-                    var scale = WorldConfiguration.Instance.GetBiomeScaling(creatureClass.BiomeType);
-                    float health = ProgressionAPI.Instance.PrettifyNumber(CalculateHealth(creatureClass, scale));
-                    UpdateCreature(health, ref creature);
-                    ConfigureAttacks(creatureClass);
+                    // TODO test
+                    if (cc.HealthOverriden())
+                    {
+                        UpdateCreature(cc.OverrideHealth, ref creature);
+                    }
+                    else
+                    {
+                        var scale = WorldConfiguration.Instance.GetBiomeScaling(cc.BiomeType);
+                        float health = ProgressionAPI.Instance.PrettifyNumber(CalculateHealth(cc, scale));
+                        UpdateCreature(health, ref creature);
+                    }
+                    
+                    ConfigureAttacks(cc);
                 }
             }
         }
@@ -416,14 +363,14 @@ namespace VentureValheim.Progression
         {
             var original = creature.m_health;
             creature.m_health = health;
-            ProgressionPlugin.GetProgressionLogger().LogDebug($"{creature.name} with {original} health updated to {creature.m_health}.");
+            ProgressionPlugin.VentureProgressionLogger.LogDebug($"{creature.name} with {original} health updated to {creature.m_health}.");
         }
 
         private void CreateVanillaBackup()
         {
             if (_vanillaBackupCreated) return;
 
-            ProgressionPlugin.GetProgressionLogger().LogInfo("Configuring vanilla backup for Creature data...");
+            ProgressionPlugin.VentureProgressionLogger.LogInfo("Configuring vanilla backup for Creature data...");
 
             foreach (CreatureClassification creatureClass in _creatureData.Values)
             {
@@ -470,6 +417,16 @@ namespace VentureValheim.Progression
             {
                 CreateVanillaBackup();
             }
+        }
+
+        public void ReadCustomValues()
+        {
+            // TODO read yaml files
+
+            // Possible values to override include
+            // Health
+            // Attacks for specific creatures
+
         }
     }
 }

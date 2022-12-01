@@ -1,7 +1,6 @@
 ﻿using Moq;
 using Xunit;
 using VentureValheim.Progression;
-using static VentureValheim.ProgressionTests.APITests;
 
 namespace VentureValheim.ProgressionTests
 {
@@ -41,12 +40,12 @@ namespace VentureValheim.ProgressionTests
         private TestKeyManager Setup(string a, string b)
         {
             var mockManager = new Mock<IKeyManager>();
-            mockManager.SetupGet(x => x.BlockedGlobalKeys).Returns(a);
-            mockManager.SetupGet(x => x.AllowedGlobalKeys).Returns(b);
+            mockManager.Setup(x => x.BlockedGlobalKeys).Returns(a);
+            mockManager.Setup(x => x.AllowedGlobalKeys).Returns(b);
             var set1 = ProgressionAPI.Instance.StringToSet(a);
             var set2 = ProgressionAPI.Instance.StringToSet(b);
-            mockManager.SetupGet(x => x.BlockedGlobalKeysList).Returns(set1);
-            mockManager.SetupGet(x => x.AllowedGlobalKeysList).Returns(set2);
+            mockManager.Setup(x => x.BlockedGlobalKeysList).Returns(set1);
+            mockManager.Setup(x => x.AllowedGlobalKeysList).Returns(set2);
 
             return new TestKeyManager(mockManager.Object);
         }

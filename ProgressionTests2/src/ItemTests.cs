@@ -54,7 +54,7 @@ namespace VentureValheim.ProgressionTests
                 m_spirit = 10f
             };
 
-            float sumDamage = itemConfiguration.GetTotalDamage(damageTypes, true);
+            float sumDamage = itemConfiguration.GetTotalDamage(damageTypes);
 
             Assert.Equal(90f, sumDamage);
         }
@@ -103,13 +103,13 @@ namespace VentureValheim.ProgressionTests
         [Fact]
         public void GetItemCategory_All()
         {
-            Array items = Enum.GetValues(typeof(ItemConfiguration.ItemType));
+            Array items = Enum.GetValues(typeof(ItemType));
             foreach (var item in items)
             {
-                var itemType = (ItemConfiguration.ItemType)item;
-                if (itemType != ItemConfiguration.ItemType.Undefined && itemType != ItemConfiguration.ItemType.None)
+                var itemType = (ItemType)item;
+                if (itemType != ItemType.Undefined && itemType != ItemType.None)
                 {
-                    Assert.True(itemConfiguration.GetItemCategory(itemType) != ItemConfiguration.ItemCategory.Undefined);
+                    Assert.True(ItemClassification.GetItemCategory(itemType) != ItemCategory.Undefined);
                 }
             }
         }

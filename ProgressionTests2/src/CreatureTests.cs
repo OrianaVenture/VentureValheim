@@ -72,7 +72,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData(WorldConfiguration.Biome.Plain, WorldConfiguration.Difficulty.Boss, 4690)]
         public void GetCreatureHealth_All(WorldConfiguration.Biome biome, WorldConfiguration.Difficulty d, int expected)
         {
-            var test = new CreatureConfiguration.CreatureClassification("test", biome, d);
+            var test = new CreatureClassification("test", biome, d);
             Assert.Equal(expected, creatureConfiguration.CalculateHealth(test, worldConfiguration.GetBiomeScaling(biome)));
         }
 
@@ -107,7 +107,7 @@ namespace VentureValheim.ProgressionTests
                 m_spirit = 10f
             };
 
-            float sumDamage = itemConfiguration.GetTotalDamage(damageTypes, false);
+            float sumDamage = itemConfiguration.GetTotalDamage(damageTypes);
 
             Assert.Equal(90f, sumDamage);
         }
@@ -160,7 +160,7 @@ namespace VentureValheim.ProgressionTests
                 m_spirit = 0f
             };
 
-            var max = itemConfiguration.GetTotalDamage(damageTypes, false);
+            var max = itemConfiguration.GetTotalDamage(damageTypes);
 
             var newDamage = creatureConfiguration.GetBaseTotalDamage(d);
 

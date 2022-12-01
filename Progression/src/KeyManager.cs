@@ -70,8 +70,8 @@ namespace VentureValheim.Progression
             }
             catch (Exception e)
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug("Exception in ResetPlayer...");
-                ProgressionPlugin.GetProgressionLogger().LogDebug(e);
+                ProgressionPlugin.VentureProgressionLogger.LogDebug("Exception in ResetPlayer...");
+                ProgressionPlugin.VentureProgressionLogger.LogDebug(e);
             }
         }
 
@@ -89,8 +89,8 @@ namespace VentureValheim.Progression
 
         private void UpdateConfigs(float delta)
         {
-            UpdateGlobalKeyConfiguration(ProgressionPlugin.Instance.GetBlockedGlobalKeys(), ProgressionPlugin.Instance.GetAllowedGlobalKeys());
-            ProgressionPlugin.GetProgressionLogger().LogDebug($"Updating chached Key Information: {delta} time passed.");
+            UpdateGlobalKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedGlobalKeys(), ProgressionConfiguration.Instance.GetAllowedGlobalKeys());
+            ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating chached Key Information: {delta} time passed.");
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace VentureValheim.Progression
             if (Directory.Exists(_filepath) && !_fileLoaded)
             {
                 // Do not override an existing file that has not been loaded yet.
-                ProgressionPlugin.GetProgressionLogger().LogDebug("Skipping Saving Player Keys.");
+                ProgressionPlugin.VentureProgressionLogger.LogDebug("Skipping Saving Player Keys.");
                 return;
             }
 
@@ -321,8 +321,8 @@ namespace VentureValheim.Progression
             }
             catch (Exception e)
             {
-                ProgressionPlugin.GetProgressionLogger().LogWarning($"Failed to load Source: {filesource}, Path: {GetFilePath(_filepath)}");
-                ProgressionPlugin.GetProgressionLogger().LogWarning(e);
+                ProgressionPlugin.VentureProgressionLogger.LogWarning($"Failed to load Source: {filesource}, Path: {GetFilePath(_filepath)}");
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(e);
                 fileReader?.Dispose();
             }
 
@@ -366,19 +366,19 @@ namespace VentureValheim.Progression
             private static bool Prefix(string name)
             {
                 Instance.Update();
-                if (Instance.BlockGlobalKey(ProgressionPlugin.Instance.GetBlockAllGlobalKeys(), name))
+                if (Instance.BlockGlobalKey(ProgressionConfiguration.Instance.GetBlockAllGlobalKeys(), name))
                 {
-                    ProgressionPlugin.GetProgressionLogger().LogDebug($"Skipping adding global key: {name}.");
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug($"Skipping adding global key: {name}.");
                     return false; // Skip adding the global key
                 }
 
-                ProgressionPlugin.GetProgressionLogger().LogDebug($"Adding global key: {name}.");
+                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Adding global key: {name}.");
                 return true; // Continue adding the global key
             }
 
             private static void Postfix(string name)
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug($"Adding private key: {name}.");
+                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Adding private key: {name}.");
                 Instance.AddPrivateKey(name);
             }
         }
@@ -390,7 +390,7 @@ namespace VentureValheim.Progression
             {
                 try
                 {
-                    ProgressionPlugin.GetProgressionLogger().LogDebug("Patch_PlayerProfile_SavePlayerData postfix called. Saving Keys.");
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug("Patch_PlayerProfile_SavePlayerData postfix called. Saving Keys.");
                     if (Instance.SetFilePaths(__instance.GetPath()))
                     {
                         Instance.SaveFile(__instance.m_fileSource, Instance.PrivateKeysList);
@@ -398,8 +398,8 @@ namespace VentureValheim.Progression
                 }
                 catch (Exception e)
                 {
-                    ProgressionPlugin.GetProgressionLogger().LogError("Error saving key data from file.");
-                    ProgressionPlugin.GetProgressionLogger().LogError(e);
+                    ProgressionPlugin.VentureProgressionLogger.LogError("Error saving key data from file.");
+                    ProgressionPlugin.VentureProgressionLogger.LogError(e);
                 }
             }
         }
@@ -416,7 +416,7 @@ namespace VentureValheim.Progression
 
                 try
                 {
-                    ProgressionPlugin.GetProgressionLogger().LogDebug("Patch_PlayerProfile_LoadPlayerData postfix called. Loading keys.");
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug("Patch_PlayerProfile_LoadPlayerData postfix called. Loading keys.");
                     // TODO test
                     //var profile = Game.instance.GetPlayerProfile();
                     var profile = __instance;
@@ -426,13 +426,13 @@ namespace VentureValheim.Progression
                     }
                     else
                     {
-                        ProgressionPlugin.GetProgressionLogger().LogWarning($"File paths could not be set for FileSource: {profile.m_fileSource}, keys data may not load or save correctly.");
+                        ProgressionPlugin.VentureProgressionLogger.LogWarning($"File paths could not be set for FileSource: {profile.m_fileSource}, keys data may not load or save correctly.");
                     }
                 }
                 catch (Exception e)
                 {
-                    ProgressionPlugin.GetProgressionLogger().LogError("Error loading key data from file.");
-                    ProgressionPlugin.GetProgressionLogger().LogError(e);
+                    ProgressionPlugin.VentureProgressionLogger.LogError("Error loading key data from file.");
+                    ProgressionPlugin.VentureProgressionLogger.LogError(e);
                 }
             }
         }
@@ -442,7 +442,7 @@ namespace VentureValheim.Progression
         {
             private static void Postfix()
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug("Resetting Player Key Manager.");
+                ProgressionPlugin.VentureProgressionLogger.LogDebug("Resetting Player Key Manager.");
                 Instance.ResetPlayer();
             }
         }
@@ -466,7 +466,7 @@ namespace VentureValheim.Progression
                     return;
                 }
 
-                ProgressionPlugin.GetProgressionLogger().LogInfo("Adding Terminal Commands for private key management.");
+                ProgressionPlugin.VentureProgressionLogger.LogInfo("Adding Terminal Commands for private key management.");
 
                 new Terminal.ConsoleCommand("setprivatekey", "[name]", delegate (Terminal.ConsoleEventArgs args)
                 {

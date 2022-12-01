@@ -210,16 +210,16 @@ namespace VentureValheim.Progression
                         ItemDrop itemDrop = obj.GetComponent<ItemDrop>();
                         var filePath = $"{path}{Path.DirectorySeparatorChar}{itemDrop.name}.json";
                         File.WriteAllText(filePath, JsonUtility.ToJson(itemDrop, true));
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"{itemDrop.name} data written to file: {filePath}.");
+                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"{itemDrop.name} data written to file: {filePath}.");
 
                         HitData.DamageTypes damage = itemDrop.m_itemData.m_shared.m_damages;
                         filePath = $"{path}{Path.DirectorySeparatorChar}{itemDrop.name}.damage.json";
                         File.WriteAllText(filePath, JsonUtility.ToJson(damage, true));
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"{itemDrop.name} damage data written to file: {filePath}.");
+                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"{itemDrop.name} damage data written to file: {filePath}.");
                     }
                     catch
                     {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"Failed to write to file for GameObject: {obj.name}.");
+                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"Failed to write to file for GameObject: {obj.name}.");
                     }
                 }
             }
@@ -236,11 +236,11 @@ namespace VentureValheim.Progression
                         ItemDrop itemDrop = obj.m_item.GetComponent<ItemDrop>();
                         var filePath = $"{path}{Path.DirectorySeparatorChar}{itemDrop.name}.json";
                         File.WriteAllText(filePath, JsonUtility.ToJson(itemDrop, true));
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"{itemDrop.name} data written to file: {filePath}.");
+                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"{itemDrop.name} data written to file: {filePath}.");
                     }
                     catch
                     {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"Failed to write to file for GameObject: {obj.name}.");
+                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"Failed to write to file for GameObject: {obj.name}.");
                     }
                 }
             }
@@ -260,13 +260,13 @@ namespace VentureValheim.Progression
                         {
                             var filePath = $"{path}{Path.DirectorySeparatorChar}{character.name}.json";
                             File.WriteAllText(filePath, JsonUtility.ToJson(character, true));
-                            ProgressionPlugin.GetProgressionLogger().LogDebug($"{obj.name} data written to file: {filePath}.");
+                            ProgressionPlugin.VentureProgressionLogger.LogDebug($"{obj.name} data written to file: {filePath}.");
                         }
 
                     }
                     catch
                     {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"Failed to write to file for GameObject: {obj.name}.");
+                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"Failed to write to file for GameObject: {obj.name}.");
                     }
                 }
             }

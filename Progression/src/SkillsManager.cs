@@ -4,42 +4,16 @@ using UnityEngine;
 
 namespace VentureValheim.Progression
 {
-    public interface ISkillsManager
-    {
-        public int BossKeysSkillPerKey { get; }
-        public bool OverrideMaximumSkillLevel { get; }
-        public float MaximumSkillLevel { get; }
-        public bool OverrideMinimumSkillLevel { get; }
-        public float MinimumSkillLevel { get; }
-        public bool UseAbsoluteSkillDrain { get; }
-        public int AbsoluteSkillDrain { get; }
-        public bool CompareAndSelectDrain { get; }
-        public bool CompareUseMinimumDrain { get; }
-    }
-
-    public class SkillsManager : ISkillsManager
+    public class SkillsManager
     {
         static SkillsManager() { }
         protected SkillsManager() { }
-        private static readonly ISkillsManager _instance = new SkillsManager();
+        private static readonly SkillsManager _instance = new SkillsManager();
 
         public static SkillsManager Instance
         {
-            get => _instance as SkillsManager;
+            get => _instance;
         }
-
-        public bool UseBossKeysForSkillLevel { get; protected set; }
-        public bool UsePrivateBossKeysForSkillLevel { get; protected set; }
-        public int BossKeysSkillPerKey { get; protected set; }
-        public int PublicBossKeysCount { get; protected set; }
-        public bool OverrideMaximumSkillLevel { get; protected set; }
-        public float MaximumSkillLevel { get; protected set; }
-        public bool OverrideMinimumSkillLevel { get; protected set; }
-        public float MinimumSkillLevel { get; protected set; }
-        public bool UseAbsoluteSkillDrain { get; protected set; }
-        public int AbsoluteSkillDrain { get; protected set; }
-        public bool CompareAndSelectDrain { get; protected set; }
-        public bool CompareUseMinimumDrain { get; protected set; }
 
         public const float SKILL_MINIMUM = 0f;
         public const float SKILL_MAXIMUM = 100f;
@@ -58,10 +32,8 @@ namespace VentureValheim.Progression
 
             if (delta > _update)
             {
-                UpdateConfigs(delta);
-
                 int bossesDefeated;
-                if (UsePrivateBossKeysForSkillLevel)
+                if (ProgressionConfiguration.Instance.GetUsePrivateBossKeysForSkillLevel())
                 {
                     bossesDefeated = KeyManager.Instance.GetPrivateBossKeysCount();
                 }
@@ -79,34 +51,13 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Update cached configuration values.
-        /// </summary>
-        /// <param name="delta"></param>
-        protected virtual void UpdateConfigs(float delta)
-        {
-            ProgressionPlugin.GetProgressionLogger().LogDebug($"Updating cached Skill Information: {delta} time passed.");
-
-            UseBossKeysForSkillLevel = ProgressionPlugin.Instance.GetUseBossKeysForSkillLevel();
-            UsePrivateBossKeysForSkillLevel = ProgressionPlugin.Instance.GetUsePrivateBossKeysForSkillLevel();
-            BossKeysSkillPerKey = ProgressionPlugin.Instance.GetBossKeysSkillPerKey();
-            OverrideMaximumSkillLevel = ProgressionPlugin.Instance.GetOverrideMaximumSkillLevel();
-            MaximumSkillLevel = ProgressionPlugin.Instance.GetMaximumSkillLevel();
-            OverrideMinimumSkillLevel = ProgressionPlugin.Instance.GetOverrideMinimumSkillLevel();
-            MinimumSkillLevel = ProgressionPlugin.Instance.GetMinimumSkillLevel();
-            UseAbsoluteSkillDrain = ProgressionPlugin.Instance.GetUseAbsoluteSkillDrain();
-            AbsoluteSkillDrain = ProgressionPlugin.Instance.GetAbsoluteSkillDrain();
-            CompareAndSelectDrain = ProgressionPlugin.Instance.GetCompareAndSelectDrain();
-            CompareUseMinimumDrain = ProgressionPlugin.Instance.GetCompareUseMinimumDrain();
-        }
-
-        /// <summary>
         /// Returns the skill ceiling based on number of bosses defeated and configuration for skill per level.
         /// </summary>
         /// <param name="bossesDefeated"></param>
         /// <returns></returns>
         protected float GetBossSkillCeiling(int bossesDefeated)
         {
-            return NormalizeSkillLevel(SKILL_MAXIMUM - (BossKeysSkillPerKey * (KeyManager.TOTAL_BOSSES - bossesDefeated)));
+            return NormalizeSkillLevel(SKILL_MAXIMUM - (ProgressionConfiguration.Instance.GetBossKeysSkillPerKey() * (KeyManager.TOTAL_BOSSES - bossesDefeated)));
         }
 
         /// <summary>
@@ -116,7 +67,7 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         protected float GetBossSkillFloor(int bossesDefeated)
         {
-            return NormalizeSkillLevel(BossKeysSkillPerKey * bossesDefeated);
+            return NormalizeSkillLevel(ProgressionConfiguration.Instance.GetBossKeysSkillPerKey() * bossesDefeated);
         }
 
         /// <summary>
@@ -130,13 +81,13 @@ namespace VentureValheim.Progression
         {
             if (floor < level)
             {
-                if (ProgressionPlugin.Instance.GetUseAbsoluteSkillDrain())
+                if (ProgressionConfiguration.Instance.GetUseAbsoluteSkillDrain())
                 {
-                    var drain = AbsoluteSkillDrain;
+                    var drain = ProgressionConfiguration.Instance.GetAbsoluteSkillDrain();
 
-                    if (CompareAndSelectDrain)
+                    if (ProgressionConfiguration.Instance.GetCompareAndSelectDrain())
                     {
-                        if (ProgressionPlugin.Instance.GetCompareUseMinimumDrain())
+                        if (ProgressionConfiguration.Instance.GetCompareUseMinimumDrain())
                         {
                             return Mathf.Min(level * factor, drain);
                         }
@@ -178,9 +129,9 @@ namespace VentureValheim.Progression
         {
             var maximum = SKILL_MAXIMUM;
 
-            if (OverrideMaximumSkillLevel)
+            if (ProgressionConfiguration.Instance.GetOverrideMaximumSkillLevel())
             {
-                maximum = MaximumSkillLevel;
+                maximum = ProgressionConfiguration.Instance.GetMaximumSkillLevel();
             }
 
             return Mathf.Clamp(level, SKILL_MINIMUM, maximum);
@@ -194,11 +145,11 @@ namespace VentureValheim.Progression
         {
             var minimum = SKILL_MINIMUM;
 
-            if (OverrideMinimumSkillLevel)
+            if (ProgressionConfiguration.Instance.GetOverrideMinimumSkillLevel())
             {
-                minimum = MinimumSkillLevel;
+                minimum = ProgressionConfiguration.Instance.GetMinimumSkillLevel();
             }
-            else if (UseBossKeysForSkillLevel)
+            else if (ProgressionConfiguration.Instance.GetUseBossKeysForSkillLevel())
             {
                 return _cachedSkillFloor;
             }
@@ -214,11 +165,11 @@ namespace VentureValheim.Progression
         {
             var maximum = SKILL_MAXIMUM;
 
-            if (OverrideMaximumSkillLevel)
+            if (ProgressionConfiguration.Instance.GetOverrideMaximumSkillLevel())
             {
-                maximum = MaximumSkillLevel;
+                maximum = ProgressionConfiguration.Instance.GetMaximumSkillLevel();
             }
-            else if (UseBossKeysForSkillLevel)
+            else if (ProgressionConfiguration.Instance.GetUseBossKeysForSkillLevel())
             {
                 return _cachedSkillCeiling;
             }
@@ -238,12 +189,12 @@ namespace VentureValheim.Progression
             {
                 Instance.Update();
 
-                if (!ProgressionPlugin.Instance.GetEnableSkillManager())
+                if (!ProgressionConfiguration.Instance.GetEnableSkillManager())
                 {
                     return true; // Do nothing
                 }
 
-                if (ProgressionPlugin.Instance.GetAllowSkillDrain())
+                if (ProgressionConfiguration.Instance.GetAllowSkillDrain())
                 {
                     foreach (KeyValuePair<Skills.SkillType, Skills.Skill> skillDatum in __instance.m_skillData)
                     {
@@ -272,7 +223,7 @@ namespace VentureValheim.Progression
             {
                 Instance.Update();
 
-                if (!ProgressionPlugin.Instance.GetEnableSkillManager())
+                if (!ProgressionConfiguration.Instance.GetEnableSkillManager())
                 {
                     return true; // Do nothing
                 }
