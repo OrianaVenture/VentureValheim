@@ -24,6 +24,11 @@ When enabled it will apply the last stamina value from your last logout. If no f
 
 ## Changelog
 
+### 0.3.1
+
+* Update for game patch 0.212.7
+* Upgraded ServerSync to version 1.13
+
 ### 0.3.0
 
 * Now tracks all status effects!
