@@ -17,6 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProgressionTests2", "Progre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeedForSpeed", "NeedForSpeed\NeedForSpeed.csproj", "{FED6F81E-23E5-46DC-B89B-0F87894CC18A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeyondTheEdge", "BeyondTheEdge\BeyondTheEdge.csproj", "{F9DC9A50-8EAC-4123-ACB9-9B6B89B96C5B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocationReset", "LocationReset\LocationReset.csproj", "{5839B48D-2903-47E1-99CE-754FEF597DF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{FED6F81E-23E5-46DC-B89B-0F87894CC18A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FED6F81E-23E5-46DC-B89B-0F87894CC18A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FED6F81E-23E5-46DC-B89B-0F87894CC18A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9DC9A50-8EAC-4123-ACB9-9B6B89B96C5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9DC9A50-8EAC-4123-ACB9-9B6B89B96C5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9DC9A50-8EAC-4123-ACB9-9B6B89B96C5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9DC9A50-8EAC-4123-ACB9-9B6B89B96C5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5839B48D-2903-47E1-99CE-754FEF597DF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5839B48D-2903-47E1-99CE-754FEF597DF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5839B48D-2903-47E1-99CE-754FEF597DF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5839B48D-2903-47E1-99CE-754FEF597DF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
