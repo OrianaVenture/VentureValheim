@@ -1,0 +1,100 @@
+# To override any default item values add your customizations to this file.
+# Place this file in your bepinex config folder.
+# items: The only required information of is the name field, you only need include values you want to override.
+# baseItemValues: Both fields are required to override a base value for a type of item.
+#
+# Declare a custom item configuration using its prefab name then you may:
+# 1. Override Item Type
+# Acceptable values for int codes found in the readme.
+# To ignore scaling for this item set this value to 0 (None).
+# Note: Item Type is required to apply modifications to any item not defined in this mod.
+#
+# 2. Override Biome
+# Biomes are specified with a number value to support custom biomes.
+# Meadows is 0, see readme for possible values.
+# Note: Biome is required to auto-scale any item not defined in this mod.
+#
+# 3. Override item Value (field used depends on the item type)
+# value: This will be the value of a shield or armor.
+# damageValue: This will be the value of a weapon's damage. **see note below
+# Note: This value will NOT get scaled! Use this to tweak individual items.
+#
+# 4. Override item Quality (Upgrade Levels)
+# Most items in game have 3-4 quality levels, use this to change the number of upgrades.
+# An item with no possible upgrades will have a value of 1 (NOT 0!).
+#
+# 5. Override item Upgrade Value (field used depends on the item type)
+# upgradeValue: This will be the upgrade value of a shield or armor.
+# upgradeDamageValue: This will be the upgrade value of a weapon's damage. **see note below
+#
+# ** Note on damages
+# You may override the total damage of an item by declaring the new amount with "totalDamage".
+# This will rescale the existing damage distribution to the declared value.
+# If the totalDamage is specified it will use that value and ignore any other custom damage type values.
+# -OR-
+# You may override the original damage distribution by specifying new values for each damage type.
+# Any damage type not specified will be set to 0 by default (except chop and pickaxe damages).
+# This will override the chop and pickaxe damages ONLY if you define them.
+# (Hopefully that helps people with "help I can't cut trees" issues)
+#
+# Example (copy and edit this below the ---)
+#
+# items:
+#   - name: ArmorRagsChest
+#     value: 1.0
+#     quality: 2
+#     upgradeValue: 1.0
+#   - name: MyCustomArmor
+#     biome: 1
+#     itemType: 3
+#   - name: MyCustomKnife
+#     biome: 8
+#     itemType: 21
+#   - name: MyCustomSword
+#     itemType: 20
+#     damageValue:
+#       totalDamage: 20.0
+#     upgradeDamageValue:
+#       totalDamage: 5.0
+#   - name: MyCustomMace
+#     itemType: 22
+#     damageValue:
+#       blunt: 100.0
+#       fire: 25.0
+#     upgradeDamageValue:
+#       blunt: 20.0
+#       fire: 5.0
+#
+# baseItemValues:
+#   - itemType: 2
+#     value: 3
+#   - itemType: 29
+#     value: 5
+#
+# This example will:
+# 1. Override Rag Armor value to be 1 total armor,
+# set the number of possible upgrades to 1 (2 = base quality plus one upgrade),
+# and set the upgrade amount to 1.
+# 2. Create a new armor entry for MyCustomArmor with item type to be Chest,
+# and set the biome to Black Forest.
+# 3. Create a new knife entry MyCustomKnife set to biome Mistlands for auto-scaling.
+# 4. Create a new sword entry MyCustomSword,
+# and set the damage to a total of 20 based off the existing DamageTypes,
+# and set the upgrade damage to a total of 5 based off the existing DamageTypes.
+# 5. Create a new mace entry MyCustomMace,
+# set the damage override to the defined custom values,
+# and set the upgrade damage override to the defined custom values.
+# 6. Override the base values for auto-scaling for:
+# all helmets to 3 armor,
+# and all tower shields to 5 block.
+#
+# Note: this mod will not auto scale chop or pickaxe damage, but will use any values explicitly overridden.
+#
+# Need some guidance on getting the prefab names? You can generate all this data
+# by setting the GenerateGameData config to true and entering a world once with this mod installed.
+# This will provide creature and item names and original values for your viewing pleasure.
+#
+# Yaml Reminder: any line followed by a '#' will be ignored, these are considered notes.
+# Enter your custom data below the ---
+
+---

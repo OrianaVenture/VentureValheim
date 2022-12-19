@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -22,7 +21,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.17";
+        private const string ModVersion = "0.0.18";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -30,73 +29,47 @@ namespace VentureValheim.Progression
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
-        private readonly ManualLogSource VentureProgressionLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
-
-        public static ManualLogSource GetProgressionLogger() => Instance.VentureProgressionLogger;
+        public static readonly ManualLogSource VentureProgressionLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         #region ConfigurationEntries
 
         private static readonly ConfigSync ConfigurationSync = new(ModGUID)
         { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
 
-        private ConfigEntry<bool> CE_ServerConfigLocked = null!;
-
+        private static ConfigEntry<bool> CE_ServerConfigLocked = null!;
         private static ConfigEntry<bool> CE_ModEnabled = null!;
+        public static ConfigEntry<bool> CE_GenerateGameData = null!;
 
         // Progression Manager
-        private static ConfigEntry<bool> CE_BlockAllGlobalKeys = null!;
-        private static ConfigEntry<string> CE_BlockedGlobalKeys = null!;
-        private static ConfigEntry<string> CE_AllowedGlobalKeys = null!;
-        private static ConfigEntry<bool> CE_UseBossKeysForSkillLevel = null!;
-        private static ConfigEntry<bool> CE_UsePrivateBossKeysForSkillLevel = null!;
-        private static ConfigEntry<int> CE_BossKeysSkillPerKey = null!;
-
-        public virtual bool GetBlockAllGlobalKeys() => CE_BlockAllGlobalKeys.Value;
-        public virtual string GetBlockedGlobalKeys() => CE_BlockedGlobalKeys.Value;
-        public virtual string GetAllowedGlobalKeys() => CE_AllowedGlobalKeys.Value;
-        public virtual bool GetUseBossKeysForSkillLevel() => CE_UseBossKeysForSkillLevel.Value;
-        public virtual bool GetUsePrivateBossKeysForSkillLevel() => CE_UsePrivateBossKeysForSkillLevel.Value;
-        public virtual int GetBossKeysSkillPerKey() => CE_BossKeysSkillPerKey.Value;
+        public static ConfigEntry<bool> CE_BlockAllGlobalKeys = null!;
+        public static ConfigEntry<string> CE_BlockedGlobalKeys = null!;
+        public static ConfigEntry<string> CE_AllowedGlobalKeys = null!;
+        public static ConfigEntry<bool> CE_UseBossKeysForSkillLevel = null!;
+        public static ConfigEntry<bool> CE_UsePrivateBossKeysForSkillLevel = null!;
+        public static ConfigEntry<int> CE_BossKeysSkillPerKey = null!;
 
         // Skills Manager
-        private static ConfigEntry<bool> CE_EnableSkillManager = null!;
-        private static ConfigEntry<bool> CE_AllowSkillDrain = null!;
-        private static ConfigEntry<bool> CE_UseAbsoluteSkillDrain = null!;
-        private static ConfigEntry<int> CE_AbsoluteSkillDrain = null!;
-        private static ConfigEntry<bool> CE_CompareAndSelectDrain = null!;
-        private static ConfigEntry<bool> CE_CompareUseMinimumDrain = null!;
-        private static ConfigEntry<bool> CE_OverrideMaximumSkillLevel = null!;
-        private static ConfigEntry<int> CE_MaximumSkillLevel = null!;
-        private static ConfigEntry<bool> CE_OverrideMinimumSkillLevel = null!;
-        private static ConfigEntry<int> CE_MinimumSkillLevel = null!;
-
-        public virtual bool GetEnableSkillManager() => CE_EnableSkillManager.Value;
-        public virtual bool GetAllowSkillDrain() => CE_AllowSkillDrain.Value;
-        public virtual bool GetUseAbsoluteSkillDrain() => CE_UseAbsoluteSkillDrain.Value;
-        public virtual int GetAbsoluteSkillDrain() => CE_AbsoluteSkillDrain.Value;
-        public virtual bool GetCompareAndSelectDrain() => CE_CompareAndSelectDrain.Value;
-        public virtual bool GetCompareUseMinimumDrain() => CE_CompareUseMinimumDrain.Value;
-        public virtual bool GetOverrideMaximumSkillLevel() => CE_OverrideMaximumSkillLevel.Value;
-        public virtual int GetMaximumSkillLevel() => CE_MaximumSkillLevel.Value;
-        public virtual bool GetOverrideMinimumSkillLevel() => CE_OverrideMinimumSkillLevel.Value;
-        public virtual int GetMinimumSkillLevel() => CE_MinimumSkillLevel.Value;
+        public static ConfigEntry<bool> CE_EnableSkillManager = null!;
+        public static ConfigEntry<bool> CE_AllowSkillDrain = null!;
+        public static ConfigEntry<bool> CE_UseAbsoluteSkillDrain = null!;
+        public static ConfigEntry<int> CE_AbsoluteSkillDrain = null!;
+        public static ConfigEntry<bool> CE_CompareAndSelectDrain = null!;
+        public static ConfigEntry<bool> CE_CompareUseMinimumDrain = null!;
+        public static ConfigEntry<bool> CE_OverrideMaximumSkillLevel = null!;
+        public static ConfigEntry<int> CE_MaximumSkillLevel = null!;
+        public static ConfigEntry<bool> CE_OverrideMinimumSkillLevel = null!;
+        public static ConfigEntry<int> CE_MinimumSkillLevel = null!;
 
         // Auto-Scaling Configuration
-        private static ConfigEntry<bool> CE_AutoScaling = null!;
-        private static ConfigEntry<string> CE_AutoScaleType = null!;
-        private static ConfigEntry<float> CE_AutoScaleFactor = null!;
-        private static ConfigEntry<bool> CE_AutoScaleCreatures = null!;
-        private static ConfigEntry<string> CE_AutoScaleCreatureHealth = null!;
-        private static ConfigEntry<string> CE_AutoScaleCreatureDamage = null!;
-        private static ConfigEntry<bool> CE_AutoScaleItems = null!;
-
-        public virtual bool GetUseAutoScaling() => CE_AutoScaling.Value;
-        public virtual string GetAutoScaleType() => CE_AutoScaleType.Value;
-        public virtual float GetAutoScaleFactor() => CE_AutoScaleFactor.Value;
-        public virtual bool GetAutoScaleCreatures() => CE_AutoScaleCreatures.Value;
-        public virtual string GetAutoScaleCreatureHealth() => CE_AutoScaleCreatureHealth.Value;
-        public virtual string GetAutoScaleCreatureDamage() => CE_AutoScaleCreatureDamage.Value;
-        public virtual bool GetAutoScaleItems() => CE_AutoScaleItems.Value;
+        public static ConfigEntry<bool> CE_AutoScaling = null!;
+        public static ConfigEntry<string> CE_AutoScaleType = null!;
+        public static ConfigEntry<float> CE_AutoScaleFactor = null!;
+        public static ConfigEntry<bool> CE_AutoScaleCreatures = null!;
+        public static ConfigEntry<string> CE_AutoScaleCreatureHealth = null!;
+        public static ConfigEntry<string> CE_AutoScaleCreatureDamage = null!;
+        public static ConfigEntry<bool> CE_AutoScaleCreaturesIgnoreDefaults = null!;
+        public static ConfigEntry<bool> CE_AutoScaleItems = null!;
+        public static ConfigEntry<bool> CE_AutoScaleItemsIgnoreDefaults = null!;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
@@ -129,6 +102,8 @@ namespace VentureValheim.Progression
 
             AddConfig("Enabled", general, "Enable module (boolean).",
                 true, true, ref CE_ModEnabled);
+            AddConfig("GenerateGameDataFiles", general, "Finds all items and creatures and creates data files in your config path for viewing only (boolean).",
+                false, false, ref CE_GenerateGameData);
 
             AddConfig("BlockAllGlobalKeys", keys,
                 "True to stop all global keys from being added to the global list (boolean).",
@@ -180,8 +155,8 @@ namespace VentureValheim.Progression
                 "If overridden, the minimum (floor) skill level for all skill loss (int).",
                 true, (int)SkillsManager.SKILL_MINIMUM, ref CE_MinimumSkillLevel);
 
-            AddConfig("AutoScale", autoScaling,
-                "Use Auto-scaling (boolean).",
+            AddConfig("EnableAutoScaling", autoScaling,
+                "Enabled the Auto-scaling feature (boolean).",
                 true, false, ref CE_AutoScaling);
             AddConfig("AutoScaleType", autoScaling,
                 "Auto-scaling type: Vanilla, Linear, or Exponential (string).",
@@ -198,9 +173,15 @@ namespace VentureValheim.Progression
             AddConfig("AutoScaleCreaturesDamage", autoScaling,
                 "Override the Base Damage distribution for Creatures (comma-separated list of 6 integers) (string).",
                 true, "", ref CE_AutoScaleCreatureDamage);
+            AddConfig("AutoScaleCreaturesIgnoreDefaults", autoScaling,
+                "When True ignores ALL default classifications assigned by the mod, use to keep vanilla values unless specifically overridden in the yaml file (boolean).",
+                true, false, ref CE_AutoScaleCreaturesIgnoreDefaults);
             AddConfig("AutoScaleItems", autoScaling,
                 "Auto-scale Items (boolean).",
                 true, true, ref CE_AutoScaleItems);
+            AddConfig("AutoScaleItemsIgnoreDefaults", autoScaling,
+                "When True ignores ALL default classifications assigned by the mod, use to keep vanilla values unless specifically overridden in the yaml file (boolean).",
+                true, false, ref CE_AutoScaleItemsIgnoreDefaults);
 
             #endregion
 
@@ -233,13 +214,101 @@ namespace VentureValheim.Progression
             if (!File.Exists(ConfigFileFullPath)) return;
             try
             {
-                GetProgressionLogger().LogDebug("Attempting to reload configuration...");
+                VentureProgressionLogger.LogDebug("Attempting to reload configuration...");
                 Config.Reload();
             }
             catch
             {
-                GetProgressionLogger().LogError($"There was an issue loading {ConfigFileName}");
+                VentureProgressionLogger.LogError($"There was an issue loading {ConfigFileName}");
             }
         }
+    }
+
+    public interface IProgressionConfiguration
+    {
+        // General
+        public bool GetGenerateGameData();
+
+        // Key Manager
+        public bool GetBlockAllGlobalKeys();
+        public string GetBlockedGlobalKeys();
+        public string GetAllowedGlobalKeys();
+        public bool GetUseBossKeysForSkillLevel();
+        public bool GetUsePrivateBossKeysForSkillLevel();
+        public int GetBossKeysSkillPerKey();
+
+        // Skills Manager
+        public bool GetEnableSkillManager();
+        public bool GetAllowSkillDrain();
+        public bool GetUseAbsoluteSkillDrain();
+        public int GetAbsoluteSkillDrain();
+        public bool GetCompareAndSelectDrain();
+        public bool GetCompareUseMinimumDrain();
+        public bool GetOverrideMaximumSkillLevel();
+        public int GetMaximumSkillLevel();
+        public bool GetOverrideMinimumSkillLevel();
+        public int GetMinimumSkillLevel();
+
+        // Auto-Scaling Configuration
+        public bool GetUseAutoScaling();
+        public string GetAutoScaleType();
+        public float GetAutoScaleFactor();
+        public bool GetAutoScaleCreatures();
+        public string GetAutoScaleCreatureHealth();
+        public string GetAutoScaleCreatureDamage();
+        public bool GetAutoScaleCreaturesIgnoreDefaults();
+        public bool GetAutoScaleItems();
+        public bool GetAutoScaleItemsIgnoreDefaults();
+    }
+
+    public class ProgressionConfiguration : IProgressionConfiguration
+    {
+        static ProgressionConfiguration() { }
+
+        public ProgressionConfiguration() { }
+        public  ProgressionConfiguration(IProgressionConfiguration progressionConfiguration)
+        {
+            _instance = progressionConfiguration;
+        }
+        private static IProgressionConfiguration _instance = new ProgressionConfiguration();
+
+        public static IProgressionConfiguration Instance
+        {
+            get => _instance;
+        }
+
+        // General
+        public bool GetGenerateGameData() => ProgressionPlugin.CE_GenerateGameData.Value;
+
+        // Key Manager
+        public bool GetBlockAllGlobalKeys() => ProgressionPlugin.CE_BlockAllGlobalKeys.Value;
+        public string GetBlockedGlobalKeys() => ProgressionPlugin.CE_BlockedGlobalKeys.Value;
+        public string GetAllowedGlobalKeys() => ProgressionPlugin.CE_AllowedGlobalKeys.Value;
+        public bool GetUseBossKeysForSkillLevel() => ProgressionPlugin.CE_UseBossKeysForSkillLevel.Value;
+        public bool GetUsePrivateBossKeysForSkillLevel() => ProgressionPlugin.CE_UsePrivateBossKeysForSkillLevel.Value;
+        public int GetBossKeysSkillPerKey() => ProgressionPlugin.CE_BossKeysSkillPerKey.Value;
+
+        // Skills Manager
+        public bool GetEnableSkillManager() => ProgressionPlugin.CE_EnableSkillManager.Value;
+        public bool GetAllowSkillDrain() => ProgressionPlugin.CE_AllowSkillDrain.Value;
+        public bool GetUseAbsoluteSkillDrain() => ProgressionPlugin.CE_UseAbsoluteSkillDrain.Value;
+        public int GetAbsoluteSkillDrain() => ProgressionPlugin.CE_AbsoluteSkillDrain.Value;
+        public bool GetCompareAndSelectDrain() => ProgressionPlugin.CE_CompareAndSelectDrain.Value;
+        public bool GetCompareUseMinimumDrain() => ProgressionPlugin.CE_CompareUseMinimumDrain.Value;
+        public bool GetOverrideMaximumSkillLevel() => ProgressionPlugin.CE_OverrideMaximumSkillLevel.Value;
+        public int GetMaximumSkillLevel() => ProgressionPlugin.CE_MaximumSkillLevel.Value;
+        public bool GetOverrideMinimumSkillLevel() => ProgressionPlugin.CE_OverrideMinimumSkillLevel.Value;
+        public int GetMinimumSkillLevel() => ProgressionPlugin.CE_MinimumSkillLevel.Value;
+
+        // Auto-Scaling Configuration
+        public bool GetUseAutoScaling() => ProgressionPlugin.CE_AutoScaling.Value;
+        public string GetAutoScaleType() => ProgressionPlugin.CE_AutoScaleType.Value;
+        public float GetAutoScaleFactor() => ProgressionPlugin.CE_AutoScaleFactor.Value;
+        public bool GetAutoScaleCreatures() => ProgressionPlugin.CE_AutoScaleCreatures.Value;
+        public string GetAutoScaleCreatureHealth() => ProgressionPlugin.CE_AutoScaleCreatureHealth.Value;
+        public string GetAutoScaleCreatureDamage() => ProgressionPlugin.CE_AutoScaleCreatureDamage.Value;
+        public bool GetAutoScaleCreaturesIgnoreDefaults() => ProgressionPlugin.CE_AutoScaleCreaturesIgnoreDefaults.Value;
+        public bool GetAutoScaleItems() => ProgressionPlugin.CE_AutoScaleItems.Value;
+        public bool GetAutoScaleItemsIgnoreDefaults() => ProgressionPlugin.CE_AutoScaleItemsIgnoreDefaults.Value;
     }
 }

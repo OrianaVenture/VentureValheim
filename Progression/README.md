@@ -12,29 +12,42 @@ World Advancement and Progression lets you fine tune world settings. Ideal to us
 
 NOTE: This mod is under heavy development and is not finished. All pre-releases are intended for those interested in helping test new features until the first official release.
 
-The main feature of this mod is to have an easy way to fully customize the world difficulty. Set the difficulty of each biome by using the automatic scaling system or by defining your own custom scaling. Configure all creatures and items automatically with the auto-scaling feature. This mod will dynamically create a game balance that is very different from the Vanilla gameplay experience!
+The main feature of this mod is to have an easy way to fully customize the world difficulty and to control the rate at which the world and individual player advances. Set the difficulty of each biome and configure all creatures and items by using the automatic scaling system. You may also define your own custom configuration for individual creatures and items (including other modded content). This mod will dynamically create a game balance that is very different from the Vanilla gameplay experience!
 
-Below are some explanations of features and how to configure them. To see details generate the config file by launching the game once with this mod installed.
+Below are some explanations of features and how to configure them. See more details in the config file. Generate the config file by launching the game once with this mod installed.
 
 ### Public & Private Key Management
 
-By default this mod will prevent/block public keys from being added to the global list: Set BlockAllGlobalKeys to false to use vanilla behavior. Configure AllowedGlobalKeys or BlockedGlobalKeys lists to allow/block keys ONLY depending on the value of BlockAllGlobalKeys. To see details generate the config file. These keys are case sensitive and MUST match the value exactly or it will not work. This feature will work with other mods that add in custom keys.
+By default this mod will prevent/block public keys from being added to the global list which will prevent game behaviors that rely on the presence of these keys. This lets you control the game progression by choosing when these keys get added to the game (either naturally through gameplay or by using the vanilla setpublickey command).
+
+This mod also adds a private player key system in which data is saved to a new file for each character. You can use this private key system to tailor game functionality to individuals rather than the vanilla default server-wide public keys. There are 4 new commands added that work similar to the public key commands. Currently only your local player can be updated, but commands for server management will be added later: setprivatekey, removeprivatekey, resetprivatekeys, listprivatekeys.
+
+Here is a quick guide to the Key configuration options:
+
+* BlockAllGlobalKeys: Prevent/block public all keys from being added to the global list, set to false to use vanilla behavior
+* AllowedGlobalKeys: Allow only these keys being added to the global list when BlockAllGlobalKeys is true
+* BlockedGlobalKeys: Stop only these keys being added to the global list when BlockAllGlobalKeys is false
+* UseBossKeysForSkillLevel, UsePrivateBossKeysForSkillLevel, BossKeysSkillPerKey explained under Skill Manager section below.
 
 Examples of Vanilla Public Keys:
+
 * defeated_eikthyr
 * defeated_gdking
 * defeated_bonemass
 * defeated_dragon
 * defeated_goblinking
+* defeated_queen
 * KilledTroll
 * killed_surtling
 * KilledBat
+* defeated_hive
 
-This mod adds a private player key system in which data is saved to a new file for each character. This feature is still being developed, so please report any issues that might arise while using it. Currently the only feature using private keys is skills, see the next section for more information.
+Note: Currently the only feature using private keys is skills. Possible future additions to this section include:
 
-There are 4 new commands added that work similar to the public key commands. Currently only your local player can be updated, but commands for server management will be added later: setprivatekey, removeprivatekey, resetprivatekeys, listprivatekeys.
-
-For developers (In Progress): define your own player keys and use them in your mods!
+* Ability to lock items or crafting to boss completion
+* Ability to have worldly spawns and raids check for individual boss completion
+* Locking boss summoning to enforce progression order
+* Requests welcome! See the bottom for my discord link
 
 ### Skill Manager
 
@@ -49,49 +62,103 @@ Have more control over Skill loss and gain. Here is a quick guide to the Skill c
 
 Under the Keys category there are more configuration options for skills. This feature will only work if you DO NOT override the minimum and/or maximum skill levels as described above. Overridden values will take precedence.
 
-* UseBossKeysForSkillLevel: Set this to true to use a more dynamic skill control dependant on boss completion. Skill minimum will start at 0 and increase by BossKeysSkillPerKey (default 10) for each boss defeated. Skill maximum will be capped at [ 100 - (number of bosses: 5) * (BossKeysSkillPerKey: 10) = 50 ] with the current game state. For example, if you defeat one boss then your skill minimum for loss will be raised to 10, and your skill maximum will be raised to 60.
+* UseBossKeysForSkillLevel: Set this to true to use a more dynamic skill control dependant on boss completion. Skill minimum will start at 0 and increase by BossKeysSkillPerKey for each boss defeated. Skill maximum will be capped at [ 100 - (number of bosses: 6) * (BossKeysSkillPerKey: 10) = 40 ] with the current game state. For example, if you defeat one boss then your skill minimum for loss will be raised to 10, and your skill maximum will be raised to 50.
 * UsePrivateBossKeysForSkillLevel: Set this to True to use player keys to determine skill behavior per individual player, set to False to use the public key system to set a server wide configuration.
+* BossKeysSkillPerKey: Amount used in calculation above.
 
-Notes: Any skills that are already above the maximum skill cap will remain "frozen" and will not gain, but can still be lowered on death. Console cheats will still work as intended.
+Note: Any skills that are already above the maximum skill cap will remain "frozen" and will not gain, but can still be lowered on death. Console cheats will still work as intended.
 
 Warning: Other mods that change how skill gain and loss functions may cause unexpected behaviors. Turn off this feature if using another mod for skill management if you see mod conflicts.
 
-### World Scaling (In Progress)
+### World Scaling
 
-The world is scaled according to the natural vanilla game progression by default. To enable set AutoScale to true and change the AutoScaleType to Linear or Exponential scaling (if you are unfamiliar with these terms you should look these up before changing the default values). Vanilla creatures and items are sorted into their main or "natural" biome. To see this mod's classification of vanilla creatures and items you can view the code on Github.
+The world is scaled according to the "natural" vanilla game progression by default. To see this mod's default classification of vanilla creatures and items you can view the code on Github. The scaling is applied after logging into a local world or server.
 
-The AutoScaleFactor option will let you change the scaling factor:
+Here is a quick guide to the Scaling configuration options:
+
+* EnableAutoScaling must be set to True to enable these features.
+* AutoScaleType: Vanilla, Linear, or Exponential. If set to Vanilla these auto-scaling features will not be enabled!
+* AutoScaleFactor: change the biome scaling factor.
 
 Linear scaling by default is a 75% growth (0.75). This means your 1st biome (Black Forest, Meadows is 0th) will have a scaling factor of 1.75, and 7th will be 6.25 for calculations.
 
 To use Exponential scaling PLEASE READ THIS PART: Given that there are by default only 8 biome difficulties to scale, the maximum scaling value you can input is roughly 21 without blatantly breaking the code generating the values (If using 12 custom biome difficulties this number is about 6). However, 21 is a much, much bigger number than you could ever want. Recommended values for exponential scaling are in a range of 0.25 - 1. For example, an exponential scaling of 0.75 will set the 1st biome to 1.75x harder, 7th biome to be about 50x harder than the base biome. This is in stark contrast to the values set by linear scaling and is the ideal way (theoretically) to naturally enforce "Biome Locking" (which is the main reason why this mod exists).
 
-Planned features include: Finishing the auto scaling to work for item upgrades and balancing the default configurations. Allowing users to override the default classifications of creatures and player items. (For now please give feedback on the defaults!)
 
 #### Creature Scaling
 
-To enable scaling of creatures set AutoScaleCreatures to true. To change the base health distribution enter a list of numbers for AutoScaleCreaturesHealth. Likewise, to scale the damage a creature can do enter a list of numbers for AutoScaleCreaturesDamage. The total damage will be scaled and then distributed to individual damage types for each attack; scaling will maintain the ratio for creatures with more than one attack (some attacks are stronger, some are weaker, scaling maintains this). All values for chop and pickaxe damage are ignored for creatures and will retain their original values without affecting scaling (The bosses were weird, decided not to touch this for now).
+The total damage a creature can do will be scaled and then distributed to individual damage types for each attack; scaling will maintain the ratio for creatures with more than one attack (some attacks are stronger, some are weaker, scaling maintains this). All values for chop and pickaxe damage are ignored and will retain their original values without affecting scaling.
 
-The list for configs is in the format (for difficulty spread): Harmless, Novice, Average, Intermediate, Expert, Boss
+Here is a quick guide to the Creature Scaling configuration options:
 
-The default health values built into the code: 5, 10, 30, 50, 200, 500.
-The default damage values built into the code: 0, 5, 10, 12, 15, 20.
+* AutoScaleCreatures: Set to true to scale creature health and damage.
+* AutoScaleCreaturesHealth: Leave blank to use default values, to override enter a comma-separated list of 6 integers.
+* AutoScaleCreaturesDamage: Leave blank to use default values, to override enter a comma-separated list of 6 integers.
+* AutoScaleCreaturesIgnoreDefaults: Set to true to exclude all defaults (can still use yaml override).
+
+Other notes:
+
+* The list for health and damage configs is in the format (for difficulty spread): Harmless, Novice, Average, Intermediate, Expert, Boss
+* The default health values built into the code: 5, 10, 30, 50, 200, 500.
+* The default damage values built into the code: 0, 5, 10, 12, 15, 20.
+
+To override this mod's default configurations there is a file called "WAP.CreatureOverrides.yaml" in which you can add customizations. Currently, all players must have the same file locally since this feature does not sync yet. Directions on how to use the override feature are included in that file.
 
 #### Item Scaling
 
-To enable scaling of player armor and weapons set AutoScaleItems to true. Vanilla items are grouped by type and are assigned the biome in which they naturally can be crafted.
+Vanilla items are grouped by custom types and are assigned the biome in which they naturally can be crafted.
 
-To see defaults see the code in Github.
+Here is a quick guide to the Item Scaling configuration options:
+
+* AutoScaleItems: Set to true to scale player items.
+* AutoScaleItemsIgnoreDefaults: Set to true to exclude all defaults (can still use yaml override).
+
+To override this mod's default configurations there is a file called "WAP.ItemOverrides.yaml" in which you can add customizations. Currently, all players must have the same file locally since this feature does not sync yet. Directions on how to use the override feature are included in that file.
+
+#### Custom Data Definitions
+
+| Biomes | Difficulty | Item Types |
+| ------ | ---------- | ---------- |
+| Meadow = 0 | Vanilla = 0 | None = 0 |
+| BlackForest = 1 | Harmless = 1 | Shield = 1 |
+| Swamp = 2 | Novice = 2 | Helmet = 2 |
+| Mountain = 3 | Average = 3 | Chest = 3 |
+| Plain = 4 | Intermediate = 4 | Legs = 4 |
+| AshLand = 5 | Expert = 5 | Shoulder = 5 |
+| DeepNorth = 6 | Boss = 6 | Utility = 6 |
+| Ocean = 7 | | Tool = 7 |
+| Mistland = 8 | | PickAxe = 8 |
+| | | Axe = 9 |
+| | | Bow = 10 |
+| | | Ammo = 11 |
+| | | Sword = 20 |
+| | | Knife = 21 |
+| | | Mace = 22 |
+| | | Sledge = 23 |
+| | | Atgeir = 25 |
+| | | Battleaxe = 26 |
+| | | Primative = 27 |
+| | | Spear = 28 |
+| | | TowerShield = 29 |
+| | | BucklerShield = 30 |
+| | | PrimativeArmor = 31 |
+| | | Bolt = 32 |
+| | | Crossbow = 33 |
+| | | HelmetRobe = 34 |
+| | | ChestRobe = 35 |
+| | | LegsRobe = 36 |
 
 ### Other Features
 
 * ServerSync included
 
-## Developers
+## Developers (Always In Progress)
 
-### Custom Biomes (In Progress)
+Want to define customizations of your own mod with these features so your users don't have to? If there is something you need let me know and I can add support for your mod!
 
-Planned features include: Define your own biomes and add them to the scaling system by using any int value as a key that is not used. This mod's default values can be overridden to set custom scaling after initialization. (Again, please use caution with the Exponential scaling feature configuration)
+### Custom Biomes
+
+Planned features include: Define your own biomes and add them to the scaling system by using any int value as a key that is not used. This mod's default values can be overridden to set custom scaling after initialization.
 
 Examples (Will update this for first official release):
 
@@ -99,24 +166,16 @@ Examples (Will update this for first official release):
 * To add a Biome '10' that is 250% harder than the baseline use: AddCustomBiome(10, 2.5)
 * To override Meadow's difficulty after it has been initialized: AddBiome(0, 8, true) or AddCustomBiome(0, 1.3, true)
 
-Biomes are given the following int codes:
-
-* Undefined = -1
-* Meadow = 0
-* BlackForest = 1
-* Swamp = 2
-* Mountain = 3,
-* Plain = 4
-* AshLand = 5
-* DeepNorth = 6
-* Ocean = 7
-* Mistland = 8
-
-### Custom Creature and Item support (In Progress)
-
-Coming ASAP!
-
 ## Changelog
+
+### 0.0.18
+
+* Added (most) Mistlands additions to keys and scaling
+* Added new scaling categories for "robes": reclassified troll, root, and fenris armors to the new types
+* Added ability to override creature and item data using the specified yaml files
+* New configuration options to ignore auto-scaling defaults, allows you to change only what you specify in the yaml files
+* Renamed AutoScale config to EnableAutoScaling, you have to edit this value to use auto scaling
+* Upgraded ServerSync to version 1.13 for game patch 0.212.7
 
 ### 0.0.17
 
@@ -151,34 +210,6 @@ Coming ASAP!
 ### 0.0.12
 
 * Update for game patch 0.211.7 Crossplay. Reverted ServerSync to 1.6.
-
-### 0.0.11
-
-* Changed how ServerSync project is bundled to fix config not locking.
-
-### 0.0.10
-
-* Updated ServerSync to V1.10. Fixed an issue with Server Sync config not locking. Refactored code to support live config changes.
-
-### 0.0.9
-
-* Added configuration options for toggling the skill manager features and setting the ceiling and floor for skill gain and loss. Updated wording for other configurations, you will need to generate a new file.
-
-### 0.0.8
-
-* Added ability to scale player items. Does not scale the upgrade per level yet.
-
-### 0.0.7
-
-* Added ability to scale creature damage. Tweaked difficulty defaults for some creatures.
-
-### 0.0.6
-
-* Added ability to scale the world difficulty with maths! Scales creature health ONLY, updates to come!
-
-### 0.0.5
-
-* Added additional Skill Drain configuration option. Ability to use the minimum or maximum Skill Drain value (absolute skill drain vs vanilla).
 
 See all patch notes on Github.
 

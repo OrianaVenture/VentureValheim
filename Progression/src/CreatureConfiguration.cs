@@ -1,7 +1,6 @@
+using BepInEx;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using static VentureValheim.Progression.CreatureConfiguration;
 
 namespace VentureValheim.Progression
 {
@@ -10,10 +9,9 @@ namespace VentureValheim.Progression
         public bool ContainsCreature(string key);
         public void SetBaseHealth(int[] values);
         public int GetBaseHealth(WorldConfiguration.Difficulty difficulty);
-        public int CalculateHealth(CreatureClassification cc, float scale);
         public void SetBaseDamage(int[] values);
         public int GetBaseTotalDamage(WorldConfiguration.Difficulty difficulty);
-        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty);
+        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome? biome, WorldConfiguration.Difficulty? difficulty);
         public void UpdateCreatures();
         public void VanillaReset();
     }
@@ -29,82 +27,7 @@ namespace VentureValheim.Progression
             get => _instance;
         }
 
-        public class CreatureClassification
-        {
-            public string Name { get; private set; }
-            public WorldConfiguration.Biome BiomeType { get; private set; }
-            public WorldConfiguration.Difficulty CreatureDifficulty { get; private set; }
-            public Dictionary<string, HitData.DamageTypes> VanillaAttacks { get; private set; }
-            public float VanillaHealth { get; private set; }
-
-            public CreatureClassification(string name, WorldConfiguration.Biome biomeType, WorldConfiguration.Difficulty creatureDifficulty)
-            {
-                Name = name;
-                BiomeType = biomeType;
-                CreatureDifficulty = creatureDifficulty;
-                VanillaHealth = -1;
-                VanillaAttacks = null;
-            }
-
-            public void UpdateCreature(WorldConfiguration.Biome biomeType, WorldConfiguration.Difficulty creatureDifficulty)
-            {
-                BiomeType = biomeType;
-                CreatureDifficulty = creatureDifficulty;
-            }
-
-            public void SetVanillaHealth(float health)
-            {
-                VanillaHealth = health;
-            }
-
-            public void SetVanillaAttacks(GameObject[] attacks)
-            {
-                VanillaAttacks = new Dictionary<string, HitData.DamageTypes>();
-
-                for (int lcv = 0; lcv < attacks.Length; lcv++)
-                {
-                    var item = attacks[lcv].GetComponent<ItemDrop>();
-                    if (item != null)
-                    {
-                        var name = item.name;
-                        var damage = item.m_itemData.m_shared.m_damages;
-                        AddVanillaAttack(name, damage);
-                    }
-                    else
-                    {
-                        ProgressionPlugin.GetProgressionLogger().LogWarning($"Vanilla attack for {attacks[lcv].name} was not added to creature {Name}. ItemDrop not found.");
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Adds the given vanilla DamageTypes for an attack.
-            /// </summary>
-            /// <param name="name"></param>
-            /// <param name="damage"></param>
-            /// <returns></returns>
-            private void AddVanillaAttack(string name, HitData.DamageTypes damage)
-            {
-                try
-                {
-                    if (ItemConfiguration.Instance.GetTotalDamage(damage, false) > 0)
-                    {
-                        VanillaAttacks.Add(name, damage);
-                    }
-                    else
-                    {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"Vanilla attack {name} was not added to creature {Name}. No damage component.");
-                    }
-                }
-                catch (ArgumentException)
-                {
-                    ProgressionPlugin.GetProgressionLogger().LogWarning($"Vanilla attack {name} was not added to creature {Name}. Already exists.");
-                }
-            }
-        }
-
-        private Dictionary<string, CreatureClassification> _creatureData = new Dictionary<string, CreatureClassification>();
-        protected bool _vanillaBackupCreated = false;
+        protected Dictionary<string, CreatureClassification> _creatureData = new Dictionary<string, CreatureClassification>();
         private int[] _baseHealth = { 5, 10, 30, 50, 200, 500 };
         private int[] _baseDamage = { 0, 5, 10, 12, 15, 20 };
 
@@ -153,14 +76,13 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Calculates the health based on the assigned biome and difficulty of a Creature
+        /// Calculates the health from the base health and scale value.
         /// </summary>
-        /// <param name="cc"></param>
+        /// <param name="scale"></param>
+        /// <param name="baseHealth"></param>
         /// <returns></returns>
-        public int CalculateHealth(CreatureClassification cc, float scale)
+        public int CalculateHealth(float scale, int baseHealth)
         {
-            int baseHealth = GetBaseHealth(cc.CreatureDifficulty);
-
             return (int)(scale * baseHealth);
         }
 
@@ -222,7 +144,8 @@ namespace VentureValheim.Progression
 
                 if (maxTotalDamage <= 0)
                 {
-                    ProgressionPlugin.GetProgressionLogger()
+                    // TODO Consider removing this to enable overrides for empty attacks
+                    ProgressionPlugin.VentureProgressionLogger
                         .LogDebug($"All {totalAttacks} attacks for {cc.Name} have no damage components. Skipping attack configuration.");
                     return;
                 }
@@ -232,24 +155,25 @@ namespace VentureValheim.Progression
                     ItemDrop item = ProgressionAPI.Instance.GetItemDrop(attack.Key);
                     if (item != null)
                     {
-                        var vanillaAttack = attack.Value;
-                        float vanillaAttackSum = ItemConfiguration.Instance.GetTotalDamage(vanillaAttack, false);
-                        var baseTotalDamage = GetBaseTotalDamage(cc.CreatureDifficulty);
-                        var biomeData = WorldConfiguration.Instance.GetBiome(cc.BiomeType);
-                        var damage = ItemConfiguration.Instance.CalculateCreatureDamageTypes(biomeData, vanillaAttack, baseTotalDamage, maxTotalDamage);
+                        if (cc.AttackOverridden(attack.Key))
+                        {
+                            ProgressionPlugin.VentureProgressionLogger.LogDebug($"\"{attack.Key}\" for {cc.Name} is overridden!");
+                        }
+
+                        var damage = cc.GetAttack(attack.Key, maxTotalDamage);
                         ConfigureAttack(item, damage);
                     }
                     else
                     {
-                        ProgressionPlugin.GetProgressionLogger().LogWarning(
-                            $"Failed to configure \"{attack.Key}\" for {cc.Name}. Did you forget to define your custom creature attacks?");
+                        ProgressionPlugin.VentureProgressionLogger.LogWarning(
+                            $"Failed to configure \"{attack.Key}\" for {cc.Name}. ItemDrop data does not exist!");
                     }
                 }
             }
             catch (Exception e)
             {
-                ProgressionPlugin.GetProgressionLogger().LogDebug($"Error configuring attacks for {cc.Name}. Skipping.");
-                ProgressionPlugin.GetProgressionLogger().LogDebug(e);
+                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Error configuring attacks for {cc.Name}. Skipping.");
+                ProgressionPlugin.VentureProgressionLogger.LogDebug(e);
             }
         }
 
@@ -263,7 +187,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Calculates the maximum damage done by any one attack in the CreatureClassification.
+        /// Calculates the maximum damage done by any one attack in the CreatureClassification's original attack values.
         /// Counts the total number of attacks that do damage.
         /// </summary>
         /// <param name="cc"></param>
@@ -281,7 +205,7 @@ namespace VentureValheim.Progression
 
                     if (item != null)
                     {
-                        var damage = ItemConfiguration.Instance.GetTotalDamage(item.m_itemData.m_shared.m_damages, false);
+                        float damage = ItemConfiguration.Instance.GetTotalDamage(item.m_itemData.m_shared.m_damages);
 
                         if (damage > 0)
                         {
@@ -300,76 +224,94 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Set the default values for Vanilla creatures using the Creature Prefab Name. (TODO enable configuration of custom creatures)
+        /// Set the default values for Vanilla creatures using the Creature Prefab Name.
         /// </summary>
-        public void Initialize()
+        protected void Initialize()
         {
-            if (_vanillaBackupCreated) return;
+            if (!ProgressionConfiguration.Instance.GetAutoScaleCreaturesIgnoreDefaults())
+            {
+                // Meadow Defaults
+                var biome = WorldConfiguration.Biome.Meadow;
+                AddCreatureConfiguration("Eikthyr", biome, WorldConfiguration.Difficulty.Boss);
+                AddCreatureConfiguration("Boar_piggy", biome, WorldConfiguration.Difficulty.Harmless);
+                AddCreatureConfiguration("Boar", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("Deer", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("Greyling", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Neck", biome, WorldConfiguration.Difficulty.Novice);
 
-            // Meadow Defaults
-            var biome = WorldConfiguration.Biome.Meadow;
-            AddCreatureConfiguration("Eikthyr", biome, WorldConfiguration.Difficulty.Boss);
-            AddCreatureConfiguration("Boar_piggy", biome, WorldConfiguration.Difficulty.Harmless);
-            AddCreatureConfiguration("Boar", biome, WorldConfiguration.Difficulty.Novice);
-            AddCreatureConfiguration("Deer", biome, WorldConfiguration.Difficulty.Novice);
-            AddCreatureConfiguration("Greyling", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("Neck", biome, WorldConfiguration.Difficulty.Novice);
+                // Black Forest Defaults
+                biome = WorldConfiguration.Biome.BlackForest;
+                AddCreatureConfiguration("gd_king", biome, WorldConfiguration.Difficulty.Boss);
+                AddCreatureConfiguration("Ghost", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Greydwarf", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("Greydwarf_Elite", biome, WorldConfiguration.Difficulty.Intermediate);
+                AddCreatureConfiguration("Greydwarf_Shaman", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Skeleton", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Skeleton_NoArcher", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Skeleton_Poison", biome, WorldConfiguration.Difficulty.Intermediate);
+                AddCreatureConfiguration("TentaRoot", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Troll", biome, WorldConfiguration.Difficulty.Expert);
 
-            // Black Forest Defaults
-            biome = WorldConfiguration.Biome.BlackForest;
-            AddCreatureConfiguration("gd_king", biome, WorldConfiguration.Difficulty.Boss);
-            AddCreatureConfiguration("Ghost", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("Greydwarf", biome, WorldConfiguration.Difficulty.Novice);
-            AddCreatureConfiguration("Greydwarf_Elite", biome, WorldConfiguration.Difficulty.Intermediate);
-            AddCreatureConfiguration("Greydwarf_Shaman", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("Skeleton", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("Skeleton_NoArcher", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("Skeleton_Poison", biome, WorldConfiguration.Difficulty.Intermediate);
-            AddCreatureConfiguration("TentaRoot", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("Troll", biome, WorldConfiguration.Difficulty.Expert);
+                // Swamp Defaults
+                biome = WorldConfiguration.Biome.Swamp;
+                AddCreatureConfiguration("Bonemass", biome, WorldConfiguration.Difficulty.Boss);
+                AddCreatureConfiguration("Abomination", biome, WorldConfiguration.Difficulty.Expert);
+                AddCreatureConfiguration("Blob", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("BlobElite", biome, WorldConfiguration.Difficulty.Intermediate);
+                AddCreatureConfiguration("Draugr_Elite", biome, WorldConfiguration.Difficulty.Intermediate);
+                AddCreatureConfiguration("Draugr", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Draugr_Ranged", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Leech", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("Surtling", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("Wraith", biome, WorldConfiguration.Difficulty.Intermediate);
 
-            // Swamp Defaults
-            biome = WorldConfiguration.Biome.Swamp;
-            AddCreatureConfiguration("Bonemass", biome, WorldConfiguration.Difficulty.Boss);
-            AddCreatureConfiguration("Abomination", biome, WorldConfiguration.Difficulty.Expert);
-            AddCreatureConfiguration("Blob", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("BlobElite", biome, WorldConfiguration.Difficulty.Intermediate);
-            AddCreatureConfiguration("Draugr_Elite", biome, WorldConfiguration.Difficulty.Intermediate);
-            AddCreatureConfiguration("Draugr", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("Draugr_Ranged", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("Leech", biome, WorldConfiguration.Difficulty.Novice);
-            AddCreatureConfiguration("Surtling", biome, WorldConfiguration.Difficulty.Novice);
-            AddCreatureConfiguration("Wraith", biome, WorldConfiguration.Difficulty.Intermediate);
+                // Mountain Defaults
+                biome = WorldConfiguration.Biome.Mountain;
+                AddCreatureConfiguration("Dragon", biome, WorldConfiguration.Difficulty.Boss);
+                AddCreatureConfiguration("Bat", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("Fenring_Cultist", biome, WorldConfiguration.Difficulty.Intermediate);
+                AddCreatureConfiguration("Fenring", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Hatchling", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("StoneGolem", biome, WorldConfiguration.Difficulty.Expert);
+                AddCreatureConfiguration("Ulv", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Wolf_cub", biome, WorldConfiguration.Difficulty.Harmless);
+                AddCreatureConfiguration("Wolf", biome, WorldConfiguration.Difficulty.Novice);
 
-            // Mountain Defaults
-            biome = WorldConfiguration.Biome.Mountain;
-            AddCreatureConfiguration("Dragon", biome, WorldConfiguration.Difficulty.Boss);
-            AddCreatureConfiguration("Bat", biome, WorldConfiguration.Difficulty.Novice);
-            AddCreatureConfiguration("Fenring_Cultist", biome, WorldConfiguration.Difficulty.Intermediate);
-            AddCreatureConfiguration("Fenring", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("Hatchling", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("StoneGolem", biome, WorldConfiguration.Difficulty.Expert);
-            AddCreatureConfiguration("Ulv", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("Wolf_cub", biome, WorldConfiguration.Difficulty.Harmless);
-            AddCreatureConfiguration("Wolf", biome, WorldConfiguration.Difficulty.Novice);
+                // Plain Defaults
+                biome = WorldConfiguration.Biome.Plain;
+                AddCreatureConfiguration("GoblinKing", biome, WorldConfiguration.Difficulty.Boss);
+                AddCreatureConfiguration("BlobTar", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("Deathsquito", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("Goblin", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("GoblinArcher", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("GoblinShaman", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("GoblinBrute", biome, WorldConfiguration.Difficulty.Intermediate);
+                AddCreatureConfiguration("Lox_Calf", biome, WorldConfiguration.Difficulty.Harmless);
+                AddCreatureConfiguration("Lox", biome, WorldConfiguration.Difficulty.Intermediate);
 
-            // Plain Defaults
-            biome = WorldConfiguration.Biome.Plain;
-            AddCreatureConfiguration("GoblinKing", biome, WorldConfiguration.Difficulty.Boss);
-            AddCreatureConfiguration("BlobTar", biome, WorldConfiguration.Difficulty.Novice);
-            AddCreatureConfiguration("Deathsquito", biome, WorldConfiguration.Difficulty.Novice);
-            AddCreatureConfiguration("Goblin", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("GoblinArcher", biome, WorldConfiguration.Difficulty.Average);
-            AddCreatureConfiguration("GoblinShaman", biome, WorldConfiguration.Difficulty.Novice);
-            AddCreatureConfiguration("GoblinBrute", biome, WorldConfiguration.Difficulty.Intermediate);
-            AddCreatureConfiguration("Lox_Calf", biome, WorldConfiguration.Difficulty.Harmless);
-            AddCreatureConfiguration("Lox", biome, WorldConfiguration.Difficulty.Intermediate);
+                // Ocean Defaults
+                biome = WorldConfiguration.Biome.Ocean;
+                AddCreatureConfiguration("Serpent", biome, WorldConfiguration.Difficulty.Expert);
 
-            // Ocean Defaults
-            biome = WorldConfiguration.Biome.Ocean;
-            AddCreatureConfiguration("Serpent", biome, WorldConfiguration.Difficulty.Expert);
+                // Mistlands Creatures
+                biome = WorldConfiguration.Biome.Mistland;
+                AddCreatureConfiguration("Dverger", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("DvergerMage", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("DvergerMageFire", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("DvergerMageIce", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("DvergerMageSupport", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("Gjall", biome, WorldConfiguration.Difficulty.Expert);
+                AddCreatureConfiguration("Hare", biome, WorldConfiguration.Difficulty.Harmless);
+                AddCreatureConfiguration("Seeker", biome, WorldConfiguration.Difficulty.Average);
+                AddCreatureConfiguration("SeekerBrood", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("SeekerBrute", biome, WorldConfiguration.Difficulty.Intermediate);
+                AddCreatureConfiguration("SeekerQueen", biome, WorldConfiguration.Difficulty.Boss);
+                AddCreatureConfiguration("Tick", biome, WorldConfiguration.Difficulty.Novice);
+                AddCreatureConfiguration("TheHive", biome, WorldConfiguration.Difficulty.Expert);
+                AddCreatureConfiguration("Hive", biome, WorldConfiguration.Difficulty.Boss);
+            }
 
-            // TODO add options for loading configurations from a file after defaults are set
+            ReadCustomValues();
 
             CreateVanillaBackup();
         }
@@ -380,16 +322,38 @@ namespace VentureValheim.Progression
         /// <param name="name">Prefab Name</param>
         /// <param name="biome"></param>
         /// <param name="difficulty"></param>
-        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome biome, WorldConfiguration.Difficulty difficulty)
+        public void AddCreatureConfiguration(string name, WorldConfiguration.Biome? biome, WorldConfiguration.Difficulty? difficulty)
         {
-            try
+            if (name.IsNullOrWhiteSpace())
             {
-                _creatureData.Add(name, new CreatureClassification(name, biome, difficulty));
+                return;
             }
-            catch
+
+            if (_creatureData.ContainsKey(name))
             {
                 _creatureData[name].UpdateCreature(biome, difficulty);
             }
+            else
+            {
+                _creatureData.Add(name, new CreatureClassification(name, biome, difficulty));
+            }
+        }
+
+        /// <summary>
+        /// Create a new entry or override an existing.
+        /// </summary>
+        /// <param name="creatureOverride"></param>
+        public void AddCreatureConfiguration(CreatureOverrides.CreatureOverride creatureOverride)
+        {
+            if (creatureOverride == null || creatureOverride.name.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
+            AddCreatureConfiguration(creatureOverride.name, null, null);
+
+            _creatureData[creatureOverride.name].OverrideCreature(creatureOverride);
+
         }
 
         /// <summary>
@@ -397,78 +361,109 @@ namespace VentureValheim.Progression
         /// </summary>
         public void UpdateCreatures()
         {
-            CreateVanillaBackup();
+            Initialize();
 
-            foreach (CreatureClassification creatureClass in _creatureData.Values)
+            foreach (CreatureClassification cc in _creatureData.Values)
             {
-                var creature = ProgressionAPI.Instance.GetHumanoid(creatureClass.Name);
+                var creature = ProgressionAPI.Instance.GetHumanoid(cc.Name);
                 if (creature != null)
                 {
-                    var scale = WorldConfiguration.Instance.GetBiomeScaling(creatureClass.BiomeType);
-                    float health = ProgressionAPI.Instance.PrettifyNumber(CalculateHealth(creatureClass, scale));
-                    UpdateCreature(health, ref creature);
-                    ConfigureAttacks(creatureClass);
+                    var health = cc.GetHealth();
+                    if (health != null)
+                    {
+                        UpdateCreature(health.Value, ref creature);
+                    }
+
+                    ConfigureAttacks(cc);
                 }
             }
         }
 
+        /// <summary>
+        /// Updates a creature's health.
+        /// </summary>
+        /// <param name="health"></param>
+        /// <param name="creature"></param>
         private void UpdateCreature(float health, ref Humanoid creature)
         {
             var original = creature.m_health;
             creature.m_health = health;
-            ProgressionPlugin.GetProgressionLogger().LogDebug($"{creature.name} with {original} health updated to {creature.m_health}.");
+            ProgressionPlugin.VentureProgressionLogger.LogDebug($"{creature.name}: Health updated from {original} to {creature.m_health}.");
         }
 
-        private void CreateVanillaBackup()
+        /// <summary>
+        /// Sets the vanilla data from the current value of every creature currently classified.
+        /// </summary>
+        protected virtual void CreateVanillaBackup()
         {
-            if (_vanillaBackupCreated) return;
+            ProgressionPlugin.VentureProgressionLogger.LogInfo("Configuring vanilla backup for Creature data...");
 
-            ProgressionPlugin.GetProgressionLogger().LogInfo("Configuring vanilla backup for Creature data...");
+            foreach (CreatureClassification cc in _creatureData.Values)
+            {
+                var creature = ProgressionAPI.Instance.GetHumanoid(cc.Name);
+                if (creature != null)
+                {
+                    cc.SetVanillaData(creature.m_health, creature.m_defaultItems);
+                }
+            }
+        }
 
+        /// <summary>
+        /// Reset creatures to their original values given they have been assigned.
+        /// Creates a vanilla backup if not already assigned.
+        /// </summary>
+        public void VanillaReset()
+        {
             foreach (CreatureClassification creatureClass in _creatureData.Values)
             {
                 var creature = ProgressionAPI.Instance.GetHumanoid(creatureClass.Name);
                 if (creature != null)
                 {
-                    creatureClass.SetVanillaHealth(creature.m_health);
-                    creatureClass.SetVanillaAttacks(creature.m_defaultItems);
-                }
-            }
-
-            _vanillaBackupCreated = true;
-        }
-
-        public void VanillaReset()
-        {
-            if (_vanillaBackupCreated)
-            {
-                foreach (CreatureClassification creatureClass in _creatureData.Values)
-                {
-                    var creature = ProgressionAPI.Instance.GetHumanoid(creatureClass.Name);
-                    if (creature != null)
+                    if (creatureClass.VanillaHealth != null)
                     {
-                        if (creature.m_health > 0)
-                        {
-                            creature.m_health = creatureClass.VanillaHealth;
-                        }
+                        creature.m_health = creatureClass.VanillaHealth.Value;
+                    }
 
-                        if (creatureClass.VanillaAttacks != null)
+                    if (creatureClass.VanillaAttacks != null)
+                    {
+                        foreach (var attack in creatureClass.VanillaAttacks)
                         {
-                            foreach (var attack in creatureClass.VanillaAttacks)
+                            ItemDrop item = ProgressionAPI.Instance.GetItemDrop(attack.Key);
+                            if (item != null)
                             {
-                                ItemDrop item = ProgressionAPI.Instance.GetItemDrop(attack.Key);
-                                if (item != null)
-                                {
-                                    ConfigureAttack(item, attack.Value);
-                                }
+                                ConfigureAttack(item, attack.Value);
                             }
                         }
                     }
                 }
             }
-            else
+        }
+
+        /// <summary>
+        /// Reads the yaml file and applies the custom configurations.
+        /// </summary>
+        protected virtual void ReadCustomValues()
+        {
+            try
             {
-                CreateVanillaBackup();
+                CreatureOverrides.CreatureOverridesList creatures = CreatureOverrides.ReadYaml();
+
+                if (creatures != null)
+                {
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug("Deserializer successfully parsed yaml data.");
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug(creatures.ToString());
+
+                    foreach (var entry in creatures.creatures)
+                    {
+                        AddCreatureConfiguration(entry);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogWarning("Error loading CreatureOverrides.yaml file.");
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(e);
+                ProgressionPlugin.VentureProgressionLogger.LogWarning("Continuing without custom values...");
             }
         }
     }

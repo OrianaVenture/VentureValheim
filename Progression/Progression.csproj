@@ -10,7 +10,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.Progression</RootNamespace>
         <AssemblyName>VentureValheim.Progression</AssemblyName>
-        <Version>0.0.17</Version>
+        <Version>0.0.18</Version>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>
@@ -56,8 +56,8 @@
         </When>
     </Choose>
     <PropertyGroup>
-        <PostBuildDir>..\ProgressionTests\bin\Debug</PostBuildDir>
-        <PostBuildDir>..\ProgressionTests\bin\Release</PostBuildDir>
+        <PostBuildDir>..\ProgressionTests2\bin\Debug</PostBuildDir>
+        <PostBuildDir>..\ProgressionTests2\bin\Release</PostBuildDir>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, PublicKeyToken=null">
@@ -104,6 +104,21 @@
         <Compile Include="src\*.cs" />
         <Compile Include="..\ServerSync\ConfigSync.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="ILRepack.targets" />
+        <Content Include="..\lib\ServerSync.dll">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="ILRepack.Lib.MSBuild.Task">
+            <Version>2.0.18.2</Version>
+        </PackageReference>
+        <PackageReference Include="YamlDotNet">
+            <Version>11.2.1</Version>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </PackageReference>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

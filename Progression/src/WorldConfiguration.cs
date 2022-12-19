@@ -125,14 +125,12 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         public BiomeData GetBiome(int biome)
         {
-            try
+            if (_biomeData.ContainsKey(biome))
             {
                 return _biomeData[biome];
             }
-            catch
-            {
-                return null;
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -191,16 +189,16 @@ namespace VentureValheim.Progression
                 return;
             }
 
-            try
-            {
-                _biomeData.Add(data.BiomeType, data);
-            }
-            catch (ArgumentException)
+            if (_biomeData.ContainsKey(data.BiomeType))
             {
                 if (overrideBiome)
                 {
                     _biomeData[data.BiomeType] = data;
                 }
+            }
+            else
+            {
+                _biomeData.Add(data.BiomeType, data);
             }
         }
 
@@ -304,10 +302,15 @@ namespace VentureValheim.Progression
         /// if not found calculates based off configurations.
         /// </summary>
         /// <param name="originalBiome"></param>
-        /// <returns></returns>
+        /// <returns>Value or 1 if not found</returns>
         public float GetNextBiomeScale(Biome originalBiome)
         {
             var biome = GetBiome(originalBiome);
+            if (biome == null)
+            {
+                return 1f;
+            }
+
             var next = GetNextBiome(biome.BiomeOrder);
 
             if (next == null)
@@ -369,27 +372,32 @@ namespace VentureValheim.Progression
         {
             try
             {
-                if (ProgressionPlugin.Instance.GetUseAutoScaling())
+                if (ProgressionConfiguration.Instance.GetGenerateGameData())
                 {
-                    SetupWorld(ProgressionPlugin.Instance.GetAutoScaleType(), ProgressionPlugin.Instance.GetAutoScaleFactor());
+                    ProgressionAPI.Instance.GenerateData(true);
+                }
 
-                    if (WorldScale == Scaling.Vanilla)
-                    {
-                        ProgressionPlugin.GetProgressionLogger().LogInfo("Restoring Vanilla Values...");
-                        CreatureConfiguration.Instance.VanillaReset();
-                        ItemConfiguration.Instance.VanillaReset();
-                        return;
-                    }
+                SetupWorld(ProgressionConfiguration.Instance.GetAutoScaleType(), ProgressionConfiguration.Instance.GetAutoScaleFactor());
 
-                    ProgressionPlugin.GetProgressionLogger().LogInfo(
+                if (!ProgressionConfiguration.Instance.GetUseAutoScaling() || WorldScale == Scaling.Vanilla)
+                {
+                    // Always restore vanilla values on login in case of multiple server selection in one session
+                    ProgressionPlugin.VentureProgressionLogger.LogInfo("Restoring Vanilla Values...");
+                    CreatureConfiguration.Instance.VanillaReset();
+                    ItemConfiguration.Instance.VanillaReset();
+                    return;
+                }
+                else if (ProgressionConfiguration.Instance.GetUseAutoScaling())
+                {
+                    ProgressionPlugin.VentureProgressionLogger.LogInfo(
                         $"WorldConfiguration Initializing with scale: {WorldScale}, factor: {ScaleFactor}.");
 
-                    if (ProgressionPlugin.Instance.GetAutoScaleCreatures())
+                    if (ProgressionConfiguration.Instance.GetAutoScaleCreatures())
                     {
                         SetupCreatures();
                     }
 
-                    if (ProgressionPlugin.Instance.GetAutoScaleItems())
+                    if (ProgressionConfiguration.Instance.GetAutoScaleItems())
                     {
                         SetupItems();
                     }
@@ -397,8 +405,8 @@ namespace VentureValheim.Progression
             }
             catch (Exception e)
             {
-                ProgressionPlugin.GetProgressionLogger().LogError("Error configuring Auto-Scaling features, your game may behave unexpectedly.");
-                ProgressionPlugin.GetProgressionLogger().LogError(e);
+                ProgressionPlugin.VentureProgressionLogger.LogError("Error configuring Auto-Scaling features, your game may behave unexpectedly.");
+                ProgressionPlugin.VentureProgressionLogger.LogError(e);
             }
         }
 
@@ -423,36 +431,33 @@ namespace VentureValheim.Progression
         {
             try
             {
-                var healthString = ProgressionPlugin.Instance.GetAutoScaleCreatureHealth();
+                var healthString = ProgressionConfiguration.Instance.GetAutoScaleCreatureHealth();
                 var arr = ProgressionAPI.Instance.StringToIntArray(healthString);
                 CreatureConfiguration.Instance.SetBaseHealth(arr);
             }
             catch
             {
-                ProgressionPlugin.GetProgressionLogger().LogWarning("Issue parsing Creature Health configuration, using defaults.");
+                ProgressionPlugin.VentureProgressionLogger.LogWarning("Issue parsing Creature Health configuration, using defaults.");
             }
 
             try
             {
-                var damageString = ProgressionPlugin.Instance.GetAutoScaleCreatureDamage();
+                var damageString = ProgressionConfiguration.Instance.GetAutoScaleCreatureDamage();
                 var arr = ProgressionAPI.Instance.StringToIntArray(damageString);
                 CreatureConfiguration.Instance.SetBaseDamage(arr);
             }
             catch
             {
-                ProgressionPlugin.GetProgressionLogger().LogWarning("Issue parsing Creature Damage configuration, using defaults.");
+                ProgressionPlugin.VentureProgressionLogger.LogWarning("Issue parsing Creature Damage configuration, using defaults.");
             }
 
-            ProgressionPlugin.GetProgressionLogger().LogInfo("Updating Creature Configurations with auto-scaling...");
-            CreatureConfiguration.Instance.Initialize();
-
+            ProgressionPlugin.VentureProgressionLogger.LogInfo("Updating Creature Configurations with auto-scaling...");
             CreatureConfiguration.Instance.UpdateCreatures();
         }
 
         private void SetupItems()
         {
-            ProgressionPlugin.GetProgressionLogger().LogInfo("Updating Item Configurations with auto-scaling...");
-            ItemConfiguration.Instance.Initialize();
+            ProgressionPlugin.VentureProgressionLogger.LogInfo("Updating Item Configurations with auto-scaling...");
             ItemConfiguration.Instance.UpdateItems();
         }
 
@@ -467,9 +472,9 @@ namespace VentureValheim.Progression
             {
                 if (ProgressionAPI.Instance.IsInTheMainScene())
                 {
-                    ProgressionPlugin.GetProgressionLogger().LogInfo("Setting up world configurations...");
+                    ProgressionPlugin.VentureProgressionLogger.LogInfo("Setting up world configurations...");
                     Instance.SetupScaling();
-                    ProgressionPlugin.GetProgressionLogger().LogInfo("Done setting up world configurations.");
+                    ProgressionPlugin.VentureProgressionLogger.LogInfo("Done setting up world configurations.");
                 }
             }
         }

@@ -1,7 +1,6 @@
 ﻿using Moq;
 using Xunit;
 using VentureValheim.Progression;
-using static VentureValheim.ProgressionTests.APITests;
 
 namespace VentureValheim.ProgressionTests
 {
@@ -41,12 +40,12 @@ namespace VentureValheim.ProgressionTests
         private TestKeyManager Setup(string a, string b)
         {
             var mockManager = new Mock<IKeyManager>();
-            mockManager.SetupGet(x => x.BlockedGlobalKeys).Returns(a);
-            mockManager.SetupGet(x => x.AllowedGlobalKeys).Returns(b);
+            mockManager.Setup(x => x.BlockedGlobalKeys).Returns(a);
+            mockManager.Setup(x => x.AllowedGlobalKeys).Returns(b);
             var set1 = ProgressionAPI.Instance.StringToSet(a);
             var set2 = ProgressionAPI.Instance.StringToSet(b);
-            mockManager.SetupGet(x => x.BlockedGlobalKeysList).Returns(set1);
-            mockManager.SetupGet(x => x.AllowedGlobalKeysList).Returns(set2);
+            mockManager.Setup(x => x.BlockedGlobalKeysList).Returns(set1);
+            mockManager.Setup(x => x.AllowedGlobalKeysList).Returns(set2);
 
             return new TestKeyManager(mockManager.Object);
         }
@@ -156,7 +155,7 @@ namespace VentureValheim.ProgressionTests
         [Theory]
         [InlineData("", 0)]
         [InlineData("defeated_eikthyr", 1)]
-        [InlineData("defeated_eikthyr,defeated_gdking,defeated_bonemass,defeated_dragon,defeated_goblinking", 5)]
+        [InlineData("defeated_eikthyr,defeated_gdking,defeated_bonemass,defeated_dragon,defeated_goblinking,defeated_queen", 6)]
         [InlineData("defeated_eikthyr,defeated_gdking,defeated_bonemass,defeated_dragon,defeated_goblinking,test1,test2", 5)]
         public void CountPrivateBossKeys_All(string keys, int expected)
         {

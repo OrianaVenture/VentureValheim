@@ -1,20 +1,18 @@
 using System;
 using System.Collections.Generic;
 using BepInEx;
-using static VentureValheim.Progression.ItemConfiguration;
 
 namespace VentureValheim.Progression
 {
     public interface IItemConfiguration
     {
-        public ItemCategory GetItemCategory(ItemType itemType);
-        public float GetTotalDamage(HitData.DamageTypes OriginalDamage, bool playerItem);
+        public float GetTotalDamage(HitData.DamageTypes OriginalDamage);
         public HitData.DamageTypes CalculateCreatureDamageTypes(
-            WorldConfiguration.BiomeData biomeData, HitData.DamageTypes OriginalDamage, float baseTotalDamage, float maxTotalDamage);
-        public HitData.DamageTypes CalculateItemDamageTypes(WorldConfiguration.BiomeData biomeData, HitData.DamageTypes OriginalDamage, float baseTotalDamage);
-        public void UpdateWeapon(ItemDrop item, HitData.DamageTypes? value, int upgrades, HitData.DamageTypes? upgradeValue, bool playerItem = true);
-        public void UpdateArmor(ItemDrop item, float value, int upgrades, float upgradeValue);
-        public void UpdateShield(ItemDrop item, float value, int upgrades, float upgradeValue);
+            float biomeScale, HitData.DamageTypes OriginalDamage, float baseTotalDamage, float maxTotalDamage);
+        public HitData.DamageTypes CalculateItemDamageTypes(float biomeScale, HitData.DamageTypes originalDamage, float baseTotalDamage);
+        public void UpdateWeapon(ItemDrop item, HitData.DamageTypes? value, int? upgrades, HitData.DamageTypes? upgradeValue, bool playerItem = true);
+        public void UpdateArmor(ItemDrop item, float? value, int? upgrades, float? upgradeValue);
+        public void UpdateShield(ItemDrop item, float? value, int? upgrades, float? upgradeValue);
         public void UpdateItems();
         public void VanillaReset();
     }
@@ -30,169 +28,79 @@ namespace VentureValheim.Progression
             get => _instance as ItemConfiguration;
         }
 
-        public enum ItemCategory
-        {
-            Undefined = -1,
-            Weapon = 0,
-            Armor = 1,
-            Shield = 2,
-        }
+        protected Dictionary<ItemType, float> _itemBaseValues = new Dictionary<ItemType, float>();
+        protected Dictionary<string, ItemClassification> _itemData = new Dictionary<string, ItemClassification>();
 
-        public enum ItemType
+        /// <summary>
+        /// Returns the base item value for a type or 0 if not defined.
+        /// </summary>
+        /// <param name="itemType"></param>
+        /// <returns></returns>
+        public float GetBaseItemValue(ItemType itemType)
         {
-            Undefined = -1,
-            None = 0,
-            Shield = 1,
-            Helmet = 2,
-            Chest = 3,
-            Legs = 4,
-            Shoulder = 5,
-            Utility = 6,
-            Tool = 7,
-            PickAxe = 8,
-            Axe = 9,
-            Bow = 10,
-            Ammo = 11,
-            Sword = 20,
-            Knife = 21,
-            Mace = 22,
-            Sledge = 23,
-            Atgeir = 25,
-            Battleaxe = 26,
-            Primative = 27,
-            Spear = 28,
-            TowerShield = 29,
-            BucklerShield = 30,
-            PrimativeArmor = 31
-        }
-
-        public ItemCategory GetItemCategory(ItemType itemType)
-        {
-            switch (itemType)
-            {
-                case ItemType.BucklerShield:
-                case ItemType.Shield:
-                case ItemType.TowerShield:
-                    return ItemCategory.Shield;
-                case ItemType.Shoulder:
-                case ItemType.PrimativeArmor:
-                case ItemType.Helmet:
-                case ItemType.Chest:
-                case ItemType.Legs:
-                case ItemType.Utility:
-                    return ItemCategory.Armor;
-                case ItemType.Primative:
-                case ItemType.Knife:
-                case ItemType.Ammo:
-                case ItemType.PickAxe:
-                case ItemType.Sword:
-                case ItemType.Mace:
-                case ItemType.Spear:
-                case ItemType.Axe:
-                case ItemType.Sledge:
-                case ItemType.Atgeir:
-                case ItemType.Battleaxe:
-                case ItemType.Bow:
-                case ItemType.Tool:
-                    return ItemCategory.Weapon;
-                default:
-                    return ItemCategory.Undefined;
-            }
-        }
-
-        protected float GetBaseItemValue(ItemType itemType)
-        {
-            try
+            if (_itemBaseValues.ContainsKey(itemType))
             {
                 return _itemBaseValues[itemType];
             }
-            catch
+            else
             {
                 return 0;
             }
         }
 
+        /// <summary>
+        /// Adds a base value for an item type for scaling.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="value"></param>
+        /// <param name="overrideData">True to override an existing entry if exists</param>
         public void AddBaseItemValue(ItemType type, float value, bool overrideData = false)
         {
-            try
-            {
-                _itemBaseValues.Add(type, value);
-            }
-            catch
+            if (_itemBaseValues.ContainsKey(type))
             {
                 if (overrideData)
                 {
                     _itemBaseValues[type] = value;
                 }
             }
+            else
+            {
+                _itemBaseValues.Add(type, value);
+            }
         }
 
-        public class ItemClassification
+        /// <summary>
+        /// Adds or overrides a base value for an item type for scaling if correctly defined.
+        /// </summary>
+        /// <param name="item"></param>
+        public void AddBaseItemValue(ItemOverrides.BaseItemValueOverride item)
         {
-            public string Name;
-            public WorldConfiguration.Biome BiomeType;
-            public ItemType ItemType;
-            public ItemCategory ItemCategory;
-            public float ItemValue;
-            public int VanillaUpgradeLevels;
-            public float VanillaValue;
-            public float VanillaUpgradeValue;
-            public HitData.DamageTypes? VanillaDamageValue;
-            public HitData.DamageTypes? VanillaUpgradeDamageValue;
-
-            public ItemClassification(string name, WorldConfiguration.Biome biomeType, ItemType itemType, ItemCategory itemCategory, float value)
+            if (item.itemType != null && item.value != null)
             {
-                Name = name;
-                BiomeType = biomeType;
-                ItemType = itemType;
-                ItemCategory = itemCategory;
-                ItemValue = value;
-                VanillaUpgradeLevels = 0;
-                VanillaValue = 0;
-                VanillaUpgradeValue = 0;
-                VanillaDamageValue = null;
-                VanillaUpgradeDamageValue = null;
-            }
+                var type = (ItemType)item.itemType;
 
-            public void UpdateItem(WorldConfiguration.Biome biomeType, ItemType itemType, ItemCategory itemCategory, float value)
-            {
-                BiomeType = biomeType;
-                ItemType = itemType;
-                ItemCategory = itemCategory;
-                ItemValue = value;
+                AddBaseItemValue(type, item.value.Value, true);
             }
         }
-
-        private Dictionary<ItemType, float> _itemBaseValues = new Dictionary<ItemType, float>();
-        private Dictionary<string, ItemClassification> _itemData = new Dictionary<string, ItemClassification>();
-        protected bool _vanillaBackupCreated;
 
         #region Damage
 
         /// <summary>
-        /// Get the total damage for a Player or Creature.
+        /// Get the total damage, excluding chop and pickaxe damage.
         /// </summary>
-        /// <param name="OriginalDamage"></param>
-        /// <param name="playerItem">True if for the Player</param>
+        /// <param name="originalDamage"></param>
         /// <returns></returns>
-        public float GetTotalDamage(HitData.DamageTypes OriginalDamage, bool playerItem)
+        public float GetTotalDamage(HitData.DamageTypes originalDamage)
         {
-            var damage = OriginalDamage.m_damage +
-                OriginalDamage.m_blunt +
-                OriginalDamage.m_slash +
-                OriginalDamage.m_pierce +
-                OriginalDamage.m_fire +
-                OriginalDamage.m_frost +
-                OriginalDamage.m_lightning +
-                OriginalDamage.m_poison +
-                OriginalDamage.m_spirit;
-
-            /*if (playerItem)
-            {
-                return damage +
-                OriginalDamage.m_chop +
-                OriginalDamage.m_pickaxe;
-            }*/
+            var damage = originalDamage.m_damage +
+                originalDamage.m_blunt +
+                originalDamage.m_slash +
+                originalDamage.m_pierce +
+                originalDamage.m_fire +
+                originalDamage.m_frost +
+                originalDamage.m_lightning +
+                originalDamage.m_poison +
+                originalDamage.m_spirit;
 
             return damage;
         }
@@ -201,37 +109,36 @@ namespace VentureValheim.Progression
         /// Scales the damage given the original damage, new total base damage,
         /// and the original maximum total damage of any of this Creature's attack.
         /// </summary>
-        /// <param name="biome"></param>
-        /// <param name="OriginalDamage"></param>
+        /// <param name="biomeScale"></param>
+        /// <param name="originalDamage"></param>
         /// <param name="baseTotalDamage">New base damage to be scaled.</param>
         /// <param name="maxTotalDamage">Maximum damage by any attack this creature has.</param>
         /// <returns></returns>
-        public HitData.DamageTypes CalculateCreatureDamageTypes(WorldConfiguration.BiomeData biomeData, HitData.DamageTypes OriginalDamage, float baseTotalDamage, float maxTotalDamage)
+        public HitData.DamageTypes CalculateCreatureDamageTypes(float biomeScale, HitData.DamageTypes originalDamage, float baseTotalDamage, float maxTotalDamage)
         {
-            Normalize(ref OriginalDamage);
+            Normalize(ref originalDamage);
 
             // Consider the maximum total damage this creature can do when auto-scaling for multiple attacks.
-            float totalDamage = GetTotalDamage(OriginalDamage, false);
-            float ratio = DamageRatio(totalDamage, maxTotalDamage);
+            float ratio = DamageRatio(GetTotalDamage(originalDamage), maxTotalDamage);
 
-            var multiplier = ratio * biomeData.ScaleValue;
+            var multiplier = ratio * biomeScale;
 
-            return CalculateDamageTypesFinal(OriginalDamage, baseTotalDamage, multiplier, false);
+            return CalculateDamageTypesFinal(originalDamage, baseTotalDamage, multiplier);
         }
 
         /// <summary>
         /// Scales the damage given the original damage, new total base damage,
         /// and the original maximum total damage of any of this Creature's attack.
         /// </summary>
-        /// <param name="biome"></param>
-        /// <param name="OriginalDamage"></param>
+        /// <param name="biomeScale"></param>
+        /// <param name="originalDamage"></param>
         /// <param name="baseTotalDamage">New base damage to be scaled.</param>
         /// <returns></returns>
-        public HitData.DamageTypes CalculateItemDamageTypes(WorldConfiguration.BiomeData biomeData, HitData.DamageTypes OriginalDamage, float baseTotalDamage)
+        public HitData.DamageTypes CalculateItemDamageTypes(float biomeScale, HitData.DamageTypes originalDamage, float baseTotalDamage)
         {
-            Normalize(ref OriginalDamage);
+            Normalize(ref originalDamage);
 
-            return CalculateDamageTypesFinal(OriginalDamage, baseTotalDamage, biomeData.ScaleValue, true);
+            return CalculateDamageTypesFinal(originalDamage, baseTotalDamage, biomeScale);
         }
 
         /// <summary>
@@ -240,19 +147,11 @@ namespace VentureValheim.Progression
         /// <param name="OriginalDamage"></param>
         /// <param name="baseTotalDamage"></param>
         /// <param name="multiplier"></param>
-        /// <param name="playerItem"></param>
         /// <returns></returns>
-        private HitData.DamageTypes CalculateDamageTypesFinal(HitData.DamageTypes OriginalDamage, float baseTotalDamage, float multiplier, bool playerItem = true)
+        public HitData.DamageTypes CalculateDamageTypesFinal(HitData.DamageTypes OriginalDamage, float baseTotalDamage, float multiplier)
         {
             HitData.DamageTypes damageTypes = new HitData.DamageTypes();
-            var sum = GetTotalDamage(OriginalDamage, playerItem);
-
-            /*if (playerItem)
-            {
-                // If a mob item leave the chop and pickaxe damage alone because it's a little weird for auto-scaling
-                damageTypes.m_chop = ScaleDamage(sum, OriginalDamage.m_chop, baseTotalDamage, multiplier);
-                damageTypes.m_pickaxe = ScaleDamage(sum, OriginalDamage.m_pickaxe, baseTotalDamage, multiplier);
-            }*/
+            var sum = GetTotalDamage(OriginalDamage);
 
             // Do not scale chop or pickaxe damage, makes mining stupid
             damageTypes.m_chop = OriginalDamage.m_chop;
@@ -343,7 +242,7 @@ namespace VentureValheim.Progression
         /// <param name="baseTotalDamage">The item's new base total damage</param>
         /// <param name="quality">The item's max quality, 1 indicated no upgrades for the item</param>
         /// <returns></returns>
-        protected HitData.DamageTypes CalculateUpgradeValue(WorldConfiguration.Biome biome, HitData.DamageTypes original, float baseTotalDamage, int quality)
+        public HitData.DamageTypes CalculateUpgradeValue(WorldConfiguration.Biome biome, HitData.DamageTypes original, float baseTotalDamage, int quality)
         {
             var scale = WorldConfiguration.Instance.GetBiomeScaling(biome);
             var nextScale = WorldConfiguration.Instance.GetNextBiomeScale(biome);
@@ -359,14 +258,14 @@ namespace VentureValheim.Progression
         /// <param name="nextScale"></param>
         /// <param name="original"></param>
         /// <param name="baseTotalDamage">The item's new base total damage</param>
-        /// <param name="quality">The item's max quality, 1 indicated no upgrades for the item</param>
+        /// <param name="quality">The item's max quality, 1 indicates no upgrades for the item</param>
         /// <returns></returns>
         protected HitData.DamageTypes CalculateUpgradeValue(float scale, float nextScale, HitData.DamageTypes original, float baseTotalDamage, int quality)
         {
             if (quality <= 1)
             {
                 // This item has no upgrades
-                return new HitData.DamageTypes();
+                return original;
             }
 
             var startValue = baseTotalDamage * scale;
@@ -378,26 +277,15 @@ namespace VentureValheim.Progression
                 // Round up
                 float damagePerLevel = (float)Math.Round((float)range / quality);
                 // TODO, should items equal the next biome's item at max quality?
-                return CalculateDamageTypesFinal(original, damagePerLevel, 1f, true);
+                return CalculateDamageTypesFinal(original, damagePerLevel, 1f);
             }
 
-            return new HitData.DamageTypes();
+            return original;
         }
 
         #endregion
 
         #region Armor
-
-        /// <summary>
-        /// Calculates the new item armor or block value based off global scale.
-        /// </summary>
-        /// <param name="ic"></param>
-        /// <returns></returns>
-        protected float CalculateArmor(ItemClassification ic)
-        {
-            var scale = WorldConfiguration.Instance.GetBiomeScaling(ic.BiomeType);
-            return (int)(ic.ItemValue * scale);
-        }
 
         /// <summary>
         /// Calculates the item upgrade values such that an item that is fully upgraded will be
@@ -407,7 +295,7 @@ namespace VentureValheim.Progression
         /// <param name="baseValue">The item's base value</param>
         /// <param name="quality">The item's max quality, 1 indicated no upgrades for the item</param>
         /// <returns></returns>
-        protected float CalculateUpgradeValue(WorldConfiguration.Biome biome, float baseValue, int quality)
+        public float CalculateUpgradeValue(WorldConfiguration.Biome biome, float baseValue, int quality)
         {
             var scale = WorldConfiguration.Instance.GetBiomeScaling(biome);
             var nextScale = WorldConfiguration.Instance.GetNextBiomeScale(biome);
@@ -415,6 +303,14 @@ namespace VentureValheim.Progression
             return CalculateUpgradeValue(scale, nextScale, baseValue, quality);
         }
 
+        /// <summary>
+        /// Calcualtes the value for a single upgrade or returns 0 if invalid.
+        /// </summary>
+        /// <param name="scale"></param>
+        /// <param name="nextScale"></param>
+        /// <param name="baseValue"></param>
+        /// <param name="quality"></param>
+        /// <returns></returns>
         protected float CalculateUpgradeValue(float scale, float nextScale, float baseValue, int quality)
         {
             if (quality <= 1)
@@ -444,20 +340,22 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Set the default values for Vanilla Player Items.
         /// </summary>
-        public void Initialize()
+        protected void Initialize()
         {
             // TODO
             // BombOoze
-
-            if (_vanillaBackupCreated) return;
+            // BombBile
 
             InitializeBaseValues();
-            InitializeWeapons();
-            InitializeArmor();
-            InitializeShields();
 
-            // TODO ability to override the number of upgrades?
-            // TODO add options for loading configurations from a file after defaults are set
+            if (!ProgressionConfiguration.Instance.GetAutoScaleItemsIgnoreDefaults())
+            {
+                InitializeWeapons();
+                InitializeArmor();
+                InitializeShields();
+            }
+
+            ReadCustomValues();
 
             CreateVanillaBackup();
         }
@@ -472,16 +370,19 @@ namespace VentureValheim.Progression
             AddItemConfiguration("AxeBronze", WorldConfiguration.Biome.BlackForest, ItemType.Axe);
             AddItemConfiguration("AxeIron", WorldConfiguration.Biome.Swamp, ItemType.Axe);
             AddItemConfiguration("AxeBlackMetal", WorldConfiguration.Biome.Plain, ItemType.Axe);
+            AddItemConfiguration("AxeJotunBane", WorldConfiguration.Biome.Mistland, ItemType.Axe);
 
             AddItemConfiguration("PickaxeAntler", WorldConfiguration.Biome.Meadow, ItemType.PickAxe);
             AddItemConfiguration("PickaxeBronze", WorldConfiguration.Biome.BlackForest, ItemType.PickAxe);
             AddItemConfiguration("PickaxeIron", WorldConfiguration.Biome.Swamp, ItemType.PickAxe);
+            AddItemConfiguration("PickaxeBlackMetal", WorldConfiguration.Biome.Plain, ItemType.PickAxe);
 
             AddItemConfiguration("KnifeChitin", WorldConfiguration.Biome.Ocean, ItemType.Knife);
             AddItemConfiguration("KnifeFlint", WorldConfiguration.Biome.Meadow, ItemType.Knife);
             AddItemConfiguration("KnifeCopper", WorldConfiguration.Biome.BlackForest, ItemType.Knife);
             AddItemConfiguration("KnifeSilver", WorldConfiguration.Biome.Mountain, ItemType.Knife);
             AddItemConfiguration("KnifeBlackMetal", WorldConfiguration.Biome.Plain, ItemType.Knife);
+            AddItemConfiguration("KnifeSkollAndHati", WorldConfiguration.Biome.Mistland, ItemType.Knife);
 
             AddItemConfiguration("MaceBronze", WorldConfiguration.Biome.BlackForest, ItemType.Mace);
             AddItemConfiguration("MaceIron", WorldConfiguration.Biome.Swamp, ItemType.Mace);
@@ -493,27 +394,33 @@ namespace VentureValheim.Progression
             AddItemConfiguration("SwordIronFire", WorldConfiguration.Biome.Swamp, ItemType.Sword);
             AddItemConfiguration("SwordSilver", WorldConfiguration.Biome.Mountain, ItemType.Sword);
             AddItemConfiguration("SwordBlackmetal", WorldConfiguration.Biome.Plain, ItemType.Sword);
+            AddItemConfiguration("SwordMistwalker", WorldConfiguration.Biome.Mistland, ItemType.Sword);
 
             AddItemConfiguration("AtgeirBronze", WorldConfiguration.Biome.BlackForest, ItemType.Atgeir);
             AddItemConfiguration("AtgeirIron", WorldConfiguration.Biome.Swamp, ItemType.Atgeir);
             AddItemConfiguration("AtgeirBlackmetal", WorldConfiguration.Biome.Plain, ItemType.Atgeir);
+            AddItemConfiguration("AtgeirHimminAfl", WorldConfiguration.Biome.Mistland, ItemType.Atgeir);
 
             AddItemConfiguration("Battleaxe", WorldConfiguration.Biome.Swamp, ItemType.Battleaxe);
             AddItemConfiguration("BattleaxeCrystal", WorldConfiguration.Biome.Mountain, ItemType.Battleaxe);
+            AddItemConfiguration("THSwordKrom", WorldConfiguration.Biome.Mistland, ItemType.Battleaxe);
 
             AddItemConfiguration("SledgeStagbreaker", WorldConfiguration.Biome.Meadow, ItemType.Sledge);
             AddItemConfiguration("SledgeIron", WorldConfiguration.Biome.Swamp, ItemType.Sledge);
+            AddItemConfiguration("SledgeDemolisher", WorldConfiguration.Biome.Mistland, ItemType.Sledge);
 
             AddItemConfiguration("SpearChitin", WorldConfiguration.Biome.Ocean, ItemType.Spear);
             AddItemConfiguration("SpearFlint", WorldConfiguration.Biome.Meadow, ItemType.Spear);
             AddItemConfiguration("SpearBronze", WorldConfiguration.Biome.BlackForest, ItemType.Spear);
             AddItemConfiguration("SpearElderbark", WorldConfiguration.Biome.Swamp, ItemType.Spear);
             AddItemConfiguration("SpearWolfFang", WorldConfiguration.Biome.Mountain, ItemType.Spear);
+            AddItemConfiguration("SpearCarapace", WorldConfiguration.Biome.Mistland, ItemType.Spear);
 
             AddItemConfiguration("Bow", WorldConfiguration.Biome.Meadow, ItemType.Bow);
             AddItemConfiguration("BowFineWood", WorldConfiguration.Biome.BlackForest, ItemType.Bow);
             AddItemConfiguration("BowHuntsman", WorldConfiguration.Biome.Swamp, ItemType.Bow);
             AddItemConfiguration("BowDraugrFang", WorldConfiguration.Biome.Mountain, ItemType.Bow);
+            AddItemConfiguration("BowSpineSnap", WorldConfiguration.Biome.Mistland, ItemType.Bow);
 
             AddItemConfiguration("ArrowWood", WorldConfiguration.Biome.Meadow, ItemType.Ammo);
             AddItemConfiguration("ArrowFlint", WorldConfiguration.Biome.Meadow, ItemType.Ammo);
@@ -525,12 +432,22 @@ namespace VentureValheim.Progression
             AddItemConfiguration("ArrowObsidian", WorldConfiguration.Biome.Mountain, ItemType.Ammo);
             AddItemConfiguration("ArrowFrost", WorldConfiguration.Biome.Mountain, ItemType.Ammo);
             AddItemConfiguration("ArrowNeedle", WorldConfiguration.Biome.Plain, ItemType.Ammo);
+            AddItemConfiguration("ArrowCarapace", WorldConfiguration.Biome.Mistland, ItemType.Ammo);
+
+            AddItemConfiguration("CrossbowArbalest", WorldConfiguration.Biome.Mistland, ItemType.Crossbow);
+
+            AddItemConfiguration("BoltBone", WorldConfiguration.Biome.BlackForest, ItemType.Bolt);
+            AddItemConfiguration("BoltIron", WorldConfiguration.Biome.Swamp, ItemType.Bolt);
+            AddItemConfiguration("BoltBlackmetal", WorldConfiguration.Biome.Plain, ItemType.Bolt);
+            AddItemConfiguration("BoltCarapace", WorldConfiguration.Biome.Mistland, ItemType.Bolt);
         }
 
         private void InitializeArmor()
         {
-            AddItemConfiguration("ArmorRagsChest", WorldConfiguration.Biome.Meadow, ItemType.Primative);
-            AddItemConfiguration("ArmorRagsLegs", WorldConfiguration.Biome.Meadow, ItemType.Primative);
+            // TODO: Add support for shoulder items
+
+            AddItemConfiguration("ArmorRagsChest", WorldConfiguration.Biome.Meadow, ItemType.PrimativeArmor);
+            AddItemConfiguration("ArmorRagsLegs", WorldConfiguration.Biome.Meadow, ItemType.PrimativeArmor);
 
             AddItemConfiguration("HelmetLeather", WorldConfiguration.Biome.Meadow, ItemType.Helmet);
             AddItemConfiguration("ArmorLeatherChest", WorldConfiguration.Biome.Meadow, ItemType.Chest);
@@ -540,21 +457,21 @@ namespace VentureValheim.Progression
             AddItemConfiguration("ArmorBronzeChest", WorldConfiguration.Biome.BlackForest, ItemType.Chest);
             AddItemConfiguration("ArmorBronzeLegs", WorldConfiguration.Biome.BlackForest, ItemType.Legs);
 
-            AddItemConfiguration("HelmetTrollLeather", WorldConfiguration.Biome.BlackForest, ItemType.Helmet);
-            AddItemConfiguration("ArmorTrollLeatherChest", WorldConfiguration.Biome.BlackForest, ItemType.Chest);
-            AddItemConfiguration("ArmorTrollLeatherLegs", WorldConfiguration.Biome.BlackForest, ItemType.Legs);
+            AddItemConfiguration("HelmetTrollLeather", WorldConfiguration.Biome.BlackForest, ItemType.HelmetRobe);
+            AddItemConfiguration("ArmorTrollLeatherChest", WorldConfiguration.Biome.BlackForest, ItemType.ChestRobe);
+            AddItemConfiguration("ArmorTrollLeatherLegs", WorldConfiguration.Biome.BlackForest, ItemType.LegsRobe);
 
             AddItemConfiguration("HelmetIron", WorldConfiguration.Biome.Swamp, ItemType.Helmet);
             AddItemConfiguration("ArmorIronChest", WorldConfiguration.Biome.Swamp, ItemType.Chest);
             AddItemConfiguration("ArmorIronLegs", WorldConfiguration.Biome.Swamp, ItemType.Legs);
 
-            AddItemConfiguration("HelmetRoot", WorldConfiguration.Biome.Swamp, ItemType.Helmet);
-            AddItemConfiguration("ArmorRootChest", WorldConfiguration.Biome.Swamp, ItemType.Chest);
-            AddItemConfiguration("ArmorRootLegs", WorldConfiguration.Biome.Swamp, ItemType.Legs);
+            AddItemConfiguration("HelmetRoot", WorldConfiguration.Biome.Swamp, ItemType.HelmetRobe);
+            AddItemConfiguration("ArmorRootChest", WorldConfiguration.Biome.Swamp, ItemType.ChestRobe);
+            AddItemConfiguration("ArmorRootLegs", WorldConfiguration.Biome.Swamp, ItemType.LegsRobe);
 
-            AddItemConfiguration("HelmetFenring", WorldConfiguration.Biome.Mountain, ItemType.Helmet);
-            AddItemConfiguration("ArmorFenringChest", WorldConfiguration.Biome.Mountain, ItemType.Chest);
-            AddItemConfiguration("ArmorFenringLegs", WorldConfiguration.Biome.Mountain, ItemType.Legs);
+            AddItemConfiguration("HelmetFenring", WorldConfiguration.Biome.Mountain, ItemType.HelmetRobe);
+            AddItemConfiguration("ArmorFenringChest", WorldConfiguration.Biome.Mountain, ItemType.ChestRobe);
+            AddItemConfiguration("ArmorFenringLegs", WorldConfiguration.Biome.Mountain, ItemType.LegsRobe);
 
             AddItemConfiguration("HelmetDrake", WorldConfiguration.Biome.Mountain, ItemType.Helmet);
             AddItemConfiguration("ArmorWolfChest", WorldConfiguration.Biome.Mountain, ItemType.Chest);
@@ -563,40 +480,52 @@ namespace VentureValheim.Progression
             AddItemConfiguration("HelmetPadded", WorldConfiguration.Biome.Plain, ItemType.Helmet);
             AddItemConfiguration("ArmorPaddedCuirass", WorldConfiguration.Biome.Plain, ItemType.Chest);
             AddItemConfiguration("ArmorPaddedGreaves", WorldConfiguration.Biome.Plain, ItemType.Legs);
+
+            AddItemConfiguration("HelmetMage", WorldConfiguration.Biome.Mistland, ItemType.HelmetRobe);
+            AddItemConfiguration("ArmorMageChest", WorldConfiguration.Biome.Mistland, ItemType.ChestRobe);
+            AddItemConfiguration("ArmorMageLegs", WorldConfiguration.Biome.Mistland, ItemType.LegsRobe);
+
+            AddItemConfiguration("HelmetCarapace", WorldConfiguration.Biome.Mistland, ItemType.Helmet);
+            AddItemConfiguration("ArmorCarapaceChest", WorldConfiguration.Biome.Mistland, ItemType.Chest);
+            AddItemConfiguration("ArmorCarapaceLegs", WorldConfiguration.Biome.Mistland, ItemType.Legs);
         }
 
         private void InitializeShields()
         {
             AddItemConfiguration("ShieldBronzeBuckler", WorldConfiguration.Biome.BlackForest, ItemType.BucklerShield);
             AddItemConfiguration("ShieldIronBuckler", WorldConfiguration.Biome.Swamp, ItemType.BucklerShield);
+            AddItemConfiguration("ShieldCarapaceBuckler", WorldConfiguration.Biome.Mistland, ItemType.BucklerShield);
 
             AddItemConfiguration("ShieldWood", WorldConfiguration.Biome.Meadow, ItemType.Shield);
             AddItemConfiguration("ShieldBanded", WorldConfiguration.Biome.Swamp, ItemType.Shield);
             AddItemConfiguration("ShieldSilver", WorldConfiguration.Biome.Swamp, ItemType.Shield);
             AddItemConfiguration("ShieldBlackmetal", WorldConfiguration.Biome.Plain, ItemType.Shield);
+            AddItemConfiguration("ShieldCarapace", WorldConfiguration.Biome.Mistland, ItemType.Shield);
 
             AddItemConfiguration("ShieldSerpentscale", WorldConfiguration.Biome.Ocean, ItemType.TowerShield);
             AddItemConfiguration("ShieldWoodTower", WorldConfiguration.Biome.Meadow, ItemType.TowerShield);
             AddItemConfiguration("ShieldBoneTower", WorldConfiguration.Biome.BlackForest, ItemType.TowerShield);
-            AddItemConfiguration("ShieldIronSquare", WorldConfiguration.Biome.Swamp, ItemType.TowerShield);
             AddItemConfiguration("ShieldIronTower", WorldConfiguration.Biome.Swamp, ItemType.TowerShield);
             AddItemConfiguration("ShieldBlackmetalTower", WorldConfiguration.Biome.Plain, ItemType.TowerShield);
         }
 
         private void InitializeBaseValues()
         {
-            // TODO error handling
             AddBaseItemValue(ItemType.Shoulder, 1f);
             AddBaseItemValue(ItemType.PrimativeArmor, 2f);
             AddBaseItemValue(ItemType.Helmet, 4f);
             AddBaseItemValue(ItemType.Chest, 4f);
             AddBaseItemValue(ItemType.Legs, 4f);
+            AddBaseItemValue(ItemType.HelmetRobe, 2f);
+            AddBaseItemValue(ItemType.ChestRobe, 2f);
+            AddBaseItemValue(ItemType.LegsRobe, 2f);
             AddBaseItemValue(ItemType.BucklerShield, 8f);
             AddBaseItemValue(ItemType.Shield, 10f);
             AddBaseItemValue(ItemType.TowerShield, 15f);
             AddBaseItemValue(ItemType.Primative, 8f);
             AddBaseItemValue(ItemType.Knife, 8f);
             AddBaseItemValue(ItemType.Ammo, 10f);
+            AddBaseItemValue(ItemType.Bolt, 10f);
             AddBaseItemValue(ItemType.PickAxe, 10f);
             AddBaseItemValue(ItemType.Sword, 12f);
             AddBaseItemValue(ItemType.Mace, 12f);
@@ -606,22 +535,11 @@ namespace VentureValheim.Progression
             AddBaseItemValue(ItemType.Atgeir, 15f);
             AddBaseItemValue(ItemType.Battleaxe, 15f);
             AddBaseItemValue(ItemType.Bow, 22f);
+            AddBaseItemValue(ItemType.Crossbow, 45f);
             AddBaseItemValue(ItemType.Tool, 0f);
             AddBaseItemValue(ItemType.Utility, 0f);
             AddBaseItemValue(ItemType.None, 0f);
             AddBaseItemValue(ItemType.Undefined, 0f);
-        }
-
-        /// <summary>
-        /// Adds a ItemClassification for scaling or replaces the existing if a configuration already exists.
-        /// Uses default base configurations for item Category and item Value.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="biome"></param>
-        /// <param name="itemType"></param>
-        private void AddItemConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType)
-        {
-            AddItemConfiguration(name, biome, itemType, GetItemCategory(itemType), GetBaseItemValue(itemType));
         }
 
         /// <summary>
@@ -630,65 +548,67 @@ namespace VentureValheim.Progression
         /// <param name="name"></param>
         /// <param name="biome"></param>
         /// <param name="itemType"></param>
-        /// <param name="category"></param>
-        /// <param name="value"></param>
-        private void AddItemConfiguration(string name, WorldConfiguration.Biome biome, ItemType itemType, ItemCategory category, float value)
+        public void AddItemConfiguration(string name, WorldConfiguration.Biome? biome, ItemType? itemType)
         {
-            if (!name.IsNullOrWhiteSpace())
+            if (name.IsNullOrWhiteSpace())
             {
-                var item = new ItemClassification(name, biome, itemType, category, value);
-                try
-                {
-                    _itemData.Add(name, item);
-                }
-                catch (ArgumentException)
-                {
-                    _itemData[name].UpdateItem(biome, itemType, category, value);
-                }
+                return;
+            }
+
+            if (_itemData.ContainsKey(name))
+            {
+                _itemData[name].UpdateItem(biome, itemType);
+            }
+            else
+            {
+                _itemData.Add(name, new ItemClassification(name, biome, itemType));
             }
         }
 
         /// <summary>
-        /// Apply Auto-Scaling to all Items found in the game.
+        /// Create a new entry or override an existing.
+        /// </summary>
+        /// <param name="itemOverride"></param>
+        public void AddItemConfiguration(ItemOverrides.ItemOverride itemOverride)
+        {
+            if (itemOverride == null || itemOverride.name.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
+            AddItemConfiguration(itemOverride.name, null, null);
+
+            _itemData[itemOverride.name].OverrideItem(itemOverride);
+        }
+
+        /// <summary>
+        /// Initializes the default data, then applies Auto-Scaling to all Items found in the game.
         /// </summary>
         public void UpdateItems()
         {
+            Initialize();
+
             foreach (ItemClassification data in _itemData.Values)
             {
                 ItemDrop item = ProgressionAPI.Instance.GetItemDrop(data.Name);
 
                 if (item == null)
                 {
-                    ProgressionPlugin.GetProgressionLogger().LogWarning($"Failed to configure Item: {data.Name}.");
+                    ProgressionPlugin.VentureProgressionLogger.LogWarning($"Failed to configure Item: {data.Name}.");
                 }
                 else
                 {
-                    var upgrades = data.VanillaUpgradeLevels;
-
                     if (data.ItemCategory == ItemCategory.Weapon)
                     {
-                        var original = item.m_itemData.m_shared.m_damages;
-                        var baseTotalDamage = GetBaseItemValue(data.ItemType);
-                        var biome = WorldConfiguration.Instance.GetBiome(data.BiomeType);
-                        var newDamage = CalculateItemDamageTypes(biome, original, baseTotalDamage);
-                        var upgradeAmount = CalculateUpgradeValue(data.BiomeType, original, baseTotalDamage, upgrades);
-
-                        // temp patch for pickaxe and chop damages
-                        var originalUpgrade = item.m_itemData.m_shared.m_damagesPerLevel;
-                        upgradeAmount.m_chop = originalUpgrade.m_chop;
-                        upgradeAmount.m_pickaxe = originalUpgrade.m_pickaxe;
-
-                        UpdateWeapon(item, newDamage, upgrades, upgradeAmount, true);
+                        UpdateWeapon(item, data.GetDamageValue(), data.GetUpgradeLevels(), data.GetUpgradeDamageValue(), true);
                     }
                     else if (data.ItemCategory == ItemCategory.Armor)
                     {
-                        var upgradeAmount = CalculateUpgradeValue(data.BiomeType, data.ItemValue, upgrades);
-                        UpdateArmor(item, CalculateArmor(data), upgrades, upgradeAmount);
+                        UpdateArmor(item, data.GetValue(), data.GetUpgradeLevels(), data.GetUpgradeValue());
                     }
                     else if (data.ItemCategory == ItemCategory.Shield)
                     {
-                        var upgradeAmount = CalculateUpgradeValue(data.BiomeType, data.ItemValue, upgrades);
-                        UpdateShield(item, CalculateArmor(data), upgrades, upgradeAmount);
+                        UpdateShield(item, data.GetValue(), data.GetUpgradeLevels(), data.GetUpgradeValue());
                     }
                 }
             }
@@ -699,23 +619,23 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="item"></param>
         /// <param name="value">The new total damage.</param>
-        public void UpdateWeapon(ItemDrop item, HitData.DamageTypes? value, int upgrades, HitData.DamageTypes? upgradeValue, bool playerItem = true)
+        public void UpdateWeapon(ItemDrop item, HitData.DamageTypes? value, int? upgrades, HitData.DamageTypes? upgradeValue, bool playerItem = true)
         {
             // Damage
             if (value == null)
             {
-                ProgressionPlugin.GetProgressionLogger().LogWarning(
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(
                     $"{item.name} NOT updated with new scaled damage values. DamageTypes undefined.");
                 return;
             }
 
             var original = item.m_itemData.m_shared.m_damages;
-            float sumDamage = GetTotalDamage(original, playerItem);
-            float newSumDamage = GetTotalDamage(value.Value, playerItem);
+            float sumDamage = GetTotalDamage(original);
+            float newSumDamage = GetTotalDamage(value.Value);
             item.m_itemData.m_shared.m_damages = value.Value;
 
-            ProgressionPlugin.GetProgressionLogger().LogDebug(
-                $"{item.name} updated with new scaled damage values. Total damage changed from {sumDamage} to {newSumDamage}.");
+            ProgressionPlugin.VentureProgressionLogger.LogDebug(
+                $"{item.name}: Total damage changed from {sumDamage} to {newSumDamage}.");
 
             // Upgrades
             if (!playerItem)
@@ -723,21 +643,29 @@ namespace VentureValheim.Progression
                 return;
             }
 
+            if (upgrades == null)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(
+                    $"{item.name} NOT updated with new scaled upgrade damage values. Total upgrades undefined.");
+                return;
+            }
+
             if (upgradeValue == null)
             {
-                ProgressionPlugin.GetProgressionLogger().LogWarning(
-                    $"{item.name} NOT updated with new scaled damage values. DamageTypes for item upgrades undefined.");
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(
+                    $"{item.name} NOT updated with new scaled upgrade damage values. DamageTypes for item upgrades undefined.");
                 return;
             }
 
             var quality = item.m_itemData.m_shared.m_maxQuality;
             var upgradeAmount = item.m_itemData.m_shared.m_damagesPerLevel;
-            float sumDamageUpgrade = GetTotalDamage(upgradeAmount, playerItem);
-            float newSumDamageUpgrade = GetTotalDamage(upgradeValue.Value, playerItem);
-            item.m_itemData.m_shared.m_maxQuality = upgrades;
+            float sumDamageUpgrade = GetTotalDamage(upgradeAmount);
+            float newSumDamageUpgrade = GetTotalDamage(upgradeValue.Value);
+
+            item.m_itemData.m_shared.m_maxQuality = upgrades.Value;
             item.m_itemData.m_shared.m_damagesPerLevel = upgradeValue.Value;
 
-            ProgressionPlugin.GetProgressionLogger().LogDebug(
+            ProgressionPlugin.VentureProgressionLogger.LogDebug(
                 $"{item.name}: Total item upgrades changed from {quality} to {upgrades}. Total upgrade damage changed from {sumDamageUpgrade} to {newSumDamageUpgrade}");
         }
 
@@ -746,22 +674,43 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="item"></param>
         /// <param name="value">The new armor value.</param>
-        public void UpdateArmor(ItemDrop item, float value, int upgrades, float upgradeValue)
+        public void UpdateArmor(ItemDrop item, float? value, int? upgrades, float? upgradeValue)
         {
             // Armor
-            var original = item.m_itemData.m_shared.m_armor;
-            item.m_itemData.m_shared.m_armor = value;
+            if (value == null)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(
+                    $"{item.name} NOT updated with new armor value. Value undefined.");
+                return;
+            }
 
-            ProgressionPlugin.GetProgressionLogger().LogDebug(
-                $"{item.name} updated with new scaled armor values. Total armor changed from {original} to {value}.");
+            var original = item.m_itemData.m_shared.m_armor;
+            item.m_itemData.m_shared.m_armor = value.Value;
+
+            ProgressionPlugin.VentureProgressionLogger.LogDebug(
+                $"{item.name}: Total armor changed from {original} to {value}.");
 
             // Upgrades
+            if (upgrades == null)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(
+                    $"{item.name} NOT updated with new upgrade value. Total upgrades undefined.");
+                return;
+            }
+
+            if (upgradeValue == null)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(
+                    $"{item.name} NOT updated with new upgrade value. Value for item upgrade undefined.");
+                return;
+            }
+
             var quality = item.m_itemData.m_shared.m_maxQuality;
             var upgradeAmount = item.m_itemData.m_shared.m_armorPerLevel;
-            item.m_itemData.m_shared.m_maxQuality = upgrades;
-            item.m_itemData.m_shared.m_armorPerLevel = upgradeValue;
+            item.m_itemData.m_shared.m_maxQuality = upgrades.Value;
+            item.m_itemData.m_shared.m_armorPerLevel = upgradeValue.Value;
 
-            ProgressionPlugin.GetProgressionLogger().LogDebug(
+            ProgressionPlugin.VentureProgressionLogger.LogDebug(
                 $"{item.name}: Total item upgrades changed from {quality} to {upgrades}. Total upgrade armor changed from {upgradeAmount} to {upgradeValue}.");
         }
 
@@ -770,30 +719,52 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="item"></param>
         /// <param name="value">The new block power.</param>
-        public void UpdateShield(ItemDrop item, float value, int upgrades, float upgradeValue)
+        public void UpdateShield(ItemDrop item, float? value, int? upgrades, float? upgradeValue)
         {
             // Shield
-            var original = item.m_itemData.m_shared.m_blockPower;
-            item.m_itemData.m_shared.m_blockPower = value;
+            if (value == null)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(
+                    $"{item.name} NOT updated with new block value. Value undefined.");
+                return;
+            }
 
-            ProgressionPlugin.GetProgressionLogger().LogDebug(
-                $"{item.name} updated with new scaled block values. Total block changed from {original} to {value}.");
+            var original = item.m_itemData.m_shared.m_blockPower;
+            item.m_itemData.m_shared.m_blockPower = value.Value;
+
+            ProgressionPlugin.VentureProgressionLogger.LogDebug(
+                $"{item.name}: Total block changed from {original} to {value}.");
 
             // Upgrades
+            if (upgrades == null)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(
+                    $"{item.name} NOT updated with new upgrade value. Total upgrades undefined.");
+                return;
+            }
+
+            if (upgradeValue == null)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(
+                    $"{item.name} NOT updated with new upgrade value. Value for item upgrade undefined.");
+                return;
+            }
+
             var quality = item.m_itemData.m_shared.m_maxQuality;
             var upgradeAmount = item.m_itemData.m_shared.m_blockPowerPerLevel;
-            item.m_itemData.m_shared.m_maxQuality = upgrades;
-            item.m_itemData.m_shared.m_blockPowerPerLevel = upgradeValue;
+            item.m_itemData.m_shared.m_maxQuality = upgrades.Value;
+            item.m_itemData.m_shared.m_blockPowerPerLevel = upgradeValue.Value;
 
-            ProgressionPlugin.GetProgressionLogger().LogDebug(
+            ProgressionPlugin.VentureProgressionLogger.LogDebug(
                 $"{item.name}: Total item upgrades changed from {quality} to {upgrades}. Total upgrade block changed from {upgradeAmount} to {upgradeValue}.");
         }
 
-        private void CreateVanillaBackup()
+        /// <summary>
+        /// Sets the vanilla data from the current value of every item currently classified.
+        /// </summary>
+        protected virtual void CreateVanillaBackup()
         {
-            if (_vanillaBackupCreated) return;
-
-            ProgressionPlugin.GetProgressionLogger().LogInfo("Configuring vanilla backup for Item data...");
+            ProgressionPlugin.VentureProgressionLogger.LogInfo("Configuring vanilla backup for Item data...");
 
             foreach (ItemClassification data in _itemData.Values)
             {
@@ -803,60 +774,90 @@ namespace VentureValheim.Progression
                 {
                     if (data.ItemCategory == ItemCategory.Weapon)
                     {
-                        data.VanillaDamageValue = item.m_itemData.m_shared.m_damages;
-                        data.VanillaUpgradeLevels = item.m_itemData.m_shared.m_maxQuality;
-                        data.VanillaUpgradeDamageValue = item.m_itemData.m_shared.m_damagesPerLevel;
+                        var damage = item.m_itemData.m_shared.m_damages;
+                        var upgrades = item.m_itemData.m_shared.m_maxQuality;
+                        var upgradeDamage = item.m_itemData.m_shared.m_damagesPerLevel;
+                        data.SetVanillaData(damage, upgrades, upgradeDamage);
                     }
                     else if (data.ItemCategory == ItemCategory.Armor)
                     {
-                        data.VanillaValue = item.m_itemData.m_shared.m_armor;
-                        data.VanillaUpgradeLevels = item.m_itemData.m_shared.m_maxQuality;
-                        data.VanillaUpgradeValue = item.m_itemData.m_shared.m_armorPerLevel;
+                        var value = item.m_itemData.m_shared.m_armor;
+                        var upgrades = item.m_itemData.m_shared.m_maxQuality;
+                        var upgradeValue = item.m_itemData.m_shared.m_armorPerLevel;
+                        data.SetVanillaData(value, upgrades, upgradeValue);
                     }
                     else if (data.ItemCategory == ItemCategory.Shield)
                     {
-                        data.VanillaValue = item.m_itemData.m_shared.m_blockPower;
-                        data.VanillaUpgradeLevels = item.m_itemData.m_shared.m_maxQuality;
-                        data.VanillaUpgradeValue = item.m_itemData.m_shared.m_blockPowerPerLevel;
+                        var value = item.m_itemData.m_shared.m_blockPower;
+                        var upgrades = item.m_itemData.m_shared.m_maxQuality;
+                        var upgradeValue = item.m_itemData.m_shared.m_blockPowerPerLevel;
+                        data.SetVanillaData(value, upgrades, upgradeValue);
                     }
                 }
                 else
                 {
-                    ProgressionPlugin.GetProgressionLogger().LogDebug($"Vanilla backup for {data.Name} not created, ItemDrop not found.");
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug($"Vanilla backup for {data.Name} not created, ItemDrop not found.");
                 }
             }
-
-            _vanillaBackupCreated = true;
         }
 
+        /// <summary>
+        /// Reset creatures to their original values given they have been assigned.
+        /// Creates a vanilla backup if not already assigned.
+        /// </summary>
         public void VanillaReset()
         {
-            if (_vanillaBackupCreated)
+            foreach (ItemClassification data in _itemData.Values)
             {
-                foreach (ItemClassification data in _itemData.Values)
-                {
-                    ItemDrop item = ProgressionAPI.Instance.GetItemDrop(data.Name);
+                ItemDrop item = ProgressionAPI.Instance.GetItemDrop(data.Name);
 
-                    if (item != null)
+                if (item != null)
+                {
+                    if (data.ItemCategory == ItemCategory.Weapon)
                     {
-                        if (data.ItemCategory == ItemCategory.Weapon)
-                        {
-                            UpdateWeapon(item, data.VanillaDamageValue, data.VanillaUpgradeLevels, data.VanillaUpgradeDamageValue, true);
-                        }
-                        else if (data.ItemCategory == ItemCategory.Armor)
-                        {
-                            UpdateArmor(item, data.VanillaValue, data.VanillaUpgradeLevels, data.VanillaUpgradeValue);
-                        }
-                        else if (data.ItemCategory == ItemCategory.Shield)
-                        {
-                            UpdateShield(item, data.VanillaValue, data.VanillaUpgradeLevels, data.VanillaUpgradeValue);
-                        }
+                        UpdateWeapon(item, data.VanillaDamageValue, data.VanillaUpgradeLevels, data.VanillaUpgradeDamageValue, true);
+                    }
+                    else if (data.ItemCategory == ItemCategory.Armor)
+                    {
+                        UpdateArmor(item, data.VanillaValue, data.VanillaUpgradeLevels, data.VanillaUpgradeValue);
+                    }
+                    else if (data.ItemCategory == ItemCategory.Shield)
+                    {
+                        UpdateShield(item, data.VanillaValue, data.VanillaUpgradeLevels, data.VanillaUpgradeValue);
                     }
                 }
             }
-            else
+        }
+
+        /// <summary>
+        /// Reads the yaml file and applies the custom configurations.
+        /// </summary>
+        protected virtual void ReadCustomValues()
+        {
+            try
             {
-                CreateVanillaBackup();
+                ItemOverrides.ItemOverridesList items = ItemOverrides.ReadYaml();
+
+                if (items != null)
+                {
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug("Deserializer successfully parsed yaml data.");
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug(items.ToString());
+                    foreach (var entry in items.items)
+                    {
+                        AddItemConfiguration(entry);
+                    }
+
+                    foreach (var entry in items.baseItemValues)
+                    {
+                        AddBaseItemValue(entry);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogWarning("Error loading ItemOverrides.yaml file.");
+                ProgressionPlugin.VentureProgressionLogger.LogWarning(e);
+                ProgressionPlugin.VentureProgressionLogger.LogWarning("Continuing without custom values...");
             }
         }
 

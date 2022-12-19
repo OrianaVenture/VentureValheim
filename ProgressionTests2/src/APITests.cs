@@ -54,5 +54,14 @@ namespace VentureValheim.ProgressionTests
         {
             Assert.Equal(expected, ProgressionAPI.Instance.PrettifyNumber(num, roundTo, roundUp));
         }
+
+        [Fact]
+        public void Enum_All()
+        {
+            ItemCategory ic2 = (ItemCategory)(-2);
+
+            ItemCategory ic = (ItemCategory)(-1);
+            Assert.Equal(ItemCategory.Undefined, ic);
+        }
     }
 }

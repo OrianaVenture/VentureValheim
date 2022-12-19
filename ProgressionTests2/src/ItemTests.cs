@@ -2,6 +2,7 @@
 using Xunit;
 using VentureValheim.Progression;
 using static VentureValheim.ProgressionTests.WorldTests;
+using static VentureValheim.Progression.ItemOverrides;
 
 namespace VentureValheim.ProgressionTests
 {
@@ -11,7 +12,6 @@ namespace VentureValheim.ProgressionTests
         {
             public TestItemConfiguration(IItemConfiguration Item) : base()
             {
-                _vanillaBackupCreated = true;
                 Initialize();
             }
 
@@ -19,7 +19,37 @@ namespace VentureValheim.ProgressionTests
             public float ScaleDamageTest(float a, float b, float c, float d) => ScaleDamage(a, b, c, d);
             public float CalculateUpgradeValueTest(float a, float b, float c, int d) => CalculateUpgradeValue(a, b, c, d);
             public HitData.DamageTypes CalculateUpgradeValueTest(float a, float b, HitData.DamageTypes c, float d, int e) => CalculateUpgradeValue(a, b, c, d, e);
+
+            public ItemClassification GetItem(string key)
+            {
+                return _itemData[key];
+            }
+
+            protected override void CreateVanillaBackup()
+            {
+                // Do nothing
+            }
+
+            protected override void ReadCustomValues()
+            {
+                // Do nothing
+            }
         }
+
+        private HitData.DamageTypes _emptyDamageTypes = new HitData.DamageTypes
+        {
+            m_damage = 0f,
+            m_chop = 0f,
+            m_pickaxe = 0f,
+            m_blunt = 0f,
+            m_slash = 0f,
+            m_pierce = 0f,
+            m_fire = 0f,
+            m_frost = 0f,
+            m_lightning = 0f,
+            m_poison = 0f,
+            m_spirit = 0f
+        };
 
         private Mock<IWorldConfiguration> mockWorld;
         private TestWorldConfiguration worldConfiguration;
@@ -27,6 +57,10 @@ namespace VentureValheim.ProgressionTests
 
         public ItemTests()
         {
+            var mockManager = new Mock<IProgressionConfiguration>();
+            mockManager.Setup(x => x.GetAutoScaleItemsIgnoreDefaults()).Returns(false);
+            new ProgressionConfiguration(mockManager.Object);
+
             mockWorld = new Mock<IWorldConfiguration>();
             mockWorld.SetupGet(x => x.WorldScale).Returns(WorldConfiguration.Scaling.Exponential);
             mockWorld.SetupGet(x => x.ScaleFactor).Returns(0.75f);
@@ -54,7 +88,7 @@ namespace VentureValheim.ProgressionTests
                 m_spirit = 10f
             };
 
-            float sumDamage = itemConfiguration.GetTotalDamage(damageTypes, true);
+            float sumDamage = itemConfiguration.GetTotalDamage(damageTypes);
 
             Assert.Equal(90f, sumDamage);
         }
@@ -85,7 +119,7 @@ namespace VentureValheim.ProgressionTests
                 m_spirit = 0f
             };
 
-            var result = itemConfiguration.CalculateItemDamageTypes(worldConfiguration.GetBiome(biome), damageTypes, 10f);
+            var result = itemConfiguration.CalculateItemDamageTypes(worldConfiguration.GetBiome(biome).ScaleValue, damageTypes, 10f);
 
             var expectedDamage = new HitData.DamageTypes();
             expectedDamage.m_chop = 10f;
@@ -103,13 +137,13 @@ namespace VentureValheim.ProgressionTests
         [Fact]
         public void GetItemCategory_All()
         {
-            Array items = Enum.GetValues(typeof(ItemConfiguration.ItemType));
+            Array items = Enum.GetValues(typeof(ItemType));
             foreach (var item in items)
             {
-                var itemType = (ItemConfiguration.ItemType)item;
-                if (itemType != ItemConfiguration.ItemType.Undefined && itemType != ItemConfiguration.ItemType.None)
+                var itemType = (ItemType)item;
+                if (itemType != ItemType.Undefined && itemType != ItemType.None)
                 {
-                    Assert.True(itemConfiguration.GetItemCategory(itemType) != ItemConfiguration.ItemCategory.Undefined);
+                    Assert.True(ItemClassification.GetItemCategory(itemType) != ItemCategory.Undefined);
                 }
             }
         }
@@ -234,10 +268,274 @@ namespace VentureValheim.ProgressionTests
 
             var result = itemConfiguration.CalculateUpgradeValueTest(scale, nextScale, damageTypes, value, quality);
 
-            Assert.Equal(0f, result.m_chop);
-            Assert.Equal(0f, result.m_pickaxe);
-            Assert.Equal(0f, result.m_blunt);
-            Assert.Equal(new HitData.DamageTypes(), result);
+            Assert.Equal(1f, result.m_chop);
+            Assert.Equal(1f, result.m_pickaxe);
+            Assert.Equal(value, result.m_blunt);
+            Assert.Equal(damageTypes, result);
+        }
+
+        [Fact]
+        public void GetItemValues_All()
+        {
+            var test = new ItemClassification("test", WorldConfiguration.Biome.Meadow, ItemType.PrimativeArmor);
+            Assert.NotNull(test.GetValue());
+            Assert.Null(test.GetUpgradeValue());
+            Assert.Null(test.GetUpgradeLevels());
+
+            test.SetVanillaData(101, 1, 6);
+            Assert.Equal(0, test.GetValue()); // World scaling undefined here
+            Assert.Equal(1, test.GetUpgradeLevels());
+            Assert.Equal(0, test.GetUpgradeValue()); // World scaling undefined here
+
+            test.OverrideItem(new ItemOverride { value = 201, quality = 3, upgradeValue = 33 });
+            Assert.Equal(201, test.GetValue());
+            Assert.Equal(3, test.GetUpgradeLevels());
+            Assert.Equal(33, test.GetUpgradeValue());
+        }
+
+        [Fact]
+        public void GetItemValues_WorldUndefined()
+        {
+            var test = new ItemClassification("test", null, ItemType.PrimativeArmor);
+            Assert.Null(test.GetValue());
+            Assert.Null(test.GetUpgradeValue());
+            Assert.Null(test.GetUpgradeLevels());
+
+            test.SetVanillaData(101, 1, 6);
+            Assert.Equal(101, test.GetValue());
+            Assert.Equal(1, test.GetUpgradeLevels());
+            Assert.Equal(6, test.GetUpgradeValue());
+
+            test.OverrideItem(new ItemOverride { value = 201, quality = 3, upgradeValue = 33 });
+            Assert.Equal(201, test.GetValue());
+            Assert.Equal(3, test.GetUpgradeLevels());
+            Assert.Equal(33, test.GetUpgradeValue());
+        }
+
+        [Fact]
+        public void GetItemValues_TypeUndefined()
+        {
+            var test = new ItemClassification("test", WorldConfiguration.Biome.Meadow, null);
+            Assert.Null(test.GetValue());
+            Assert.Null(test.GetUpgradeValue());
+            Assert.Null(test.GetUpgradeLevels());
+
+            test.SetVanillaData(101, 1, 6);
+            Assert.Equal(101, test.GetValue());
+            Assert.Equal(1, test.GetUpgradeLevels());
+            Assert.Equal(6, test.GetUpgradeValue());
+
+            test.OverrideItem(new ItemOverride { value = 201, quality = 3, upgradeValue = 33 });
+            Assert.Equal(201, test.GetValue());
+            Assert.Equal(3, test.GetUpgradeLevels());
+            Assert.Equal(33, test.GetUpgradeValue());
+        }
+
+        [Fact]
+        public void ItemOverride_ArmorAndShield_HappyPaths()
+        {
+            ItemOverridesList list = new ItemOverridesList
+            {
+                items = new List<ItemOverride>
+                {
+                    new ItemOverride
+                    {
+                        name = "TestArmor",
+                        biome = 0,
+                        itemType = 3,
+                        value = 44,
+                        quality = 3,
+                        upgradeValue = 5
+                    },
+                    new ItemOverride
+                    {
+                        name = "TestShield",
+                        biome = 1,
+                        itemType = 1,
+                        value = 55
+                    },
+                    new ItemOverride
+                    {
+                        name = "EmptyItem"
+                    }
+                }
+            };
+
+            foreach (var entry in list.items)
+            {
+                itemConfiguration.AddItemConfiguration(entry);
+            }
+
+            var armor = itemConfiguration.GetItem("TestArmor");
+
+            Assert.NotNull(armor);
+            Assert.Equal(WorldConfiguration.Biome.Meadow, armor.BiomeType);
+            Assert.Equal(ItemType.Chest, armor.ItemType);
+            Assert.Equal(ItemCategory.Armor, armor.ItemCategory);
+            Assert.Equal(44, armor.GetValue());
+            Assert.Equal(3, armor.GetUpgradeLevels());
+            Assert.Equal(5, armor.GetUpgradeValue());
+
+
+            var shield = itemConfiguration.GetItem("TestShield");
+
+            Assert.NotNull(shield);
+            Assert.Equal(WorldConfiguration.Biome.BlackForest, shield.BiomeType);
+            Assert.Equal(ItemType.Shield, shield.ItemType);
+            Assert.Equal(ItemCategory.Shield, shield.ItemCategory);
+            Assert.Equal(55, shield.GetValue());
+            Assert.Null(shield.GetUpgradeLevels());
+            Assert.Null(shield.GetUpgradeValue());
+
+
+            var empty = itemConfiguration.GetItem("EmptyItem");
+
+            Assert.NotNull(empty);
+            Assert.Equal(WorldConfiguration.Biome.Undefined, empty.BiomeType);
+            Assert.Equal(ItemType.Undefined, empty.ItemType);
+            Assert.Equal(ItemCategory.Undefined, empty.ItemCategory);
+            Assert.Null(empty.GetValue());
+            Assert.Null(empty.GetUpgradeLevels());
+            Assert.Null(empty.GetUpgradeValue());
+            Assert.Null(empty.GetDamageValue());
+            Assert.Null(empty.GetUpgradeDamageValue());
+        }
+
+        [Fact]
+        public void ItemOverride_Weapon_HappyPaths()
+        {
+            //Setup(true);
+
+            ItemOverridesList list = new ItemOverridesList
+            {
+                items = new List<ItemOverride>
+                {
+                    new ItemOverride
+                    {
+                        name = "TestWeapon",
+                        biome = 2,
+                        itemType = 21,
+                        quality = 5,
+                        damageValue = new CreatureOverrides.AttackOverride
+                        {
+                            damage = 20,
+                            blunt = 10
+                        },
+                        upgradeDamageValue = new CreatureOverrides.AttackOverride
+                        {
+                            totalDamage = 6
+                        }
+                    }
+                }
+            };
+
+            foreach (var entry in list.items)
+            {
+                itemConfiguration.AddItemConfiguration(entry);
+            }
+
+            var weapon = itemConfiguration.GetItem("TestWeapon");
+
+            Assert.NotNull(weapon);
+            Assert.Equal(WorldConfiguration.Biome.Swamp, weapon.BiomeType);
+            Assert.Equal(ItemType.Knife, weapon.ItemType);
+            Assert.Equal(ItemCategory.Weapon, weapon.ItemCategory);
+            Assert.Equal(5, weapon.GetUpgradeLevels());
+
+            var damage = weapon.GetDamageValue();
+            Assert.NotNull(damage);
+
+            HitData.DamageTypes damageTypes = new HitData.DamageTypes
+            {
+                m_damage = 20f,
+                m_chop = 0f,
+                m_pickaxe = 0f,
+                m_blunt = 10f,
+                m_slash = 0f,
+                m_pierce = 0f,
+                m_fire = 0f,
+                m_frost = 0f,
+                m_lightning = 0f,
+                m_poison = 0f,
+                m_spirit = 0f
+            };
+
+            Assert.Equal(damageTypes.m_damage, damage.Value.m_damage);
+            Assert.Equal(damageTypes.m_blunt, damage.Value.m_blunt);
+            Assert.Equal(damageTypes, damage);
+
+            HitData.DamageTypes damageTypesUpgrade = new HitData.DamageTypes
+            {
+                m_damage = 2f,
+                m_chop = 0f,
+                m_pickaxe = 0f,
+                m_blunt = 1f,
+                m_slash = 0f,
+                m_pierce = 0f,
+                m_fire = 0f,
+                m_frost = 0f,
+                m_lightning = 0f,
+                m_poison = 0f,
+                m_spirit = 0f
+            };
+
+            // Set Vanilla values
+            weapon.SetVanillaData(damageTypes, 3, damageTypesUpgrade);
+
+            var damageUpgrade = weapon.GetUpgradeDamageValue();
+
+            HitData.DamageTypes damageTypesUpgradeDouble = new HitData.DamageTypes
+            {
+                m_damage = 4f,
+                m_chop = 0f,
+                m_pickaxe = 0f,
+                m_blunt = 2f,
+                m_slash = 0f,
+                m_pierce = 0f,
+                m_fire = 0f,
+                m_frost = 0f,
+                m_lightning = 0f,
+                m_poison = 0f,
+                m_spirit = 0f
+            };
+
+            Assert.Equal(damageTypesUpgradeDouble.m_damage, damageUpgrade.Value.m_damage);
+            Assert.Equal(damageTypesUpgradeDouble.m_blunt, damageUpgrade.Value.m_blunt);
+            Assert.Equal(damageTypesUpgradeDouble, damageUpgrade);
+        }
+
+        [Fact]
+        public void ItemOverride_BaseValues_HappyPaths()
+        {
+            //Setup(true);
+
+            ItemOverridesList list = new ItemOverridesList
+            {
+                baseItemValues = new List<BaseItemValueOverride>
+                {
+                    new BaseItemValueOverride
+                    {
+                        itemType = 22,
+                        value = 33
+                    },
+                    new BaseItemValueOverride
+                    {
+                        itemType = 23,
+                        value = 34
+                    }
+                }
+            };
+
+            foreach (var entry in list.baseItemValues)
+            {
+                itemConfiguration.AddBaseItemValue(entry);
+            }
+
+            // Check invalid cast
+            itemConfiguration.AddBaseItemValue((ItemType)(-2), -2);
+
+            Assert.Equal(33, itemConfiguration.GetBaseItemValue(ItemType.Mace));
+            Assert.Equal(34, itemConfiguration.GetBaseItemValue(ItemType.Sledge));
         }
     }
 }

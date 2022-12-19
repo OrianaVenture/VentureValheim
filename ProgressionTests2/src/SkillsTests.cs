@@ -6,22 +6,9 @@ namespace VentureValheim.ProgressionTests
 {
     public class SkillsTests
     {
-        public class TestSkillsManager : SkillsManager, ISkillsManager
+        public class TestSkillsManager : SkillsManager
         {
-            public TestSkillsManager(ISkillsManager manager) : base()
-            {
-                BossKeysSkillPerKey = manager.BossKeysSkillPerKey;
-                OverrideMaximumSkillLevel = manager.OverrideMaximumSkillLevel;
-                MaximumSkillLevel = manager.MaximumSkillLevel;
-                OverrideMinimumSkillLevel = manager.OverrideMinimumSkillLevel;
-                MinimumSkillLevel = manager.MinimumSkillLevel;
-                UseAbsoluteSkillDrain = manager.UseAbsoluteSkillDrain;
-                AbsoluteSkillDrain = manager.AbsoluteSkillDrain;
-                CompareAndSelectDrain = manager.CompareAndSelectDrain;
-                CompareUseMinimumDrain = manager.CompareUseMinimumDrain;
-            }
-
-            protected override void UpdateConfigs(float delta)
+            public TestSkillsManager() : base()
             {
             }
 
@@ -32,6 +19,8 @@ namespace VentureValheim.ProgressionTests
             public float NormalizeSkillLevelTest(float a) => NormalizeSkillLevel(a);
         }
 
+        private TestSkillsManager skillsManager = new TestSkillsManager();
+
         private const float belowMinSkill = -0.1f;
         private const float minSkill = 0f;
         private const float midSkill = 50.6f;
@@ -41,27 +30,28 @@ namespace VentureValheim.ProgressionTests
         private const float skillDrain = 0.25f;
         private const int skillDrainAbsolute = 2;
 
-        private TestSkillsManager Setup()
+        private void Setup()
         {
-            var mockManager = new Mock<ISkillsManager>();
-            mockManager.SetupGet(x => x.BossKeysSkillPerKey).Returns(0);
-            mockManager.SetupGet(x => x.OverrideMaximumSkillLevel).Returns(false);
-            mockManager.SetupGet(x => x.MaximumSkillLevel).Returns(100);
-            mockManager.SetupGet(x => x.OverrideMinimumSkillLevel).Returns(false);
-            mockManager.SetupGet(x => x.MinimumSkillLevel).Returns(0);
-            mockManager.SetupGet(x => x.BossKeysSkillPerKey).Returns(10);
-            return new TestSkillsManager(mockManager.Object);
+            var mockManager = new Mock<IProgressionConfiguration>();
+            mockManager.Setup(x => x.GetBossKeysSkillPerKey()).Returns(0);
+            mockManager.Setup(x => x.GetOverrideMaximumSkillLevel()).Returns(false);
+            mockManager.Setup(x => x.GetMaximumSkillLevel()).Returns(100);
+            mockManager.Setup(x => x.GetOverrideMinimumSkillLevel()).Returns(false);
+            mockManager.Setup(x => x.GetMinimumSkillLevel()).Returns(0);
+            mockManager.Setup(x => x.GetBossKeysSkillPerKey()).Returns(10);
+
+            new ProgressionConfiguration(mockManager.Object);
         }
 
-        private TestSkillsManager Setup(bool useSkillDrain, int skillDrain, bool compare, bool useMinimum)
+        private void Setup(bool useSkillDrain, int skillDrain, bool compare, bool useMinimum)
         {
-            var mockManager = new Mock<ISkillsManager>();
-            mockManager.SetupGet(x => x.UseAbsoluteSkillDrain).Returns(useSkillDrain);
-            mockManager.SetupGet(x => x.AbsoluteSkillDrain).Returns(skillDrain);
-            mockManager.SetupGet(x => x.CompareAndSelectDrain).Returns(compare);
-            mockManager.SetupGet(x => x.CompareUseMinimumDrain).Returns(useMinimum);
+            var mockManager = new Mock<IProgressionConfiguration>();
+            mockManager.Setup(x => x.GetUseAbsoluteSkillDrain()).Returns(useSkillDrain);
+            mockManager.Setup(x => x.GetAbsoluteSkillDrain()).Returns(skillDrain);
+            mockManager.Setup(x => x.GetCompareAndSelectDrain()).Returns(compare);
+            mockManager.Setup(x => x.GetCompareUseMinimumDrain()).Returns(useMinimum);
 
-            return new TestSkillsManager(mockManager.Object);
+            new ProgressionConfiguration(mockManager.Object);
         }
 
         [Theory]
@@ -69,7 +59,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData(true, skillDrainAbsolute)]
         public void GetSkillDrain_HappyPaths(bool a, float expected)
         {
-            var skillsManager = Setup(a, skillDrainAbsolute, false, true);
+            Setup(a, skillDrainAbsolute, false, true);
             Assert.Equal(expected, skillsManager.GetSkillDrainTest(midSkill, minSkill, skillDrain));
         }
 
@@ -82,7 +72,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData(aboveMaxSkill, maxSkill, aboveMaxSkill * skillDrain)]
         public void GetSkillDrain_Vanilla(float level, float floor, float expected)
         {
-            var skillsManager = Setup(false, skillDrainAbsolute, false, true);
+            Setup(false, skillDrainAbsolute, false, true);
             Assert.Equal(expected, skillsManager.GetSkillDrainTest(level, floor, skillDrain));
         }
 
@@ -95,21 +85,21 @@ namespace VentureValheim.ProgressionTests
         [InlineData(aboveMaxSkill, maxSkill, skillDrainAbsolute)]
         public void GetSkillDrain_Flavor(float level, float floor, float expected)
         {
-            var skillsManager = Setup(true, skillDrainAbsolute, false, true);
+            Setup(true, skillDrainAbsolute, false, true);
             Assert.Equal(expected, skillsManager.GetSkillDrainTest(level, floor, skillDrain));
         }
 
         [Fact]
         public void GetSkillDrain_CompareMin()
         {
-            var skillsManager = Setup(true, 0, true, true);
+            Setup(true, 0, true, true);
             Assert.Equal(0f, skillsManager.GetSkillDrainTest(midSkill, minSkill, skillDrain));
         }
 
         [Fact]
         public void GetSkillDrain_CompareMax()
         {
-            var skillsManager = Setup(true, 0, true, false);
+            Setup(true, 0, true, false);
             Assert.Equal(midSkill * skillDrain, skillsManager.GetSkillDrainTest(midSkill, minSkill, skillDrain));
         }
 
@@ -122,7 +112,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData(aboveMaxSkill, maxSkill)]
         public void NormalizeSkillLevel_All(float level, float expected)
         {
-            var skillsManager = Setup();
+            Setup();
             Assert.Equal(expected, skillsManager.NormalizeSkillLevelTest(level));
         }
 
@@ -132,20 +122,21 @@ namespace VentureValheim.ProgressionTests
         [InlineData(midSkill, minSkill, 1f, 0f)]
         public void GetSkillGainAccumulation_All(float a, float b, float c, float expected)
         {
-            var skillsManager = Setup();
+            Setup();
             Assert.Equal(expected, skillsManager.GetSkillAccumulationGainTest(a, b, c));
         }
 
         [Theory]
-        [InlineData(0, 50f)]
-        [InlineData(1, 60f)]
-        [InlineData(2, 70f)]
-        [InlineData(3, 80f)]
-        [InlineData(4, 90f)]
-        [InlineData(5, 100f)]
+        [InlineData(0, 40f)]
+        [InlineData(1, 50f)]
+        [InlineData(2, 60f)]
+        [InlineData(3, 70f)]
+        [InlineData(4, 80f)]
+        [InlineData(5, 90f)]
+        [InlineData(6, 100f)]
         public void GetBossSkillCeiling_All(int bosses, float expected)
         {
-            var skillsManager = Setup();
+            Setup();
             Assert.Equal(expected, skillsManager.GetBossSkillCeilingTest(bosses));
         }
 
@@ -156,9 +147,10 @@ namespace VentureValheim.ProgressionTests
         [InlineData(3, 30f)]
         [InlineData(4, 40f)]
         [InlineData(5, 50f)]
+        [InlineData(6, 60f)]
         public void GetBossSkillFloor_All(int bosses, float expected)
         {
-            var skillsManager = Setup();
+            Setup();
             Assert.Equal(expected, skillsManager.GetBossSkillFloorTest(bosses));
         }
     }

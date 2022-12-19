@@ -50,7 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Progression\Progression.csproj">
-      <Project>{c7c3ae76-5385-4fcc-b89c-88205dfe26c7}</Project>
+      <Project>{C7C3AE76-5385-4FCC-B89C-88205DFE26C7}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

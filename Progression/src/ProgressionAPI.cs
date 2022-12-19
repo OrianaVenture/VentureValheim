@@ -148,16 +148,20 @@ namespace VentureValheim.Progression
         {
             ItemDrop item = null;
 
-            try
+            if (!name.IsNullOrWhiteSpace())
             {
-                // Try hash code
-                item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode()).GetComponent<ItemDrop>();
+                try
+                {
+                    // Try hash code
+                    item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode())?.GetComponent<ItemDrop>();
+                }
+                catch
+                {
+                    // Failed, try slow search
+                    item = ObjectDB.instance.GetItemPrefab(name)?.GetComponent<ItemDrop>();
+                }
             }
-            catch
-            {
-                // Failed, try slow search
-                item = ObjectDB.instance.GetItemPrefab(name).GetComponent<ItemDrop>();
-            }
+
             return item;
         }
 
@@ -170,21 +174,24 @@ namespace VentureValheim.Progression
         {
             Humanoid character = null;
 
-            try
+            if (!name.IsNullOrWhiteSpace())
             {
-                // Try hash code
-                var gameObject = ZNetScene.m_instance.m_namedPrefabs[name.GetStableHashCode()];
-                character = gameObject.GetComponent<Humanoid>();
-            }
-            catch
-            {
-                // Failed, try slow search
-                var prefabs = ZNetScene.m_instance.m_prefabs;
-                for (int lcv = 0; lcv < prefabs.Count; lcv++)
+                try
                 {
-                    if (prefabs[lcv].name == name)
+                    // Try hash code
+                    var gameObject = ZNetScene.m_instance.m_namedPrefabs[name.GetStableHashCode()];
+                    character = gameObject.GetComponent<Humanoid>();
+                }
+                catch
+                {
+                    // Failed, try slow search
+                    var prefabs = ZNetScene.m_instance.m_prefabs;
+                    for (int lcv = 0; lcv < prefabs.Count; lcv++)
                     {
-                        character = prefabs[lcv].GetComponent<Humanoid>();
+                        if (prefabs[lcv].name.Equals(name))
+                        {
+                            character = prefabs[lcv].GetComponent<Humanoid>();
+                        }
                     }
                 }
             }
@@ -193,7 +200,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Prints out useful game data to json files
+        /// Prints out useful game data to json files.
         /// </summary>
         /// <param name="overwrite"></param>
         public void GenerateData(bool overwrite = false)
@@ -210,21 +217,15 @@ namespace VentureValheim.Progression
                         ItemDrop itemDrop = obj.GetComponent<ItemDrop>();
                         var filePath = $"{path}{Path.DirectorySeparatorChar}{itemDrop.name}.json";
                         File.WriteAllText(filePath, JsonUtility.ToJson(itemDrop, true));
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"{itemDrop.name} data written to file: {filePath}.");
-
-                        HitData.DamageTypes damage = itemDrop.m_itemData.m_shared.m_damages;
-                        filePath = $"{path}{Path.DirectorySeparatorChar}{itemDrop.name}.damage.json";
-                        File.WriteAllText(filePath, JsonUtility.ToJson(damage, true));
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"{itemDrop.name} damage data written to file: {filePath}.");
                     }
                     catch
                     {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"Failed to write to file for GameObject: {obj.name}.");
+                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"Failed to write to file for GameObject: {obj.name}.");
                     }
                 }
             }
 
-            path = $"{Paths.ConfigPath}{Path.DirectorySeparatorChar}{"RecipeData"}";
+            /*path = $"{Paths.ConfigPath}{Path.DirectorySeparatorChar}{"RecipeData"}";
             if (!Directory.Exists(path) || overwrite == true)
             {
                 Directory.CreateDirectory(path);
@@ -236,14 +237,13 @@ namespace VentureValheim.Progression
                         ItemDrop itemDrop = obj.m_item.GetComponent<ItemDrop>();
                         var filePath = $"{path}{Path.DirectorySeparatorChar}{itemDrop.name}.json";
                         File.WriteAllText(filePath, JsonUtility.ToJson(itemDrop, true));
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"{itemDrop.name} data written to file: {filePath}.");
                     }
                     catch
                     {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"Failed to write to file for GameObject: {obj.name}.");
+                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"Failed to write to file for GameObject: {obj.name}.");
                     }
                 }
-            }
+            }*/
 
 
             path = $"{Paths.ConfigPath}{Path.DirectorySeparatorChar}{"CreatureData"}";
@@ -255,18 +255,35 @@ namespace VentureValheim.Progression
                 {
                     try
                     {
-                        Character character = obj.GetComponent<Character>();
+                        Humanoid character = obj.GetComponent<Humanoid>();
                         if (character != null)
                         {
                             var filePath = $"{path}{Path.DirectorySeparatorChar}{character.name}.json";
                             File.WriteAllText(filePath, JsonUtility.ToJson(character, true));
-                            ProgressionPlugin.GetProgressionLogger().LogDebug($"{obj.name} data written to file: {filePath}.");
-                        }
 
+                            var damages = character.m_defaultItems;
+
+                            if (damages != null)
+                            {
+                                for (int lcv = 0; lcv < damages.Length; lcv++)
+                                {
+                                    var damagePath = $"{path}{Path.DirectorySeparatorChar}{character.name}.{damages[lcv].name}.json";
+                                    var damage = damages[lcv].GetComponent<ItemDrop>();
+                                    if (damage != null)
+                                    {
+                                        File.WriteAllText(damagePath, JsonUtility.ToJson(damage.m_itemData.m_shared.m_damages, true));
+                                    }
+                                    else
+                                    {
+                                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"Failed to write to file for GameObject damage: {damages[lcv].name}.");
+                                    }
+                                }
+                            }
+                        }
                     }
                     catch
                     {
-                        ProgressionPlugin.GetProgressionLogger().LogDebug($"Failed to write to file for GameObject: {obj.name}.");
+                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"Failed to write to file for GameObject: {obj.name}.");
                     }
                 }
             }
@@ -299,7 +316,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Converts a comma seperated string to an int[].
+        /// Converts a comma separated string to an int[].
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
@@ -321,7 +338,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Whether a Global Key is contianed in the Global game list.
+        /// Whether a Global Key is contained in the Global game list.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>

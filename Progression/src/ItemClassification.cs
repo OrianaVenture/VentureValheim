@@ -1,0 +1,308 @@
+namespace VentureValheim.Progression
+{
+    public enum ItemCategory
+    {
+        Undefined = -1,
+        Weapon = 0,
+        Armor = 1,
+        Shield = 2
+    }
+
+    public enum ItemType
+    {
+        Undefined = -1,
+        None = 0,
+        Shield = 1,
+        Helmet = 2,
+        Chest = 3,
+        Legs = 4,
+        Shoulder = 5,
+        Utility = 6,
+        Tool = 7,
+        PickAxe = 8,
+        Axe = 9,
+        Bow = 10,
+        Ammo = 11,
+        Sword = 20,
+        Knife = 21,
+        Mace = 22,
+        Sledge = 23,
+        Atgeir = 25,
+        Battleaxe = 26,
+        Primative = 27,
+        Spear = 28,
+        TowerShield = 29,
+        BucklerShield = 30,
+        PrimativeArmor = 31,
+        Bolt = 32,
+        Crossbow = 33,
+        HelmetRobe = 34,
+        ChestRobe = 35,
+        LegsRobe = 36
+    }
+
+    public class ItemClassification
+    {
+        public string Name { get; private set; }
+        public WorldConfiguration.Biome BiomeType { get; private set; }
+        public ItemType ItemType { get; private set; }
+        public ItemCategory ItemCategory { get; private set; }
+
+        public int? VanillaUpgradeLevels { get; private set; }
+        public float? VanillaValue { get; private set; }
+        public float? VanillaUpgradeValue { get; private set; }
+        public HitData.DamageTypes? VanillaDamageValue { get; private set; }
+        public HitData.DamageTypes? VanillaUpgradeDamageValue { get; private set; }
+
+        public float? OverrideValue { get; private set; }
+        protected CreatureOverrides.AttackOverride OverrideDamageValue { get; private set; }
+        protected CreatureOverrides.AttackOverride OverrideUpgradeDamageValue { get; private set; }
+        protected float? OverrideUpgradeValue { get; private set; }
+        protected int? OverrideUpgradeLevels { get; private set; }
+
+        public ItemClassification(string name, WorldConfiguration.Biome? biomeType, ItemType? itemType)
+        {
+            Name = name;
+            BiomeType = biomeType ?? WorldConfiguration.Biome.Undefined;
+            ItemType = itemType ?? ItemType.Undefined;
+            ItemCategory = GetItemCategory(itemType);
+
+            VanillaUpgradeLevels = null;
+            VanillaValue = null;
+            VanillaDamageValue = null;
+            VanillaUpgradeValue = null;
+            VanillaUpgradeDamageValue = null;
+
+            OverrideUpgradeLevels = null;
+            OverrideValue = null;
+            OverrideDamageValue = null;
+            OverrideUpgradeValue = null;
+            OverrideUpgradeDamageValue = null;
+        }
+
+        public void UpdateItem(WorldConfiguration.Biome? biomeType, ItemType? itemType)
+        {
+            if (biomeType != null)
+            {
+                BiomeType = biomeType.Value;
+            }
+            if (itemType != null)
+            {
+                ItemType = itemType.Value;
+                ItemCategory = GetItemCategory(itemType);
+            }
+        }
+
+        public void OverrideItem(ItemOverrides.ItemOverride item)
+        {
+            WorldConfiguration.Biome? biome = null;
+
+            if (item.biome != null)
+            {
+                biome = (WorldConfiguration.Biome)item.biome;
+            }
+
+            ItemType? itemType = null;
+
+            if (item.itemType != null)
+            {
+                itemType = (ItemType)item.itemType;
+            }
+
+            UpdateItem(biome, itemType);
+
+            OverrideUpgradeLevels = item.quality;
+            OverrideValue = item.value;
+            OverrideDamageValue = item.damageValue;
+            OverrideUpgradeValue = item.upgradeValue;
+            OverrideUpgradeDamageValue = item.upgradeDamageValue;
+        }
+
+        public static ItemCategory GetItemCategory(ItemType? itemType)
+        {
+            if (itemType == null)
+            {
+                return ItemCategory.Undefined;
+            }
+
+            switch (itemType)
+            {
+                case ItemType.BucklerShield:
+                case ItemType.Shield:
+                case ItemType.TowerShield:
+                    return ItemCategory.Shield;
+                case ItemType.Shoulder:
+                case ItemType.PrimativeArmor:
+                case ItemType.Helmet:
+                case ItemType.Chest:
+                case ItemType.Legs:
+                case ItemType.HelmetRobe:
+                case ItemType.ChestRobe:
+                case ItemType.LegsRobe:
+                case ItemType.Utility:
+                    return ItemCategory.Armor;
+                case ItemType.Primative:
+                case ItemType.Knife:
+                case ItemType.Ammo:
+                case ItemType.PickAxe:
+                case ItemType.Sword:
+                case ItemType.Mace:
+                case ItemType.Spear:
+                case ItemType.Axe:
+                case ItemType.Sledge:
+                case ItemType.Atgeir:
+                case ItemType.Battleaxe:
+                case ItemType.Bow:
+                case ItemType.Tool:
+                case ItemType.Bolt:
+                case ItemType.Crossbow:
+                    return ItemCategory.Weapon;
+                default:
+                    return ItemCategory.Undefined;
+            }
+        }
+
+        private bool ItemTypeDefined()
+        {
+            return ItemType != ItemType.Undefined && ItemType != ItemType.None;
+        }
+
+        /// <summary>
+        /// If overridden returns that value, otherwise calulates the new scaled value.
+        /// </summary>
+        /// <returns></returns>
+        public float? GetValue()
+        {
+            if (OverrideValue != null)
+            {
+                return OverrideValue;
+            }
+            else if (BiomeType != WorldConfiguration.Biome.Undefined && ItemTypeDefined())
+            {
+                var scale = WorldConfiguration.Instance.GetBiomeScaling(BiomeType);
+                return (int)(GetBaseValue() * scale);
+            }
+
+            return VanillaValue;
+        }
+
+        /// <summary>
+        /// Shorthand call for the class.
+        /// </summary>
+        /// <returns></returns>
+        private float GetBaseValue()
+        {
+            return ItemConfiguration.Instance.GetBaseItemValue(ItemType);
+        }
+
+        public float? GetUpgradeValue()
+        {
+            if (OverrideUpgradeValue != null)
+            {
+                return OverrideUpgradeValue;
+            }
+            else if (BiomeType != WorldConfiguration.Biome.Undefined && ItemTypeDefined())
+            {
+                var levels = GetUpgradeLevels();
+                if (levels != null)
+                {
+                    return ItemConfiguration.Instance.CalculateUpgradeValue(BiomeType, GetBaseValue(), levels.Value);
+                }
+            }
+
+            return VanillaUpgradeValue;
+        }
+
+        public int? GetUpgradeLevels()
+        {
+            if (OverrideUpgradeLevels != null)
+            {
+                return OverrideUpgradeLevels;
+            }
+
+            return VanillaUpgradeLevels;
+        }
+
+        /// <summary>
+        /// If the damage is overridden returns the custom DamageTypes or calculated DamageTypes from total damage.
+        /// If not overridden returns the calculated DamageTypes.
+        /// </summary>
+        /// <returns></returns>
+        public HitData.DamageTypes? GetDamageValue()
+        {
+            if (OverrideDamageValue != null)
+            {
+                if (OverrideDamageValue.totalDamage != null && VanillaDamageValue != null)
+                {
+                    return ItemConfiguration.Instance.CalculateDamageTypesFinal(
+                        VanillaDamageValue.Value, OverrideDamageValue.totalDamage.Value, 1);
+                }
+                else
+                {
+                    var damage = CreatureOverrides.GetDamageTypes(OverrideDamageValue);
+                    // Prevent an overwrite of chop and pickaxe damage to reduce confusion hopefully
+                    if (VanillaDamageValue != null)
+                    {
+                        if (OverrideDamageValue.pickaxe == null)
+                        {
+                            damage.m_pickaxe = VanillaDamageValue.Value.m_pickaxe;
+                        }
+                        if (OverrideDamageValue.chop == null)
+                        {
+                            damage.m_chop = VanillaDamageValue.Value.m_chop;
+                        }
+                    }
+
+                    return damage;
+                }
+            }
+            else if (BiomeType != WorldConfiguration.Biome.Undefined && VanillaDamageValue != null && ItemTypeDefined())
+            {
+                var biome = WorldConfiguration.Instance.GetBiome(BiomeType);
+                return ItemConfiguration.Instance.CalculateItemDamageTypes(biome.ScaleValue, VanillaDamageValue.Value, GetBaseValue());
+            }
+
+            return VanillaDamageValue;
+        }
+
+        public HitData.DamageTypes? GetUpgradeDamageValue()
+        {
+            if (OverrideUpgradeDamageValue != null)
+            {
+                if (OverrideUpgradeDamageValue.totalDamage != null && VanillaDamageValue != null)
+                {
+                    return ItemConfiguration.Instance.CalculateDamageTypesFinal(
+                        VanillaUpgradeDamageValue.Value, OverrideUpgradeDamageValue.totalDamage.Value, 1);
+                }
+                else
+                {
+                    return CreatureOverrides.GetDamageTypes(OverrideUpgradeDamageValue);
+                }
+            }
+            else if (BiomeType != WorldConfiguration.Biome.Undefined && VanillaDamageValue != null && ItemTypeDefined())
+            {
+                return ItemConfiguration.Instance.CalculateUpgradeValue(BiomeType, VanillaUpgradeDamageValue.Value, GetBaseValue(), GetUpgradeLevels().Value);
+            }
+
+            return VanillaUpgradeDamageValue;
+        }
+
+        public void SetVanillaData(float value, int upgrades, float upgradeValue)
+        {
+            VanillaValue ??= value;
+
+            VanillaUpgradeLevels ??= upgrades;
+
+            VanillaUpgradeValue ??= upgradeValue;
+        }
+
+        public void SetVanillaData(HitData.DamageTypes damage, int upgrades, HitData.DamageTypes upgradeDamage)
+        {
+            VanillaDamageValue ??= damage;
+
+            VanillaUpgradeLevels ??= upgrades;
+
+            VanillaUpgradeDamageValue ??= upgradeDamage;
+        }
+    }
+}

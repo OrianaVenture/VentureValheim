@@ -3,6 +3,7 @@ using Xunit;
 using VentureValheim.Progression;
 using static VentureValheim.ProgressionTests.WorldTests;
 using static VentureValheim.ProgressionTests.ItemTests;
+using static VentureValheim.Progression.CreatureOverrides;
 
 namespace VentureValheim.ProgressionTests
 {
@@ -12,10 +13,40 @@ namespace VentureValheim.ProgressionTests
         {
             public TestCreatureConfiguration(ICreatureConfiguration creature) : base()
             {
-                _vanillaBackupCreated = true;
                 Initialize();
             }
+
+            public CreatureClassification GetCreature(string key)
+            {
+                return _creatureData[key];
+            }
+
+            protected override void CreateVanillaBackup()
+            {
+                // Do nothing
+            }
+
+            protected override void ReadCustomValues()
+            {
+                // Do nothing
+            }
         }
+
+
+        private HitData.DamageTypes _emptyDamageTypes = new HitData.DamageTypes
+        {
+            m_damage = 0f,
+            m_chop = 0f,
+            m_pickaxe = 0f,
+            m_blunt = 0f,
+            m_slash = 0f,
+            m_pierce = 0f,
+            m_fire = 0f,
+            m_frost = 0f,
+            m_lightning = 0f,
+            m_poison = 0f,
+            m_spirit = 0f
+        };
 
         private Mock<IWorldConfiguration> mockWorld;
         private TestWorldConfiguration worldConfiguration;
@@ -24,6 +55,10 @@ namespace VentureValheim.ProgressionTests
 
         public CreatureTests()
         {
+            var mockManager = new Mock<IProgressionConfiguration>();
+            mockManager.Setup(x => x.GetAutoScaleCreaturesIgnoreDefaults()).Returns(false);
+            new ProgressionConfiguration(mockManager.Object);
+
             mockWorld = new Mock<IWorldConfiguration>();
             mockWorld.SetupGet(x => x.WorldScale).Returns(WorldConfiguration.Scaling.Exponential);
             mockWorld.SetupGet(x => x.ScaleFactor).Returns(0.75f);
@@ -70,10 +105,35 @@ namespace VentureValheim.ProgressionTests
         [InlineData(WorldConfiguration.Biome.Plain, WorldConfiguration.Difficulty.Intermediate, 469)]
         [InlineData(WorldConfiguration.Biome.Plain, WorldConfiguration.Difficulty.Expert, 1876)]
         [InlineData(WorldConfiguration.Biome.Plain, WorldConfiguration.Difficulty.Boss, 4690)]
-        public void GetCreatureHealth_All(WorldConfiguration.Biome biome, WorldConfiguration.Difficulty d, int expected)
+        public void GetCreatureHealth_Calculation(WorldConfiguration.Biome biome, WorldConfiguration.Difficulty d, int expected)
+        {            
+            Assert.Equal(expected, creatureConfiguration.CalculateHealth(worldConfiguration.GetBiomeScaling(biome), creatureConfiguration.GetBaseHealth(d)));
+        }
+
+        [Fact]
+        public void GetCreatureHealth_VanillaDifficulty()
         {
-            var test = new CreatureConfiguration.CreatureClassification("test", biome, d);
-            Assert.Equal(expected, creatureConfiguration.CalculateHealth(test, worldConfiguration.GetBiomeScaling(biome)));
+            var test = new CreatureClassification("test", WorldConfiguration.Biome.Meadow, WorldConfiguration.Difficulty.Vanilla);
+            Assert.Null(test.GetHealth());
+
+            test.SetVanillaData(101, null);
+            Assert.Equal(101, test.GetHealth());
+
+            test.OverrideCreature(new CreatureOverride { health = 201 });
+            Assert.Equal(101, test.GetHealth());
+        }
+
+        [Fact]
+        public void GetCreatureHealth_Override()
+        {
+            var test = new CreatureClassification("test", WorldConfiguration.Biome.Meadow, WorldConfiguration.Difficulty.Average);
+            Assert.NotNull(test.GetHealth());
+
+            test.SetVanillaData(101, null);
+            Assert.Equal(30, test.GetHealth());
+
+            test.OverrideCreature(new CreatureOverride { health = 201 });
+            Assert.Equal(201, test.GetHealth());
         }
 
         [Theory]
@@ -107,7 +167,7 @@ namespace VentureValheim.ProgressionTests
                 m_spirit = 10f
             };
 
-            float sumDamage = itemConfiguration.GetTotalDamage(damageTypes, false);
+            float sumDamage = itemConfiguration.GetTotalDamage(damageTypes);
 
             Assert.Equal(90f, sumDamage);
         }
@@ -160,11 +220,11 @@ namespace VentureValheim.ProgressionTests
                 m_spirit = 0f
             };
 
-            var max = itemConfiguration.GetTotalDamage(damageTypes, false);
+            var max = itemConfiguration.GetTotalDamage(damageTypes);
 
             var newDamage = creatureConfiguration.GetBaseTotalDamage(d);
 
-            var result = itemConfiguration.CalculateCreatureDamageTypes(worldConfiguration.GetBiome(biome), damageTypes, newDamage, max);
+            var result = itemConfiguration.CalculateCreatureDamageTypes(worldConfiguration.GetBiome(biome).ScaleValue, damageTypes, newDamage, max);
 
             var expectedDamage = new HitData.DamageTypes();
             expectedDamage.m_chop = 10f;
@@ -175,6 +235,83 @@ namespace VentureValheim.ProgressionTests
             Assert.Equal(10f, result.m_pickaxe);
             Assert.Equal(expected, result.m_blunt);
             Assert.Equal(expectedDamage, result);
+        }
+
+        [Fact]
+        public void CreatureOverride_HappyPaths()
+        {
+            string attack1 = "Attack1";
+            string attack2 = "Attack2";
+            string attack3 = "Attack3";
+            CreatureOverridesList list = new CreatureOverridesList
+            {
+                creatures = new List<CreatureOverride>
+                {
+                    new CreatureOverride
+                    {
+                        name = "TestCreature",
+                        health = 100f,
+                        biome = 0,
+                        difficulty = 1,
+                        attacks = new List<AttackOverride>
+                        {
+                            new AttackOverride
+                            {
+                                name = attack1,
+                                totalDamage = 200f
+                            },
+                            new AttackOverride
+                            {
+                                name = attack2,
+                                blunt = 200f
+                            }
+                        }
+                    },
+                    new CreatureOverride
+                    {
+                        name = "EmptyCreature"
+                    }
+                }
+            };
+
+            foreach (var entry in list.creatures)
+            {
+                creatureConfiguration.AddCreatureConfiguration(entry);
+            }
+
+            var creature = creatureConfiguration.GetCreature("TestCreature");
+
+            Assert.NotNull(creature);
+
+            Assert.True(creature.HealthOverridden());
+            Assert.Equal(100f, creature.OverrideHealth);
+            Assert.Equal(WorldConfiguration.Biome.Meadow, creature.BiomeType);
+            Assert.Equal(WorldConfiguration.Difficulty.Harmless, creature.CreatureDifficulty);
+
+            Assert.True(creature.AttackOverridden(attack1));
+            Assert.Equal(200f, creature.GetAttackOverrideTotal(attack1));
+            var attackOverride1 = creature.GetAttackOverride(attack1);
+            Assert.NotNull(attackOverride1);
+            Assert.Equal(_emptyDamageTypes, attackOverride1);
+
+            Assert.True(creature.AttackOverridden(attack2));
+            Assert.Null(creature.GetAttackOverrideTotal(attack2));
+            var attackOverride2 = creature.GetAttackOverride(attack2);
+            Assert.NotNull(attackOverride2);
+            Assert.Equal(200f, attackOverride2.Value.m_blunt);
+
+            Assert.False(creature.AttackOverridden(attack3));
+            Assert.Null(creature.GetAttackOverrideTotal(attack3));
+            var attackOverride3 = creature.GetAttackOverride(attack3);
+            Assert.Null(attackOverride3);
+
+            var creature2 = creatureConfiguration.GetCreature("EmptyCreature");
+
+            Assert.NotNull(creature2);
+            Assert.Equal(WorldConfiguration.Biome.Undefined, creature2.BiomeType);
+            Assert.Equal(WorldConfiguration.Difficulty.Undefined, creature2.CreatureDifficulty);
+            Assert.False(creature2.HealthOverridden());
+            Assert.False(creature2.AttackOverridden(attack1));
         }
     }
 }
