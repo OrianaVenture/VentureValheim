@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -37,10 +36,10 @@ namespace VentureValheim.LocationReset
         private static readonly ConfigSync ConfigurationSync = new(ModGUID)
         { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
 
-        internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
+        private static ConfigEntry<bool> CE_ServerConfigLocked = null!;
 
-        internal static ConfigEntry<bool> CE_ModEnabled = null!;
-        internal static ConfigEntry<int> CE_ResetTime = null!;
+        private static ConfigEntry<bool> CE_ModEnabled = null!;
+        private static ConfigEntry<int> CE_ResetTime = null!;
 
         public static int GetResetTime() => CE_ResetTime.Value;
 
@@ -68,10 +67,12 @@ namespace VentureValheim.LocationReset
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean).",
                 true, true, ref CE_ServerConfigLocked);
+            ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
+
             AddConfig("Enabled", general,"Enable module (boolean).",
                 true, true, ref CE_ModEnabled);
 
-            AddConfig("ResetTime", general, "Number of in-game days for reset, one day is about 20 minutes (int).",
+            AddConfig("ResetTime", general, "Number of in-game days for reset, one day is about 30 minutes (int).",
                 true, 30, ref CE_ResetTime);
 
             #endregion
@@ -79,7 +80,7 @@ namespace VentureValheim.LocationReset
             if (!CE_ModEnabled.Value)
                 return;
 
-            //LocationResetLogger.LogInfo("Initializing LocationReset configurations...");
+            LocationResetLogger.LogInfo("LocationReset getting ready for mass destruction. Consider making backups before using this mod!");
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);

@@ -20,15 +20,12 @@ namespace VentureValheim.LocationReset
             var lastReset = loc.GetLastReset();
             if (lastReset < 0)
             {
-                //LocationResetPlugin.LocationResetLogger.LogDebug($"No reset timer found for location. Adding one now.");
                 loc.SetLastResetNow();
                 return false;
             }
 
             var timePassed = LocationReset.GetGameDay() - lastReset;
             var resetTime = LocationResetPlugin.GetResetTime();
-
-            //LocationResetPlugin.LocationResetLogger.LogDebug($"Reset timer found. Time passed: {timePassed}, last reset time was {lastReset}.");
 
             if (timePassed >= resetTime)
             {
@@ -45,26 +42,42 @@ namespace VentureValheim.LocationReset
     /// </summary>
     public class LocationProxyReset : MonoBehaviour
     {
-        public IEnumerator Start()
+        IEnumerator resetCoroutine;
+
+        public void Start()
         {
-            LocationResetPlugin.LocationResetLogger.LogDebug($"LocationProxyReset Starting...");
+            resetCoroutine = WaitForReset();
+            StartCoroutine(resetCoroutine);
+        }
+
+        public IEnumerator WaitForReset()
+        {
             yield return null;
             yield return new WaitForSeconds(5);
             var loc = gameObject.GetComponent<LocationProxy>();
             if (loc != null)
             {
-                var position = loc.transform.position;
-                while (!LocationReset.LocalPlayerInRange(position))
+                while (!LocationReset.LocalPlayerBeyondRange(loc.transform.position))
                 {
+                    if (LocationReset.LocalPlayerInRange(loc.transform.position))
+                    {
+                        LocationReset.Instance.TryReset(loc);
+                        break;
+                    }
                     yield return new WaitForSeconds(1);
                 }
-
-                LocationReset.Instance.TryReset(loc);
             }
 
             yield return null;
-            LocationResetPlugin.LocationResetLogger.LogDebug($"LocationProxyReset Destroying Self...");
             Destroy(this);
+        }
+
+        public void OnDestroy()
+        {
+            if (resetCoroutine != null)
+            {
+                StopCoroutine(resetCoroutine);
+            }
         }
     }
 }

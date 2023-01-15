@@ -5,17 +5,14 @@ namespace VentureValheim.LocationReset
 {
     public static class DungeonGeneratorExtension
     {
-        // TODO CLEANUP
-        private const string LastReset = "VV_LastReset";
-
         public static void SetLastResetNow(this DungeonGenerator dg)
         {
-            dg?.m_nview?.GetZDO()?.Set(LastReset, LocationReset.GetGameDay());
+            dg?.m_nview?.GetZDO()?.Set(LocationReset.LAST_RESET, LocationReset.GetGameDay());
         }
 
         public static int GetLastReset(this DungeonGenerator dg)
         {
-            return dg?.m_nview?.GetZDO()?.GetInt(LastReset, -1) ?? -1;
+            return dg?.m_nview?.GetZDO()?.GetInt(LocationReset.LAST_RESET, -1) ?? -1;
         }
 
         public static bool NeedsReset(this DungeonGenerator dg)
@@ -23,15 +20,12 @@ namespace VentureValheim.LocationReset
             var lastReset = dg.GetLastReset();
             if (lastReset < 0)
             {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"No reset timer found for location. Adding one now.");
                 dg.SetLastResetNow();
                 return false;
             }
 
             var timePassed = LocationReset.GetGameDay() - lastReset;
             var resetTime = LocationResetPlugin.GetResetTime();
-
-            LocationResetPlugin.LocationResetLogger.LogDebug($"Reset timer found. Time passed: {timePassed}, last reset time was {lastReset}.");
 
             if (timePassed >= resetTime)
             {
@@ -48,24 +42,43 @@ namespace VentureValheim.LocationReset
     /// </summary>
     public class DungeonGeneratorReset : MonoBehaviour
     {
-        public IEnumerator Start()
+        IEnumerator resetCoroutine;
+
+        public void Start()
+        {
+            resetCoroutine = WaitForReset();
+            StartCoroutine(resetCoroutine);
+        }
+
+        public IEnumerator WaitForReset()
         {
             yield return null;
             yield return new WaitForSeconds(5);
             var dg = gameObject.GetComponent<DungeonGenerator>();
             if (dg != null)
             {
-                var position = dg.transform.position;
-                while (!LocationReset.LocalPlayerInRange(position))
+                while (!LocationReset.LocalPlayerBeyondRange(dg.transform.position))
                 {
+                    if (LocationReset.LocalPlayerInRange(dg.transform.position))
+                    {
+                        LocationReset.Instance.TryReset(dg);
+                        break;
+                    }
+
                     yield return new WaitForSeconds(1);
                 }
-
-                LocationReset.Instance.TryReset(dg);
             }
 
             yield return null;
             Destroy(this);
+        }
+
+        public void OnDestroy()
+        {
+            if (resetCoroutine != null)
+            {
+                StopCoroutine(resetCoroutine);
+            }
         }
     }
 }

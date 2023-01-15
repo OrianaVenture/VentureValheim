@@ -30,9 +30,14 @@ namespace VentureValheim.LocationReset
             return EnvMan.instance.GetCurrentDay();
         }
 
+        /// <summary>
+        /// Determines if the local player is within 30 units of the given position.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
         public static bool LocalPlayerInRange(Vector3 position)
         {
-            var zoneSize = new Vector3(30f, 30f, 30f);
+            var zoneSize = new Vector3(30f, 0f, 30f);
             var player = Player.m_localPlayer;
             if (player == null)
             {
@@ -40,6 +45,23 @@ namespace VentureValheim.LocationReset
             }
 
             return InBounds(position, player.gameObject.transform.position, zoneSize);
+        }
+
+        /// <summary>
+        /// Determines if the local player is beyond 200 units of the given position.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
+        public static bool LocalPlayerBeyondRange(Vector3 position)
+        {
+            var zoneSize = new Vector3(200f, 0f, 200f);
+            var player = Player.m_localPlayer;
+            if (player == null)
+            {
+                return true;
+            }
+
+            return !InBounds(position, player.gameObject.transform.position, zoneSize);
         }
 
         /// <summary>
@@ -51,7 +73,6 @@ namespace VentureValheim.LocationReset
         /// <returns></returns>
         public static bool PlayerActivity(Vector3 position, Vector3 zoneSize)
         {
-            // Detect if there is a player, player structure, or a tombstone in the location
             var list = SceneManager.GetActiveScene().GetRootGameObjects();
 
             for (int lcv = 0; lcv < list.Length; lcv++)
@@ -60,8 +81,14 @@ namespace VentureValheim.LocationReset
                 if (InBounds(obj.transform.position, position, zoneSize))
                 {
                     var piece = obj.GetComponent<Piece>();
-                    if ((piece != null && piece.GetCreator() != 0L) ||
-                        obj.GetComponent<TombStone>() != null)
+                    if (piece != null)
+                    {
+                        if (piece.GetCreator() != 0L)
+                        {
+                            return true;
+                        }
+                    }
+                    else if (obj.GetComponent<TombStone>() != null)
                     {
                         return true;
                     }
@@ -102,15 +129,13 @@ namespace VentureValheim.LocationReset
 
                 if (InBounds(obj.transform.position, position, zoneSize))
                 {
-                    LocationResetPlugin.LocationResetLogger.LogDebug($"{obj.transform.position}: {obj.name} in bounds, removing.");
-
                     ZNetView netView = obj.GetComponent<ZNetView>();
                     if (netView != null)
                     {
                         netView.GetZDO()?.SetOwner(ZDOMan.instance.GetMyID());
                         netView.Destroy();
                     }
-                    
+
                     ZNetScene.instance.Destroy(obj);
                 }
             }
@@ -144,7 +169,7 @@ namespace VentureValheim.LocationReset
         /// <param name="dg"></param>
         public void TryReset(DungeonGenerator dg)
         {
-            LocationResetPlugin.LocationResetLogger.LogDebug($"DungeonGenerator located at: {dg.transform.position}");
+            LocationResetPlugin.LocationResetLogger.LogDebug($"Trying to reset DungeonGenerator located at: {dg.transform.position}");
 
             if (dg.transform.position.y < LOCATION_MINIMUM)
             {
@@ -169,7 +194,7 @@ namespace VentureValheim.LocationReset
             }
 
             Reset(dg, position, zoneSize);
-            LocationResetPlugin.LocationResetLogger.LogInfo($"Done regenerating location.");
+            LocationResetPlugin.LocationResetLogger.LogDebug($"Done regenerating location for DungeonGenerator located at: {dg.transform.position}.");
         }
 
         /// <summary>
@@ -198,7 +223,7 @@ namespace VentureValheim.LocationReset
         /// <param name="loc"></param>
         public void TryReset(LocationProxy loc)
         {
-            LocationResetPlugin.LocationResetLogger.LogDebug($"LocationProxy located at: {loc.transform.position}");
+            LocationResetPlugin.LocationResetLogger.LogDebug($"Trying to reset LocationProxy located at: {loc.transform.position}");
 
             if (!loc.NeedsReset())
             {
@@ -218,7 +243,7 @@ namespace VentureValheim.LocationReset
 
             Reset(loc, position, zoneSize);
 
-            LocationResetPlugin.LocationResetLogger.LogInfo($"Done regenerating location.");
+            LocationResetPlugin.LocationResetLogger.LogDebug($"Done regenerating location for LocationProxy located at: {loc.transform.position}.");
         }
 
         /// <summary>
@@ -273,7 +298,6 @@ namespace VentureValheim.LocationReset
                     Vector3 objPosition = loc.transform.position + loc.transform.rotation * obj.gameObject.transform.position;
                     Quaternion objRotation = obj.gameObject.transform.rotation * loc.transform.rotation;
 
-                    LocationResetPlugin.LocationResetLogger.LogDebug($"{obj.transform.position}, {obj.name} active to be Instantiated at {objPosition}.");
                     GameObject gameObject = UnityEngine.Object.Instantiate(obj.gameObject, objPosition, objRotation);
                     gameObject.SetActive(value: true);
                     gameObject.GetComponent<ZNetView>().GetZDO().SetPGWVersion(ZoneSystem.instance.m_pgwVersion);
@@ -292,22 +316,11 @@ namespace VentureValheim.LocationReset
         {
             private static void Postfix(DungeonGenerator __instance)
             {
-                try
-                {
-                    var reset = __instance.gameObject.GetComponent<DungeonGeneratorReset>();
+                var reset = __instance.gameObject.GetComponent<DungeonGeneratorReset>();
 
-                    if (reset == null)
-                    {
-                        __instance.gameObject.AddComponent<DungeonGeneratorReset>();
-                    }
-                    else
-                    {
-                        LocationResetPlugin.LocationResetLogger.LogDebug($"Patch_DungeonGenerator_Load reset is not null, edge case recorded.");
-                    }
-                }
-                catch (Exception e)
+                if (reset == null)
                 {
-                    LocationResetPlugin.LocationResetLogger.LogDebug(e);
+                    __instance.gameObject.AddComponent<DungeonGeneratorReset>();
                 }
             }
         }
@@ -317,27 +330,16 @@ namespace VentureValheim.LocationReset
         {
             private static void Postfix(LocationProxy __instance)
             {
-                try
-                {
-                    var location = __instance.m_nview?.GetZDO()?.GetInt("location");
+                var location = __instance.m_nview?.GetZDO()?.GetInt("location");
 
-                    if (location == TROLL_CAVE_HASH)
+                if (location != null && location == TROLL_CAVE_HASH)
+                {
+                    var reset = __instance.gameObject.GetComponent<LocationProxyReset>();
+
+                    if (reset == null)
                     {
-                        var reset = __instance.gameObject.GetComponent<LocationProxyReset>();
-
-                        if (reset == null)
-                        {
-                            __instance.gameObject.AddComponent<LocationProxyReset>();
-                        }
-                        else
-                        {
-                            LocationResetPlugin.LocationResetLogger.LogDebug($"Patch_LocationProxy_SpawnLocation reset is not null, edge case recorded.");
-                        }
+                        __instance.gameObject.AddComponent<LocationProxyReset>();
                     }
-                }
-                catch (Exception e)
-                {
-                    LocationResetPlugin.LocationResetLogger.LogDebug(e);
                 }
             }
         }
