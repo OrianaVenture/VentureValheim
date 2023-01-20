@@ -65,13 +65,31 @@ namespace VentureValheim.LocationReset
         }
 
         /// <summary>
+        /// Returns true if there is player activity based off config settings.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="zoneSize"></param>
+        /// <returns></returns>
+        public static bool PlayerActivity(Vector3 position, Vector3 zoneSize)
+        {
+            if (LocationResetPlugin.GetSkipPlayerGroundPieceCheck())
+            {
+                return PlayerActivityNoGroundPieceCheck(position, zoneSize);
+            }
+            else
+            {
+                return PlayerActivityGroundPieceCheck(position, zoneSize);
+            }
+        }
+
+        /// <summary>
         /// Returns true if there are player placed pieces or tombstones near the location
         /// on the ground or the sky, or if there are players in the sky.
         /// </summary>
         /// <param name="position"></param>
         /// <param name="zoneSize"></param>
         /// <returns></returns>
-        public static bool PlayerActivity(Vector3 position, Vector3 zoneSize)
+        private static bool PlayerActivityGroundPieceCheck(Vector3 position, Vector3 zoneSize)
         {
             var list = SceneManager.GetActiveScene().GetRootGameObjects();
 
@@ -93,6 +111,44 @@ namespace VentureValheim.LocationReset
                         return true;
                     }
                     else if (obj.transform.position.y >= LOCATION_MINIMUM && obj.GetComponent<Player>() != null)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if there are player placed pieces, tombstones, or players 
+        /// in the sky at the location.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="zoneSize"></param>
+        /// <returns></returns>
+        private static bool PlayerActivityNoGroundPieceCheck(Vector3 position, Vector3 zoneSize)
+        {
+            var list = SceneManager.GetActiveScene().GetRootGameObjects();
+
+            for (int lcv = 0; lcv < list.Length; lcv++)
+            {
+                var obj = list[lcv];
+                if (obj.transform.position.y >= LOCATION_MINIMUM && InBounds(obj.transform.position, position, zoneSize))
+                {
+                    var piece = obj.GetComponent<Piece>();
+                    if (piece != null)
+                    {
+                        if (piece.GetCreator() != 0L)
+                        {
+                            return true;
+                        }
+                    }
+                    else if (obj.GetComponent<TombStone>() != null)
+                    {
+                        return true;
+                    }
+                    else if (obj.GetComponent<Player>() != null)
                     {
                         return true;
                     }

@@ -40,8 +40,10 @@ namespace VentureValheim.LocationReset
 
         private static ConfigEntry<bool> CE_ModEnabled = null!;
         private static ConfigEntry<int> CE_ResetTime = null!;
+        private static ConfigEntry<bool> CE_SkipPlayerGroundPieceCheck = null!;
 
         public static int GetResetTime() => CE_ResetTime.Value;
+        public static bool GetSkipPlayerGroundPieceCheck() => CE_SkipPlayerGroundPieceCheck.Value;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
@@ -74,6 +76,9 @@ namespace VentureValheim.LocationReset
 
             AddConfig("ResetTime", general, "Number of in-game days for reset, one day is about 30 minutes (int).",
                 true, 30, ref CE_ResetTime);
+            AddConfig("SkipPlayerGroundPieceCheck", general, "When True will reset locations even if player placed pieces " +
+                "and tombstones are on the ground outside the entrance (bool).",
+                true, false, ref CE_SkipPlayerGroundPieceCheck);
 
             #endregion
 

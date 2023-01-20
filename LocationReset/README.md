@@ -8,13 +8,15 @@ Automatically reset Dungeons and Locations with a customizable in-game day rate.
 
 ## Features
 
-Resets dungeons/location when a player approaches them given there is no "player activity" nearby. Locations will not reset until the second time it is visited with this mod installed given the ResetTime has been reached. For example, if you install this mod then visit a burial chamber on Day 100 it will not reset until visited on or after day 130 (given the default reset time is 30).
+Resets dungeons/locations when a player approaches them given there is no "player activity" nearby. Locations will not reset until the second time it is visited with this mod installed given the ResetTime has been reached. For example, if you install this mod then visit a burial chamber on Day 100 it will not reset until visited on or after day 130 (given the default reset time is 30).
 
 Player activity includes:
 
 * A Player has built anything near or inside the dungeon
 * There is a Tombstone near or inside the dungeon
 * There is a Player inside the dungeon
+
+If you want locations to reset even if players have built/died around the entrance set the SkipPlayerGroundPieceCheck config to true. This will change the logic to check only for activity inside the location.
 
 ServerSync is included with this mod.
 
@@ -32,6 +34,10 @@ ServerSync is included with this mod.
 * Manual reset commands
 
 ## Changelog
+
+### 0.1.1
+
+* Added a new config option SkipPlayerGroundPieceCheck
 
 ### 0.1.0
 
