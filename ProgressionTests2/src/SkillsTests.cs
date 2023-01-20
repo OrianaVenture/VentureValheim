@@ -17,6 +17,13 @@ namespace VentureValheim.ProgressionTests
             public float GetSkillDrainTest(float a, float b, float c) => GetSkillDrain(a, b, c);
             public float GetSkillAccumulationGainTest(float a, float b, float c) => GetSkillAccumulationGain(a, b, c);
             public float NormalizeSkillLevelTest(float a) => NormalizeSkillLevel(a);
+            public float GetSkillDrainFloorTest() => GetSkillDrainFloor();
+            public float GetSkillGainCeilingTest() => GetSkillGainCeiling();
+            protected override int GetPrivateBossKeysCount() => 1;
+            public int GetPrivateBossKeysCountTest() => GetPrivateBossKeysCount();
+            protected override int GetPublicBossKeysCount() => 2;
+            public int GetPublicBossKeysCountTest() => GetPublicBossKeysCount();
+            public void UpdateCacheTest() => UpdateCache();
         }
 
         private TestSkillsManager skillsManager = new TestSkillsManager();
@@ -50,6 +57,20 @@ namespace VentureValheim.ProgressionTests
             mockManager.Setup(x => x.GetAbsoluteSkillDrain()).Returns(skillDrain);
             mockManager.Setup(x => x.GetCompareAndSelectDrain()).Returns(compare);
             mockManager.Setup(x => x.GetCompareUseMinimumDrain()).Returns(useMinimum);
+
+            new ProgressionConfiguration(mockManager.Object);
+        }
+
+        private void Setup(bool useBossKeys, bool usePrivateKeys, bool overrideMax, bool overrideMin)
+        {
+            var mockManager = new Mock<IProgressionConfiguration>();
+            mockManager.Setup(x => x.GetUseBossKeysForSkillLevel()).Returns(useBossKeys);
+            mockManager.Setup(x => x.GetBossKeysSkillPerKey()).Returns(10);
+            mockManager.Setup(x => x.GetUsePrivateKeys()).Returns(usePrivateKeys);
+            mockManager.Setup(x => x.GetOverrideMaximumSkillLevel()).Returns(overrideMax);
+            mockManager.Setup(x => x.GetMaximumSkillLevel()).Returns(89);
+            mockManager.Setup(x => x.GetOverrideMinimumSkillLevel()).Returns(overrideMin);
+            mockManager.Setup(x => x.GetMinimumSkillLevel()).Returns(11);
 
             new ProgressionConfiguration(mockManager.Object);
         }
@@ -152,6 +173,26 @@ namespace VentureValheim.ProgressionTests
         {
             Setup();
             Assert.Equal(expected, skillsManager.GetBossSkillFloorTest(bosses));
+        }
+
+        [Theory]
+        [InlineData(false, false, false, false, 100, 0)]
+        [InlineData(false, false, true, false, 89, 0)]
+        [InlineData(false, false, false, true, 100, 11)]
+        [InlineData(true, false, false, false, 60, 20)]
+        [InlineData(true, false, true, false, 89, 20)]
+        [InlineData(true, false, false, true, 60, 11)]
+        [InlineData(true, true, false, false, 50, 10)]
+        [InlineData(true, true, true, false, 89, 10)]
+        [InlineData(true, true, false, true, 50, 11)]
+        public void Update_All(bool useBossKeys, bool usePrivateKeys, bool overrideMax, bool overrideMin, float expectedMax, float expectedMin)
+        {
+            Setup(useBossKeys, usePrivateKeys, overrideMax, overrideMin);
+            Assert.Equal(1, skillsManager.GetPrivateBossKeysCountTest());
+            Assert.Equal(2, skillsManager.GetPublicBossKeysCountTest());
+            skillsManager.UpdateCacheTest();
+            Assert.Equal(expectedMax, skillsManager.GetSkillGainCeilingTest());
+            Assert.Equal(expectedMin, skillsManager.GetSkillDrainFloorTest());
         }
     }
 }

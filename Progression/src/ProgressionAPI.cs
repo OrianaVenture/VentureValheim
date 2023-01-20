@@ -338,13 +338,90 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Whether a Global Key is contained in the Global game list.
+        /// Method to determine if a Global Key exists to bypass patches.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
         public bool GetGlobalKey(string key)
         {
-            return ZoneSystem.instance.GetGlobalKey(key);
+            return ZoneSystem.instance.m_globalKeys.Contains(key);
+        }
+
+        /// <summary>
+        /// Method to add a global key to bypass patches.
+        /// </summary>
+        /// <param name="key"></param>
+        public void AddGlobalKey(string key)
+        {
+            if (key.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
+            ProgressionPlugin.VentureProgressionLogger.LogInfo($"Adding Public Key {key}.");
+            if (!ZoneSystem.instance.m_globalKeys.Contains(key))
+            {
+                ZoneSystem.instance.m_globalKeys.Add(key);
+                ZoneSystem.instance.SendGlobalKeys(ZRoutedRpc.Everybody);
+            }
+        }
+
+        /// <summary>
+        /// Attempts to find a Player with the given name.
+        /// Case-insensitive, ignores whitespace.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public Player GetPlayerByName(string name)
+        {
+            var nameSimple = name.Trim().ToLower();
+            var players = Player.m_players;
+
+            for (int lcv = 0; lcv < players.Count; lcv++)
+            {
+                var player = players[lcv].GetPlayerName().Trim().ToLower();
+                if (player.Equals(nameSimple))
+                {
+                    return players[lcv];
+                }
+            }
+
+            return null;
+        }
+
+        /*/// <summary>
+        /// Attempts to find a Player with the given RPC sender id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public string GetPlayerNameByPeerId(long id)
+        {
+            var players = Player.m_players;
+
+            for (int lcv = 0; lcv < players.Count; lcv++)
+            {
+                if (players[lcv].GetZDOID().userID == id)
+                {
+                    return players[lcv].GetPlayerName();
+                }
+            }
+
+            return "";
+        }*/
+
+        /// <summary>
+        /// Returns the player name of the client player if exists.
+        /// </summary>
+        /// <returns></returns>
+        public string GetLocalPlayerName()
+        {
+            var profile = Game.instance.GetPlayerProfile();
+            if (profile != null)
+            {
+                return profile.m_playerName;
+            }
+
+            return "";
         }
 
         /// <summary>

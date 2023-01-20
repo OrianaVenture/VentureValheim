@@ -1,6 +1,7 @@
 using BepInEx;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace VentureValheim.Progression
 {
@@ -126,7 +127,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Finds the creature ItemDrop attack prefab and configures damage.
+        /// Finds the creature ItemDrop attack prefabs and configures damages.
         /// </summary>
         /// <param name="cc"></param>
         private void ConfigureAttacks(CreatureClassification cc)
@@ -138,15 +139,9 @@ namespace VentureValheim.Progression
 
             try
             {
-                var values = GetMaxCreatureDamage(cc);
-                float totalAttacks = values.Item1;
-                float maxTotalDamage = values.Item2;
-
+                var maxTotalDamage = GetMaxCreatureDamage(cc.VanillaAttacks);
                 if (maxTotalDamage <= 0)
                 {
-                    // TODO Consider removing this to enable overrides for empty attacks
-                    ProgressionPlugin.VentureProgressionLogger
-                        .LogDebug($"All {totalAttacks} attacks for {cc.Name} have no damage components. Skipping attack configuration.");
                     return;
                 }
 
@@ -155,11 +150,6 @@ namespace VentureValheim.Progression
                     ItemDrop item = ProgressionAPI.Instance.GetItemDrop(attack.Key);
                     if (item != null)
                     {
-                        if (cc.AttackOverridden(attack.Key))
-                        {
-                            ProgressionPlugin.VentureProgressionLogger.LogDebug($"\"{attack.Key}\" for {cc.Name} is overridden!");
-                        }
-
                         var damage = cc.GetAttack(attack.Key, maxTotalDamage);
                         ConfigureAttack(item, damage);
                     }
@@ -190,27 +180,21 @@ namespace VentureValheim.Progression
         /// Calculates the maximum damage done by any one attack in the CreatureClassification's original attack values.
         /// Counts the total number of attacks that do damage.
         /// </summary>
-        /// <param name="cc"></param>
-        /// <returns>Total non-zero attacks, highest attack value</returns>
-        protected (int, float) GetMaxCreatureDamage(CreatureClassification cc)
+        /// <param name="attacks"></param>
+        /// <returns>Highest attack value in the group</returns>
+        protected float GetMaxCreatureDamage(Dictionary<string, HitData.DamageTypes> attacks)
         {
-            int totalAttacks = 0;
             float maxDamage = 0;
 
-            if (cc.VanillaAttacks != null)
+            if (attacks != null)
             {
-                foreach (var attack in cc.VanillaAttacks)
+                foreach (var attack in attacks)
                 {
                     ItemDrop item = ProgressionAPI.Instance.GetItemDrop(attack.Key);
 
                     if (item != null)
                     {
                         float damage = ItemConfiguration.Instance.GetTotalDamage(item.m_itemData.m_shared.m_damages);
-
-                        if (damage > 0)
-                        {
-                            totalAttacks++;
-                        }
 
                         if (damage > maxDamage)
                         {
@@ -220,7 +204,7 @@ namespace VentureValheim.Progression
                 }
             }
 
-            return (totalAttacks, maxDamage);
+            return maxDamage;
         }
 
         /// <summary>
@@ -403,7 +387,29 @@ namespace VentureValheim.Progression
                 var creature = ProgressionAPI.Instance.GetHumanoid(cc.Name);
                 if (creature != null)
                 {
-                    cc.SetVanillaData(creature.m_health, creature.m_defaultItems);
+                    var attacks = new List<GameObject>();
+                    if (creature.m_defaultItems != null)
+                    {
+                        attacks.AddRange(creature.m_defaultItems);
+                    }
+
+                    if (creature.m_randomWeapon != null)
+                    {
+                        attacks.AddRange(creature.m_randomWeapon);
+                    }
+
+                    if (creature.m_randomSets != null)
+                    {
+                        for (int lcv = 0; lcv < creature.m_randomSets.Length; lcv++)
+                        {
+                            if (creature.m_randomSets[lcv].m_items != null)
+                            {
+                                attacks.AddRange(creature.m_randomSets[lcv].m_items);
+                            }
+                        }
+                    }
+
+                    cc.SetVanillaData(creature.m_health, attacks);
                 }
             }
         }

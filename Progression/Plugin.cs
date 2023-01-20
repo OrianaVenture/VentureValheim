@@ -21,7 +21,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.18";
+        private const string ModVersion = "0.0.19";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -45,8 +45,11 @@ namespace VentureValheim.Progression
         public static ConfigEntry<string> CE_BlockedGlobalKeys = null!;
         public static ConfigEntry<string> CE_AllowedGlobalKeys = null!;
         public static ConfigEntry<bool> CE_UseBossKeysForSkillLevel = null!;
-        public static ConfigEntry<bool> CE_UsePrivateBossKeysForSkillLevel = null!;
         public static ConfigEntry<int> CE_BossKeysSkillPerKey = null!;
+        public static ConfigEntry<bool> CE_UsePrivateKeys = null!;
+        public static ConfigEntry<string> CE_BlockedPrivateKeys = null!;
+        public static ConfigEntry<string> CE_AllowedPrivateKeys = null!;
+        public static ConfigEntry<bool> CE_UnlockAllHaldorItems = null!;
 
         // Skills Manager
         public static ConfigEntry<bool> CE_EnableSkillManager = null!;
@@ -117,12 +120,21 @@ namespace VentureValheim.Progression
             AddConfig("UseBossKeysForSkillLevel", keys,
                 "True to use private player boss keys to control skill floor/ceiling values (boolean).",
                 true, false, ref CE_UseBossKeysForSkillLevel);
-            AddConfig("UsePrivateBossKeysForSkillLevel", keys,
-                "True to use private player keys, False to use the public key system (When UseBossKeysForSkillLevel is true) (boolean).",
-                true, true, ref CE_UsePrivateBossKeysForSkillLevel);
             AddConfig("BossKeysSkillPerKey", keys,
                 "Skill drain floor and skill gain ceiling increased this amount per boss defeated (boolean).",
                 true, 10, ref CE_BossKeysSkillPerKey);
+            AddConfig("UsePrivateKeys", keys,
+                "True to use private player keys to control game behavior (boolean).",
+                true, false, ref CE_UsePrivateKeys);
+            AddConfig("BlockedPrivateKeys", keys,
+                "Stop only these keys being added to the player's key list when UsePrivateKeys is true (comma-separated).",
+                true, "", ref CE_BlockedPrivateKeys);
+            AddConfig("AllowedPrivateKeys", keys,
+                "Allow only these keys being added to the player's key list when UsePrivateKeys is true (comma-separated).",
+                true, "", ref CE_AllowedPrivateKeys);
+            AddConfig("UnlockAllHaldorItems", keys,
+                "True to remove the key check from Haldor entirely and unlock all items (boolean).",
+                true, false, ref CE_UnlockAllHaldorItems);
 
             AddConfig("EnableSkillManager", skills,
                 "Enable the Skill Manager feature (boolean).",
@@ -234,8 +246,11 @@ namespace VentureValheim.Progression
         public string GetBlockedGlobalKeys();
         public string GetAllowedGlobalKeys();
         public bool GetUseBossKeysForSkillLevel();
-        public bool GetUsePrivateBossKeysForSkillLevel();
         public int GetBossKeysSkillPerKey();
+        public bool GetUsePrivateKeys();
+        public string GetBlockedPrivateKeys();
+        public string GetAllowedPrivateKeys();
+        public bool GetUnlockAllHaldorItems();
 
         // Skills Manager
         public bool GetEnableSkillManager();
@@ -285,8 +300,11 @@ namespace VentureValheim.Progression
         public string GetBlockedGlobalKeys() => ProgressionPlugin.CE_BlockedGlobalKeys.Value;
         public string GetAllowedGlobalKeys() => ProgressionPlugin.CE_AllowedGlobalKeys.Value;
         public bool GetUseBossKeysForSkillLevel() => ProgressionPlugin.CE_UseBossKeysForSkillLevel.Value;
-        public bool GetUsePrivateBossKeysForSkillLevel() => ProgressionPlugin.CE_UsePrivateBossKeysForSkillLevel.Value;
         public int GetBossKeysSkillPerKey() => ProgressionPlugin.CE_BossKeysSkillPerKey.Value;
+        public bool GetUsePrivateKeys() => ProgressionPlugin.CE_UsePrivateKeys.Value;
+        public string GetBlockedPrivateKeys() => ProgressionPlugin.CE_BlockedPrivateKeys.Value;
+        public string GetAllowedPrivateKeys() => ProgressionPlugin.CE_AllowedPrivateKeys.Value;
+        public bool GetUnlockAllHaldorItems() => ProgressionPlugin.CE_UnlockAllHaldorItems.Value;
 
         // Skills Manager
         public bool GetEnableSkillManager() => ProgressionPlugin.CE_EnableSkillManager.Value;

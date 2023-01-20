@@ -12,24 +12,32 @@ World Advancement and Progression lets you fine tune world settings. Ideal to us
 
 NOTE: This mod is under heavy development and is not finished. All pre-releases are intended for those interested in helping test new features until the first official release.
 
-The main feature of this mod is to have an easy way to fully customize the world difficulty and to control the rate at which the world and individual player advances. Set the difficulty of each biome and configure all creatures and items by using the automatic scaling system. You may also define your own custom configuration for individual creatures and items (including other modded content). This mod will dynamically create a game balance that is very different from the Vanilla gameplay experience!
+The main feature of this mod is to have an easy way to fully customize the world difficulty and to control the rate at which the world and individual player advances. Set the difficulty of each biome and configure all creatures and items by using the automatic scaling system. You may also define your own custom configuration for individual creatures and items (including other modded content). This mod can dynamically create a game balance that is very different from the Vanilla gameplay experience!
+
+WARNING: If you are using an in-game configuration manager you may be missing out of vital information about the settings! When in doubt please read the config descriptions included in the config file. The information included in the file will not always match the information provided in this readme.
 
 Below are some explanations of features and how to configure them. See more details in the config file. Generate the config file by launching the game once with this mod installed.
 
 ### Public & Private Key Management
 
-By default this mod will prevent/block public keys from being added to the global list which will prevent game behaviors that rely on the presence of these keys. This lets you control the game progression by choosing when these keys get added to the game (either naturally through gameplay or by using the vanilla setpublickey command).
+What is a key and what is controlled by them? In vanilla Valheim there exists a "global key" list that is a bunch of strings shared by all players. Worldly spawns, raids, dreams, and Haldor's items are all controlled by the presence of specific keys. By default this mod will prevent/block public keys from being added to the global list which will prevent game behaviors that rely on the presence of these keys. This lets you control the game progression by choosing when these keys can be added to the game.
 
-This mod also adds a private player key system in which data is saved to a new file for each character. You can use this private key system to tailor game functionality to individuals rather than the vanilla default server-wide public keys. There are 4 new commands added that work similar to the public key commands. Currently only your local player can be updated, but commands for server management will be added later: setprivatekey, removeprivatekey, resetprivatekeys, listprivatekeys.
+This mod also adds a private player key system in which data is saved to the character file. You can use this private key system to tailor game functionality to individuals rather than the vanilla default server-wide public keys. Gameplay will be altered when using private keys: The player that is hosting a loaded chunk will control the worldly spawns, and raids will only spawn on players when appropriate. For example, a player A with no keys that is in a base with a player B with all the boss keys can still get all those raids, but if player A is alone they should not get higher level raids. If player A loads and hosts an area and is later joined by player B, the area should not spawn the higher level monsters that become unlocked with keys. Private keys will be added to any player within a 100 meter range of the hosting player when the action occurs. For example, when a boss dies any player close enough to the chunk-hosting player should also get the private key, but a player online on the other side of the map will not get it.
 
-Here is a quick guide to the Key configuration options:
+When this mod is installed there will be a key "cleanup" performed for the server and any player who joins the game based off the mod configurations. When using the default settings you can expect all global keys to be cleared when you start up the server, resetting your server's key progress. When using private keys a similar principal applies, depending on your blocked or allowed key list, any keys that are not expected will be removed. If you see your keys resetting unexpectedly make sure to check your mod configuration is allowing the keys you want to exist. Any keys added manually will persist until the server is restarted (for private keys when the player logs back in), to ensure these keys remain after a restart you must check your mod configuration!
+
+#### Configuration Options
 
 * BlockAllGlobalKeys: Prevent/block public all keys from being added to the global list, set to false to use vanilla behavior
 * AllowedGlobalKeys: Allow only these keys being added to the global list when BlockAllGlobalKeys is true
 * BlockedGlobalKeys: Stop only these keys being added to the global list when BlockAllGlobalKeys is false
-* UseBossKeysForSkillLevel, UsePrivateBossKeysForSkillLevel, BossKeysSkillPerKey explained under Skill Manager section below.
+* UsePrivateKeys: Use private player keys, rather than global keys for game key checking
+* BlockedPrivateKeys: Stop only these keys being added to the player's key list when UsePrivateKeys is true (use this or AllowedPrivateKeys)
+* AllowedPrivateKeys: Allow only these keys being added to the player's key list when UsePrivateKeys is true (use this or BlockedPrivateKeys, if the BlockedPrivateKeys has any values it will use that setting)
+* UnlockAllHaldorItems: If true bypasses the key check for haldor's items and unlocks everything
+* UseBossKeysForSkillLevel and BossKeysSkillPerKey explained under Skill Manager section below.
 
-Examples of Vanilla Public Keys:
+#### Vanilla Public Keys
 
 * defeated_eikthyr
 * defeated_gdking
@@ -37,21 +45,29 @@ Examples of Vanilla Public Keys:
 * defeated_dragon
 * defeated_goblinking
 * defeated_queen
+* defeated_hive
 * KilledTroll
 * killed_surtling
 * KilledBat
-* defeated_hive
+* nomap
+* noportals
 
-Note: Currently the only feature using private keys is skills. Possible future additions to this section include:
+#### Commands
+
+Due to the changes this mod makes the vanilla "setkey" command will not function as expected in most cases. There is an added command "setglobalkey" that will work in it's place. For private keys there are 4 new commands added that work similar to the vanilla public key commands: setprivatekey, removeprivatekey, resetprivatekeys, listprivatekeys. For example, you can set your local player's key with "setprivatekey defeated_eikthyr", or any online player with "setprivatekey defeated_eikthyr PlayerName".
+
+#### Possible Future Additions
 
 * Ability to lock items or crafting to boss completion
-* Ability to have worldly spawns and raids check for individual boss completion
 * Locking boss summoning to enforce progression order
+* More configuration options to toggle public or private key usage for different game features
 * Requests welcome! See the bottom for my discord link
 
 ### Skill Manager
 
-Have more control over Skill loss and gain. Here is a quick guide to the Skill configuration options:
+Have more control over Skill loss and gain. When using skill capping any skills that are already above the maximum skill cap will remain "frozen" and will not gain, but can still be lowered on death. Console cheats will still work as intended. Other mods that change how skill gain and loss functions may cause unexpected behaviors. Turn off this feature if using another mod for skill management if you see mod conflicts.
+
+#### Configuration Options
 
 * EnableSkillManager must be set to True to enable these features.
 * AllowSkillDrain: Set to False to turn off all skill loss on death.
@@ -63,57 +79,43 @@ Have more control over Skill loss and gain. Here is a quick guide to the Skill c
 Under the Keys category there are more configuration options for skills. This feature will only work if you DO NOT override the minimum and/or maximum skill levels as described above. Overridden values will take precedence.
 
 * UseBossKeysForSkillLevel: Set this to true to use a more dynamic skill control dependant on boss completion. Skill minimum will start at 0 and increase by BossKeysSkillPerKey for each boss defeated. Skill maximum will be capped at [ 100 - (number of bosses: 6) * (BossKeysSkillPerKey: 10) = 40 ] with the current game state. For example, if you defeat one boss then your skill minimum for loss will be raised to 10, and your skill maximum will be raised to 50.
-* UsePrivateBossKeysForSkillLevel: Set this to True to use player keys to determine skill behavior per individual player, set to False to use the public key system to set a server wide configuration.
 * BossKeysSkillPerKey: Amount used in calculation above.
-
-Note: Any skills that are already above the maximum skill cap will remain "frozen" and will not gain, but can still be lowered on death. Console cheats will still work as intended.
-
-Warning: Other mods that change how skill gain and loss functions may cause unexpected behaviors. Turn off this feature if using another mod for skill management if you see mod conflicts.
 
 ### World Scaling
 
 The world is scaled according to the "natural" vanilla game progression by default. To see this mod's default classification of vanilla creatures and items you can view the code on Github. The scaling is applied after logging into a local world or server.
 
-Here is a quick guide to the Scaling configuration options:
+#### Configuration Options
 
 * EnableAutoScaling must be set to True to enable these features.
 * AutoScaleType: Vanilla, Linear, or Exponential. If set to Vanilla these auto-scaling features will not be enabled!
-* AutoScaleFactor: change the biome scaling factor.
+* AutoScaleFactor: Change the biome scaling factor.
 
-Linear scaling by default is a 75% growth (0.75). This means your 1st biome (Black Forest, Meadows is 0th) will have a scaling factor of 1.75, and 7th will be 6.25 for calculations.
+Linear scaling by default is a 75% growth (0.75). This means your 1st biome (Black Forest, Meadows is 0th) will have a scaling factor of 1.75, and 7th will be 6.25 for calculations. This setting will make a pretty even difficulty progression.
 
-To use Exponential scaling PLEASE READ THIS PART: Given that there are by default only 8 biome difficulties to scale, the maximum scaling value you can input is roughly 21 without blatantly breaking the code generating the values (If using 12 custom biome difficulties this number is about 6). However, 21 is a much, much bigger number than you could ever want. Recommended values for exponential scaling are in a range of 0.25 - 1. For example, an exponential scaling of 0.75 will set the 1st biome to 1.75x harder, 7th biome to be about 50x harder than the base biome. This is in stark contrast to the values set by linear scaling and is the ideal way (theoretically) to naturally enforce "Biome Locking" (which is the main reason why this mod exists).
-
+To use Exponential scaling PLEASE READ THIS PART: Given that there are by default only 8 biome difficulties to scale, the maximum scaling value you can input is roughly 21 without blatantly breaking the code generating the values (If using 12 custom biome difficulties this number is about 6). However, 21 is a much, much bigger number than you could ever want. Recommended values for exponential scaling are in a range of 0.25 - 1. For example, an exponential scaling of 0.75 will set the 1st biome to 1.75x harder, 7th biome to be about 50x harder than the base biome. This setting will make the first few biomes closer together in difficulty than the later biomes.
 
 #### Creature Scaling
 
-The total damage a creature can do will be scaled and then distributed to individual damage types for each attack; scaling will maintain the ratio for creatures with more than one attack (some attacks are stronger, some are weaker, scaling maintains this). All values for chop and pickaxe damage are ignored and will retain their original values without affecting scaling.
+The total damage a creature can do will be scaled and then distributed to individual damage types for each attack; scaling will maintain the ratio for creatures with more than one attack (some attacks are stronger, some are weaker, scaling maintains this). All values for chop and pickaxe damage are ignored and will retain their original values without affecting scaling. To override this mod's default configurations there is a file called "WAP.CreatureOverrides.yaml" in which you can add customizations. Currently, all players must have the same file locally since this feature does not sync yet. Directions on how to use the override feature are included in that file.
 
-Here is a quick guide to the Creature Scaling configuration options:
+##### Configuration Options
+
+The list for health and damage configs is in the format (for difficulty spread): Harmless, Novice, Average, Intermediate, Expert, Boss
 
 * AutoScaleCreatures: Set to true to scale creature health and damage.
-* AutoScaleCreaturesHealth: Leave blank to use default values, to override enter a comma-separated list of 6 integers.
-* AutoScaleCreaturesDamage: Leave blank to use default values, to override enter a comma-separated list of 6 integers.
+* AutoScaleCreaturesHealth: Leave blank to use default values: 5, 10, 30, 50, 200, 500; to override enter a comma-separated list of 6 integers.
+* AutoScaleCreaturesDamage: Leave blank to use default values: 0, 5, 10, 12, 15, 20; to override enter a comma-separated list of 6 integers.
 * AutoScaleCreaturesIgnoreDefaults: Set to true to exclude all defaults (can still use yaml override).
-
-Other notes:
-
-* The list for health and damage configs is in the format (for difficulty spread): Harmless, Novice, Average, Intermediate, Expert, Boss
-* The default health values built into the code: 5, 10, 30, 50, 200, 500.
-* The default damage values built into the code: 0, 5, 10, 12, 15, 20.
-
-To override this mod's default configurations there is a file called "WAP.CreatureOverrides.yaml" in which you can add customizations. Currently, all players must have the same file locally since this feature does not sync yet. Directions on how to use the override feature are included in that file.
 
 #### Item Scaling
 
-Vanilla items are grouped by custom types and are assigned the biome in which they naturally can be crafted.
+Vanilla items are grouped by custom types and are assigned the biome in which they naturally can be crafted. To override this mod's default configurations there is a file called "WAP.ItemOverrides.yaml" in which you can add customizations. Currently, all players must have the same file locally since this feature does not sync yet. Directions on how to use the override feature are included in that file.
 
-Here is a quick guide to the Item Scaling configuration options:
+##### Configuration Options
 
 * AutoScaleItems: Set to true to scale player items.
 * AutoScaleItemsIgnoreDefaults: Set to true to exclude all defaults (can still use yaml override).
-
-To override this mod's default configurations there is a file called "WAP.ItemOverrides.yaml" in which you can add customizations. Currently, all players must have the same file locally since this feature does not sync yet. Directions on how to use the override feature are included in that file.
 
 #### Custom Data Definitions
 
@@ -167,6 +169,20 @@ Examples (Will update this for first official release):
 * To override Meadow's difficulty after it has been initialized: AddBiome(0, 8, true) or AddCustomBiome(0, 1.3, true)
 
 ## Changelog
+
+### 0.0.19
+
+* Depreciated use of the additional file for saving private player keys, saves to the main player file now. If using the previous version you can expect your keys to update to the new system and the file will be automatically deleted. Support for the upgrade will be removed in the future.
+* Added ability to use private keys (rather than global keys) for game behaviors (i.e worldy spawns and raid checks)
+* Added new config UsePrivateKeys under General, removed UsePrivateBossKeysForSkillLevel (now included under the new setting)
+* Added new configs BlockedPrivateKeys and AllowedPrivateKeys, similar to the public key settings but for the private ones
+* Added ability to manage other player's private keys with commands (if the player is online)
+* Added ability to unlock all of haldor's items with new config UnlockAllHaldorItems
+* Increased Key Manager cache timer to 10 seconds
+* Small optimizations to Skill Manager, increased cache timer to 10 seconds
+* Fix for some creature attacks not being scaled (whoops): will now track all random weapons and items from random sets (The scaling is not perfect, expect an overhaul for the scaling feature in the next major update)
+* Decreased base Bow damage from 22 to 18
+* Thank you all for your patience!!!
 
 ### 0.0.18
 

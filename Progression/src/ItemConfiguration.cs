@@ -534,7 +534,7 @@ namespace VentureValheim.Progression
             AddBaseItemValue(ItemType.Sledge, 15f);
             AddBaseItemValue(ItemType.Atgeir, 15f);
             AddBaseItemValue(ItemType.Battleaxe, 15f);
-            AddBaseItemValue(ItemType.Bow, 22f);
+            AddBaseItemValue(ItemType.Bow, 18f);
             AddBaseItemValue(ItemType.Crossbow, 45f);
             AddBaseItemValue(ItemType.Tool, 0f);
             AddBaseItemValue(ItemType.Utility, 0f);

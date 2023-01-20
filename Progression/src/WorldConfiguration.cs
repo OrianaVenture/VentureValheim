@@ -468,9 +468,9 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
         public static class Patch_Player_Awake
         {
-            private static void Postfix()
+            private static void Postfix(Player __instance)
             {
-                if (ProgressionAPI.Instance.IsInTheMainScene())
+                if (ProgressionAPI.Instance.IsInTheMainScene() && (Player.m_localPlayer == null || __instance == Player.m_localPlayer))
                 {
                     ProgressionPlugin.VentureProgressionLogger.LogInfo("Setting up world configurations...");
                     Instance.SetupScaling();

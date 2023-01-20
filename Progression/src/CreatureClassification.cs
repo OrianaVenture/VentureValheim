@@ -85,7 +85,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="health"></param>
         /// <param name="attacks"></param>
-        public void SetVanillaData(float health, GameObject[] attacks)
+        public void SetVanillaData(float health, List<GameObject> attacks)
         {
             SetVanillaHealth(health);
             SetVanillaAttacks(attacks);
@@ -95,7 +95,7 @@ namespace VentureValheim.Progression
         /// Sets the vanilla attacks ensuring they are not overridden.
         /// </summary>
         /// <param name="attacks"></param>
-        private void SetVanillaAttacks(GameObject[] attacks)
+        private void SetVanillaAttacks(List<GameObject> attacks)
         {
             if (VanillaAttacks != null)
             {
@@ -109,7 +109,7 @@ namespace VentureValheim.Progression
                 return;
             }
 
-            for (int lcv = 0; lcv < attacks.Length; lcv++)
+            for (int lcv = 0; lcv < attacks.Count; lcv++)
             {
                 var item = attacks[lcv].GetComponent<ItemDrop>();
                 if (item == null)
