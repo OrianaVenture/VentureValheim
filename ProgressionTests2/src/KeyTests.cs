@@ -14,12 +14,19 @@ namespace VentureValheim.ProgressionTests
                 AllowedGlobalKeys = manager.AllowedGlobalKeys;
                 BlockedGlobalKeysList = manager.BlockedGlobalKeysList;
                 AllowedGlobalKeysList = manager.AllowedGlobalKeysList;
+
+                BlockedPrivateKeys = manager.BlockedPrivateKeys;
+                AllowedPrivateKeys = manager.AllowedPrivateKeys;
+                BlockedPrivateKeysList = manager.BlockedPrivateKeysList;
+                AllowedPrivateKeysList = manager.AllowedPrivateKeysList;
                 PrivateKeysList = manager.PrivateKeysList;
             }
 
             public void UpdateGlobalKeyConfigurationTest(string a, string b) => UpdateGlobalKeyConfiguration(a, b);
+            public void UpdatePrivateKeyConfigurationTest(string a, string b) => UpdatePrivateKeyConfiguration(a, b);
             public int CountPrivateBossKeysTest() => CountPrivateBossKeys();
             public bool SetFilePathsTest(string path) => SetFilePaths(path);
+            public bool PrivateKeyIsBlockedTest(string key) => PrivateKeyIsBlocked(key);
             protected override bool HasGlobalKey(string key)
             {
                 return true;
@@ -37,7 +44,7 @@ namespace VentureValheim.ProgressionTests
             return new TestKeyManager(mockManager.Object);
         }
 
-        private TestKeyManager Setup(string a, string b)
+        private TestKeyManager Setup(string a, string b, string c, string d)
         {
             var mockManager = new Mock<IKeyManager>();
             mockManager.Setup(x => x.BlockedGlobalKeys).Returns(a);
@@ -46,6 +53,13 @@ namespace VentureValheim.ProgressionTests
             var set2 = ProgressionAPI.Instance.StringToSet(b);
             mockManager.Setup(x => x.BlockedGlobalKeysList).Returns(set1);
             mockManager.Setup(x => x.AllowedGlobalKeysList).Returns(set2);
+
+            mockManager.Setup(x => x.BlockedPrivateKeys).Returns(c);
+            mockManager.Setup(x => x.AllowedPrivateKeys).Returns(d);
+            var set3 = ProgressionAPI.Instance.StringToSet(c);
+            var set4 = ProgressionAPI.Instance.StringToSet(d);
+            mockManager.Setup(x => x.BlockedPrivateKeysList).Returns(set3);
+            mockManager.Setup(x => x.AllowedPrivateKeysList).Returns(set4);
 
             return new TestKeyManager(mockManager.Object);
         }
@@ -57,7 +71,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData(string3, "")]
         public void BlockGlobalKey_BlockAll(string a, string b)
         {
-            var keyManager = Setup(a, b);
+            var keyManager = Setup(a, b, "", "");
 
             Assert.True(keyManager.BlockGlobalKey(true, "random_string"));
             Assert.True(keyManager.BlockGlobalKey(true, "killedTroll"));
@@ -69,7 +83,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData("", string3)]
         public void BlockGlobalKey_BlockAllAllowedList(string a, string b)
         {
-            var keyManager = Setup(a, b);
+            var keyManager = Setup(a, b, "", "");
 
             Assert.True(keyManager.BlockGlobalKey(true, "random_string"));
             Assert.False(keyManager.BlockGlobalKey(true, "killedTroll"));
@@ -82,7 +96,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData("", string3)]
         public void BlockGlobalKey_BlockNone(string a, string b)
         {
-            var keyManager = Setup(a, b);
+            var keyManager = Setup(a, b, "", "");
 
             Assert.False(keyManager.BlockGlobalKey(false, "random_string"));
             Assert.False(keyManager.BlockGlobalKey(false, "killedTroll"));
@@ -94,7 +108,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData(string3, "")]
         public void BlockGlobalKey_BlockNoneBlockedList(string a, string b)
         {
-            var keyManager = Setup(a, b);
+            var keyManager = Setup(a, b, "", "");
 
             Assert.False(keyManager.BlockGlobalKey(false, "random_string"));
             Assert.True(keyManager.BlockGlobalKey(false, "killedTroll"));
@@ -103,7 +117,7 @@ namespace VentureValheim.ProgressionTests
         [Fact]
         public void BlockGlobalKey_BlockNullOrWhitespace()
         {
-            var keyManager = Setup(string3, string3);
+            var keyManager = Setup(string3, string3, "", "");
 
             Assert.True(keyManager.BlockGlobalKey(true, ""));
             Assert.True(keyManager.BlockGlobalKey(true, null));
@@ -111,13 +125,12 @@ namespace VentureValheim.ProgressionTests
             Assert.True(keyManager.BlockGlobalKey(false, null));
         }
 
-
         [Theory]
         [InlineData(string1, string2)]
         [InlineData(string2, string1)]
         public void UpdateGlobalKeyConfiguration_Update(string a, string b)
         {
-            var keyManager = Setup("", "");
+            var keyManager = Setup("", "", "", "");
             keyManager.UpdateGlobalKeyConfigurationTest(a, b);
 
             var set1 = ProgressionAPI.Instance.StringToSet(a);
@@ -178,6 +191,82 @@ namespace VentureValheim.ProgressionTests
             Assert.False(keyManager.SetFilePathsTest(""));
             Assert.True(keyManager.SetFilePathsTest("APathThatExists"));
             Assert.True(keyManager.SetFilePathsTest(""));
+        }
+
+        [Theory]
+        [InlineData("", string1)]
+        [InlineData("", string2)]
+        [InlineData("", string3)]
+        public void BlockPrivateKey_AllowedList(string a, string b)
+        {
+            var keyManager = Setup("", "", a, b);
+
+            Assert.True(keyManager.PrivateKeyIsBlockedTest("random_string"));
+            Assert.False(keyManager.PrivateKeyIsBlockedTest("killedTroll"));
+        }
+
+        [Theory]
+        [InlineData(string1, "")]
+        [InlineData(string2, "")]
+        [InlineData(string3, "")]
+        [InlineData(string3, string1)]
+        [InlineData(string3, string2)]
+        [InlineData(string3, string3)]
+        public void BlockPrivateKey_BlockedList(string a, string b)
+        {
+            var keyManager = Setup("", "", a, b);
+
+            Assert.False(keyManager.PrivateKeyIsBlockedTest("random_string"));
+            Assert.True(keyManager.PrivateKeyIsBlockedTest("killedTroll"));
+        }
+
+        [Fact]
+        public void BlockPrivateKey_BlockNullOrWhitespace()
+        {
+            var keyManager = Setup("", "", "", "");
+
+            Assert.True(keyManager.PrivateKeyIsBlockedTest(""));
+            Assert.True(keyManager.PrivateKeyIsBlockedTest(null));
+        }
+
+        [Theory]
+        [InlineData(string1, string2)]
+        [InlineData(string2, string1)]
+        public void UpdatePrivateKeyConfiguration_Update(string a, string b)
+        {
+            var keyManager = Setup("", "", "", "");
+            keyManager.UpdatePrivateKeyConfigurationTest(a, b);
+
+            var set1 = ProgressionAPI.Instance.StringToSet(a);
+            var set2 = ProgressionAPI.Instance.StringToSet(b);
+
+            Assert.Equal(a, keyManager.BlockedPrivateKeys);
+            Assert.Equal(b, keyManager.AllowedPrivateKeys);
+            Assert.Equal(set1, keyManager.BlockedPrivateKeysList);
+            Assert.Equal(set2, keyManager.AllowedPrivateKeysList);
+        }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData(string1, string1)]
+        [InlineData(string2, string2)]
+        public void UpdatePrivateKeyConfiguration_NoUpdate(string a, string b)
+        {
+            var mockManager = new Mock<IKeyManager>();
+            mockManager.SetupGet(x => x.BlockedPrivateKeys).Returns(a);
+            mockManager.SetupGet(x => x.AllowedPrivateKeys).Returns(b);
+            var set3 = ProgressionAPI.Instance.StringToSet("Test1,Test2,Test3");
+            mockManager.SetupGet(x => x.BlockedPrivateKeysList).Returns(set3);
+            mockManager.SetupGet(x => x.AllowedPrivateKeysList).Returns(set3);
+
+            var keyManager = new TestKeyManager(mockManager.Object);
+
+            keyManager.UpdatePrivateKeyConfigurationTest(a, b);
+
+            Assert.Equal(a, keyManager.BlockedPrivateKeys);
+            Assert.Equal(b, keyManager.AllowedPrivateKeys);
+            Assert.Equal(set3, keyManager.BlockedPrivateKeysList);
+            Assert.Equal(set3, keyManager.AllowedPrivateKeysList);
         }
     }
 }
