@@ -119,7 +119,7 @@ namespace VentureValheim.Progression
             var time = Time.time;
             var delta = time - _lastUpdateTime;
 
-            if (delta  > _updateInterval)
+            if (delta  >= _updateInterval)
             {
                 UpdateConfigs(delta);
                 _cachedPublicBossKeys = CountPublicBossKeys();
@@ -869,10 +869,13 @@ namespace VentureValheim.Progression
                 ProgressionPlugin.VentureProgressionLogger.LogInfo("Starting Player Key Management. Cleaning up private keys!");
 
                 Instance.ResetPlayer();
+                Instance.UpdateConfigs(0f);
+
+                HashSet<string> loadedKeys = new HashSet<string>();
 
                 if (__instance.m_customData.ContainsKey(PLAYER_SAVE_KEY))
                 {
-                    Instance.PrivateKeysList = ProgressionAPI.Instance.StringToSet(__instance.m_customData[PLAYER_SAVE_KEY]);
+                    loadedKeys = ProgressionAPI.Instance.StringToSet(__instance.m_customData[PLAYER_SAVE_KEY]);
                 }
                 else
                 {
@@ -880,15 +883,15 @@ namespace VentureValheim.Progression
                     var profile = Game.instance.GetPlayerProfile();
                     if (Instance.SetFilePaths(profile.GetPath()))
                     {
-                        Instance.PrivateKeysList = Instance.LoadFile(profile.m_fileSource);
+                        loadedKeys = Instance.LoadFile(profile.m_fileSource);
                     }
                 }
 
-                foreach (var key in Instance.PrivateKeysList)
+                foreach (var key in loadedKeys)
                 {
-                    if (Instance.BlockPrivateKey(key))
+                    if (!Instance.BlockPrivateKey(key))
                     {
-                        Instance.PrivateKeysList.Remove(key);
+                        Instance.PrivateKeysList.Add(key);
                     }
                 }
 

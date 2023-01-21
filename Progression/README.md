@@ -170,6 +170,10 @@ Examples (Will update this for first official release):
 
 ## Changelog
 
+### 0.0.20
+
+* Fixed an issue with private key cleanup that would crash the game on player spawn.
+
 ### 0.0.19
 
 * Depreciated use of the additional file for saving private player keys, saves to the main player file now. If using the previous version you can expect your keys to update to the new system and the file will be automatically deleted. Support for the upgrade will be removed in the future.
