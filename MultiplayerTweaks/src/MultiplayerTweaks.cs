@@ -139,13 +139,13 @@ namespace VentureValheim.MultiplayerTweaks
             }
         }
 
-        [HarmonyPriority(Priority.Last)]
         [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
         public static class Patch_Player_OnSpawned
         {
             /// <summary>
             /// Disables the Valkrie on first spawn.
             /// </summary>
+            [HarmonyPriority(Priority.Last)]
             private static void Prefix(Player __instance)
             {
                 if (!MultiplayerTweaksPlugin.GetEnableValkrie())
@@ -155,13 +155,20 @@ namespace VentureValheim.MultiplayerTweaks
             }
 
             /// <summary>
-            /// Set the Player position as public or private if overriden.
+            /// Set the Player position as public or private if overridden.
+            /// Set the PVP option if overridden.
             /// </summary>
-            private static void Postfix()
+            private static void Postfix(Player __instance)
             {
                 if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins())
                 {
                     ZNet.instance.SetPublicReferencePosition(MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn());
+                }
+
+                if (MultiplayerTweaksPlugin.GetOverridePlayerPVP())
+                {
+                    __instance.m_pvp = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
+                    InventoryGui.instance.m_pvp.isOn = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
                 }
             }
         }
@@ -227,7 +234,7 @@ namespace VentureValheim.MultiplayerTweaks
         }
 
         /// <summary>
-        /// Skips Player map pins updates if overriden and configured always off.
+        /// Skips Player map pins updates if overridden and configured always off.
         /// </summary>
         [HarmonyPriority(Priority.Last)]
         [HarmonyPatch(typeof(Minimap), nameof(Minimap.UpdatePlayerPins))]
@@ -245,7 +252,7 @@ namespace VentureValheim.MultiplayerTweaks
         }
 
         /// <summary>
-        /// Disable the Player map pin toggle if overriden.
+        /// Disable the Player map pin toggle if overridden.
         /// </summary>
         [HarmonyPriority(Priority.Last)]
         [HarmonyPatch(typeof(Minimap), nameof(Minimap.OnTogglePublicPosition))]
@@ -259,6 +266,75 @@ namespace VentureValheim.MultiplayerTweaks
                 }
 
                 return true; // Continue
+            }
+        }
+
+        [HarmonyPatch(typeof(Game), nameof(Game.FindSpawnPoint))]
+        public static class Patch_Game_FindSpawnPoint
+        {
+            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                var codes = new List<CodeInstruction>(instructions);
+                for (var lcv = 0; lcv < codes.Count; lcv++)
+                {
+                    if (codes[lcv].opcode == OpCodes.Callvirt)
+                    {
+                        var method = AccessTools.Method(typeof(ZoneSystem), nameof(ZoneSystem.GetLocationIcon));
+                        if (codes[lcv].operand.Equals(method))
+                        {
+                            var methodCall = AccessTools.Method(typeof(MultiplayerTweaks), nameof(MultiplayerTweaks.GetCustomSpawnPoint));
+                            codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
+                            break;
+                        }
+                    }
+                }
+
+                return codes.AsEnumerable();
+            }
+        }
+
+        private static void GetCustomSpawnPoint(string iconname, out Vector3 position)
+        {
+            var point = MultiplayerTweaksPlugin.GetPlayerDefaultSpawnPoint();
+            if (!point.IsNullOrWhiteSpace())
+            {
+                var coordinates = point.Split(',');
+                if (coordinates.Length == 2)
+                {
+                    try
+                    {
+                        float x = float.Parse(coordinates[0]);
+                        float z = float.Parse(coordinates[1]);
+                        if (ZoneSystem.instance.GetGroundHeight(new Vector3(x, 0, z), out var height))
+                        {
+                            position = new Vector3(x, height + 2f, z);
+                            MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogDebug($"Spawning at position: {x}, {height}, {z}.");
+                            return;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError("Error setting the new spawn point. Check your configuration for formatting issues.");
+                        MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError(e);
+                    }
+                }
+            }
+
+            position = Vector3.zero;
+        }
+
+        /// <summary>
+        /// Method used to set the interactable part on the PVP UI toggle.
+        /// </summary>
+        [HarmonyPatch(typeof(Player), nameof(Player.CanSwitchPVP))]
+        public static class Patch_Player_CanSwitchPVP
+        {
+            private static void Postfix(ref bool __result)
+            {
+                if (MultiplayerTweaksPlugin.GetOverridePlayerPVP())
+                {
+                    __result = false;
+                }
             }
         }
     }

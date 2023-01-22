@@ -8,13 +8,19 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 
 ## Features
 
-* Ability to set the maximum player count for servers.
+* Set the maximum player count for servers.
+* Set the default spawn point for all Players.
 * Toggle Valkyrie opening cut scene.
 * Toggle Hugin tutorials (client side config).
 * Toggle or customize the "I have arrived!" message on new player connection.
 * Toggle the Haldor trader Map Pin.
-* Force Player Map Pins always on or off.
+* Toggle Player Map Positions always on or off.
+* Toggle PVP always on or off.
 * ServerSync included.
+
+### Player Default Spawn Point
+
+Set the PlayerDefaultSpawnPoint by entering an x,z pair (for example: 20.5, -80.7), or leave this config blank to use the default start location. This mod will calculate the y position for you based on the ground height at the location. To get your player's current position in game you can use the vanilla "pos" command, which will return your position in an x,y,z format (for example 20.5, 5.3, -80.7). This is the location the game will use when spawning new players, or respawning dead players with no bed point.
 
 ### Hugin Tutorials
 
@@ -30,23 +36,26 @@ This mod gives you the ability to customize the arrival message, or turn it off 
 
 This mod gives you the ability to block the Haldor trader map pin from showing on the map. This feature is flexible and can be disabled or enabled at any time. If disabled (EnableHaldorMapPin = false) the pin will not show for all players when the Haldor trader is discovered. Useful for keeping the location of Haldor a secret until you choose to reveal it!
 
-### Player Map Pins
+### Player Map Pin Position
 
-Force player map pins always on or always off. To use set OverridePlayerMapPins to True.
+Force player map position icons always on or always off. To use set OverridePlayerMapPins to True. Disables the toggle in the minimap.
+
+### Player VS Player
+
+Gives you the ability to force PVP always on or always off. Disables the toggle in the UI. Live changes to the configs will not apply until a player respawns/relogs. Remember if PVP is off you cannot kill tames without the butcher knife!
 
 ## Changelog
+
+### 0.4.0
+
+* Reworked/Reworded all of the configs, changed the default settings to match vanilla. You will have to update your config file!! Delete the old one and generate a new one by launching the game once.
+* Added ability to set the default spawn point of Players.
+* Added ability to enforce PVP on or off.
+* Update ServerSync to version 1.13 for game patch 0.212.9
 
 ### 0.3.2
 
 * ServerSync patch for game patch 0.211.11.
-
-### 0.3.1
-
-* Fixed a server sync issue for new player map pin feature not syncing on first connection.
-
-### 0.3.0
-
-* Upgraded ServerSync to V1.11: Crossplay compatibility upgrade for config sync.
 
 ### 0.3.1
 

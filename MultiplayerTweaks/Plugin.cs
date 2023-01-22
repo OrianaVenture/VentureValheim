@@ -13,7 +13,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.3.2";
+        private const string ModVersion = "0.4.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -39,6 +39,9 @@ namespace VentureValheim.MultiplayerTweaks
         internal static ConfigEntry<string> CE_OverrideArrivalMessage = null!;
         internal static ConfigEntry<bool> CE_OverridePlayerMapPins = null!;
         internal static ConfigEntry<bool> CE_ForcePlayerMapPinsOn = null!;
+        internal static ConfigEntry<string> CE_PlayerDefaultSpawnPoint = null!;
+        internal static ConfigEntry<bool> CE_OverridePlayerPVP = null!;
+        internal static ConfigEntry<bool> CE_ForcePlayerPVPOn = null!;
 
         public static int GetMaximumPlayers() => CE_MaximumPlayers.Value;
         public static bool GetEnableValkrie() => CE_EnableValkrie.Value;
@@ -49,6 +52,9 @@ namespace VentureValheim.MultiplayerTweaks
         public static string GetOverrideArrivalMessage() => CE_OverrideArrivalMessage.Value;
         public static bool GetOverridePlayerMapPins() => CE_OverridePlayerMapPins.Value;
         public static bool GetForcePlayerMapPinsOn() => CE_ForcePlayerMapPinsOn.Value;
+        public static string GetPlayerDefaultSpawnPoint() => CE_PlayerDefaultSpawnPoint.Value;
+        public static bool GetOverridePlayerPVP() => CE_OverridePlayerPVP.Value;
+        public static bool GetForcePlayerPVPOn() => CE_ForcePlayerPVPOn.Value;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
@@ -71,7 +77,8 @@ namespace VentureValheim.MultiplayerTweaks
             #region Configuration
 
             const string general = "General";
-            const string pins = "Pins";
+            const string map = "Map";
+            const string arrival = "Arrival";
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean).",
                 true, true, ref CE_ServerConfigLocked);
@@ -79,24 +86,31 @@ namespace VentureValheim.MultiplayerTweaks
 
             AddConfig("Enabled", general,"Enable module (boolean).",
                 true, true, ref CE_ModEnabled);
-            AddConfig("MaximumPlayers", general, "Maximum Players for Server (integer).",
+            AddConfig("MaximumPlayers", general, "Maximum Players for the Server (integer).",
                 true, 10, ref CE_MaximumPlayers);
-            AddConfig("EnableValkrie", general, "Enable Valkrie Intro (boolean).",
-                true, false, ref CE_EnableValkrie);
-            AddConfig("EnableHugin", general, "Enable Hugin tutorials (boolean).",
+            AddConfig("EnableHugin", general, "True to enable Hugin tutorials (boolean).",
                 false, true, ref CE_EnableHuginTutorials);
-            AddConfig("EnableArrivalMessage", general, "Enable Arrival Message on new server connection (boolean).",
-                true, false, ref CE_EnableArrivalMessage);
-            AddConfig("UseArrivalShout", general, "True to Shout arrival message, False to use Normal message (boolean).",
-                true, false, ref CE_EnableArrivalMessageShout);
-            AddConfig("OverrideArrivalMessage", general, "Override arrival message, leave blank to use default (string).",
+            AddConfig("OverridePlayerPVP", general, "Override Player pvp behavior (boolean).",
+                true, false, ref CE_OverridePlayerPVP);
+            AddConfig("ForcePlayerPVPOn", general, "True to set pvp always on when OverridePlayerPVP is True (boolean).",
+                true, true, ref CE_ForcePlayerPVPOn);
+
+            AddConfig("PlayerDefaultSpawnPoint", arrival, "Coordinates for the default player spawn point (x,z) no parentheses, leave empty to use game default (comma-separated floats).",
+                true, "", ref CE_PlayerDefaultSpawnPoint);
+            AddConfig("EnableValkrie", arrival, "True to enable Valkrie Intro (boolean).",
+                true, true, ref CE_EnableValkrie);
+            AddConfig("EnableArrivalMessage", arrival, "True to enable Arrival Message on player login (boolean).",
+                true, true, ref CE_EnableArrivalMessage);
+            AddConfig("UseArrivalShout", arrival, "False to use a Normal message when EnableArrivalMessage is True (boolean).",
+                true, true, ref CE_EnableArrivalMessageShout);
+            AddConfig("OverrideArrivalMessage", arrival, "Set a new arrival message, leave blank to use default (string).",
                 true, "", ref CE_OverrideArrivalMessage);
 
-            AddConfig("EnableHaldorMapPin", pins, "Enable Haldor map pin on Minimap (boolean).",
-                true, false, ref CE_EnableHaldorMapPin);
-            AddConfig("OverridePlayerMapPins", pins, "Override Player map pins behavior for Minimap (boolean).",
+            AddConfig("EnableHaldorMapPin", map, "True to allow Haldor map pin on Minimap (boolean).",
+                true, true, ref CE_EnableHaldorMapPin);
+            AddConfig("OverridePlayerMapPositions", map, "Override Player map pin position behavior for Minimap (boolean).",
                 true, false, ref CE_OverridePlayerMapPins);
-            AddConfig("ForcePlayerMapPinsOn", pins, "True to always show Player map pins on Minimap, False to always hide (boolean).",
+            AddConfig("ForcePlayerMapPositionOn", map, "True to always show Player position on Minimap when OverridePlayerMapPositions is True (boolean).",
                 true, true, ref CE_ForcePlayerMapPinsOn);
 
             #endregion
