@@ -35,9 +35,14 @@ ServerSync is included with this mod.
 
 ## Changelog
 
+### 0.1.2
+
+* Patch for object deletion to hopefully solve a multiplayer deletion issue.
+
 ### 0.1.1
 
 * Added a new config option SkipPlayerGroundPieceCheck
+* Please note I forgot to bump the version number for this release.
 
 ### 0.1.0
 

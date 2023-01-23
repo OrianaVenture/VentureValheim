@@ -189,7 +189,6 @@ namespace VentureValheim.LocationReset
                     if (netView != null)
                     {
                         netView.GetZDO()?.SetOwner(ZDOMan.instance.GetMyID());
-                        netView.Destroy();
                     }
 
                     ZNetScene.instance.Destroy(obj);
