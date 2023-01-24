@@ -98,7 +98,7 @@ namespace VentureValheim.MultiplayerTweaks
                     if (codes[lcv].opcode == OpCodes.Callvirt)
                     {
                         var method = AccessTools.Method(typeof(Chat), nameof(Chat.SendText));
-                        if (codes[lcv].operand.Equals(method))
+                        if (codes[lcv].operand?.Equals(method) ?? false)
                         {
                             codes[lcv - 3].opcode = OpCodes.Nop;
                             codes[lcv - 2].opcode = OpCodes.Nop;
@@ -208,7 +208,7 @@ namespace VentureValheim.MultiplayerTweaks
                     if (codes[lcv].opcode == OpCodes.Ldc_I4_S)
                     {
                         var method = AccessTools.Method(typeof(ZNet), nameof(ZNet.GetNrOfPlayers));
-                        if (codes[lcv - 1].operand.Equals(method))
+                        if (codes[lcv - 1].operand?.Equals(method) ?? false)
                         {
                             var methodCall = AccessTools.Method(typeof(MultiplayerTweaks), nameof(MultiplayerTweaks.GetMaximumPlayers));
                             codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
@@ -280,7 +280,7 @@ namespace VentureValheim.MultiplayerTweaks
                     if (codes[lcv].opcode == OpCodes.Callvirt)
                     {
                         var method = AccessTools.Method(typeof(ZoneSystem), nameof(ZoneSystem.GetLocationIcon));
-                        if (codes[lcv].operand.Equals(method))
+                        if (codes[lcv].operand?.Equals(method) ?? false)
                         {
                             var methodCall = AccessTools.Method(typeof(MultiplayerTweaks), nameof(MultiplayerTweaks.GetCustomSpawnPoint));
                             codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);

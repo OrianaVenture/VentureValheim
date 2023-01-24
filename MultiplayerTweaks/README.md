@@ -46,6 +46,10 @@ Gives you the ability to force PVP always on or always off. Disables the toggle 
 
 ## Changelog
 
+### 0.4.1
+
+* Fixed a compatibility issue with other mods that patch the maximum player count. You should no longer see errors, but if using another mod that patches player count you may get unexpected results (OdinsQOL, Valheim Plus, MaxPlayerCount, etc).
+
 ### 0.4.0
 
 * Reworked/Reworded all of the configs, changed the default settings to match vanilla. You will have to update your config file!! Delete the old one and generate a new one by launching the game once.
