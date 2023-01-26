@@ -4,7 +4,7 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Commonly requested tweaks for servers and single player modes. Toggle the Valkyrie, Hugin tutorials, arrival messages, Haldor map pin, and more!
+Commonly requested tweaks for servers and single player modes. Toggle the Valkyrie, Hugin tutorials, arrival messages, Haldor map pin, PVP options, and more!
 
 ## Features
 
@@ -16,6 +16,7 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 * Toggle the Haldor trader Map Pin.
 * Toggle Player Map Positions always on or off.
 * Toggle PVP always on or off.
+* Toggle teleporting on a PVP death.
 * ServerSync included.
 
 ### Player Default Spawn Point
@@ -42,9 +43,14 @@ Force player map position icons always on or always off. To use set OverridePlay
 
 ### Player VS Player
 
-Gives you the ability to force PVP always on or always off. Disables the toggle in the UI. Live changes to the configs will not apply until a player respawns/relogs. Remember if PVP is off you cannot kill tames without the butcher knife!
+Gives you the ability to force PVP always on or always off (OverridePlayerPVP must be set to true, then uses the value of ForcePlayerPVPOn). Disables the toggle in the UI. Live changes to the configs will not apply until a player respawns/relogs. Remember if PVP is off you cannot kill tames without the butcher knife! You also have the option to turn off teleporting to your bed (or default spawn point) when another player kills you (set TeleportOnPVPDeath to false). Useful for roleplaying situations. Playing with friends and one of them is about to die? Just slap them across the face to pull them back into reality, don't let their spirit wander, the time to fight is here and now!
 
 ## Changelog
+
+### 0.4.2
+
+* Added ability to prevent teleporting on a PVP death
+* Bug fix for the PVP toggle not working when the override was disabled
 
 ### 0.4.1
 

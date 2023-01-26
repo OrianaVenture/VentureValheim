@@ -19,6 +19,30 @@ namespace VentureValheim.MultiplayerTweaks
             get => _instance;
         }
 
+        private bool _lastHitByPlayer = false;
+
+        /// <summary>
+        /// Checks if any connected player has the given id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public bool IsPlayer(ZDOID id)
+        {
+            if (id != null && !id.IsNone() && Player.m_players != null)
+            {
+                var players = Player.m_players;
+                for (int lcv = 0; lcv < players.Count; lcv++)
+                {
+                    if (players[lcv].GetZDOID().Equals(id))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Removes any Haldor locations from the icons list for a zone.
         /// This ensures they are not added to the player minimap.
@@ -167,6 +191,7 @@ namespace VentureValheim.MultiplayerTweaks
 
                 if (MultiplayerTweaksPlugin.GetOverridePlayerPVP())
                 {
+                    __instance.m_nview?.GetZDO()?.Set("pvp", MultiplayerTweaksPlugin.GetForcePlayerPVPOn());
                     __instance.m_pvp = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
                     InventoryGui.instance.m_pvp.isOn = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
                 }
@@ -269,6 +294,9 @@ namespace VentureValheim.MultiplayerTweaks
             }
         }
 
+        /// <summary>
+        /// Replace the ZoneSystem.GetLocationIcon method call with GetCustomSpawnPoint.
+        /// </summary>
         [HarmonyPatch(typeof(Game), nameof(Game.FindSpawnPoint))]
         public static class Patch_Game_FindSpawnPoint
         {
@@ -334,6 +362,46 @@ namespace VentureValheim.MultiplayerTweaks
                 if (MultiplayerTweaksPlugin.GetOverridePlayerPVP())
                 {
                     __result = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Records if the last hit done to the local player was by another player.
+        /// </summary>
+        [HarmonyPatch(typeof(Player), nameof(Player.OnDamaged))]
+        public static class Patch_Player_OnDamaged
+        {
+            private static void Postfix(HitData hit)
+            {
+                if (!MultiplayerTweaksPlugin.GetTeleportOnPVPDeath())
+                {
+                    if (Instance.IsPlayer(hit.m_attacker))
+                    {
+                        Instance._lastHitByPlayer = true;
+                    }
+                    else
+                    {
+                        Instance._lastHitByPlayer = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The game checks for a logout point first when respawning, set this value here.
+        /// </summary>
+        [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.SetDeathPoint))]
+        public static class Patch_PlayerProfile_SetDeathPoint
+        {
+            private static void Postfix(PlayerProfile __instance, Vector3 point)
+            {
+                if (!MultiplayerTweaksPlugin.GetTeleportOnPVPDeath())
+                {
+                    if (Instance._lastHitByPlayer)
+                    {
+                        __instance.SetLogoutPoint(point);
+                    }
                 }
             }
         }

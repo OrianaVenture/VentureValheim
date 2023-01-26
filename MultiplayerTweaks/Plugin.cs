@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -13,7 +12,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.4.1";
+        private const string ModVersion = "0.4.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -42,6 +41,7 @@ namespace VentureValheim.MultiplayerTweaks
         internal static ConfigEntry<string> CE_PlayerDefaultSpawnPoint = null!;
         internal static ConfigEntry<bool> CE_OverridePlayerPVP = null!;
         internal static ConfigEntry<bool> CE_ForcePlayerPVPOn = null!;
+        internal static ConfigEntry<bool> CE_TeleportOnPVPDeath = null!;
 
         public static int GetMaximumPlayers() => CE_MaximumPlayers.Value;
         public static bool GetEnableValkrie() => CE_EnableValkrie.Value;
@@ -55,6 +55,7 @@ namespace VentureValheim.MultiplayerTweaks
         public static string GetPlayerDefaultSpawnPoint() => CE_PlayerDefaultSpawnPoint.Value;
         public static bool GetOverridePlayerPVP() => CE_OverridePlayerPVP.Value;
         public static bool GetForcePlayerPVPOn() => CE_ForcePlayerPVPOn.Value;
+        public static bool GetTeleportOnPVPDeath() => CE_TeleportOnPVPDeath.Value;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
@@ -94,6 +95,8 @@ namespace VentureValheim.MultiplayerTweaks
                 true, false, ref CE_OverridePlayerPVP);
             AddConfig("ForcePlayerPVPOn", general, "True to set pvp always on when OverridePlayerPVP is True (boolean).",
                 true, true, ref CE_ForcePlayerPVPOn);
+            AddConfig("TeleportOnPVPDeath", general, "False to respawn players at their graves on a PVP death (boolean).",
+                true, true, ref CE_TeleportOnPVPDeath);
 
             AddConfig("PlayerDefaultSpawnPoint", arrival, "Coordinates for the default player spawn point (x,z) no parentheses, leave empty to use game default (comma-separated floats).",
                 true, "", ref CE_PlayerDefaultSpawnPoint);
