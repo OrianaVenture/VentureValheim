@@ -21,7 +21,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.20";
+        private const string ModVersion = "0.0.21";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -41,6 +41,7 @@ namespace VentureValheim.Progression
         public static ConfigEntry<bool> CE_GenerateGameData = null!;
 
         // Progression Manager
+        public static ConfigEntry<string> CE_BlockedActionMessage = null!;
         public static ConfigEntry<bool> CE_BlockAllGlobalKeys = null!;
         public static ConfigEntry<string> CE_BlockedGlobalKeys = null!;
         public static ConfigEntry<string> CE_AllowedGlobalKeys = null!;
@@ -50,6 +51,11 @@ namespace VentureValheim.Progression
         public static ConfigEntry<string> CE_BlockedPrivateKeys = null!;
         public static ConfigEntry<string> CE_AllowedPrivateKeys = null!;
         public static ConfigEntry<bool> CE_UnlockAllHaldorItems = null!;
+        public static ConfigEntry<bool> CE_LockTaming = null!;
+        public static ConfigEntry<string> CE_OverrideLockTamingDefaults = null!;
+        public static ConfigEntry<bool> CE_LockGuardianPower = null!;
+        public static ConfigEntry<bool> CE_LockBossSummons = null!;
+        public static ConfigEntry<string> CE_OverrideLockBossSummonsDefaults = null!;
 
         // Skills Manager
         public static ConfigEntry<bool> CE_EnableSkillManager = null!;
@@ -108,6 +114,9 @@ namespace VentureValheim.Progression
             AddConfig("GenerateGameDataFiles", general, "Finds all items and creatures and creates data files in your config path for viewing only (boolean).",
                 false, false, ref CE_GenerateGameData);
 
+            AddConfig("BlockedActionMessage", keys,
+                "Generic blocked display message used in this mod (string).",
+                true, "The Gods Reject You", ref CE_BlockedActionMessage);
             AddConfig("BlockAllGlobalKeys", keys,
                 "True to stop all global keys from being added to the global list (boolean).",
                 true, true, ref CE_BlockAllGlobalKeys);
@@ -135,6 +144,21 @@ namespace VentureValheim.Progression
             AddConfig("UnlockAllHaldorItems", keys,
                 "True to remove the key check from Haldor entirely and unlock all items (boolean).",
                 true, false, ref CE_UnlockAllHaldorItems);
+            AddConfig("LockTaming", keys,
+                "True to lock the ability to tame creatures based on keys. Uses private key if enabled, global key if not (boolean).",
+                true, false, ref CE_LockTaming);
+            AddConfig("OverrideLockTamingDefaults", keys,
+                "Override keys needed to Tame creatures. Leave blank to use defaults (comma-separated prefab,key pairs).",
+                true, "", ref CE_OverrideLockTamingDefaults);
+            AddConfig("LockGuardianPower", keys,
+                "True to lock the ability to get and use guardian powers based on keys. Uses private key if enabled, global key if not (boolean).",
+                true, true, ref CE_LockGuardianPower);
+            AddConfig("LockBossSummons", keys,
+                "True to lock the ability to spawn bosses based on keys. Uses private key if enabled, global key if not (boolean).",
+                true, true, ref CE_LockBossSummons);
+            AddConfig("OverrideLockBossSummonsDefaults", keys,
+                "Override keys needed to summon bosses. Leave blank to use defaults (comma-separated prefab,key pairs).",
+                true, "", ref CE_OverrideLockBossSummonsDefaults);
 
             AddConfig("EnableSkillManager", skills,
                 "Enable the Skill Manager feature (boolean).",
@@ -242,6 +266,7 @@ namespace VentureValheim.Progression
         public bool GetGenerateGameData();
 
         // Key Manager
+        public string GetBlockedActionMessage();
         public bool GetBlockAllGlobalKeys();
         public string GetBlockedGlobalKeys();
         public string GetAllowedGlobalKeys();
@@ -251,6 +276,11 @@ namespace VentureValheim.Progression
         public string GetBlockedPrivateKeys();
         public string GetAllowedPrivateKeys();
         public bool GetUnlockAllHaldorItems();
+        public bool GetLockTaming();
+        public string GetOverrideLockTamingDefaults();
+        public bool GetLockGuardianPower();
+        public bool GetLockBossSummons();
+        public string GetOverrideLockBossSummonsDefaults();
 
         // Skills Manager
         public bool GetEnableSkillManager();
@@ -296,6 +326,7 @@ namespace VentureValheim.Progression
         public bool GetGenerateGameData() => ProgressionPlugin.CE_GenerateGameData.Value;
 
         // Key Manager
+        public string GetBlockedActionMessage() => ProgressionPlugin.CE_BlockedActionMessage.Value;
         public bool GetBlockAllGlobalKeys() => ProgressionPlugin.CE_BlockAllGlobalKeys.Value;
         public string GetBlockedGlobalKeys() => ProgressionPlugin.CE_BlockedGlobalKeys.Value;
         public string GetAllowedGlobalKeys() => ProgressionPlugin.CE_AllowedGlobalKeys.Value;
@@ -305,6 +336,11 @@ namespace VentureValheim.Progression
         public string GetBlockedPrivateKeys() => ProgressionPlugin.CE_BlockedPrivateKeys.Value;
         public string GetAllowedPrivateKeys() => ProgressionPlugin.CE_AllowedPrivateKeys.Value;
         public bool GetUnlockAllHaldorItems() => ProgressionPlugin.CE_UnlockAllHaldorItems.Value;
+        public bool GetLockTaming() => ProgressionPlugin.CE_LockTaming.Value;
+        public string GetOverrideLockTamingDefaults() => ProgressionPlugin.CE_OverrideLockTamingDefaults.Value;
+        public bool GetLockGuardianPower() => ProgressionPlugin.CE_LockGuardianPower.Value;
+        public bool GetLockBossSummons() => ProgressionPlugin.CE_LockBossSummons.Value;
+        public string GetOverrideLockBossSummonsDefaults() => ProgressionPlugin.CE_OverrideLockBossSummonsDefaults.Value;
 
         // Skills Manager
         public bool GetEnableSkillManager() => ProgressionPlugin.CE_EnableSkillManager.Value;

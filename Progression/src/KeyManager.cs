@@ -41,20 +41,77 @@ namespace VentureValheim.Progression
             get => _instance as KeyManager;
         }
 
+        private KeyManagerUpdater _keyManagerUpdater;
+
+        /// <summary>
+        /// Updates class data if chached values have expired.
+        /// </summary>
+        public class KeyManagerUpdater : MonoBehaviour
+        {
+            private static float _lastUpdateTime = 0f;
+            private static readonly float _updateInterval = 10f;
+
+            public void Start()
+            {
+                Instance.UpdateConfigs();
+                _cachedPublicBossKeys = Instance.CountPublicBossKeys();
+                _cachedPrivateBossKeys = Instance.CountPrivateBossKeys();
+                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Starting Key Manager Updater.");
+            }
+
+            public void Update()
+            {
+                var time = Time.time;
+                var delta = time - _lastUpdateTime;
+
+                if (delta >= _updateInterval)
+                {
+                    Instance.UpdateConfigs();
+                    _cachedPublicBossKeys = Instance.CountPublicBossKeys();
+                    _cachedPrivateBossKeys = Instance.CountPrivateBossKeys();
+
+                    _lastUpdateTime = time;
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating cached Key Information: {delta} time passed.");
+                }
+            }
+        }
+
         public string BlockedGlobalKeys { get; protected set; }
         public string AllowedGlobalKeys { get; protected set; }
         public string BlockedPrivateKeys { get; protected set; }
         public string AllowedPrivateKeys { get; protected set; }
+        public string TamingKeys { get; protected set; }
+        public string SummoningKeys { get; protected set; }
         public HashSet<string> BlockedGlobalKeysList  { get; protected set; }
         public HashSet<string> AllowedGlobalKeysList  { get; protected set; }
         public HashSet<string> BlockedPrivateKeysList { get; protected set; }
         public HashSet<string> AllowedPrivateKeysList { get; protected set; }
+        public Dictionary<string, string> TamingKeysList { get; protected set; }
+        public Dictionary<string, string> SummoningKeysList { get; protected set; }
+
         public HashSet<string> PrivateKeysList { get; protected set; }
         public Dictionary<string, HashSet<string>> ServerPrivateKeysList { get; protected set; }
 
+        public const string BOSS_KEY_MEADOW = "defeated_eikthyr";
+        public const string BOSS_KEY_BLACKFOREST = "defeated_gdking";
+        public const string BOSS_KEY_SWAMP= "defeated_bonemass";
+        public const string BOSS_KEY_MOUNTAIN = "defeated_dragon";
+        public const string BOSS_KEY_PLAIN = "defeated_goblinking";
+        public const string BOSS_KEY_MISTLAND = "defeated_queen";
+
         public readonly string[] BossKeys = new string[TOTAL_BOSSES]
-            { "defeated_eikthyr", "defeated_gdking", "defeated_bonemass", "defeated_dragon", "defeated_goblinking", "defeated_queen" };
+            { BOSS_KEY_MEADOW, BOSS_KEY_BLACKFOREST, BOSS_KEY_SWAMP, BOSS_KEY_MOUNTAIN, BOSS_KEY_PLAIN, BOSS_KEY_MISTLAND };
         public const int TOTAL_BOSSES = 6;
+
+        public readonly Dictionary<string, string> GuardianKeysList = new Dictionary<string, string>
+        {
+            { "GP_Eikthyr", BOSS_KEY_MEADOW },
+            { "GP_TheElder", BOSS_KEY_BLACKFOREST },
+            { "GP_Bonemass" , BOSS_KEY_SWAMP },
+            { "GP_Moder" , BOSS_KEY_MOUNTAIN },
+            { "GP_Yagluth" , BOSS_KEY_PLAIN },
+            { "GP_Queen" , BOSS_KEY_MISTLAND }
+        };
 
         public const string RPCNAME_ServerSetPrivateKeys = "VV_ServerSetPrivateKeys";
         public const string RPCNAME_ServerSetPrivateKey = "VV_ServerSetPrivateKey";
@@ -70,9 +127,6 @@ namespace VentureValheim.Progression
         private static int _cachedPublicBossKeys = -1;
         private static int _cachedPrivateBossKeys = -1;
 
-        private static float _lastUpdateTime = 0f;
-        private static readonly float _updateInterval = 10f;
-
         protected void ResetPlayer()
         {
             BlockedGlobalKeys = "";
@@ -85,6 +139,10 @@ namespace VentureValheim.Progression
             BlockedPrivateKeysList = new HashSet<string>();
             AllowedPrivateKeysList = new HashSet<string>();
 
+            // Null if defaults need to be set
+            TamingKeys = null;
+            SummoningKeys = null;
+
             PrivateKeysList = new HashSet<string>();
 
             _filepath = "";
@@ -94,41 +152,20 @@ namespace VentureValheim.Progression
 
         public int GetPublicBossKeysCount()
         {
-            Update();
             return _cachedPublicBossKeys;
         }
 
         public int GetPrivateBossKeysCount()
         {
-            Update();
             return _cachedPrivateBossKeys;
         }
 
-        private void UpdateConfigs(float delta)
+        public void UpdateConfigs()
         {
             UpdateGlobalKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedGlobalKeys(), ProgressionConfiguration.Instance.GetAllowedGlobalKeys());
             UpdatePrivateKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedPrivateKeys(), ProgressionConfiguration.Instance.GetAllowedPrivateKeys());
-            ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating cached Key Information: {delta} time passed.");
-        }
-
-        /// <summary>
-        /// Updates class data if chached values have expired.
-        /// </summary>
-        private float Update()
-        {
-            var time = Time.time;
-            var delta = time - _lastUpdateTime;
-
-            if (delta  >= _updateInterval)
-            {
-                UpdateConfigs(delta);
-                _cachedPublicBossKeys = CountPublicBossKeys();
-                _cachedPrivateBossKeys = CountPrivateBossKeys();
-
-                _lastUpdateTime = time;
-            }
-
-            return delta;
+            UpdateTamingConfiguration(ProgressionConfiguration.Instance.GetOverrideLockTamingDefaults());
+            UpdateSummoningConfiguration(ProgressionConfiguration.Instance.GetOverrideLockBossSummonsDefaults());
         }
 
         /// <summary>
@@ -168,6 +205,51 @@ namespace VentureValheim.Progression
             {
                 AllowedPrivateKeys = allowedPrivateKeys;
                 AllowedPrivateKeysList = ProgressionAPI.Instance.StringToSet(allowedPrivateKeys);
+            }
+        }
+
+        protected void UpdateTamingConfiguration(string tamingString)
+        {
+            if (TamingKeys == null || !TamingKeys.Equals(tamingString))
+            {
+                TamingKeys = tamingString;
+
+                if (TamingKeys.IsNullOrWhiteSpace())
+                {
+                    TamingKeysList = new Dictionary<string, string>
+                    {
+                        { "Wolf", BOSS_KEY_SWAMP },
+                        { "Lox", BOSS_KEY_MOUNTAIN }
+                    };
+                }
+                else
+                {
+                    TamingKeysList = ProgressionAPI.Instance.StringToDictionary(tamingString);
+                }
+            }
+        }
+
+        protected void UpdateSummoningConfiguration(string summoningString)
+        {
+            if (SummoningKeys == null || !SummoningKeys.Equals(summoningString))
+            {
+                SummoningKeys = summoningString;
+
+                if (SummoningKeys.IsNullOrWhiteSpace())
+                {
+                    SummoningKeysList = new Dictionary<string, string>
+                    {
+                        { "gd_king", BOSS_KEY_MEADOW },
+                        { "Bonemass", BOSS_KEY_BLACKFOREST },
+                        { "Dragon" , BOSS_KEY_SWAMP },
+                        { "GoblinKing" , BOSS_KEY_MOUNTAIN },
+                        { "SeekerQueen" , BOSS_KEY_PLAIN },
+                    };
+                }
+                else
+                {
+                    SummoningKeysList = ProgressionAPI.Instance.StringToDictionary(summoningString);
+                }
             }
         }
 
@@ -282,6 +364,29 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
+        /// If using private keys returns whether the Player has unlocked the given key.
+        /// Otherwise returns whether the global key is unlocked.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool HasKey(string key)
+        {
+            if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
+            {
+                if (Instance.HasPrivateKey(key))
+                {
+                    return true;
+                }
+            }
+            else if (Instance.HasGlobalKey(key))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Returns whether the indicated player has the required keys for a random event.
         /// Random events are decided by the server.
         /// </summary>
@@ -307,6 +412,53 @@ namespace VentureValheim.Progression
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Returns whether the Player contains the necessary key for taming the specified creature,
+        /// or true if the configuration does not exist for the creature.
+        /// </summary>
+        /// <param name="creature"></param>
+        /// <returns></returns>
+        private bool HasTamingKey(string creature)
+        {
+            if (!creature.IsNullOrWhiteSpace() && TamingKeysList.ContainsKey(creature))
+            {
+                return HasKey(TamingKeysList[creature]);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns whether the Player contains the necessary key for summoning the specified creature,
+        /// or true if the configuration does not exist for the creature.
+        /// </summary>
+        /// <param name="creature"></param>
+        /// <returns></returns>
+        private bool HasSummoningKey(string creature)
+        {
+            if (!creature.IsNullOrWhiteSpace() && SummoningKeysList.ContainsKey(creature))
+            {
+                return HasKey(SummoningKeysList[creature]);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns whether the Player contains the necessary key for accepting a boss power.
+        /// </summary>
+        /// <param name="guardianPower"></param>
+        /// <returns></returns>
+        private bool HasGuardianKey(string guardianPower)
+        {
+            if (!guardianPower.IsNullOrWhiteSpace() && GuardianKeysList.ContainsKey(guardianPower))
+            {
+                return HasKey(GuardianKeysList[guardianPower]);
+            }
+
+            return false; // If there are other mods that add powers will need to revisit this
         }
 
         /// <summary>
@@ -354,6 +506,11 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         protected virtual bool HasGlobalKey(string key)
         {
+            if (key.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
             return ProgressionAPI.Instance.GetGlobalKey(key);
         }
 
@@ -760,7 +917,6 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Last)]
             private static bool Prefix(string name)
             {
-                Instance.Update();
                 if (Instance.BlockGlobalKey(ProgressionConfiguration.Instance.GetBlockAllGlobalKeys(), name))
                 {
                     ProgressionPlugin.VentureProgressionLogger.LogDebug($"Skipping adding global key: {name}.");
@@ -831,6 +987,12 @@ namespace VentureValheim.Progression
                     __instance.m_nview.Register(RPCNAME_SetPrivateKey, new Action<long, string>(Instance.RPC_SetPrivateKey));
                     __instance.m_nview.Register(RPCNAME_RemovePrivateKey, new Action<long, string>(Instance.RPC_RemovePrivateKey));
                     __instance.m_nview.Register(RPCNAME_ResetPrivateKeys, new Action<long>(Instance.RPC_ResetPrivateKeys));
+
+                    if (Instance._keyManagerUpdater == null)
+                    {
+                        var obj = GameObject.Instantiate(new GameObject());
+                        Instance._keyManagerUpdater = obj.AddComponent<KeyManagerUpdater>();
+                    }
                 }
             }
         }
@@ -869,7 +1031,7 @@ namespace VentureValheim.Progression
                 ProgressionPlugin.VentureProgressionLogger.LogInfo("Starting Player Key Management. Cleaning up private keys!");
 
                 Instance.ResetPlayer();
-                Instance.UpdateConfigs(0f);
+                Instance.UpdateConfigs();
 
                 HashSet<string> loadedKeys = new HashSet<string>();
 
@@ -912,6 +1074,9 @@ namespace VentureValheim.Progression
                 {
                     ProgressionPlugin.VentureProgressionLogger.LogInfo("Starting Server Key Management. Cleaning up public keys!");
 
+
+                    Instance.UpdateConfigs();
+
                     var keys = __instance.GetGlobalKeys();
                     var blockAll = ProgressionConfiguration.Instance.GetBlockAllGlobalKeys();
 
@@ -926,6 +1091,12 @@ namespace VentureValheim.Progression
                     ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKeys, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKeys));
                     ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKey, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKey));
                     ZRoutedRpc.instance.Register(RPCNAME_ServerRemovePrivateKey, new Action<long, string, string>(Instance.RPC_ServerRemovePrivateKey));
+
+                    if (Instance._keyManagerUpdater == null)
+                    {
+                        var obj = GameObject.Instantiate(new GameObject());
+                        Instance._keyManagerUpdater = obj.AddComponent<KeyManagerUpdater>();
+                    }
                 }
             }
         }
@@ -1121,6 +1292,104 @@ namespace VentureValheim.Progression
                         args.Context.AddString($"You are not the server, no data available.");
                     }
                 }, isCheat: true, isNetwork: false, onlyServer: true);
+            }
+        }
+
+        /// <summary>
+        /// Only increase taming if the player has the private key
+        /// </summary>
+        [HarmonyPatch(typeof(Tameable), nameof(Tameable.DecreaseRemainingTime))]
+        public static class Patch_Tameable_DecreaseRemainingTime
+        {
+            [HarmonyPriority(Priority.Last)]
+            private static bool Prefix(Tameable __instance)
+            {
+                if (ProgressionConfiguration.Instance.GetLockTaming() && __instance.m_character != null)
+                {
+                    if (!Instance.HasTamingKey(__instance.m_character.name))
+                    {
+                        return false; // Skip taming
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        private void ApplyBlockedActionEffects(Player player)
+        {
+            if (player != null)
+            {
+                player.GetSEMan()?.AddStatusEffect("Burning", resetTime: false);
+                player.Message(MessageHud.MessageType.Center, ProgressionConfiguration.Instance.GetBlockedActionMessage());
+            }
+        }
+
+        /// <summary>
+        /// Block getting guardian powers without the key.
+        /// </summary>
+        [HarmonyPatch(typeof(ItemStand), nameof(ItemStand.DelayedPowerActivation))]
+        public static class Patch_ItemStand_DelayedPowerActivation
+        {
+            [HarmonyPriority(Priority.Last)]
+            private static bool Prefix(ItemStand __instance)
+            {
+                if (ProgressionConfiguration.Instance.GetLockGuardianPower())
+                {
+                    if (!Instance.HasGuardianKey(__instance.m_guardianPower?.name))
+                    {
+                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                        return false; // Skip giving power
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Block activating guardian powers without the key if a Player already has one.
+        /// </summary>
+        [HarmonyPatch(typeof(Player), nameof(Player.ActivateGuardianPower))]
+        public static class Patch_Player_ActivateGuardianPower
+        {
+            [HarmonyPriority(Priority.Last)]
+            private static bool Prefix(Player __instance, ref bool __result)
+            {
+                if (!__instance.m_guardianPower.IsNullOrWhiteSpace() && ProgressionConfiguration.Instance.GetLockGuardianPower())
+                {
+                    if (!Instance.HasGuardianKey(__instance.m_guardianPower))
+                    {
+                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                        __result = false; // Not sure why they have a return type on this, watch for game changes
+                        return false; // Skip giving power
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Block the boss spawn when the player has not defeated the previous boss
+        /// </summary>
+        [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.SpawnBoss))]
+        public static class Patch_OfferingBowl_SpawnBoss
+        {
+            [HarmonyPriority(Priority.Last)]
+            private static bool Prefix(OfferingBowl __instance, ref bool __result)
+            {
+                if (ProgressionConfiguration.Instance.GetLockBossSummons() && __instance.m_bossPrefab != null)
+                {
+                    if (!Instance.HasSummoningKey(__instance.m_bossPrefab.name))
+                    {
+                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                        __result = false;
+                        return false; // Skip summoning
+                    }
+                }
+
+                return true;
             }
         }
 

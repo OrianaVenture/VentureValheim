@@ -261,7 +261,7 @@ namespace VentureValheim.Progression
                             var filePath = $"{path}{Path.DirectorySeparatorChar}{character.name}.json";
                             File.WriteAllText(filePath, JsonUtility.ToJson(character, true));
 
-                            var damages = character.m_defaultItems;
+                            var damages = character.m_defaultItems; // TODO update this
 
                             if (damages != null)
                             {
@@ -295,7 +295,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Converts a comma seperated string to a HashSet of strings.
+        /// Converts a comma separated string to a HashSet of strings.
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
@@ -313,6 +313,32 @@ namespace VentureValheim.Progression
             }
 
             return set;
+        }
+
+        /// <summary>
+        /// Converts a comma separated string to a Dictionary of strings.
+        /// If odd number of items ignores the last item.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public Dictionary<string, string> StringToDictionary(string str)
+        {
+            var dict = new Dictionary<string, string>();
+
+            if (!str.IsNullOrWhiteSpace())
+            {
+                List<string> keys = str.Split(',').ToList();
+                for (var lcv = 0; lcv < keys.Count - 1; lcv += 2)
+                {
+                    var key = keys[lcv].Trim();
+                    if (!dict.ContainsKey(key))
+                    {
+                        dict.Add(key, keys[lcv + 1].Trim());
+                    }
+                }
+            }
+
+            return dict;
         }
 
         /// <summary>

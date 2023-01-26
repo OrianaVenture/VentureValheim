@@ -24,10 +24,15 @@ What is a key and what is controlled by them? In vanilla Valheim there exists a 
 
 This mod also adds a private player key system in which data is saved to the character file. You can use this private key system to tailor game functionality to individuals rather than the vanilla default server-wide public keys. Gameplay will be altered when using private keys: The player that is hosting a loaded chunk will control the worldly spawns, and raids will only spawn on players when appropriate. For example, a player A with no keys that is in a base with a player B with all the boss keys can still get all those raids, but if player A is alone they should not get higher level raids. If player A loads and hosts an area and is later joined by player B, the area should not spawn the higher level monsters that become unlocked with keys. Private keys will be added to any player within a 100 meter range of the hosting player when the action occurs. For example, when a boss dies any player close enough to the chunk-hosting player should also get the private key, but a player online on the other side of the map will not get it.
 
+Taming can be locked by keys when enabled. By default Wolves are locked by the defeated_bonemass key and Lox are locked by the defeated_dragon key. You can override this by using the prefab name of the creature, allowing you to add support for content from other mods. When overriding you must define all the creatures since it will no longer include the defaults. When using private keys make sure the player who can tame the animals is the first to load the area since taming is controlled by the player hosting the chunk. You will still see taming hearts (for now), but if you check the taming status on the animals you will see the percentage no longer increases when blocked.
+
+Guardian Powers and Boss Alter Summoning can be locked too. By default summoning is locked the key given by the previous boss in the natural progression order. You can override this by using the prefab name of the creature the alter summons, allowing you to add support for content from other mods. When overriding you must define all the bosses manually (similar to the taming override). Additionally, these actions have a fun special effect on failure!
+
 When this mod is installed there will be a key "cleanup" performed for the server and any player who joins the game based off the mod configurations. When using the default settings you can expect all global keys to be cleared when you start up the server, resetting your server's key progress. When using private keys a similar principal applies, depending on your blocked or allowed key list, any keys that are not expected will be removed. If you see your keys resetting unexpectedly make sure to check your mod configuration is allowing the keys you want to exist. Any keys added manually will persist until the server is restarted (for private keys when the player logs back in), to ensure these keys remain after a restart you must check your mod configuration!
 
 #### Configuration Options
 
+* BlockedActionMessage: The message used in-game for certain actions when certain keys are blocked for players.
 * BlockAllGlobalKeys: Prevent/block public all keys from being added to the global list, set to false to use vanilla behavior
 * AllowedGlobalKeys: Allow only these keys being added to the global list when BlockAllGlobalKeys is true
 * BlockedGlobalKeys: Stop only these keys being added to the global list when BlockAllGlobalKeys is false
@@ -35,7 +40,12 @@ When this mod is installed there will be a key "cleanup" performed for the serve
 * BlockedPrivateKeys: Stop only these keys being added to the player's key list when UsePrivateKeys is true (use this or AllowedPrivateKeys)
 * AllowedPrivateKeys: Allow only these keys being added to the player's key list when UsePrivateKeys is true (use this or BlockedPrivateKeys, if the BlockedPrivateKeys has any values it will use that setting)
 * UnlockAllHaldorItems: If true bypasses the key check for haldor's items and unlocks everything
-* UseBossKeysForSkillLevel and BossKeysSkillPerKey explained under Skill Manager section below.
+* LockTaming: If true you can only tame certain creatures if you have the required key.
+* OverrideLockTamingDefaults: Define your own required keys to tame specific creatures or leave blank to use the defaults. Example: Boar, defeated_eikthyr, Wolf, defeated_dragon, Lox, defeated_goblinking
+* LockGuardianPower: If true locks the ability to get or use boss powers based on the required key.
+* LockBossSummons: If true you can only summon bosses based on the required key.
+* OverrideLockBossSummonsDefaults: Define your own required keys to summon bosses or leave blank to use the defaults. Example (also the mod defaults): gd_king, defeated_eikthyr, Bonemass, defeated_gdking, Dragon, defeated_bonemass, GoblinKing, defeated_dragon, SeekerQueen, defeated_goblinking
+* UseBossKeysForSkillLevel and BossKeysSkillPerKey explained under Skill Manager section below
 
 #### Vanilla Public Keys
 
@@ -169,6 +179,13 @@ Examples (Will update this for first official release):
 * To override Meadow's difficulty after it has been initialized: AddBiome(0, 8, true) or AddCustomBiome(0, 1.3, true)
 
 ## Changelog
+
+### 0.0.21
+
+* Added ability to lock taming creatures by keys.
+* Added ability to lock guardian powers by keys.
+* Added ability to lock Alter Summoning by keys.
+* Fixed a bug where the key configurations were not updating correctly internally unless you used certain settings.
 
 ### 0.0.20
 

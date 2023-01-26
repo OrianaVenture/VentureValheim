@@ -27,14 +27,33 @@ namespace VentureValheim.ProgressionTests
             set2.Add("killedTroll");
             set2.Add("killedBear");
             set2.Add("killed_Jesus");
-            var set3 = set2;
 
             Assert.Single(set1);
             Assert.Equal(set1, ProgressionAPI.Instance.StringToSet(string1));
             Assert.Equal(3, set2.Count);
             Assert.Equal(set2, ProgressionAPI.Instance.StringToSet(string2));
-            Assert.Equal(3, set3.Count);
-            Assert.Equal(set3, ProgressionAPI.Instance.StringToSet(string3));
+            Assert.Equal(3, set2.Count);
+            Assert.Equal(set2, ProgressionAPI.Instance.StringToSet(string3));
+        }
+
+        [Fact]
+        public void StringToDictionary_All()
+        {
+            string string1 = "Boar";
+            string string2 = "Boar,defeated_eikthyr,Wolf,defeated_dragon,Lox,defeated_goblinking";
+            string string3 = " Boar, defeated_eikthyr  ,  Wolf, defeated_dragon,   Lox, defeated_goblinking ";
+
+            var dict1 = new Dictionary<string, string>();
+            var dict2 = new Dictionary<string, string>();
+            dict2.Add("Boar", "defeated_eikthyr");
+            dict2.Add("Wolf", "defeated_dragon");
+            dict2.Add("Lox", "defeated_goblinking");
+
+            Assert.Equal(dict1, ProgressionAPI.Instance.StringToDictionary(string1));
+            Assert.Equal(3, dict2.Count);
+            Assert.Equal(dict2, ProgressionAPI.Instance.StringToDictionary(string2));
+            Assert.Equal(3, dict2.Count);
+            Assert.Equal(dict2, ProgressionAPI.Instance.StringToDictionary(string3));
         }
 
         [Theory]
