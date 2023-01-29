@@ -47,6 +47,13 @@ Gives you the ability to force PVP always on or always off (OverridePlayerPVP mu
 
 ## Changelog
 
+### 0.4.4
+
+* Fixed the previous patch throwing errors (I must have tested the wrong file, sorry about that)
+* Changed the get default spawn point logic to using the original spawn location on failure to find the custom spawn point.
+* Changed the internal return type of getting the custom maximum players (might have been causing issues?)
+* Note: Trying to fix compatibility issues with Valheim_PvP_Tweaks, there might be a few more patches coming.
+
 ### 0.4.3
 
 * Fix for last player hit not resetting after death so an aoe death would count as a pvp death

@@ -246,9 +246,9 @@ namespace VentureValheim.MultiplayerTweaks
             }
         }
 
-        private static sbyte GetMaximumPlayers()
+        private static int GetMaximumPlayers()
         {
-            sbyte number = (sbyte)MultiplayerTweaksPlugin.GetMaximumPlayers();
+            var number = MultiplayerTweaksPlugin.GetMaximumPlayers();
 
             if (number < 1)
             {
@@ -311,7 +311,7 @@ namespace VentureValheim.MultiplayerTweaks
                         if (codes[lcv].operand?.Equals(method) ?? false)
                         {
                             var methodCall = AccessTools.Method(typeof(MultiplayerTweaks), nameof(MultiplayerTweaks.GetCustomSpawnPoint));
-                            codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
+                            codes[lcv] = new CodeInstruction(OpCodes.Callvirt, methodCall);
                             break;
                         }
                     }
@@ -327,7 +327,7 @@ namespace VentureValheim.MultiplayerTweaks
         /// <param name="iconname"></param>
         /// <param name="position"></param>
         /// <returns></returns>
-        private static bool GetCustomSpawnPoint(string iconname, out Vector3 position)
+        private bool GetCustomSpawnPoint(string iconname, out Vector3 position)
         {
             var point = MultiplayerTweaksPlugin.GetPlayerDefaultSpawnPoint();
             if (!point.IsNullOrWhiteSpace())
@@ -354,8 +354,8 @@ namespace VentureValheim.MultiplayerTweaks
                 }
             }
 
-            position = Vector3.zero;
-            return false;
+            // Default to original behavior
+            return ZoneSystem.instance.GetLocationIcon(iconname, out position);
         }
 
         /// <summary>
