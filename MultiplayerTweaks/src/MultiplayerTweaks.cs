@@ -228,11 +228,11 @@ namespace VentureValheim.MultiplayerTweaks
             private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
             {
                 var codes = new List<CodeInstruction>(instructions);
+                var method = AccessTools.Method(typeof(ZNet), nameof(ZNet.GetNrOfPlayers));
                 for (var lcv = 1; lcv < codes.Count; lcv++)
                 {
                     if (codes[lcv].opcode == OpCodes.Ldc_I4_S)
                     {
-                        var method = AccessTools.Method(typeof(ZNet), nameof(ZNet.GetNrOfPlayers));
                         if (codes[lcv - 1].operand?.Equals(method) ?? false)
                         {
                             var methodCall = AccessTools.Method(typeof(MultiplayerTweaks), nameof(MultiplayerTweaks.GetMaximumPlayers));
@@ -303,11 +303,11 @@ namespace VentureValheim.MultiplayerTweaks
             private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
             {
                 var codes = new List<CodeInstruction>(instructions);
+                var method = AccessTools.Method(typeof(ZoneSystem), nameof(ZoneSystem.GetLocationIcon));
                 for (var lcv = 0; lcv < codes.Count; lcv++)
                 {
                     if (codes[lcv].opcode == OpCodes.Callvirt)
                     {
-                        var method = AccessTools.Method(typeof(ZoneSystem), nameof(ZoneSystem.GetLocationIcon));
                         if (codes[lcv].operand?.Equals(method) ?? false)
                         {
                             var methodCall = AccessTools.Method(typeof(MultiplayerTweaks), nameof(MultiplayerTweaks.GetCustomSpawnPoint));
@@ -321,7 +321,13 @@ namespace VentureValheim.MultiplayerTweaks
             }
         }
 
-        private static void GetCustomSpawnPoint(string iconname, out Vector3 position)
+        /// <summary>
+        /// Replacement method for ZoneSystem.GetLocationIcon
+        /// </summary>
+        /// <param name="iconname"></param>
+        /// <param name="position"></param>
+        /// <returns></returns>
+        private static bool GetCustomSpawnPoint(string iconname, out Vector3 position)
         {
             var point = MultiplayerTweaksPlugin.GetPlayerDefaultSpawnPoint();
             if (!point.IsNullOrWhiteSpace())
@@ -333,11 +339,11 @@ namespace VentureValheim.MultiplayerTweaks
                     {
                         float x = float.Parse(coordinates[0]);
                         float z = float.Parse(coordinates[1]);
-                        if (ZoneSystem.instance.GetGroundHeight(new Vector3(x, 0, z), out var height))
+                        if (ZoneSystem.instance.GetGroundHeight(new Vector3(x, 0f, z), out var height))
                         {
                             position = new Vector3(x, height + 2f, z);
                             MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogDebug($"Spawning at position: {x}, {height}, {z}.");
-                            return;
+                            return true;
                         }
                     }
                     catch (Exception e)
@@ -349,6 +355,7 @@ namespace VentureValheim.MultiplayerTweaks
             }
 
             position = Vector3.zero;
+            return false;
         }
 
         /// <summary>
@@ -401,6 +408,7 @@ namespace VentureValheim.MultiplayerTweaks
                     if (Instance._lastHitByPlayer)
                     {
                         __instance.SetLogoutPoint(point);
+                        Instance._lastHitByPlayer = false;
                     }
                 }
             }

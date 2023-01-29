@@ -47,6 +47,11 @@ Gives you the ability to force PVP always on or always off (OverridePlayerPVP mu
 
 ## Changelog
 
+### 0.4.3
+
+* Fix for last player hit not resetting after death so an aoe death would count as a pvp death
+* Patch for a transpiler method replacement not matching the original return type (might have caused problems with player respawn?)
+
 ### 0.4.2
 
 * Added ability to prevent teleporting on a PVP death
