@@ -11,18 +11,56 @@ namespace VentureValheim.Progression
         public WorldConfiguration.Difficulty CreatureDifficulty { get; private set; }
         public Dictionary<string, HitData.DamageTypes> VanillaAttacks { get; private set; }
         public float? VanillaHealth { get; private set; }
+        public bool Overridden { get; private set; }
         public Dictionary<string, CreatureOverrides.AttackOverride> OverrideAttacks { get; private set; }
         public float? OverrideHealth { get; private set; }
 
         public CreatureClassification(string name, WorldConfiguration.Biome? biomeType, WorldConfiguration.Difficulty? creatureDifficulty)
         {
+            Reset();
+
             Name = name;
-            BiomeType = biomeType ?? WorldConfiguration.Biome.Undefined;
-            CreatureDifficulty = creatureDifficulty ?? WorldConfiguration.Difficulty.Undefined;
+
+            if (biomeType != null)
+            {
+                BiomeType = biomeType.Value;
+            }
+
+            if (creatureDifficulty != null)
+            {
+                CreatureDifficulty = creatureDifficulty.Value;
+            }
+
             VanillaHealth = null;
             VanillaAttacks = null;
+        }
+
+        /// <summary>
+        /// Reset the custom values.
+        /// </summary>
+        public void Reset()
+        {
+            BiomeType = WorldConfiguration.Biome.Undefined;
+            CreatureDifficulty = WorldConfiguration.Difficulty.Undefined;
+            Overridden = false;
             OverrideHealth = null;
             OverrideAttacks = new Dictionary<string, CreatureOverrides.AttackOverride>();
+        }
+
+        /// <summary>
+        /// Returns true if the scaling factor is Vanilla or if set to Custom and this entry is not overriden.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IgnoreScaling()
+        {
+            if (WorldConfiguration.Instance.WorldScale == WorldConfiguration.Scaling.Vanilla ||
+                (WorldConfiguration.Instance.WorldScale == WorldConfiguration.Scaling.Custom && Overridden == false) ||
+                CreatureDifficulty == WorldConfiguration.Difficulty.Vanilla)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -49,6 +87,8 @@ namespace VentureValheim.Progression
         /// <param name="creatureOverride"></param>
         public void OverrideCreature(CreatureOverrides.CreatureOverride creatureOverride)
         {
+            Overridden = true;
+
             WorldConfiguration.Biome? biome = null;
 
             if (creatureOverride.biome != null)
@@ -149,7 +189,7 @@ namespace VentureValheim.Progression
 
         public float? GetHealth()
         {
-            if (CreatureDifficulty == WorldConfiguration.Difficulty.Vanilla)
+            if (IgnoreScaling())
             {
                 return VanillaHealth;
             }
@@ -179,7 +219,7 @@ namespace VentureValheim.Progression
 
             var vanillaAttack = VanillaAttacks[name];
 
-            if (CreatureDifficulty == WorldConfiguration.Difficulty.Vanilla)
+            if (IgnoreScaling())
             {
                 return vanillaAttack;
             }

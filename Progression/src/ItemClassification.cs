@@ -54,6 +54,7 @@ namespace VentureValheim.Progression
         public HitData.DamageTypes? VanillaDamageValue { get; private set; }
         public HitData.DamageTypes? VanillaUpgradeDamageValue { get; private set; }
 
+        public bool Overridden { get; private set; }
         public float? OverrideValue { get; private set; }
         protected CreatureOverrides.AttackOverride OverrideDamageValue { get; private set; }
         protected CreatureOverrides.AttackOverride OverrideUpgradeDamageValue { get; private set; }
@@ -62,9 +63,19 @@ namespace VentureValheim.Progression
 
         public ItemClassification(string name, WorldConfiguration.Biome? biomeType, ItemType? itemType)
         {
+            Reset();
+
             Name = name;
-            BiomeType = biomeType ?? WorldConfiguration.Biome.Undefined;
-            ItemType = itemType ?? ItemType.Undefined;
+            if (biomeType != null)
+            {
+                BiomeType = biomeType.Value;
+            }
+
+            if (itemType != null)
+            {
+                ItemType = itemType.Value;
+            }
+
             ItemCategory = GetItemCategory(itemType);
 
             VanillaUpgradeLevels = null;
@@ -72,12 +83,38 @@ namespace VentureValheim.Progression
             VanillaDamageValue = null;
             VanillaUpgradeValue = null;
             VanillaUpgradeDamageValue = null;
+        }
 
+        /// <summary>
+        /// Reset the custom values.
+        /// </summary>
+        public void Reset()
+        {
+            BiomeType = WorldConfiguration.Biome.Undefined;
+            ItemType = ItemType.Undefined;
+            ItemCategory = ItemCategory.Undefined;
+
+            Overridden = false;
             OverrideUpgradeLevels = null;
             OverrideValue = null;
             OverrideDamageValue = null;
             OverrideUpgradeValue = null;
             OverrideUpgradeDamageValue = null;
+        }
+
+        /// <summary>
+        /// Returns true if the scaling factor is Vanilla or if set to Custom and this entry is not overriden.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IgnoreScaling()
+        {
+            if (WorldConfiguration.Instance.WorldScale == WorldConfiguration.Scaling.Vanilla ||
+                (WorldConfiguration.Instance.WorldScale == WorldConfiguration.Scaling.Custom && Overridden == false))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public void UpdateItem(WorldConfiguration.Biome? biomeType, ItemType? itemType)
@@ -95,6 +132,8 @@ namespace VentureValheim.Progression
 
         public void OverrideItem(ItemOverrides.ItemOverride item)
         {
+            Overridden = true;
+
             WorldConfiguration.Biome? biome = null;
 
             if (item.biome != null)
@@ -173,7 +212,11 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         public float? GetValue()
         {
-            if (OverrideValue != null)
+            if (IgnoreScaling())
+            {
+                return VanillaValue;
+            }
+            else if (OverrideValue != null)
             {
                 return OverrideValue;
             }
@@ -197,7 +240,11 @@ namespace VentureValheim.Progression
 
         public float? GetUpgradeValue()
         {
-            if (OverrideUpgradeValue != null)
+            if (IgnoreScaling())
+            {
+                return VanillaUpgradeValue;
+            }
+            else if (OverrideUpgradeValue != null)
             {
                 return OverrideUpgradeValue;
             }
@@ -230,7 +277,11 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         public HitData.DamageTypes? GetDamageValue()
         {
-            if (OverrideDamageValue != null)
+            if (IgnoreScaling())
+            {
+                return VanillaDamageValue;
+            }
+            else if (OverrideDamageValue != null)
             {
                 if (OverrideDamageValue.totalDamage != null && VanillaDamageValue != null)
                 {
@@ -267,7 +318,11 @@ namespace VentureValheim.Progression
 
         public HitData.DamageTypes? GetUpgradeDamageValue()
         {
-            if (OverrideUpgradeDamageValue != null)
+            if (IgnoreScaling())
+            {
+                return VanillaUpgradeDamageValue;
+            }
+            else if (OverrideUpgradeDamageValue != null)
             {
                 if (OverrideUpgradeDamageValue.totalDamage != null && VanillaDamageValue != null)
                 {

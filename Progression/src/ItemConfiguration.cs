@@ -10,9 +10,9 @@ namespace VentureValheim.Progression
         public HitData.DamageTypes CalculateCreatureDamageTypes(
             float biomeScale, HitData.DamageTypes OriginalDamage, float baseTotalDamage, float maxTotalDamage);
         public HitData.DamageTypes CalculateItemDamageTypes(float biomeScale, HitData.DamageTypes originalDamage, float baseTotalDamage);
-        public void UpdateWeapon(ItemDrop item, HitData.DamageTypes? value, int? upgrades, HitData.DamageTypes? upgradeValue, bool playerItem = true);
-        public void UpdateArmor(ItemDrop item, float? value, int? upgrades, float? upgradeValue);
-        public void UpdateShield(ItemDrop item, float? value, int? upgrades, float? upgradeValue);
+        public void UpdateWeapon(ref ItemDrop item, HitData.DamageTypes? value, int? upgrades, HitData.DamageTypes? upgradeValue, bool playerItem = true);
+        public void UpdateArmor(ref ItemDrop item, float? value, int? upgrades, float? upgradeValue);
+        public void UpdateShield(ref ItemDrop item, float? value, int? upgrades, float? upgradeValue);
         public void UpdateItems();
         public void VanillaReset();
     }
@@ -53,15 +53,11 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="type"></param>
         /// <param name="value"></param>
-        /// <param name="overrideData">True to override an existing entry if exists</param>
-        public void AddBaseItemValue(ItemType type, float value, bool overrideData = false)
+        public void AddBaseItemValue(ItemType type, float value)
         {
             if (_itemBaseValues.ContainsKey(type))
             {
-                if (overrideData)
-                {
-                    _itemBaseValues[type] = value;
-                }
+                _itemBaseValues[type] = value;
             }
             else
             {
@@ -79,7 +75,7 @@ namespace VentureValheim.Progression
             {
                 var type = (ItemType)item.itemType;
 
-                AddBaseItemValue(type, item.value.Value, true);
+                AddBaseItemValue(type, item.value.Value);
             }
         }
 
@@ -340,22 +336,27 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Set the default values for Vanilla Player Items.
         /// </summary>
-        protected void Initialize()
+        public void Initialize()
         {
             // TODO
             // BombOoze
             // BombBile
 
-            InitializeBaseValues();
-
-            if (!ProgressionConfiguration.Instance.GetAutoScaleItemsIgnoreDefaults())
+            foreach (ItemClassification data in _itemData.Values)
             {
-                InitializeWeapons();
-                InitializeArmor();
-                InitializeShields();
+                data.Reset();
             }
 
-            ReadCustomValues();
+            InitializeBaseValues();
+
+            InitializeWeapons();
+            InitializeArmor();
+            InitializeShields();
+
+            if (WorldConfiguration.Instance.WorldScale != WorldConfiguration.Scaling.Vanilla)
+            {
+                ReadCustomValues();
+            }
 
             CreateVanillaBackup();
         }
@@ -582,12 +583,10 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Initializes the default data, then applies Auto-Scaling to all Items found in the game.
+        /// Applies Auto-Scaling to all initialized Items found in the game.
         /// </summary>
         public void UpdateItems()
         {
-            Initialize();
-
             foreach (ItemClassification data in _itemData.Values)
             {
                 ItemDrop item = ProgressionAPI.Instance.GetItemDrop(data.Name);
@@ -600,15 +599,15 @@ namespace VentureValheim.Progression
                 {
                     if (data.ItemCategory == ItemCategory.Weapon)
                     {
-                        UpdateWeapon(item, data.GetDamageValue(), data.GetUpgradeLevels(), data.GetUpgradeDamageValue(), true);
+                        UpdateWeapon(ref item, data.GetDamageValue(), data.GetUpgradeLevels(), data.GetUpgradeDamageValue(), true);
                     }
                     else if (data.ItemCategory == ItemCategory.Armor)
                     {
-                        UpdateArmor(item, data.GetValue(), data.GetUpgradeLevels(), data.GetUpgradeValue());
+                        UpdateArmor(ref item, data.GetValue(), data.GetUpgradeLevels(), data.GetUpgradeValue());
                     }
                     else if (data.ItemCategory == ItemCategory.Shield)
                     {
-                        UpdateShield(item, data.GetValue(), data.GetUpgradeLevels(), data.GetUpgradeValue());
+                        UpdateShield(ref item, data.GetValue(), data.GetUpgradeLevels(), data.GetUpgradeValue());
                     }
                 }
             }
@@ -619,7 +618,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="item"></param>
         /// <param name="value">The new total damage.</param>
-        public void UpdateWeapon(ItemDrop item, HitData.DamageTypes? value, int? upgrades, HitData.DamageTypes? upgradeValue, bool playerItem = true)
+        public void UpdateWeapon(ref ItemDrop item, HitData.DamageTypes? value, int? upgrades, HitData.DamageTypes? upgradeValue, bool playerItem = true)
         {
             // Damage
             if (value == null)
@@ -674,7 +673,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="item"></param>
         /// <param name="value">The new armor value.</param>
-        public void UpdateArmor(ItemDrop item, float? value, int? upgrades, float? upgradeValue)
+        public void UpdateArmor(ref ItemDrop item, float? value, int? upgrades, float? upgradeValue)
         {
             // Armor
             if (value == null)
@@ -719,7 +718,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="item"></param>
         /// <param name="value">The new block power.</param>
-        public void UpdateShield(ItemDrop item, float? value, int? upgrades, float? upgradeValue)
+        public void UpdateShield(ref ItemDrop item, float? value, int? upgrades, float? upgradeValue)
         {
             // Shield
             if (value == null)
@@ -815,15 +814,15 @@ namespace VentureValheim.Progression
                 {
                     if (data.ItemCategory == ItemCategory.Weapon)
                     {
-                        UpdateWeapon(item, data.VanillaDamageValue, data.VanillaUpgradeLevels, data.VanillaUpgradeDamageValue, true);
+                        UpdateWeapon(ref item, data.VanillaDamageValue, data.VanillaUpgradeLevels, data.VanillaUpgradeDamageValue, true);
                     }
                     else if (data.ItemCategory == ItemCategory.Armor)
                     {
-                        UpdateArmor(item, data.VanillaValue, data.VanillaUpgradeLevels, data.VanillaUpgradeValue);
+                        UpdateArmor(ref item, data.VanillaValue, data.VanillaUpgradeLevels, data.VanillaUpgradeValue);
                     }
                     else if (data.ItemCategory == ItemCategory.Shield)
                     {
-                        UpdateShield(item, data.VanillaValue, data.VanillaUpgradeLevels, data.VanillaUpgradeValue);
+                        UpdateShield(ref item, data.VanillaValue, data.VanillaUpgradeLevels, data.VanillaUpgradeValue);
                     }
                 }
             }
@@ -855,7 +854,7 @@ namespace VentureValheim.Progression
             }
             catch (Exception e)
             {
-                ProgressionPlugin.VentureProgressionLogger.LogWarning("Error loading ItemOverrides.yaml file.");
+                ProgressionPlugin.VentureProgressionLogger.LogWarning("Error loading WAP.ItemOverrides.yaml file.");
                 ProgressionPlugin.VentureProgressionLogger.LogWarning(e);
                 ProgressionPlugin.VentureProgressionLogger.LogWarning("Continuing without custom values...");
             }

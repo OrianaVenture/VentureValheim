@@ -11,12 +11,16 @@ namespace VentureValheim.Progression
     {
         string BlockedGlobalKeys { get; }
         string AllowedGlobalKeys { get; }
+        string EnforcedGlobalKeys { get; }
         string BlockedPrivateKeys { get; }
         string AllowedPrivateKeys { get; }
+        string EnforcedPrivateKeys { get; }
         HashSet<string> BlockedGlobalKeysList { get; }
         HashSet<string> AllowedGlobalKeysList { get; }
+        HashSet<string> EnforcedGlobalKeysList { get; }
         HashSet<string> BlockedPrivateKeysList { get; }
         HashSet<string> AllowedPrivateKeysList { get; }
+        HashSet<string> EnforcedPrivateKeysList { get; }
         HashSet<string> PrivateKeysList { get; }
         public int GetPublicBossKeysCount();
         public int GetPrivateBossKeysCount();
@@ -78,14 +82,18 @@ namespace VentureValheim.Progression
 
         public string BlockedGlobalKeys { get; protected set; }
         public string AllowedGlobalKeys { get; protected set; }
+        public string EnforcedGlobalKeys { get; protected set; }
         public string BlockedPrivateKeys { get; protected set; }
         public string AllowedPrivateKeys { get; protected set; }
+        public string EnforcedPrivateKeys { get; protected set; }
         public string TamingKeys { get; protected set; }
         public string SummoningKeys { get; protected set; }
         public HashSet<string> BlockedGlobalKeysList  { get; protected set; }
         public HashSet<string> AllowedGlobalKeysList  { get; protected set; }
+        public HashSet<string> EnforcedGlobalKeysList { get; protected set; }
         public HashSet<string> BlockedPrivateKeysList { get; protected set; }
         public HashSet<string> AllowedPrivateKeysList { get; protected set; }
+        public HashSet<string> EnforcedPrivateKeysList { get; protected set; }
         public Dictionary<string, string> TamingKeysList { get; protected set; }
         public Dictionary<string, string> SummoningKeysList { get; protected set; }
 
@@ -127,21 +135,30 @@ namespace VentureValheim.Progression
         private static int _cachedPublicBossKeys = -1;
         private static int _cachedPrivateBossKeys = -1;
 
-        protected void ResetPlayer()
+        protected void Reset()
         {
             BlockedGlobalKeys = "";
             AllowedGlobalKeys = "";
+            EnforcedGlobalKeys = "";
             BlockedGlobalKeysList = new HashSet<string>();
             AllowedGlobalKeysList = new HashSet<string>();
+            EnforcedGlobalKeysList = new HashSet<string>();
 
             BlockedPrivateKeys = "";
             AllowedPrivateKeys = "";
+            EnforcedPrivateKeys = "";
             BlockedPrivateKeysList = new HashSet<string>();
             AllowedPrivateKeysList = new HashSet<string>();
+            EnforcedPrivateKeysList = new HashSet<string>();
 
             // Null if defaults need to be set
             TamingKeys = null;
             SummoningKeys = null;
+        }
+
+        protected void ResetPlayer()
+        {
+            Reset();
 
             PrivateKeysList = new HashSet<string>();
 
@@ -164,6 +181,7 @@ namespace VentureValheim.Progression
         {
             UpdateGlobalKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedGlobalKeys(), ProgressionConfiguration.Instance.GetAllowedGlobalKeys());
             UpdatePrivateKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedPrivateKeys(), ProgressionConfiguration.Instance.GetAllowedPrivateKeys());
+            UpdateEnforcedKeyConfiguration(ProgressionConfiguration.Instance.GetEnforcedGlobalKeys(), ProgressionConfiguration.Instance.GetEnforcedPrivateKeys());
             UpdateTamingConfiguration(ProgressionConfiguration.Instance.GetOverrideLockTamingDefaults());
             UpdateSummoningConfiguration(ProgressionConfiguration.Instance.GetOverrideLockBossSummonsDefaults());
         }
@@ -208,6 +226,30 @@ namespace VentureValheim.Progression
             }
         }
 
+        /// <summary>
+        /// Set the values for EnforcedGlobalKeysList and EnforcedPrivateKeysList if changed.
+        /// </summary>
+        /// <param name="blockedPrivateKeys"></param>
+        /// <param name="allowedPrivateKeys"></param>
+        protected void UpdateEnforcedKeyConfiguration(string enforcedGlobalKeys, string enforcedPrivateKeys)
+        {
+            if (!EnforcedGlobalKeys.Equals(enforcedGlobalKeys))
+            {
+                EnforcedGlobalKeys = enforcedGlobalKeys;
+                EnforcedGlobalKeysList = ProgressionAPI.Instance.StringToSet(enforcedGlobalKeys);
+            }
+
+            if (!EnforcedPrivateKeys.Equals(enforcedPrivateKeys))
+            {
+                EnforcedPrivateKeys = enforcedPrivateKeys;
+                EnforcedPrivateKeysList = ProgressionAPI.Instance.StringToSet(enforcedPrivateKeys);
+            }
+        }
+
+        /// <summary>
+        /// Set the values for TamingKeysList if changed.
+        /// </summary>
+        /// <param name="tamingString"></param>
         protected void UpdateTamingConfiguration(string tamingString)
         {
             if (TamingKeys == null || !TamingKeys.Equals(tamingString))
@@ -229,6 +271,10 @@ namespace VentureValheim.Progression
             }
         }
 
+        /// <summary>
+        /// Set the values for SummoningKeysList if changed.
+        /// </summary>
+        /// <param name="summoningString"></param>
         protected void UpdateSummoningConfiguration(string summoningString)
         {
             if (SummoningKeys == null || !SummoningKeys.Equals(summoningString))
@@ -1049,12 +1095,19 @@ namespace VentureValheim.Progression
                     }
                 }
 
+                // Add loaded private keys if not blocked
                 foreach (var key in loadedKeys)
                 {
                     if (!Instance.BlockPrivateKey(key))
                     {
                         Instance.PrivateKeysList.Add(key);
                     }
+                }
+
+                // Add enforced private keys regardless of settings
+                foreach (var key in Instance.EnforcedPrivateKeysList)
+                {
+                    Instance.PrivateKeysList.Add(key);
                 }
 
                 // Sync data on connect
@@ -1065,27 +1118,34 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Register RPCs and perform a server key cleanup when starting up.
         /// </summary>
-        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.Start))]
-        public static class Patch_ZoneSystem_Start
+        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.Load))]
+        public static class Patch_ZoneSystem_Load
         {
-            private static void Postfix(ZoneSystem __instance)
+            private static void Postfix()
             {
                 if (ZNet.instance.IsServer())
                 {
                     ProgressionPlugin.VentureProgressionLogger.LogInfo("Starting Server Key Management. Cleaning up public keys!");
 
-
+                    Instance.Reset();
                     Instance.UpdateConfigs();
 
-                    var keys = __instance.GetGlobalKeys();
+                    var keys = ZoneSystem.instance.GetGlobalKeys();
                     var blockAll = ProgressionConfiguration.Instance.GetBlockAllGlobalKeys();
 
+                    // Remove any blocked global keys from the list
                     for (int lcv = 0; lcv < keys.Count; lcv++)
                     {
                         if (Instance.BlockGlobalKey(blockAll, keys[lcv]))
                         {
-                            __instance.m_globalKeys.Remove(keys[lcv]);
+                            ZoneSystem.instance.m_globalKeys.Remove(keys[lcv]);
                         }
+                    }
+
+                    // Add enforced global keys regardless of settings
+                    foreach (var key in Instance.EnforcedGlobalKeysList)
+                    {
+                        ZoneSystem.instance.m_globalKeys.Add(key);
                     }
 
                     ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKeys, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKeys));

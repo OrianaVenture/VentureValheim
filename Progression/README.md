@@ -24,11 +24,11 @@ What is a key and what is controlled by them? In vanilla Valheim there exists a 
 
 This mod also adds a private player key system in which data is saved to the character file. You can use this private key system to tailor game functionality to individuals rather than the vanilla default server-wide public keys. Gameplay will be altered when using private keys: The player that is hosting a loaded chunk will control the worldly spawns, and raids will only spawn on players when appropriate. For example, a player A with no keys that is in a base with a player B with all the boss keys can still get all those raids, but if player A is alone they should not get higher level raids. If player A loads and hosts an area and is later joined by player B, the area should not spawn the higher level monsters that become unlocked with keys. Private keys will be added to any player within a 100 meter range of the hosting player when the action occurs. For example, when a boss dies any player close enough to the chunk-hosting player should also get the private key, but a player online on the other side of the map will not get it.
 
-Taming can be locked by keys when enabled. By default Wolves are locked by the defeated_bonemass key and Lox are locked by the defeated_dragon key. You can override this by using the prefab name of the creature, allowing you to add support for content from other mods. When overriding you must define all the creatures since it will no longer include the defaults. When using private keys make sure the player who can tame the animals is the first to load the area since taming is controlled by the player hosting the chunk. You will still see taming hearts (for now), but if you check the taming status on the animals you will see the percentage no longer increases when blocked.
+Taming can be locked by keys when enabled. By default Wolf is locked by the defeated_bonemass key and Lox is locked by the defeated_dragon key. You can override this by using the prefab name of the creature, allowing you to add support for content from other mods. When overriding you must define all the creatures since it will no longer include the defaults. When using private keys make sure the player who can tame the animals is the first to load the area since taming is controlled by the player hosting the chunk. You will still see taming hearts (for now), but if you check the taming status on the animals you will see the percentage no longer increases when blocked.
 
 Guardian Powers and Boss Alter Summoning can be locked too. By default summoning is locked the key given by the previous boss in the natural progression order. You can override this by using the prefab name of the creature the alter summons, allowing you to add support for content from other mods. When overriding you must define all the bosses manually (similar to the taming override). Additionally, these actions have a fun special effect on failure!
 
-When this mod is installed there will be a key "cleanup" performed for the server and any player who joins the game based off the mod configurations. When using the default settings you can expect all global keys to be cleared when you start up the server, resetting your server's key progress. When using private keys a similar principal applies, depending on your blocked or allowed key list, any keys that are not expected will be removed. If you see your keys resetting unexpectedly make sure to check your mod configuration is allowing the keys you want to exist. Any keys added manually will persist until the server is restarted (for private keys when the player logs back in), to ensure these keys remain after a restart you must check your mod configuration!
+When this mod is installed there will be a key "cleanup" performed for the server and any player who joins the game based off the mod configurations. When using the default settings you can expect all global keys to be cleared when you start up the server, resetting your server's key progress. When using private keys a similar principal applies, depending on your blocked or allowed key list, any keys that are not expected will be removed. All enforced keys will be added to the appropriate list on startup regardless of other settings. If you see your keys resetting unexpectedly make sure to check your mod configuration is allowing the keys you want to exist. Any keys added manually will persist until the server is restarted (for private keys when the player logs back in), to ensure these keys remain after a restart you must check your mod configuration!
 
 #### Configuration Options
 
@@ -36,9 +36,11 @@ When this mod is installed there will be a key "cleanup" performed for the serve
 * BlockAllGlobalKeys: Prevent/block public all keys from being added to the global list, set to false to use vanilla behavior
 * AllowedGlobalKeys: Allow only these keys being added to the global list when BlockAllGlobalKeys is true
 * BlockedGlobalKeys: Stop only these keys being added to the global list when BlockAllGlobalKeys is false
+* EnforcedGlobalKeys: Always add these keys to the global list on startup (regardless of other settings)
 * UsePrivateKeys: Use private player keys, rather than global keys for game key checking
 * BlockedPrivateKeys: Stop only these keys being added to the player's key list when UsePrivateKeys is true (use this or AllowedPrivateKeys)
 * AllowedPrivateKeys: Allow only these keys being added to the player's key list when UsePrivateKeys is true (use this or BlockedPrivateKeys, if the BlockedPrivateKeys has any values it will use that setting)
+* EnforcedPrivateKeys: Always add these keys to the player's private list on startup (regardless of other settings)
 * UnlockAllHaldorItems: If true bypasses the key check for haldor's items and unlocks everything
 * LockTaming: If true you can only tame certain creatures if you have the required key.
 * OverrideLockTamingDefaults: Define your own required keys to tame specific creatures or leave blank to use the defaults. Example: Boar, defeated_eikthyr, Wolf, defeated_dragon, Lox, defeated_goblinking
@@ -69,7 +71,6 @@ Due to the changes this mod makes the vanilla "setkey" command will not function
 #### Possible Future Additions
 
 * Ability to lock items or crafting to boss completion
-* Locking boss summoning to enforce progression order
 * More configuration options to toggle public or private key usage for different game features
 * Requests welcome! See the bottom for my discord link
 
@@ -93,13 +94,17 @@ Under the Keys category there are more configuration options for skills. This fe
 
 ### World Scaling
 
-The world is scaled according to the "natural" vanilla game progression by default. To see this mod's default classification of vanilla creatures and items you can view the code on Github. The scaling is applied after logging into a local world or server.
+The world is scaled according to the "natural" vanilla game progression by default. To see this mod's default classification of vanilla creatures and items you can view the code on Github. The scaling is applied after logging into a local world or server. You will have to have players log out and back in after changing these configurations for them to take effect.
+
+Under the general section of the config file there is a GenerateGameDataFiles setting. When true this will create files of game data for viewing only which can help if you want to use the override files (explained below). These files can be overwritten with scaled data if you launch multiple games in one session. To ensure you have the vanilla data just launch the game and log into a world once, then log out. Move the two folders in the config path that get created to another location on your computer to save the files. Once you have the files set GenerateGameDataFiles back to false to keep your mod manager configs clean.
 
 #### Configuration Options
 
 * EnableAutoScaling must be set to True to enable these features.
-* AutoScaleType: Vanilla, Linear, or Exponential. If set to Vanilla these auto-scaling features will not be enabled!
+* AutoScaleType: Vanilla, Linear, Exponential, or Custom. If set to Vanilla these auto-scaling features will not be enabled!
 * AutoScaleFactor: Change the biome scaling factor.
+
+If you do not want to rescale the whole game and just want to change just a few things (or a lot of things, you do you) you can use the "Custom" scaling type to ignore the mod defaults and just scale things in your yaml override(s). If any information is missing from your yaml configuration that is needed for scaling the mod will fallback to using the default values for the missing fields. Custom scaling will use the linear scaling methods whenever applicable.
 
 Linear scaling by default is a 75% growth (0.75). This means your 1st biome (Black Forest, Meadows is 0th) will have a scaling factor of 1.75, and 7th will be 6.25 for calculations. This setting will make a pretty even difficulty progression.
 
@@ -116,7 +121,6 @@ The list for health and damage configs is in the format (for difficulty spread):
 * AutoScaleCreatures: Set to true to scale creature health and damage.
 * AutoScaleCreaturesHealth: Leave blank to use default values: 5, 10, 30, 50, 200, 500; to override enter a comma-separated list of 6 integers.
 * AutoScaleCreaturesDamage: Leave blank to use default values: 0, 5, 10, 12, 15, 20; to override enter a comma-separated list of 6 integers.
-* AutoScaleCreaturesIgnoreDefaults: Set to true to exclude all defaults (can still use yaml override).
 
 #### Item Scaling
 
@@ -125,7 +129,6 @@ Vanilla items are grouped by custom types and are assigned the biome in which th
 ##### Configuration Options
 
 * AutoScaleItems: Set to true to scale player items.
-* AutoScaleItemsIgnoreDefaults: Set to true to exclude all defaults (can still use yaml override).
 
 #### Custom Data Definitions
 
@@ -180,6 +183,23 @@ Examples (Will update this for first official release):
 
 ## Changelog
 
+### 0.0.22
+
+* Added ability to enforce private and global keys with new config options (useful for "nomap" and "noportal" modes)
+* Fix for global key cleanup happening before the data was available, should be working now
+* Small qol update for the scaling system: Added new "Custom" scaling type for ignoring the mod defaults
+* Removed the AutoScaleCreaturesIgnoreDefaults and AutoScaleItemsIgnoreDefaults configs (use AutoScaleType = "Custom")
+* Fixed the scaling resetting logic such that custom values will now reset properly between different servers in one game session
+* Fixed items possibly being scaled before recording vanilla data, causing them to scale incorrectly
+* Fixed the logic behind getting the maximum damage a creature can do, caused creature attacks/items to scale incorrectly
+* Fixed unnecessary scaling being reapplied on player death
+* Added missing items to the GenerateGameDataFiles feature
+* Notes on current limitations:
+  * Some creatures share the same attacks and items, the order in which the creatures are scaled affects the final result
+  * With creature scaling turned on, if an item is used by a creature and you turn off item scaling the item will still be scaled
+  * Creature armor and shields are not scaled, but will be integrated eventually
+  * I am working on a smarter scaling design, but may take some time to get right (looking to do that for version 2)
+
 ### 0.0.21
 
 * Added ability to lock taming creatures by keys.
@@ -201,7 +221,7 @@ Examples (Will update this for first official release):
 * Added ability to unlock all of haldor's items with new config UnlockAllHaldorItems
 * Increased Key Manager cache timer to 10 seconds
 * Small optimizations to Skill Manager, increased cache timer to 10 seconds
-* Fix for some creature attacks not being scaled (whoops): will now track all random weapons and items from random sets (The scaling is not perfect, expect an overhaul for the scaling feature in the next major update)
+* Fix for some creature attacks not being scaled (whoops): will now track all random weapons and items from random sets
 * Decreased base Bow damage from 22 to 18
 * Thank you all for your patience!!!
 
@@ -235,18 +255,6 @@ Examples (Will update this for first official release):
 * Optimization for Key and Skills managers caching.
 * Fixed biome ordering for Mistland, Ashland, DeepNorth.
 
-### 0.0.14
-
-* Fixed a server sync issue for auto scaling features.
-
-### 0.0.13
-
-* Added options to track boss completion for skill management.
-* Moved the Key configurations to a new section.
-
-### 0.0.12
-
-* Update for game patch 0.211.7 Crossplay. Reverted ServerSync to 1.6.
 
 See all patch notes on Github.
 

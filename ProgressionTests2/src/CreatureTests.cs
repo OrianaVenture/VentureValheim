@@ -4,6 +4,7 @@ using VentureValheim.Progression;
 using static VentureValheim.ProgressionTests.WorldTests;
 using static VentureValheim.ProgressionTests.ItemTests;
 using static VentureValheim.Progression.CreatureOverrides;
+using UnityEngine;
 
 namespace VentureValheim.ProgressionTests
 {
@@ -32,6 +33,16 @@ namespace VentureValheim.ProgressionTests
             }
         }
 
+        public class TestCreatureClassification : CreatureClassification
+        {
+            public TestCreatureClassification(string name, WorldConfiguration.Biome? biomeType, WorldConfiguration.Difficulty? creatureDifficulty) : base(name, biomeType, creatureDifficulty)
+            {
+            }
+            public override bool IgnoreScaling()
+            {
+                return CreatureDifficulty == WorldConfiguration.Difficulty.Vanilla;
+            }
+        }
 
         private HitData.DamageTypes _emptyDamageTypes = new HitData.DamageTypes
         {
@@ -55,10 +66,6 @@ namespace VentureValheim.ProgressionTests
 
         public CreatureTests()
         {
-            var mockManager = new Mock<IProgressionConfiguration>();
-            mockManager.Setup(x => x.GetAutoScaleCreaturesIgnoreDefaults()).Returns(false);
-            new ProgressionConfiguration(mockManager.Object);
-
             mockWorld = new Mock<IWorldConfiguration>();
             mockWorld.SetupGet(x => x.WorldScale).Returns(WorldConfiguration.Scaling.Exponential);
             mockWorld.SetupGet(x => x.ScaleFactor).Returns(0.75f);
@@ -106,14 +113,14 @@ namespace VentureValheim.ProgressionTests
         [InlineData(WorldConfiguration.Biome.Plain, WorldConfiguration.Difficulty.Expert, 1876)]
         [InlineData(WorldConfiguration.Biome.Plain, WorldConfiguration.Difficulty.Boss, 4690)]
         public void GetCreatureHealth_Calculation(WorldConfiguration.Biome biome, WorldConfiguration.Difficulty d, int expected)
-        {            
+        {
             Assert.Equal(expected, creatureConfiguration.CalculateHealth(worldConfiguration.GetBiomeScaling(biome), creatureConfiguration.GetBaseHealth(d)));
         }
 
         [Fact]
         public void GetCreatureHealth_VanillaDifficulty()
         {
-            var test = new CreatureClassification("test", WorldConfiguration.Biome.Meadow, WorldConfiguration.Difficulty.Vanilla);
+            var test = new TestCreatureClassification("test145", WorldConfiguration.Biome.Meadow, WorldConfiguration.Difficulty.Vanilla);
             Assert.Null(test.GetHealth());
 
             test.SetVanillaData(101, null);
@@ -126,7 +133,7 @@ namespace VentureValheim.ProgressionTests
         [Fact]
         public void GetCreatureHealth_Override()
         {
-            var test = new CreatureClassification("test", WorldConfiguration.Biome.Meadow, WorldConfiguration.Difficulty.Average);
+            var test = new TestCreatureClassification("test275", WorldConfiguration.Biome.Meadow, WorldConfiguration.Difficulty.Average);
             Assert.NotNull(test.GetHealth());
 
             test.SetVanillaData(101, null);
@@ -312,6 +319,27 @@ namespace VentureValheim.ProgressionTests
             Assert.Equal(WorldConfiguration.Difficulty.Undefined, creature2.CreatureDifficulty);
             Assert.False(creature2.HealthOverridden());
             Assert.False(creature2.AttackOverridden(attack1));
+        }
+
+        [Fact]
+        public void SetVanillaData_HappyPaths()
+        {
+            TestCreatureClassification cc = new TestCreatureClassification("test285", null, null);
+
+            Assert.Equal(WorldConfiguration.Biome.Undefined, cc.BiomeType);
+            Assert.Equal(WorldConfiguration.Difficulty.Undefined, cc.CreatureDifficulty);
+            Assert.Null(cc.VanillaHealth);
+            Assert.Null(cc.VanillaAttacks);
+
+            cc.SetVanillaData(50f, new List<GameObject>());
+
+            Assert.Equal(50f, cc.VanillaHealth);
+            Assert.NotNull(cc.VanillaAttacks);
+
+            cc.SetVanillaData(100f, null);
+
+            Assert.Equal(50f, cc.VanillaHealth);
+            Assert.NotNull(cc.VanillaAttacks);
         }
     }
 }

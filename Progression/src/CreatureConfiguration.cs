@@ -151,7 +151,7 @@ namespace VentureValheim.Progression
                     if (item != null)
                     {
                         var damage = cc.GetAttack(attack.Key, maxTotalDamage);
-                        ConfigureAttack(item, damage);
+                        ConfigureAttack(ref item, damage);
                     }
                     else
                     {
@@ -167,13 +167,13 @@ namespace VentureValheim.Progression
             }
         }
 
-        private void ConfigureAttack(ItemDrop item, HitData.DamageTypes? value)
+        private void ConfigureAttack(ref ItemDrop item, HitData.DamageTypes? value)
         {
             // Do not send upgrade information in this call, it is not used for non-player items.
             // If player items and attacks become decoupled this will need an update to
             // ensure that the item is not being updated twice.
             // If attacks can be upgraded this will need to be updated.
-            ItemConfiguration.Instance.UpdateWeapon(item, value, 1, null, false);
+            ItemConfiguration.Instance.UpdateWeapon(ref item, value, 1, null, false);
         }
 
         /// <summary>
@@ -188,18 +188,13 @@ namespace VentureValheim.Progression
 
             if (attacks != null)
             {
-                foreach (var attack in attacks)
+                foreach (var attack in attacks.Values)
                 {
-                    ItemDrop item = ProgressionAPI.Instance.GetItemDrop(attack.Key);
+                    float damage = ItemConfiguration.Instance.GetTotalDamage(attack);
 
-                    if (item != null)
+                    if (damage > maxDamage)
                     {
-                        float damage = ItemConfiguration.Instance.GetTotalDamage(item.m_itemData.m_shared.m_damages);
-
-                        if (damage > maxDamage)
-                        {
-                            maxDamage = damage;
-                        }
+                        maxDamage = damage;
                     }
                 }
             }
@@ -210,92 +205,97 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Set the default values for Vanilla creatures using the Creature Prefab Name.
         /// </summary>
-        protected void Initialize()
+        public void Initialize()
         {
-            if (!ProgressionConfiguration.Instance.GetAutoScaleCreaturesIgnoreDefaults())
+            foreach (CreatureClassification data in _creatureData.Values)
             {
-                // Meadow Defaults
-                var biome = WorldConfiguration.Biome.Meadow;
-                AddCreatureConfiguration("Eikthyr", biome, WorldConfiguration.Difficulty.Boss);
-                AddCreatureConfiguration("Boar_piggy", biome, WorldConfiguration.Difficulty.Harmless);
-                AddCreatureConfiguration("Boar", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("Deer", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("Greyling", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Neck", biome, WorldConfiguration.Difficulty.Novice);
-
-                // Black Forest Defaults
-                biome = WorldConfiguration.Biome.BlackForest;
-                AddCreatureConfiguration("gd_king", biome, WorldConfiguration.Difficulty.Boss);
-                AddCreatureConfiguration("Ghost", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Greydwarf", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("Greydwarf_Elite", biome, WorldConfiguration.Difficulty.Intermediate);
-                AddCreatureConfiguration("Greydwarf_Shaman", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Skeleton", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Skeleton_NoArcher", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Skeleton_Poison", biome, WorldConfiguration.Difficulty.Intermediate);
-                AddCreatureConfiguration("TentaRoot", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Troll", biome, WorldConfiguration.Difficulty.Expert);
-
-                // Swamp Defaults
-                biome = WorldConfiguration.Biome.Swamp;
-                AddCreatureConfiguration("Bonemass", biome, WorldConfiguration.Difficulty.Boss);
-                AddCreatureConfiguration("Abomination", biome, WorldConfiguration.Difficulty.Expert);
-                AddCreatureConfiguration("Blob", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("BlobElite", biome, WorldConfiguration.Difficulty.Intermediate);
-                AddCreatureConfiguration("Draugr_Elite", biome, WorldConfiguration.Difficulty.Intermediate);
-                AddCreatureConfiguration("Draugr", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Draugr_Ranged", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Leech", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("Surtling", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("Wraith", biome, WorldConfiguration.Difficulty.Intermediate);
-
-                // Mountain Defaults
-                biome = WorldConfiguration.Biome.Mountain;
-                AddCreatureConfiguration("Dragon", biome, WorldConfiguration.Difficulty.Boss);
-                AddCreatureConfiguration("Bat", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("Fenring_Cultist", biome, WorldConfiguration.Difficulty.Intermediate);
-                AddCreatureConfiguration("Fenring", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Hatchling", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("StoneGolem", biome, WorldConfiguration.Difficulty.Expert);
-                AddCreatureConfiguration("Ulv", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Wolf_cub", biome, WorldConfiguration.Difficulty.Harmless);
-                AddCreatureConfiguration("Wolf", biome, WorldConfiguration.Difficulty.Novice);
-
-                // Plain Defaults
-                biome = WorldConfiguration.Biome.Plain;
-                AddCreatureConfiguration("GoblinKing", biome, WorldConfiguration.Difficulty.Boss);
-                AddCreatureConfiguration("BlobTar", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("Deathsquito", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("Goblin", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("GoblinArcher", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("GoblinShaman", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("GoblinBrute", biome, WorldConfiguration.Difficulty.Intermediate);
-                AddCreatureConfiguration("Lox_Calf", biome, WorldConfiguration.Difficulty.Harmless);
-                AddCreatureConfiguration("Lox", biome, WorldConfiguration.Difficulty.Intermediate);
-
-                // Ocean Defaults
-                biome = WorldConfiguration.Biome.Ocean;
-                AddCreatureConfiguration("Serpent", biome, WorldConfiguration.Difficulty.Expert);
-
-                // Mistlands Creatures
-                biome = WorldConfiguration.Biome.Mistland;
-                AddCreatureConfiguration("Dverger", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("DvergerMage", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("DvergerMageFire", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("DvergerMageIce", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("DvergerMageSupport", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("Gjall", biome, WorldConfiguration.Difficulty.Expert);
-                AddCreatureConfiguration("Hare", biome, WorldConfiguration.Difficulty.Harmless);
-                AddCreatureConfiguration("Seeker", biome, WorldConfiguration.Difficulty.Average);
-                AddCreatureConfiguration("SeekerBrood", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("SeekerBrute", biome, WorldConfiguration.Difficulty.Intermediate);
-                AddCreatureConfiguration("SeekerQueen", biome, WorldConfiguration.Difficulty.Boss);
-                AddCreatureConfiguration("Tick", biome, WorldConfiguration.Difficulty.Novice);
-                AddCreatureConfiguration("TheHive", biome, WorldConfiguration.Difficulty.Expert);
-                AddCreatureConfiguration("Hive", biome, WorldConfiguration.Difficulty.Boss);
+                data.Reset();
             }
 
-            ReadCustomValues();
+            // Meadow Defaults
+            var biome = WorldConfiguration.Biome.Meadow;
+            AddCreatureConfiguration("Eikthyr", biome, WorldConfiguration.Difficulty.Boss);
+            AddCreatureConfiguration("Boar_piggy", biome, WorldConfiguration.Difficulty.Harmless);
+            AddCreatureConfiguration("Boar", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("Deer", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("Greyling", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Neck", biome, WorldConfiguration.Difficulty.Novice);
+
+            // Black Forest Defaults
+            biome = WorldConfiguration.Biome.BlackForest;
+            AddCreatureConfiguration("gd_king", biome, WorldConfiguration.Difficulty.Boss);
+            AddCreatureConfiguration("Ghost", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Greydwarf", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("Greydwarf_Elite", biome, WorldConfiguration.Difficulty.Intermediate);
+            AddCreatureConfiguration("Greydwarf_Shaman", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Skeleton", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Skeleton_NoArcher", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Skeleton_Poison", biome, WorldConfiguration.Difficulty.Intermediate);
+            AddCreatureConfiguration("TentaRoot", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Troll", biome, WorldConfiguration.Difficulty.Expert);
+
+            // Swamp Defaults
+            biome = WorldConfiguration.Biome.Swamp;
+            AddCreatureConfiguration("Bonemass", biome, WorldConfiguration.Difficulty.Boss);
+            AddCreatureConfiguration("Abomination", biome, WorldConfiguration.Difficulty.Expert);
+            AddCreatureConfiguration("Blob", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("BlobElite", biome, WorldConfiguration.Difficulty.Intermediate);
+            AddCreatureConfiguration("Draugr_Elite", biome, WorldConfiguration.Difficulty.Intermediate);
+            AddCreatureConfiguration("Draugr", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Draugr_Ranged", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Leech", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("Surtling", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("Wraith", biome, WorldConfiguration.Difficulty.Intermediate);
+
+            // Mountain Defaults
+            biome = WorldConfiguration.Biome.Mountain;
+            AddCreatureConfiguration("Dragon", biome, WorldConfiguration.Difficulty.Boss);
+            AddCreatureConfiguration("Bat", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("Fenring_Cultist", biome, WorldConfiguration.Difficulty.Intermediate);
+            AddCreatureConfiguration("Fenring", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Hatchling", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("StoneGolem", biome, WorldConfiguration.Difficulty.Expert);
+            AddCreatureConfiguration("Ulv", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Wolf_cub", biome, WorldConfiguration.Difficulty.Harmless);
+            AddCreatureConfiguration("Wolf", biome, WorldConfiguration.Difficulty.Novice);
+
+            // Plain Defaults
+            biome = WorldConfiguration.Biome.Plain;
+            AddCreatureConfiguration("GoblinKing", biome, WorldConfiguration.Difficulty.Boss);
+            AddCreatureConfiguration("BlobTar", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("Deathsquito", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("Goblin", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("GoblinArcher", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("GoblinShaman", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("GoblinBrute", biome, WorldConfiguration.Difficulty.Intermediate);
+            AddCreatureConfiguration("Lox_Calf", biome, WorldConfiguration.Difficulty.Harmless);
+            AddCreatureConfiguration("Lox", biome, WorldConfiguration.Difficulty.Intermediate);
+
+            // Ocean Defaults
+            biome = WorldConfiguration.Biome.Ocean;
+            AddCreatureConfiguration("Serpent", biome, WorldConfiguration.Difficulty.Expert);
+
+            // Mistlands Creatures
+            biome = WorldConfiguration.Biome.Mistland;
+            AddCreatureConfiguration("Dverger", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("DvergerMage", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("DvergerMageFire", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("DvergerMageIce", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("DvergerMageSupport", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("Gjall", biome, WorldConfiguration.Difficulty.Expert);
+            AddCreatureConfiguration("Hare", biome, WorldConfiguration.Difficulty.Harmless);
+            AddCreatureConfiguration("Seeker", biome, WorldConfiguration.Difficulty.Average);
+            AddCreatureConfiguration("SeekerBrood", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("SeekerBrute", biome, WorldConfiguration.Difficulty.Intermediate);
+            AddCreatureConfiguration("SeekerQueen", biome, WorldConfiguration.Difficulty.Boss);
+            AddCreatureConfiguration("Tick", biome, WorldConfiguration.Difficulty.Novice);
+            AddCreatureConfiguration("TheHive", biome, WorldConfiguration.Difficulty.Expert);
+            AddCreatureConfiguration("Hive", biome, WorldConfiguration.Difficulty.Boss);
+
+            if (WorldConfiguration.Instance.WorldScale != WorldConfiguration.Scaling.Vanilla)
+            {
+                ReadCustomValues();
+            }
 
             CreateVanillaBackup();
         }
@@ -341,12 +341,10 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Apply Auto-Scaling to all Creatures found in the game by Prefab name.
+        /// Apply Auto-Scaling to all initialized Creatures found in the game by Prefab name.
         /// </summary>
         public void UpdateCreatures()
         {
-            Initialize();
-
             foreach (CreatureClassification cc in _creatureData.Values)
             {
                 var creature = ProgressionAPI.Instance.GetHumanoid(cc.Name);
@@ -437,7 +435,7 @@ namespace VentureValheim.Progression
                             ItemDrop item = ProgressionAPI.Instance.GetItemDrop(attack.Key);
                             if (item != null)
                             {
-                                ConfigureAttack(item, attack.Value);
+                                ConfigureAttack(ref item, attack.Value);
                             }
                         }
                     }
@@ -467,7 +465,7 @@ namespace VentureValheim.Progression
             }
             catch (Exception e)
             {
-                ProgressionPlugin.VentureProgressionLogger.LogWarning("Error loading CreatureOverrides.yaml file.");
+                ProgressionPlugin.VentureProgressionLogger.LogWarning("Error loading WAP.CreatureOverrides.yaml file.");
                 ProgressionPlugin.VentureProgressionLogger.LogWarning(e);
                 ProgressionPlugin.VentureProgressionLogger.LogWarning("Continuing without custom values...");
             }

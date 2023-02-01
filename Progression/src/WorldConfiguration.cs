@@ -42,6 +42,8 @@ namespace VentureValheim.Progression
 
         private Dictionary<int, BiomeData> _biomeData = new Dictionary<int, BiomeData>();
 
+        private bool _scalingInitialized = false;
+
         #region Biome, Scaling & Difficulty
 
         public enum Biome
@@ -62,7 +64,8 @@ namespace VentureValheim.Progression
         {
             Vanilla = 0,
             Linear = 1,
-            Exponential = 2
+            Exponential = 2,
+            Custom = 3
         }
 
         public enum Difficulty
@@ -279,7 +282,7 @@ namespace VentureValheim.Progression
             {
                 return (float)Math.Round(Math.Pow((double)(1f + factor), order), 2);
             }
-            else if (WorldScale == Scaling.Linear)
+            else if (WorldScale == Scaling.Linear || WorldScale == Scaling.Custom)
             {
                 return 1f + (float)Math.Round((double)(factor * order), 2);
             }
@@ -392,11 +395,17 @@ namespace VentureValheim.Progression
                     ProgressionPlugin.VentureProgressionLogger.LogInfo(
                         $"WorldConfiguration Initializing with scale: {WorldScale}, factor: {ScaleFactor}.");
 
+                    // Set up the data and create vanilla backups before applying scaling
+                    ItemConfiguration.Instance.Initialize();
+                    CreatureConfiguration.Instance.Initialize();
+
+                    // Apply scaling to creatures first
                     if (ProgressionConfiguration.Instance.GetAutoScaleCreatures())
                     {
                         SetupCreatures();
                     }
 
+                    // Apply player item scaling to override creature scaling
                     if (ProgressionConfiguration.Instance.GetAutoScaleItems())
                     {
                         SetupItems();
@@ -422,6 +431,10 @@ namespace VentureValheim.Progression
             else if (type.Equals("linear"))
             {
                 scale = Scaling.Linear;
+            }
+            else if (type.Equals("custom"))
+            {
+                scale = Scaling.Custom;
             }
 
             Initialize(scale, factor);
@@ -470,11 +483,21 @@ namespace VentureValheim.Progression
         {
             private static void Postfix(Player __instance)
             {
-                if (ProgressionAPI.Instance.IsInTheMainScene() && (Player.m_localPlayer == null || __instance == Player.m_localPlayer))
+                if (ProgressionAPI.Instance.IsInTheMainScene())
                 {
-                    ProgressionPlugin.VentureProgressionLogger.LogInfo("Setting up world configurations...");
-                    Instance.SetupScaling();
-                    ProgressionPlugin.VentureProgressionLogger.LogInfo("Done setting up world configurations.");
+                    // Setup scaling on first spawn only
+                    if (!Instance._scalingInitialized && (Player.m_localPlayer == null || __instance == Player.m_localPlayer))
+                    {
+                        ProgressionPlugin.VentureProgressionLogger.LogInfo("Setting up world configurations...");
+                        Instance.SetupScaling();
+                        Instance._scalingInitialized = true;
+                        ProgressionPlugin.VentureProgressionLogger.LogInfo("Done setting up world configurations.");
+                    }
+                }
+                else
+                {
+                    // A starting menu is open, reset init in case of multi-server/game session
+                    Instance._scalingInitialized = false;
                 }
             }
         }

@@ -21,7 +21,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.21";
+        private const string ModVersion = "0.0.22";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -45,11 +45,13 @@ namespace VentureValheim.Progression
         public static ConfigEntry<bool> CE_BlockAllGlobalKeys = null!;
         public static ConfigEntry<string> CE_BlockedGlobalKeys = null!;
         public static ConfigEntry<string> CE_AllowedGlobalKeys = null!;
+        public static ConfigEntry<string> CE_EnforcedGlobalKeys = null!;
         public static ConfigEntry<bool> CE_UseBossKeysForSkillLevel = null!;
         public static ConfigEntry<int> CE_BossKeysSkillPerKey = null!;
         public static ConfigEntry<bool> CE_UsePrivateKeys = null!;
         public static ConfigEntry<string> CE_BlockedPrivateKeys = null!;
         public static ConfigEntry<string> CE_AllowedPrivateKeys = null!;
+        public static ConfigEntry<string> CE_EnforcedPrivateKeys = null!;
         public static ConfigEntry<bool> CE_UnlockAllHaldorItems = null!;
         public static ConfigEntry<bool> CE_LockTaming = null!;
         public static ConfigEntry<string> CE_OverrideLockTamingDefaults = null!;
@@ -126,6 +128,9 @@ namespace VentureValheim.Progression
             AddConfig("AllowedGlobalKeys", keys,
                 "Allow only these keys being added to the global list when BlockAllGlobalKeys is true (comma-separated).",
                 true, "", ref CE_AllowedGlobalKeys);
+            AddConfig("EnforcedGlobalKeys", keys,
+                "Always add these keys to the global list on startup (comma-separated).",
+                true, "", ref CE_EnforcedGlobalKeys);
             AddConfig("UseBossKeysForSkillLevel", keys,
                 "True to use private player boss keys to control skill floor/ceiling values (boolean).",
                 true, false, ref CE_UseBossKeysForSkillLevel);
@@ -141,6 +146,9 @@ namespace VentureValheim.Progression
             AddConfig("AllowedPrivateKeys", keys,
                 "Allow only these keys being added to the player's key list when UsePrivateKeys is true (comma-separated).",
                 true, "", ref CE_AllowedPrivateKeys);
+            AddConfig("EnforcedPrivateKeys", keys,
+                "Always add these keys to the player's private list on startup (comma-separated).",
+                true, "", ref CE_EnforcedPrivateKeys);
             AddConfig("UnlockAllHaldorItems", keys,
                 "True to remove the key check from Haldor entirely and unlock all items (boolean).",
                 true, false, ref CE_UnlockAllHaldorItems);
@@ -195,7 +203,7 @@ namespace VentureValheim.Progression
                 "Enabled the Auto-scaling feature (boolean).",
                 true, false, ref CE_AutoScaling);
             AddConfig("AutoScaleType", autoScaling,
-                "Auto-scaling type: Vanilla, Linear, or Exponential (string).",
+                "Auto-scaling type: Vanilla, Linear, Exponential, or Custom (string).",
                 true, "Vanilla", ref CE_AutoScaleType);
             AddConfig("AutoScaleFactor", autoScaling,
                 "Auto-scaling factor, 0.75 = 75% growth per biome \"difficulty order\" (float).",
@@ -209,16 +217,9 @@ namespace VentureValheim.Progression
             AddConfig("AutoScaleCreaturesDamage", autoScaling,
                 "Override the Base Damage distribution for Creatures (comma-separated list of 6 integers) (string).",
                 true, "", ref CE_AutoScaleCreatureDamage);
-            AddConfig("AutoScaleCreaturesIgnoreDefaults", autoScaling,
-                "When True ignores ALL default classifications assigned by the mod, use to keep vanilla values unless specifically overridden in the yaml file (boolean).",
-                true, false, ref CE_AutoScaleCreaturesIgnoreDefaults);
             AddConfig("AutoScaleItems", autoScaling,
                 "Auto-scale Items (boolean).",
                 true, true, ref CE_AutoScaleItems);
-            AddConfig("AutoScaleItemsIgnoreDefaults", autoScaling,
-                "When True ignores ALL default classifications assigned by the mod, use to keep vanilla values unless specifically overridden in the yaml file (boolean).",
-                true, false, ref CE_AutoScaleItemsIgnoreDefaults);
-
             #endregion
 
             if (!CE_ModEnabled.Value)
@@ -270,11 +271,13 @@ namespace VentureValheim.Progression
         public bool GetBlockAllGlobalKeys();
         public string GetBlockedGlobalKeys();
         public string GetAllowedGlobalKeys();
+        public string GetEnforcedGlobalKeys();
         public bool GetUseBossKeysForSkillLevel();
         public int GetBossKeysSkillPerKey();
         public bool GetUsePrivateKeys();
         public string GetBlockedPrivateKeys();
         public string GetAllowedPrivateKeys();
+        public string GetEnforcedPrivateKeys();
         public bool GetUnlockAllHaldorItems();
         public bool GetLockTaming();
         public string GetOverrideLockTamingDefaults();
@@ -301,9 +304,7 @@ namespace VentureValheim.Progression
         public bool GetAutoScaleCreatures();
         public string GetAutoScaleCreatureHealth();
         public string GetAutoScaleCreatureDamage();
-        public bool GetAutoScaleCreaturesIgnoreDefaults();
         public bool GetAutoScaleItems();
-        public bool GetAutoScaleItemsIgnoreDefaults();
     }
 
     public class ProgressionConfiguration : IProgressionConfiguration
@@ -330,11 +331,13 @@ namespace VentureValheim.Progression
         public bool GetBlockAllGlobalKeys() => ProgressionPlugin.CE_BlockAllGlobalKeys.Value;
         public string GetBlockedGlobalKeys() => ProgressionPlugin.CE_BlockedGlobalKeys.Value;
         public string GetAllowedGlobalKeys() => ProgressionPlugin.CE_AllowedGlobalKeys.Value;
+        public string GetEnforcedGlobalKeys() => ProgressionPlugin.CE_EnforcedGlobalKeys.Value;
         public bool GetUseBossKeysForSkillLevel() => ProgressionPlugin.CE_UseBossKeysForSkillLevel.Value;
         public int GetBossKeysSkillPerKey() => ProgressionPlugin.CE_BossKeysSkillPerKey.Value;
         public bool GetUsePrivateKeys() => ProgressionPlugin.CE_UsePrivateKeys.Value;
         public string GetBlockedPrivateKeys() => ProgressionPlugin.CE_BlockedPrivateKeys.Value;
         public string GetAllowedPrivateKeys() => ProgressionPlugin.CE_AllowedPrivateKeys.Value;
+        public string GetEnforcedPrivateKeys() => ProgressionPlugin.CE_EnforcedPrivateKeys.Value;
         public bool GetUnlockAllHaldorItems() => ProgressionPlugin.CE_UnlockAllHaldorItems.Value;
         public bool GetLockTaming() => ProgressionPlugin.CE_LockTaming.Value;
         public string GetOverrideLockTamingDefaults() => ProgressionPlugin.CE_OverrideLockTamingDefaults.Value;
@@ -361,8 +364,6 @@ namespace VentureValheim.Progression
         public bool GetAutoScaleCreatures() => ProgressionPlugin.CE_AutoScaleCreatures.Value;
         public string GetAutoScaleCreatureHealth() => ProgressionPlugin.CE_AutoScaleCreatureHealth.Value;
         public string GetAutoScaleCreatureDamage() => ProgressionPlugin.CE_AutoScaleCreatureDamage.Value;
-        public bool GetAutoScaleCreaturesIgnoreDefaults() => ProgressionPlugin.CE_AutoScaleCreaturesIgnoreDefaults.Value;
         public bool GetAutoScaleItems() => ProgressionPlugin.CE_AutoScaleItems.Value;
-        public bool GetAutoScaleItemsIgnoreDefaults() => ProgressionPlugin.CE_AutoScaleItemsIgnoreDefaults.Value;
     }
 }

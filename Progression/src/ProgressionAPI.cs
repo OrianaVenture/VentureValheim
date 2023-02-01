@@ -1,4 +1,3 @@
-using System;
 using BepInEx;
 using System.IO;
 using JetBrains.Annotations;
@@ -261,21 +260,59 @@ namespace VentureValheim.Progression
                             var filePath = $"{path}{Path.DirectorySeparatorChar}{character.name}.json";
                             File.WriteAllText(filePath, JsonUtility.ToJson(character, true));
 
-                            var damages = character.m_defaultItems; // TODO update this
-
-                            if (damages != null)
+                            var items = new Dictionary<string, GameObject>();
+                            if (character.m_defaultItems != null)
                             {
-                                for (int lcv = 0; lcv < damages.Length; lcv++)
+                                foreach (var item in character.m_defaultItems)
                                 {
-                                    var damagePath = $"{path}{Path.DirectorySeparatorChar}{character.name}.{damages[lcv].name}.json";
-                                    var damage = damages[lcv].GetComponent<ItemDrop>();
-                                    if (damage != null)
+                                    if (!items.ContainsKey(item.name))
                                     {
-                                        File.WriteAllText(damagePath, JsonUtility.ToJson(damage.m_itemData.m_shared.m_damages, true));
+                                        items.Add(item.name, item);
+                                    }
+                                }
+                            }
+
+                            if (character.m_randomWeapon != null)
+                            {
+                                foreach (var item in character.m_randomWeapon)
+                                {
+                                    if (!items.ContainsKey(item.name))
+                                    {
+                                        items.Add(item.name, item);
+                                    }
+                                }
+                            }
+
+                            if (character.m_randomSets != null)
+                            {
+                                for (int lcv = 0; lcv < character.m_randomSets.Length; lcv++)
+                                {
+                                    if (character.m_randomSets[lcv].m_items != null)
+                                    {
+                                        foreach (var item in character.m_randomSets[lcv].m_items)
+                                        {
+                                            if (!items.ContainsKey(item.name))
+                                            {
+                                                items.Add(item.name, item);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (items != null)
+                            {
+                                foreach (var item in items.Values)
+                                {
+                                    var component = item.GetComponent<ItemDrop>();
+                                    if (component != null)
+                                    {
+                                        var itemPath = $"{path}{Path.DirectorySeparatorChar}{character.name}.{item.name}.json";
+                                        File.WriteAllText(itemPath, JsonUtility.ToJson(component.m_itemData?.m_shared?.m_damages, true));
                                     }
                                     else
                                     {
-                                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"Failed to write to file for GameObject damage: {damages[lcv].name}.");
+                                        ProgressionPlugin.VentureProgressionLogger.LogDebug($"Failed to write to file for GameObject: {item.name}.");
                                     }
                                 }
                             }
