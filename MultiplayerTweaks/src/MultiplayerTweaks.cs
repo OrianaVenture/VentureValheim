@@ -81,29 +81,13 @@ namespace VentureValheim.MultiplayerTweaks
         {
             private static bool Prefix(Player __instance, string name)
             {
-                if (!MultiplayerTweaksPlugin.GetEnableHuginTutorials())
+                if (!Raven.m_tutorialsEnabled)
                 {
                     __instance.SetSeenTutorial(name);
                     return false; // Skip original
                 }
 
                 return true; // Continue
-            }
-        }
-
-        /// <summary>
-        /// When Tutorials disabled ensures the Raven prefab defaults tutorials to disabled.
-        /// This will skip the Hugin tips at the beginning of the game.
-        /// </summary>
-        [HarmonyPatch(typeof(Raven), nameof(Raven.Awake))]
-        public static class Patch_Raven_Awake
-        {
-            private static void Prefix()
-            {
-                if (!MultiplayerTweaksPlugin.GetEnableHuginTutorials())
-                {
-                    Raven.m_tutorialsEnabled = false;
-                }
             }
         }
 
@@ -142,9 +126,9 @@ namespace VentureValheim.MultiplayerTweaks
                 __state = __instance.m_firstSpawn;
             }
 
-            private static void Postfix(bool __state)
+            private static void Postfix(Game __instance, bool __state)
             {
-                if (__state && MultiplayerTweaksPlugin.GetEnableArrivalMessage())
+                if (__state && !__instance.m_requestRespawn && MultiplayerTweaksPlugin.GetEnableArrivalMessage())
                 {
                     Talker.Type talk = Talker.Type.Shout;
                     if (!MultiplayerTweaksPlugin.GetEnableArrivalMessageShout())

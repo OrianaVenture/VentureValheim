@@ -12,7 +12,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.4.4";
+        private const string ModVersion = "0.4.5";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -31,7 +31,6 @@ namespace VentureValheim.MultiplayerTweaks
         internal static ConfigEntry<bool> CE_ModEnabled = null!;
         internal static ConfigEntry<int> CE_MaximumPlayers = null!;
         internal static ConfigEntry<bool> CE_EnableValkrie = null!;
-        internal static ConfigEntry<bool> CE_EnableHuginTutorials = null!;
         internal static ConfigEntry<bool> CE_EnableHaldorMapPin = null!;
         internal static ConfigEntry<bool> CE_EnableArrivalMessage = null!;
         internal static ConfigEntry<bool> CE_EnableArrivalMessageShout = null!;
@@ -45,7 +44,6 @@ namespace VentureValheim.MultiplayerTweaks
 
         public static int GetMaximumPlayers() => CE_MaximumPlayers.Value;
         public static bool GetEnableValkrie() => CE_EnableValkrie.Value;
-        public static bool GetEnableHuginTutorials() => CE_EnableHuginTutorials.Value;
         public static bool GetEnableHaldorMapPin() => CE_EnableHaldorMapPin.Value;
         public static bool GetEnableArrivalMessage() => CE_EnableArrivalMessage.Value;
         public static bool GetEnableArrivalMessageShout() => CE_EnableArrivalMessageShout.Value;
@@ -89,8 +87,6 @@ namespace VentureValheim.MultiplayerTweaks
                 true, true, ref CE_ModEnabled);
             AddConfig("MaximumPlayers", general, "Maximum Players for the Server (integer).",
                 true, 10, ref CE_MaximumPlayers);
-            AddConfig("EnableHugin", general, "True to enable Hugin tutorials (boolean).",
-                false, true, ref CE_EnableHuginTutorials);
             AddConfig("OverridePlayerPVP", general, "Override Player pvp behavior (boolean).",
                 true, false, ref CE_OverridePlayerPVP);
             AddConfig("ForcePlayerPVPOn", general, "True to set pvp always on when OverridePlayerPVP is True (boolean).",

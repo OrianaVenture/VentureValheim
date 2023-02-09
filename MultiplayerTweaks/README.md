@@ -4,17 +4,17 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Commonly requested tweaks for servers and single player modes. Toggle the Valkyrie, Hugin tutorials, arrival messages, Haldor map pin, PVP options, and more!
+Commonly requested tweaks for servers and single player modes. Toggle the Valkyrie, track Hugin tutorials, customize arrival messages, hide the Haldor map pin, PVP options, and more!
 
 ## Features
 
 * Set the maximum player count for servers.
 * Set the default spawn point for all Players.
 * Toggle Valkyrie opening cut scene.
-* Toggle Hugin tutorials (client side config).
+* Add Hugin tutorials to the seen list when tutorials are turned off.
 * Toggle or customize the "I have arrived!" message on new player connection.
 * Toggle the Haldor trader Map Pin.
-* Toggle Player Map Positions always on or off.
+* Toggle Player Map Position Icons always on or off.
 * Toggle PVP always on or off.
 * Toggle teleporting on a PVP death.
 * ServerSync included.
@@ -25,7 +25,7 @@ Set the PlayerDefaultSpawnPoint by entering an x,z pair (for example: 20.5, -80.
 
 ### Hugin Tutorials
 
-This mod can block Hugin from spawning but will still add all discovered tutorials to the player's "seen" list. If the tutorials at the beginning of the game annoy you - disable this feature (EnableHugin = false). You can turn it back on at any time to see any new tutorials your character discovers. If you do this, a client restart is required to re-enable tutorials.
+The base game added a setting to toggle Hugin tutorials on or off under the misc category. This mod will now use the game setting rather than the old config setting. However, since it is not a feature in the base game, this mod will still add all discovered tutorials to the player's "seen" list when tutorials are disabled. If the tutorials at the beginning of the game annoy you, turn off tutorials until you need to see any new tutorials your character discovers. There will not be a flood of tutorials to shift through when you finally need them again!
 
 If you use another mod that relies on Hugin spawns (otherwise known as the Raven), EnableHugin must be true for that mod to work. (If you still want to disable tutorials with my mod I can make an update for compatibility with other mods if you send me all the deets!)
 
@@ -45,14 +45,22 @@ Force player map position icons always on or always off. To use set OverridePlay
 
 Gives you the ability to force PVP always on or always off (OverridePlayerPVP must be set to true, then uses the value of ForcePlayerPVPOn). Disables the toggle in the UI. Live changes to the configs will not apply until a player respawns/relogs. Remember if PVP is off you cannot kill tames without the butcher knife! You also have the option to turn off teleporting to your bed (or default spawn point) when another player kills you (set TeleportOnPVPDeath to false). Useful for roleplaying situations. Playing with friends and one of them is about to die? Just slap them across the face to pull them back into reality, don't let their spirit wander, the time to fight is here and now!
 
+## Installation
+
+This mod needs to be on both the client and server for all features to work. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations will not always take effect until the player relogs into the world/server.
+
 ## Changelog
+
+### 0.4.5
+
+* Fixed a bug where on join there would be spammed "I have arrived" messages
+* Updated the Hugin tutorials to use the new in-game setting for game patch 0.213.4
 
 ### 0.4.4
 
 * Fixed the previous patch throwing errors (I must have tested the wrong file, sorry about that)
 * Changed the get default spawn point logic to using the original spawn location on failure to find the custom spawn point.
 * Changed the internal return type of getting the custom maximum players (might have been causing issues?)
-* Note: Trying to fix compatibility issues with Valheim_PvP_Tweaks, there might be a few more patches coming.
 
 ### 0.4.3
 
@@ -81,11 +89,11 @@ Gives you the ability to force PVP always on or always off (OverridePlayerPVP mu
 
 ### 0.3.1
 
-* Fixed a server sync issue for new player map pin feature not syncing on first connection.
+* Fixed a server sync issue for new player map position icons feature not syncing on first connection.
 
 ### 0.3.0
 
-* Added ability to force player map pins on or off.
+* Added ability to force player map position icons on or off.
 * Added new config section for map pins.
 
 ### 0.2.0
