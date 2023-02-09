@@ -11,11 +11,20 @@ The good people of Florida hate seasons. If you also hate seasons install this m
 * Enable all seasonal items in the game including:
   * Holiday Tree
   * Gift Boxes
+  * 3 Yule Pieces
   * Jackoturnip
   * Maypole
   * Midsummer Crown
 
+## Installation
+
+This mod is client side only and has no configuration options. Does not need to be on the server.
+
 ## Changelog
+
+### 0.1.5
+
+* Added support for new seasonal items from the mistlands update.
 
 ### 0.1.4
 

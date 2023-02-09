@@ -19,26 +19,27 @@ namespace VentureValheim.NoSeasonalRestrictions
         {
             private static void Postfix()
             {
-                NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug("NoSeasonalRestrictions.Patch_ObjectDB_Awake called.");
-
                 if (SceneManager.GetActiveScene().name.Equals("main"))
                 {
                     EnableSeasonalItems();
-                    NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug("Done enabling seasonal items.");
+                    NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogInfo("Done enabling seasonal items.");
                 }
             }
         }
 
         private static void EnableSeasonalItems()
         {
-            EnablePiece("piece_xmastree");
             EnablePiece("piece_maypole");
             EnablePiece("piece_jackoturnip");
             EnablePiece("piece_gift1");
             EnablePiece("piece_gift2");
             EnablePiece("piece_gift3");
+            EnablePiece("piece_mistletoe");
+            EnablePiece("piece_xmascrown");
+            EnablePiece("piece_xmasgarland");
+            EnablePiece("piece_xmastree");
 
-            EnableRecipe("$item_helmet_midsummercrown");
+            EnableRecipe("Recipe_HelmetMidsummerCrown");
         }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace VentureValheim.NoSeasonalRestrictions
                 for (int lcv = 0; lcv < ObjectDB.instance.m_recipes.Count; lcv++)
                 {
                     var recipe = ObjectDB.instance.m_recipes[lcv];
-                    if (recipe.m_item != null && recipe.m_item.m_itemData.m_shared.m_name.Equals(name))
+                    if (recipe != null && recipe.name.Equals(name))
                     {
                         ObjectDB.instance.m_recipes[lcv].m_enabled = true;
                         return;
@@ -84,7 +85,7 @@ namespace VentureValheim.NoSeasonalRestrictions
                 NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogWarning($"Error, skipping configuring Recipe: {name}");
             }
 
-            NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogInfo($"Not found, skipping configuring Recipe: {name}");
+            NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogWarning($"Not found, skipping configuring Recipe: {name}");
         }
 
         /// <summary>
