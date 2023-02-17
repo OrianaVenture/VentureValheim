@@ -15,7 +15,7 @@ namespace VentureValheim.LocationReset
             return loc?.m_nview?.GetZDO()?.GetInt(LocationReset.LAST_RESET, -1) ?? -1;
         }
 
-        public static bool NeedsReset(this LocationProxy loc)
+        public static bool NeedsReset(this LocationProxy loc, int hash)
         {
             var lastReset = loc.GetLastReset();
             if (lastReset < 0)
@@ -25,7 +25,7 @@ namespace VentureValheim.LocationReset
             }
 
             var timePassed = LocationReset.GetGameDay() - lastReset;
-            var resetTime = LocationResetPlugin.GetResetTime();
+            var resetTime = LocationResetPlugin.GetResetTime(hash);
 
             if (timePassed >= resetTime)
             {
@@ -57,9 +57,12 @@ namespace VentureValheim.LocationReset
             var loc = gameObject.GetComponent<LocationProxy>();
             if (loc != null)
             {
+                int hash = loc.m_nview?.GetZDO()?.GetInt("location") ?? 0;
+                float range = LocationReset.GetResetRange(hash);
+
                 while (!LocationReset.LocalPlayerBeyondRange(loc.transform.position))
                 {
-                    if (LocationReset.LocalPlayerInRange(loc.transform.position))
+                    if (LocationReset.LocalPlayerInRange(loc.transform.position, range))
                     {
                         LocationReset.Instance.TryReset(loc);
                         break;

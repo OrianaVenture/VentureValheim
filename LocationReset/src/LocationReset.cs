@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -16,10 +17,48 @@ namespace VentureValheim.LocationReset
             get => _instance;
         }
 
-        public const int TROLL_CAVE_HASH = -1965863430; // TrollCave02
-        public const float TROLL_CAVE_RADIUS = 30f;
         public const float LOCATION_MINIMUM = 4000f;
         public const string LAST_RESET = "VV_LastReset";
+
+        public static readonly HashSet<int> DungeonHashes = new HashSet<int>
+        {
+            "WoodVillage1".GetStableHashCode(),
+            "WoodFarm1".GetStableHashCode(),
+            "Crypt2".GetStableHashCode(),
+            "Crypt3".GetStableHashCode(),
+            "Crypt4".GetStableHashCode(),
+            "SunkenCrypt4".GetStableHashCode(),
+            "MountainCave02".GetStableHashCode(),
+            "GoblinCamp2".GetStableHashCode(),
+            "Mistlands_DvergrBossEntrance1".GetStableHashCode(),
+            "Mistlands_DvergrTownEntrance1".GetStableHashCode(),
+            "Mistlands_DvergrTownEntrance2".GetStableHashCode()
+        };
+
+        public static readonly HashSet<int> SkyLocationHashes = new HashSet<int>
+        {
+            "TrollCave02".GetStableHashCode()
+        };
+
+        /// <summary>
+        /// Get the trigger range for resetting a location by its id hash.
+        /// </summary>
+        /// <param name="hash"></param>
+        /// <returns></returns>
+        public static float GetResetRange(int hash)
+        {
+            return SkyLocationHashes.Contains(hash) ? 30f : 100f;
+        }
+
+        /// <summary>
+        /// Get the trigger range for resetting a dungeon by transform height.
+        /// </summary>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        public static float GetResetRange(float height)
+        {
+            return height >= LOCATION_MINIMUM ? 30f : 100f;
+        }
 
         /// <summary>
         /// Returns the current in-game day.
@@ -31,13 +70,14 @@ namespace VentureValheim.LocationReset
         }
 
         /// <summary>
-        /// Determines if the local player is within 30 units of the given position.
+        /// Determines if the local player is within range of the given position.
         /// </summary>
         /// <param name="position"></param>
+        /// <param name="range"></param>
         /// <returns></returns>
-        public static bool LocalPlayerInRange(Vector3 position)
+        public static bool LocalPlayerInRange(Vector3 position, float resetRange)
         {
-            var zoneSize = new Vector3(30f, 0f, 30f);
+            var zoneSize = new Vector3(resetRange, 0f, resetRange);
             var player = Player.m_localPlayer;
             if (player == null)
             {
@@ -66,13 +106,15 @@ namespace VentureValheim.LocationReset
 
         /// <summary>
         /// Returns true if there is player activity based off config settings.
+        /// Locations on the ground will always perform a ground player activity check.
         /// </summary>
         /// <param name="position"></param>
         /// <param name="zoneSize"></param>
+        /// <param name="skyLocation"></param>
         /// <returns></returns>
-        public static bool PlayerActivity(Vector3 position, Vector3 zoneSize)
+        public static bool PlayerActivity(Vector3 position, Vector3 zoneSize, bool skyLocation)
         {
-            if (LocationResetPlugin.GetSkipPlayerGroundPieceCheck())
+            if (LocationResetPlugin.GetSkipPlayerGroundPieceCheck() && skyLocation)
             {
                 return PlayerActivityNoGroundPieceCheck(position, zoneSize);
             }
@@ -121,7 +163,7 @@ namespace VentureValheim.LocationReset
         }
 
         /// <summary>
-        /// Returns true if there are player placed pieces, tombstones, or players 
+        /// Returns true if there are player placed pieces, tombstones, or players
         /// in the sky at the location.
         /// </summary>
         /// <param name="position"></param>
@@ -185,13 +227,33 @@ namespace VentureValheim.LocationReset
 
                 if (InBounds(obj.transform.position, position, zoneSize))
                 {
-                    ZNetView netView = obj.GetComponent<ZNetView>();
-                    if (netView != null)
-                    {
-                        netView.GetZDO()?.SetOwner(ZDOMan.instance.GetMyID());
-                    }
+                    DeleteObject(ref obj);
+                }
+            }
+        }
 
-                    ZNetScene.instance.Destroy(obj);
+        /// <summary>
+        /// Deletes all objects in the given ground location given it is a qualifying object.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="zoneSize"></param>
+        public static void DeleteGroundLocation(Vector3 position, Vector3 zoneSize)
+        {
+            var list = SceneManager.GetActiveScene().GetRootGameObjects();
+
+            for (int lcv = 0; lcv < list.Length; lcv++)
+            {
+                var obj = list[lcv];
+
+                if (obj.transform.position.y >= LOCATION_MINIMUM || obj.GetComponent<Player>() != null)
+                {
+                    // Do not destroy the Players or sky objects
+                    continue;
+                }
+
+                if (QualifyingObject(obj) && InBounds(obj.transform.position, position, zoneSize))
+                {
+                    DeleteObject(ref obj);
                 }
             }
         }
@@ -216,6 +278,34 @@ namespace VentureValheim.LocationReset
             return false;
         }
 
+        /// <summary>
+        /// Returns whether an object can be destroyed and respawned.
+        /// Used for ground locations.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        private static bool QualifyingObject(GameObject obj)
+        {
+            return obj.GetComponent<Piece>() ||
+                obj.GetComponent<Pickable>() ||
+                obj.GetComponent<Character>() ||
+                obj.GetComponent<CreatureSpawner>() ||
+                obj.GetComponent<WearNTear>() ||
+                obj.GetComponent<SpawnArea>() ||
+                obj.GetComponent<RandomSpawn>();
+        }
+
+        /// <summary>
+        /// Deletes an object from the ZNetScene.
+        /// </summary>
+        /// <param name="obj"></param>
+        private static void DeleteObject(ref GameObject obj)
+        {
+            obj.GetComponent<ZNetView>()?.GetZDO()?.SetOwner(ZDOMan.instance.GetMyID());
+
+            ZNetScene.instance.Destroy(obj);
+        }
+
         #region Dungeons
 
         /// <summary>
@@ -224,14 +314,7 @@ namespace VentureValheim.LocationReset
         /// <param name="dg"></param>
         public void TryReset(DungeonGenerator dg)
         {
-            LocationResetPlugin.LocationResetLogger.LogDebug($"Trying to reset DungeonGenerator located at: {dg.transform.position}");
-
-            if (dg.transform.position.y < LOCATION_MINIMUM)
-            {
-                // DungeonGenerator is not a sky dungeon, can not reset
-                // TODO Update for ground DungeonGenerator support
-                return;
-            }
+            LocationResetPlugin.LocationResetLogger.LogDebug($"Trying to reset DungeonGenerator located at: {dg.transform.position}, center: {dg.m_zoneCenter}");
 
             if (!dg.NeedsReset())
             {
@@ -241,8 +324,9 @@ namespace VentureValheim.LocationReset
 
             Vector3 position = dg.transform.position + dg.m_zoneCenter;
             Vector3 zoneSize = dg.m_zoneSize;
+            bool skyLocation = position.y >= LOCATION_MINIMUM;
 
-            if (PlayerActivity(position, zoneSize))
+            if (PlayerActivity(position, zoneSize, skyLocation))
             {
                 LocationResetPlugin.LocationResetLogger.LogDebug($"There is player activity here! Will not reset.");
                 return;
@@ -261,7 +345,16 @@ namespace VentureValheim.LocationReset
         public void Reset(DungeonGenerator dg, Vector3 position, Vector3 zoneSize)
         {
             // Destroy location
-            DeleteLocation(position, zoneSize);
+            if (dg.transform.position.y < LOCATION_MINIMUM)
+            {
+                // This location is a Village or Fuling Camp
+                DeleteGroundLocation(position, zoneSize);
+            }
+            else
+            {
+                // Sky dungeon
+                DeleteLocation(position, zoneSize);
+            }
 
             // Regenerate location
             dg.Generate(ZoneSystem.SpawnMode.Full);
@@ -280,23 +373,26 @@ namespace VentureValheim.LocationReset
         {
             LocationResetPlugin.LocationResetLogger.LogDebug($"Trying to reset LocationProxy located at: {loc.transform.position}");
 
-            if (!loc.NeedsReset())
+            int hash = loc.m_nview?.GetZDO()?.GetInt("location") ?? 0;
+
+            if (!loc.NeedsReset(hash))
             {
                 LocationResetPlugin.LocationResetLogger.LogDebug($"LocationProxy does not need a reset.");
                 return;
             }
 
             Vector3 position = loc.transform.position;
-            float radius = TROLL_CAVE_RADIUS; // TODO update for more location support
-            Vector3 zoneSize = new Vector3(radius, radius, radius);
+            ZoneSystem.ZoneLocation zone = ZoneSystem.instance.GetLocation(hash);
+            float locationRadius = Mathf.Max(zone.m_exteriorRadius, zone.m_interiorRadius) + 3f; // Add buffer to range
+            Vector3 zoneSize = new Vector3(locationRadius, locationRadius, locationRadius);
 
-            if (PlayerActivity(position, zoneSize))
+            if (PlayerActivity(position, zoneSize, SkyLocationHashes.Contains(hash)))
             {
                 LocationResetPlugin.LocationResetLogger.LogDebug($"There is player activity here! Will not reset.");
                 return;
             }
 
-            Reset(loc, position, zoneSize);
+            Reset(loc, position, zoneSize, hash);
 
             LocationResetPlugin.LocationResetLogger.LogDebug($"Done regenerating location for LocationProxy located at: {loc.transform.position}.");
         }
@@ -307,13 +403,21 @@ namespace VentureValheim.LocationReset
         /// <param name="loc"></param>
         /// <param name="position"></param>
         /// <param name="zoneSize"></param>
-        public void Reset(LocationProxy loc, Vector3 position, Vector3 zoneSize)
+        /// <param name="locationHash"></param>
+        public void Reset(LocationProxy loc, Vector3 position, Vector3 zoneSize, int locationHash)
         {
             // Destroy location
-            DeleteLocation(position, zoneSize);
+            if (!SkyLocationHashes.Contains(locationHash))
+            {
+                DeleteGroundLocation(position, zoneSize);
+            }
+            else
+            {
+                DeleteLocation(position, zoneSize);
+            }
 
             // Regenerate location
-            Regenerate(loc);
+            Regenerate(loc, locationHash);
             loc.SetLastResetNow();
         }
 
@@ -321,11 +425,10 @@ namespace VentureValheim.LocationReset
         /// Rerolls and generates the Location objects.
         /// </summary>
         /// <param name="loc"></param>
-        public void Regenerate(LocationProxy loc)
+        public void Regenerate(LocationProxy loc, int locationHash)
         {
-            int location = loc.m_nview.GetZDO().GetInt("location");
-            var zone = ZoneSystem.instance.GetLocation(location);
-            int seed = loc.m_nview.GetZDO().GetInt("seed");
+            var zone = ZoneSystem.instance.GetLocation(locationHash);
+            int seed = loc.m_nview?.GetZDO()?.GetInt("seed") ?? 0;
 
             foreach (ZNetView obj in zone.m_netViews)
             {
@@ -342,23 +445,31 @@ namespace VentureValheim.LocationReset
 
             foreach (ZNetView obj in zone.m_netViews)
             {
-                if (obj.transform.position.y < LOCATION_MINIMUM)
-                {
-                    // Do not regenerate items that have not been deleted
-                    continue;
-                }
-
                 if (obj.gameObject.activeSelf)
                 {
+                    // Do not regenerate items that have not been deleted
+                    if (SkyLocationHashes.Contains(locationHash))
+                    {
+                        if (obj.transform.position.y < LOCATION_MINIMUM)
+                        {
+                            continue;
+                        }
+                    }
+                    else if (!QualifyingObject(obj.gameObject))
+                    {
+                        continue;
+                    }
+
                     Vector3 objPosition = loc.transform.position + loc.transform.rotation * obj.gameObject.transform.position;
                     Quaternion objRotation = obj.gameObject.transform.rotation * loc.transform.rotation;
 
                     GameObject gameObject = UnityEngine.Object.Instantiate(obj.gameObject, objPosition, objRotation);
                     gameObject.SetActive(value: true);
-                    gameObject.GetComponent<ZNetView>().GetZDO().SetPGWVersion(ZoneSystem.instance.m_pgwVersion);
+                    gameObject.GetComponent<ZNetView>()?.GetZDO()?.SetPGWVersion(ZoneSystem.instance.m_pgwVersion);
                 }
             }
 
+            WearNTear.m_randomInitialDamage = false;
             SnapToGround.SnappAll();
         }
 
@@ -371,9 +482,7 @@ namespace VentureValheim.LocationReset
         {
             private static void Postfix(DungeonGenerator __instance)
             {
-                var reset = __instance.gameObject.GetComponent<DungeonGeneratorReset>();
-
-                if (reset == null)
+                if (__instance.gameObject.GetComponent<DungeonGeneratorReset>() == null)
                 {
                     __instance.gameObject.AddComponent<DungeonGeneratorReset>();
                 }
@@ -387,11 +496,16 @@ namespace VentureValheim.LocationReset
             {
                 var location = __instance.m_nview?.GetZDO()?.GetInt("location");
 
-                if (location != null && location == TROLL_CAVE_HASH)
+                if (!LocationResetPlugin.GetResetGroundLocations() && location != null && !SkyLocationHashes.Contains(location.Value))
                 {
-                    var reset = __instance.gameObject.GetComponent<LocationProxyReset>();
+                    // Do not reset ground locations when config is off
+                    return;
+                }
 
-                    if (reset == null)
+                // Do not respawn location proxies for dungeons
+                if (location != null && !DungeonHashes.Contains(location.Value))
+                {
+                    if (__instance.gameObject.GetComponent<LocationProxyReset>() == null)
                     {
                         __instance.gameObject.AddComponent<LocationProxyReset>();
                     }
@@ -403,11 +517,11 @@ namespace VentureValheim.LocationReset
         /*[HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.SpawnLocation))]
         public static class Patch_ZoneSystem_SpawnLocation
         {
-            private static void Postfix(ZoneSystem __instance, ZoneLocation location)
+            private static void Postfix(ZoneSystem __instance, ZoneSystem.ZoneLocation location)
             {
                 var name = location.m_prefabName;
                 var hash = name.GetStableHashCode();
-                LocationResetPlugin.LocationResetLogger.LogDebug($"Patch_ZoneSystem_SpawnLocation: {name}, {hash} @ {__instance.transform.position}.");
+                LocationResetPlugin.LocationResetLogger.LogDebug($"Location spawned with data: {name}, {hash}.");
             }
         }*/
 

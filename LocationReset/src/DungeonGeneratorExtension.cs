@@ -25,7 +25,7 @@ namespace VentureValheim.LocationReset
             }
 
             var timePassed = LocationReset.GetGameDay() - lastReset;
-            var resetTime = LocationResetPlugin.GetResetTime();
+            var resetTime = LocationResetPlugin.GetResetTime(dg.name);
 
             if (timePassed >= resetTime)
             {
@@ -57,9 +57,11 @@ namespace VentureValheim.LocationReset
             var dg = gameObject.GetComponent<DungeonGenerator>();
             if (dg != null)
             {
+                float range = LocationReset.GetResetRange(dg.transform.position.y);
+
                 while (!LocationReset.LocalPlayerBeyondRange(dg.transform.position))
                 {
-                    if (LocationReset.LocalPlayerInRange(dg.transform.position))
+                    if (LocationReset.LocalPlayerInRange(dg.transform.position, range))
                     {
                         LocationReset.Instance.TryReset(dg);
                         break;
