@@ -121,6 +121,7 @@ namespace VentureValheim.Progression
             { "GP_Queen" , BOSS_KEY_MISTLAND }
         };
 
+        public const string RPCNAME_ServerListKeys = "VV_ServerListKeys";
         public const string RPCNAME_ServerSetPrivateKeys = "VV_ServerSetPrivateKeys";
         public const string RPCNAME_ServerSetPrivateKey = "VV_ServerSetPrivateKey";
         public const string RPCNAME_ServerRemovePrivateKey = "VV_ServerRemovePrivateKey";
@@ -820,6 +821,32 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
+        /// Sends the command to list the current server keys.
+        /// </summary>
+        private void SendServerListKeys()
+        {
+            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerListKeys);
+        }
+
+        /// <summary>
+        /// Prints the current server keys to the log file.
+        /// </summary>
+        /// <param name="sender"></param>
+        private void RPC_ServerListKeys(long sender)
+        {
+            foreach (var player in ServerPrivateKeysList)
+            {
+                string keys = "";
+                foreach (var key in player.Value)
+                {
+                    keys += $"{key}, ";
+                }
+
+                ProgressionPlugin.VentureProgressionLogger.LogInfo($"Player {player.Key} has {player.Value.Count} recorded keys: {keys}");
+            }
+        }
+
+        /// <summary>
         /// Records the private key set for a player in the server dataset.
         /// </summary>
         /// <param name="name">Player name</param>
@@ -1148,6 +1175,7 @@ namespace VentureValheim.Progression
                         ZoneSystem.instance.m_globalKeys.Add(key);
                     }
 
+                    ZRoutedRpc.instance.Register(RPCNAME_ServerListKeys, new Action<long>(Instance.RPC_ServerListKeys));
                     ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKeys, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKeys));
                     ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKey, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKey));
                     ZRoutedRpc.instance.Register(RPCNAME_ServerRemovePrivateKey, new Action<long, string, string>(Instance.RPC_ServerRemovePrivateKey));
@@ -1325,7 +1353,7 @@ namespace VentureValheim.Progression
                     {
                         args.Context.AddString(key);
                     }
-                }, isCheat: true, isNetwork: false, onlyServer: false);
+                }, isCheat: false, isNetwork: false, onlyServer: false);
                 new Terminal.ConsoleCommand("listserverkeys", "", delegate (Terminal.ConsoleEventArgs args)
                 {
                     if (ZNet.instance.IsServer())
@@ -1336,7 +1364,7 @@ namespace VentureValheim.Progression
                         {
                             var numKeys = set.Value?.Count ?? 0;
 
-                            args.Context.AddString($"Player {set.Key} has {numKeys} keys");
+                            args.Context.AddString($"Player {set.Key} has {numKeys} recorded keys:");
 
                             if (set.Value != null)
                             {
@@ -1349,7 +1377,8 @@ namespace VentureValheim.Progression
                     }
                     else
                     {
-                        args.Context.AddString($"You are not the server, no data available.");
+                        args.Context.AddString($"You are not the server, no data available client side. Printing key information to server logoutput.log file.");
+                        Instance.SendServerListKeys();
                     }
                 }, isCheat: true, isNetwork: false, onlyServer: true);
             }

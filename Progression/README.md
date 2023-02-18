@@ -68,6 +68,10 @@ When this mod is installed there will be a key "cleanup" performed for the serve
 
 Due to the changes this mod makes the vanilla "setkey" command will not function as expected in most cases. There is an added command "setglobalkey" that will work in it's place. For private keys there are 4 new commands added that work similar to the vanilla public key commands: setprivatekey, removeprivatekey, resetprivatekeys, listprivatekeys. For example, you can set your local player's key with "setprivatekey defeated_eikthyr", or any online player with "setprivatekey defeated_eikthyr PlayerName".
 
+The server also tracks the player's keys in each game session. This list is cleared on a server restart and data for each player will only be available once the player reconnects. The command is "listserverkeys", if you are hosting the data will be available in the console window. If you have a dedicated server you can send this command to the server from the client and the data will be printed to the bepinex/logoutput.log file.
+
+Don't know how to use commands? Dedicated servers do not allow for use of commands, but there are mods that can enable them (like Server devcommands by JereKuusela). All of these commands are considered "cheats" except the "listprivatekeys" command. To use cheats you must enable them with the "devcommands" command, you may have to be an admin for them to work.
+
 #### Possible Future Additions
 
 * Ability to lock items or crafting to boss completion
@@ -182,6 +186,11 @@ Examples (Will update this for first official release):
 * To override Meadow's difficulty after it has been initialized: AddBiome(0, 8, true) or AddCustomBiome(0, 1.3, true)
 
 ## Changelog
+
+### 0.0.23
+
+* Added ability to print data to the server log file with the existing listserverkeys command
+* Changed the "listprivatekeys" from a cheat to a normal command so all players can use it
 
 ### 0.0.22
 
