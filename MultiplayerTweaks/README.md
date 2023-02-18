@@ -51,6 +51,10 @@ This mod needs to be on both the client and server for all features to work. Whe
 
 ## Changelog
 
+### 0.4.6
+
+* Actually fixed the bug where on join there would be spammed "I have arrived" messages
+
 ### 0.4.5
 
 * Fixed a bug where on join there would be spammed "I have arrived" messages

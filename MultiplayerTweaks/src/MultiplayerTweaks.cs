@@ -92,8 +92,7 @@ namespace VentureValheim.MultiplayerTweaks
         }
 
         /// <summary>
-        /// Removes sending the "I have arrived!" message from Game.UpdateRespawn.
-        /// If the first spawn message is enabled it is sent in the postfix with the chosen configuration options.
+        /// Replaces the "I have arrived!" message call in Game.UpdateRespawn.
         /// </summary>
         [HarmonyPatch(typeof(Game), nameof(Game.UpdateRespawn))]
         public static class Patch_Game_UpdateRespawn
@@ -101,17 +100,18 @@ namespace VentureValheim.MultiplayerTweaks
             private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
             {
                 var codes = new List<CodeInstruction>(instructions);
+                var method = AccessTools.Method(typeof(Chat), nameof(Chat.SendText));
                 for (var lcv = 3; lcv < codes.Count; lcv++)
                 {
                     if (codes[lcv].opcode == OpCodes.Callvirt)
                     {
-                        var method = AccessTools.Method(typeof(Chat), nameof(Chat.SendText));
                         if (codes[lcv].operand?.Equals(method) ?? false)
                         {
                             codes[lcv - 3].opcode = OpCodes.Nop;
                             codes[lcv - 2].opcode = OpCodes.Nop;
                             codes[lcv - 1].opcode = OpCodes.Nop;
-                            codes[lcv].opcode = OpCodes.Nop;
+                            var methodCall = AccessTools.Method(typeof(MultiplayerTweaks), nameof(MultiplayerTweaks.SendArrivalMessage));
+                            codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
                             break;
                         }
                     }
@@ -119,31 +119,25 @@ namespace VentureValheim.MultiplayerTweaks
 
                 return codes.AsEnumerable();
             }
+        }
 
-            [HarmonyPriority(Priority.First)]
-            private static void Prefix(Game __instance, out bool __state)
+        private static void SendArrivalMessage()
+        {
+            if (MultiplayerTweaksPlugin.GetEnableArrivalMessage())
             {
-                __state = __instance.m_firstSpawn;
-            }
-
-            private static void Postfix(Game __instance, bool __state)
-            {
-                if (__state && !__instance.m_requestRespawn && MultiplayerTweaksPlugin.GetEnableArrivalMessage())
+                Talker.Type talk = Talker.Type.Shout;
+                if (!MultiplayerTweaksPlugin.GetEnableArrivalMessageShout())
                 {
-                    Talker.Type talk = Talker.Type.Shout;
-                    if (!MultiplayerTweaksPlugin.GetEnableArrivalMessageShout())
-                    {
-                        talk = Talker.Type.Normal;
-                    }
-
-                    string message = MultiplayerTweaksPlugin.GetOverrideArrivalMessage();
-                    if (message.IsNullOrWhiteSpace())
-                    {
-                        message = "I have arrived!";
-                    }
-
-                    Chat.instance.SendText(talk, message);
+                    talk = Talker.Type.Normal;
                 }
+
+                string message = MultiplayerTweaksPlugin.GetOverrideArrivalMessage();
+                if (message.IsNullOrWhiteSpace())
+                {
+                    message = "I have arrived!";
+                }
+
+                Chat.instance.SendText(talk, message);
             }
         }
 
