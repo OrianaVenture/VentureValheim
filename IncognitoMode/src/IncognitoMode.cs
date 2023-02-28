@@ -19,6 +19,11 @@ namespace VentureValheim.IncognitoMode
         private string HelmetPrefabsString = "";
         private HashSet<string> HelmetPrefabs = new HashSet<string>();
 
+        public static string GetDisplayName()
+        {
+            return IncognitoModePlugin.GetHiddenDisplayName() ?? "???";
+        }
+
         public void Update()
         {
             if (!IncognitoModePlugin.GetHiddenByItems().Equals(Instance.HelmetPrefabsString))
@@ -49,7 +54,7 @@ namespace VentureValheim.IncognitoMode
 
                 if (hidden)
                 {
-                    __result = IncognitoModePlugin.GetHiddenDisplayName() ?? "???";
+                    __result = GetDisplayName();
                 }
             }
         }
@@ -77,6 +82,41 @@ namespace VentureValheim.IncognitoMode
                     }
 			    }
 
+            }
+        }
+
+        /// <summary>
+        /// Change the chat display name, patch low so the change happens after other mods and
+        /// they can still patch after to grab this changed value if they want.
+        /// </summary>
+        [HarmonyPriority(Priority.VeryLow)]
+        [HarmonyPatch(typeof(Chat), nameof(Chat.OnNewChatMessage))]
+        public static class Patch_Chat_OnNewChatMessage
+        {
+            private static void Prefix(ref string user)
+            {
+                if (IncognitoModePlugin.GetHideNameInChat())
+                {
+                    Player speaker = null;
+                    var players = Player.m_players;
+
+                    for (int lcv = 0; lcv < players.Count; lcv++)
+                    {
+                        var player = players[lcv].GetPlayerName();
+                        if (player.Equals(user))
+                        {
+                            speaker = players[lcv];
+                            break;
+                        }
+                    }
+
+                    var hidden = speaker?.m_nview?.GetZDO()?.GetBool(HELMET_HIDDEN) ?? false;
+
+                    if (hidden)
+                    {
+                        user = GetDisplayName();
+                    }
+                }
             }
         }
     }

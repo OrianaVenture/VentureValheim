@@ -29,6 +29,10 @@ ServerSync is included. Install on the server to enforce the same mod configurat
 
 ## Changelog
 
+### 0.1.1
+
+* Added the "hidden" effect to apply to the chat name too
+
 ### 0.1.0
 
 * First release

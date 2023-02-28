@@ -12,7 +12,7 @@ namespace VentureValheim.IncognitoMode
     public class IncognitoModePlugin : BaseUnityPlugin
     {
         private const string ModName = "IncognitoMode";
-        private const string ModVersion = "0.1.0";
+        private const string ModVersion = "0.1.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -32,9 +32,11 @@ namespace VentureValheim.IncognitoMode
         internal static ConfigEntry<bool> CE_ModEnabled = null!;
         internal static ConfigEntry<string> CE_HiddenByItems = null!;
         internal static ConfigEntry<string> CE_HiddenDisplayName = null!;
+        internal static ConfigEntry<bool> CE_HideNameInChat = null!;
 
         public static string GetHiddenByItems() => CE_HiddenByItems.Value;
         public static string GetHiddenDisplayName() => CE_HiddenDisplayName.Value;
+        public static bool GetHideNameInChat() => CE_HideNameInChat.Value;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
@@ -68,6 +70,8 @@ namespace VentureValheim.IncognitoMode
                 true, "HelmetRoot, HelmetFenring, HelmetPadded", ref CE_HiddenByItems);
             AddConfig("HiddenDisplayName", general, "The hidden Player's display name (string).",
                 true, "???", ref CE_HiddenDisplayName);
+            AddConfig("HideNameInChat", general, "When hidden also hides the name in chat (boolean).",
+                true, true, ref CE_HideNameInChat);
 
             #endregion
 
