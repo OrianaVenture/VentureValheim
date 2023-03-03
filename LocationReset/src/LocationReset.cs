@@ -37,7 +37,11 @@ namespace VentureValheim.LocationReset
 
         public static readonly HashSet<int> SkyLocationHashes = new HashSet<int>
         {
-            "TrollCave02".GetStableHashCode()
+            "TrollCave02".GetStableHashCode(),
+            "SpiderCave01".GetStableHashCode(), // Monsterlabz
+            "AshlandsCave_01".GetStableHashCode(), // Monsterlabz
+            "AshlandsCave_02".GetStableHashCode(), // Monsterlabz
+            "Loc_MistlandsCave_DoD".GetStableHashCode() // Horem
         };
 
         /// <summary>

@@ -50,6 +50,13 @@ Due to loading times and the very random nature of the world spawning system the
 * When you first log in all locations in the area will not reset even if applicable, you will need to leave the area and reload it.
 * Multiplayer sessions may get weird if you and another player trigger a reset for the same location at the same time. If you report any issues please mention if you were running through the area with more than one player with you.
 
+### Other Mod Support
+
+The following locations from other mods are supported:
+
+* Monsterlabz: SpiderCave01, AshlandsCave_01, AshlandsCave_02
+* Horem: Loc_MistlandsCave_DoD
+
 ### Possible Future Improvements
 
 * Manual reset commands
@@ -61,6 +68,10 @@ Due to loading times and the very random nature of the world spawning system the
 This mod needs to be on the client, it will work even if other players do not have it installed. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations should take immediate effect
 
 ## Changelog
+
+### 0.2.1
+
+* Added mod support for Monsterlabz and Horem's locations.
 
 ### 0.2.0
 
