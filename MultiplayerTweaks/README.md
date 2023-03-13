@@ -17,6 +17,7 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 * Toggle Player Map Position Icons always on or off.
 * Toggle PVP always on or off.
 * Toggle teleporting on a PVP death.
+* Toggle skill loss on a PVP death.
 * ServerSync included.
 
 ### Player Default Spawn Point
@@ -43,13 +44,18 @@ Force player map position icons always on or always off. To use set OverridePlay
 
 ### Player VS Player
 
-Gives you the ability to force PVP always on or always off (OverridePlayerPVP must be set to true, then uses the value of ForcePlayerPVPOn). Disables the toggle in the UI. Live changes to the configs will not apply until a player respawns/relogs. Remember if PVP is off you cannot kill tames without the butcher knife! You also have the option to turn off teleporting to your bed (or default spawn point) when another player kills you (set TeleportOnPVPDeath to false). Useful for roleplaying situations. Playing with friends and one of them is about to die? Just slap them across the face to pull them back into reality, don't let their spirit wander, the time to fight is here and now!
+Gives you the ability to force PVP always on or always off (OverridePlayerPVP must be set to true, then uses the value of ForcePlayerPVPOn). Disables the toggle in the UI. Live changes to the configs will not apply until a player respawns/relogs. Remember if PVP is off you cannot kill tames without the butcher knife! There is an option to prevent skill loss caused by a PvP death to incentivize players to fight each other on PvP focused servers. You also have the option to turn off teleporting to your bed (or default spawn point) when another player kills you (set TeleportOnPVPDeath to false). Useful for roleplaying situations. Playing with friends and one of them is about to die? Just slap them across the face to pull them back into reality, don't let their spirit wander, the time to fight is here and now!
 
 ## Installation
 
 This mod needs to be on both the client and server for all features to work. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.4.7
+
+* Update for game patch 0.214.2: "I have arrived" message is now localized in the vanilla game.
+* Added option to prevent skill loss on a PvP death.
 
 ### 0.4.6
 

@@ -101,12 +101,14 @@ namespace VentureValheim.MultiplayerTweaks
             {
                 var codes = new List<CodeInstruction>(instructions);
                 var method = AccessTools.Method(typeof(Chat), nameof(Chat.SendText));
-                for (var lcv = 3; lcv < codes.Count; lcv++)
+                for (var lcv = 5; lcv < codes.Count; lcv++)
                 {
                     if (codes[lcv].opcode == OpCodes.Callvirt)
                     {
                         if (codes[lcv].operand?.Equals(method) ?? false)
                         {
+                            codes[lcv - 5].opcode = OpCodes.Nop;
+                            codes[lcv - 4].opcode = OpCodes.Nop;
                             codes[lcv - 3].opcode = OpCodes.Nop;
                             codes[lcv - 2].opcode = OpCodes.Nop;
                             codes[lcv - 1].opcode = OpCodes.Nop;
@@ -121,6 +123,9 @@ namespace VentureValheim.MultiplayerTweaks
             }
         }
 
+        /// <summary>
+        /// Skips or sends the arrival message based off configurations.
+        /// </summary>
         private static void SendArrivalMessage()
         {
             if (MultiplayerTweaksPlugin.GetEnableArrivalMessage())
@@ -134,7 +139,7 @@ namespace VentureValheim.MultiplayerTweaks
                 string message = MultiplayerTweaksPlugin.GetOverrideArrivalMessage();
                 if (message.IsNullOrWhiteSpace())
                 {
-                    message = "I have arrived!";
+                    message = Localization.instance.Localize("$text_player_arrived");
                 }
 
                 Chat.instance.SendText(talk, message);
@@ -386,9 +391,40 @@ namespace VentureValheim.MultiplayerTweaks
                     if (Instance._lastHitByPlayer)
                     {
                         __instance.SetLogoutPoint(point);
-                        Instance._lastHitByPlayer = false;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Prevents skill loss on PvP death when enabled.
+        /// Higher than normal priority to skip other mod skill patches
+        /// including World Advancement and Progression.
+        /// </summary>
+        [HarmonyPatch(typeof(Skills), nameof(Skills.LowerAllSkills))]
+        public static class Patch_Skills_LowerAllSkills
+        {
+            [HarmonyPriority(Priority.HigherThanNormal)]
+            private static bool Prefix()
+            {
+                if (!MultiplayerTweaksPlugin.GetSkillLossOnPVPDeath() && Instance._lastHitByPlayer)
+                {
+                    return false; // Skip original method
+                }
+
+                return true; // Continue
+            }
+        }
+
+        /// <summary>
+        /// Reset the "last hit by player" tracker.
+        /// </summary>
+        [HarmonyPatch(typeof(Player), nameof(Player.OnDeath))]
+        public static class Patch_Player_OnDeath
+        {
+            private static void Postfix()
+            {
+                Instance._lastHitByPlayer = false;
             }
         }
     }
