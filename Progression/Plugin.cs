@@ -21,7 +21,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.23";
+        private const string ModVersion = "0.0.24";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -58,6 +58,10 @@ namespace VentureValheim.Progression
         public static ConfigEntry<bool> CE_LockGuardianPower = null!;
         public static ConfigEntry<bool> CE_LockBossSummons = null!;
         public static ConfigEntry<string> CE_OverrideLockBossSummonsDefaults = null!;
+        public static ConfigEntry<bool> CE_LockEquipment = null!;
+        public static ConfigEntry<bool> CE_LockCrafting = null!;
+        public static ConfigEntry<bool> CE_LockBuilding = null!;
+        public static ConfigEntry<bool> CE_LockCooking = null!;
 
         // Skills Manager
         public static ConfigEntry<bool> CE_EnableSkillManager = null!;
@@ -167,6 +171,18 @@ namespace VentureValheim.Progression
             AddConfig("OverrideLockBossSummonsDefaults", keys,
                 "Override keys needed to summon bosses. Leave blank to use defaults (comma-separated prefab,key pairs).",
                 true, "", ref CE_OverrideLockBossSummonsDefaults);
+            AddConfig("LockEquipment", keys,
+                "True to lock the ability to equip or use boss items or items made from biome metals/materials based on keys. Uses private key if enabled, global key if not (boolean).",
+                true, true, ref CE_LockEquipment);
+            AddConfig("LockCrafting", keys,
+                "True to lock the ability to craft items based on boss items and biome metals/materials and keys. Uses private key if enabled, global key if not (boolean).",
+                true, true, ref CE_LockCrafting);
+            AddConfig("LockBuilding", keys,
+                "True to lock the ability to build based on boss items and biome metals/materials and keys. Uses private key if enabled, global key if not (boolean).",
+                true, true, ref CE_LockBuilding);
+            AddConfig("LockCooking", keys,
+                "True to lock the ability to cook with biome food materials based on keys. Uses private key if enabled, global key if not (boolean).",
+                true, true, ref CE_LockCooking);
 
             AddConfig("EnableSkillManager", skills,
                 "Enable the Skill Manager feature (boolean).",
@@ -284,6 +300,10 @@ namespace VentureValheim.Progression
         public bool GetLockGuardianPower();
         public bool GetLockBossSummons();
         public string GetOverrideLockBossSummonsDefaults();
+        public bool GetLockEquipment();
+        public bool GetLockCrafting();
+        public bool GetLockBuilding();
+        public bool GetLockCooking();
 
         // Skills Manager
         public bool GetEnableSkillManager();
@@ -344,6 +364,10 @@ namespace VentureValheim.Progression
         public bool GetLockGuardianPower() => ProgressionPlugin.CE_LockGuardianPower.Value;
         public bool GetLockBossSummons() => ProgressionPlugin.CE_LockBossSummons.Value;
         public string GetOverrideLockBossSummonsDefaults() => ProgressionPlugin.CE_OverrideLockBossSummonsDefaults.Value;
+        public bool GetLockEquipment() => ProgressionPlugin.CE_LockEquipment.Value;
+        public bool GetLockCrafting() => ProgressionPlugin.CE_LockCrafting.Value;
+        public bool GetLockBuilding() => ProgressionPlugin.CE_LockBuilding.Value;
+        public bool GetLockCooking() => ProgressionPlugin.CE_LockCooking.Value;
 
         // Skills Manager
         public bool GetEnableSkillManager() => ProgressionPlugin.CE_EnableSkillManager.Value;

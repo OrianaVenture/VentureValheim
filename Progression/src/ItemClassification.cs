@@ -38,7 +38,8 @@ namespace VentureValheim.Progression
         Crossbow = 33,
         HelmetRobe = 34,
         ChestRobe = 35,
-        LegsRobe = 36
+        LegsRobe = 36,
+        Fist = 37
     }
 
     public class ItemClassification
@@ -195,6 +196,7 @@ namespace VentureValheim.Progression
                 case ItemType.Tool:
                 case ItemType.Bolt:
                 case ItemType.Crossbow:
+                case ItemType.Fist:
                     return ItemCategory.Weapon;
                 default:
                     return ItemCategory.Undefined;

@@ -417,6 +417,8 @@ namespace VentureValheim.Progression
             AddItemConfiguration("SpearWolfFang", WorldConfiguration.Biome.Mountain, ItemType.Spear);
             AddItemConfiguration("SpearCarapace", WorldConfiguration.Biome.Mistland, ItemType.Spear);
 
+            AddItemConfiguration("FistFenrirClaw", WorldConfiguration.Biome.Mountain, ItemType.Fist);
+
             AddItemConfiguration("Bow", WorldConfiguration.Biome.Meadow, ItemType.Bow);
             AddItemConfiguration("BowFineWood", WorldConfiguration.Biome.BlackForest, ItemType.Bow);
             AddItemConfiguration("BowHuntsman", WorldConfiguration.Biome.Swamp, ItemType.Bow);
@@ -525,6 +527,7 @@ namespace VentureValheim.Progression
             AddBaseItemValue(ItemType.TowerShield, 15f);
             AddBaseItemValue(ItemType.Primative, 8f);
             AddBaseItemValue(ItemType.Knife, 8f);
+            AddBaseItemValue(ItemType.Fist, 8f);
             AddBaseItemValue(ItemType.Ammo, 10f);
             AddBaseItemValue(ItemType.Bolt, 10f);
             AddBaseItemValue(ItemType.PickAxe, 10f);

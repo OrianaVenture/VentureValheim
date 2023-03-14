@@ -28,6 +28,10 @@ Taming can be locked by keys when enabled. By default Wolf is locked by the defe
 
 Guardian Powers and Boss Alter Summoning can be locked too. By default summoning is locked the key given by the previous boss in the natural progression order. You can override this by using the prefab name of the creature the alter summons, allowing you to add support for content from other mods. When overriding you must define all the bosses manually (similar to the taming override). Additionally, these actions have a fun special effect on failure!
 
+Using equipment, crafting, building, and cooking can all be locked with individual settings. The materials are categorized by the biome they are naturally found in. For example, if you lock all these features, if you have not defeated any bosses then you cannot use or craft the antler pickaxe, place a forge, make deer stew, or unlock swamp crypts. These features force new players joining your server to follow the progression of the game in order to advance. This will apply to all game items that use vanilla crafting materials.
+
+#### Important Notice!!
+
 When this mod is installed there will be a key "cleanup" performed for the server and any player who joins the game based off the mod configurations. When using the default settings you can expect all global keys to be cleared when you start up the server, resetting your server's key progress. When using private keys a similar principal applies, depending on your blocked or allowed key list, any keys that are not expected will be removed. All enforced keys will be added to the appropriate list on startup regardless of other settings. If you see your keys resetting unexpectedly make sure to check your mod configuration is allowing the keys you want to exist. Any keys added manually will persist until the server is restarted (for private keys when the player logs back in), to ensure these keys remain after a restart you must check your mod configuration!
 
 #### Configuration Options
@@ -47,6 +51,10 @@ When this mod is installed there will be a key "cleanup" performed for the serve
 * LockGuardianPower: If true locks the ability to get or use boss powers based on the required key.
 * LockBossSummons: If true you can only summon bosses based on the required key.
 * OverrideLockBossSummonsDefaults: Define your own required keys to summon bosses or leave blank to use the defaults. Example (also the mod defaults): gd_king, defeated_eikthyr, Bonemass, defeated_gdking, Dragon, defeated_bonemass, GoblinKing, defeated_dragon, SeekerQueen, defeated_goblinking
+* LockEquipment: If true you can only equip or use boss items or items made from biome metals/materials if you have the required key
+* LockCrafting: If true you can only craft items made from boss items or biome metals/materials if you have the required key
+* LockBuilding: If true you can only build pieces made from boss items or biome metals/materials if you have the required key
+* LockCooking: If true you can only cook items made from biome materials if you have the required key
 * UseBossKeysForSkillLevel and BossKeysSkillPerKey explained under Skill Manager section below
 
 #### Vanilla Public Keys
@@ -186,6 +194,18 @@ Examples (Will update this for first official release):
 * To override Meadow's difficulty after it has been initialized: AddBiome(0, 8, true) or AddCustomBiome(0, 1.3, true)
 
 ## Changelog
+
+### 0.0.24
+
+* Added ability to lock equipping and using boss items or items made from biome metals/materials (defaults to on)
+* Similarly added ability to lock crafting (defaults to on)
+* Similarly added ability to lock building (defaults to on)
+* Similarly added ability to lock cooking (defaults to on)
+* Bug fix for blocking taming not always working correctly
+* Added Flesh Rippers to auto-scaling with new item type "Fist"
+* Improved key commands so that they work on any player online rather than only players in your same chunk
+* Improved key commands to accept player names with spaces
+* Now compatible with Multiplayer Tweaks "SkillLossOnPVPDeath" option
 
 ### 0.0.23
 

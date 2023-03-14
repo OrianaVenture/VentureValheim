@@ -421,7 +421,6 @@ namespace VentureValheim.Progression
                 return;
             }
 
-            ProgressionPlugin.VentureProgressionLogger.LogInfo($"Adding Public Key {key}.");
             if (!ZoneSystem.instance.m_globalKeys.Contains(key))
             {
                 ZoneSystem.instance.m_globalKeys.Add(key);
@@ -430,47 +429,27 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Attempts to find a Player with the given name.
+        /// Attempts to find the player id with the given name.
         /// Case-insensitive, ignores whitespace.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="playerName"></param>
         /// <returns></returns>
-        public Player GetPlayerByName(string name)
+        public long GetPlayerID(string playerName)
         {
-            var nameSimple = name.Trim().ToLower();
-            var players = Player.m_players;
+            var nameSimple = playerName.Trim().ToLower();
+            var players = ZNet.instance.GetPlayerList();
 
             for (int lcv = 0; lcv < players.Count; lcv++)
             {
-                var player = players[lcv].GetPlayerName().Trim().ToLower();
+                var player = players[lcv].m_name.Trim().ToLower();
                 if (player.Equals(nameSimple))
                 {
-                    return players[lcv];
+                    return players[lcv].m_characterID.m_userID;
                 }
             }
 
-            return null;
+            return 0L;
         }
-
-        /*/// <summary>
-        /// Attempts to find a Player with the given RPC sender id.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public string GetPlayerNameByPeerId(long id)
-        {
-            var players = Player.m_players;
-
-            for (int lcv = 0; lcv < players.Count; lcv++)
-            {
-                if (players[lcv].GetZDOID().userID == id)
-                {
-                    return players[lcv].GetPlayerName();
-                }
-            }
-
-            return "";
-        }*/
 
         /// <summary>
         /// Returns the player name of the client player if exists.

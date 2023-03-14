@@ -198,12 +198,18 @@ namespace VentureValheim.Progression
 
         /// <summary>
         /// Changes how Skills are lowered based on the configured skill floor.
+        /// Skips running if another Prefix skips the original to be compatible with Multiplayer Tweaks.
         /// </summary>
         [HarmonyPatch(typeof(Skills), nameof(Skills.LowerAllSkills))]
         public static class Patch_Skills_LowerAllSkills
         {
-            private static bool Prefix(Skills __instance, float factor)
+            private static bool Prefix(Skills __instance, float factor, ref bool __runOriginal)
             {
+                if (!__runOriginal)
+                {
+                    return __runOriginal;
+                }
+
                 Instance.Update();
 
                 if (!ProgressionConfiguration.Instance.GetEnableSkillManager())

@@ -75,7 +75,6 @@ namespace VentureValheim.Progression
                     _cachedPrivateBossKeys = Instance.CountPrivateBossKeys();
 
                     _lastUpdateTime = time;
-                    ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating cached Key Information: {delta} time passed.");
                 }
             }
         }
@@ -119,6 +118,88 @@ namespace VentureValheim.Progression
             { "GP_Moder" , BOSS_KEY_MOUNTAIN },
             { "GP_Yagluth" , BOSS_KEY_PLAIN },
             { "GP_Queen" , BOSS_KEY_MISTLAND }
+        };
+
+        public readonly Dictionary<string, string> BossItemKeysList = new Dictionary<string, string>
+        {
+            { "HardAntler", BOSS_KEY_MEADOW },
+            { "CryptKey", BOSS_KEY_BLACKFOREST },
+            { "Wishbone" , BOSS_KEY_SWAMP },
+            { "DragonTear" , BOSS_KEY_MOUNTAIN },
+            { "YagluthDrop" , BOSS_KEY_PLAIN },
+            { "DvergrKey" , BOSS_KEY_PLAIN },
+            { "QueenDrop" , BOSS_KEY_MISTLAND }
+        };
+
+        public readonly Dictionary<string, string> MaterialKeysList = new Dictionary<string, string>
+        {
+            // Black Forest
+            { "FineWood", BOSS_KEY_MEADOW },
+            { "Tin", BOSS_KEY_MEADOW },
+            { "Copper", BOSS_KEY_MEADOW },
+            { "Bronze", BOSS_KEY_MEADOW },
+            { "BronzeNails", BOSS_KEY_MEADOW },
+            { "TrollHide", BOSS_KEY_MEADOW },
+            // Swamp
+            { "Iron" , BOSS_KEY_BLACKFOREST },
+            { "IronNails" , BOSS_KEY_BLACKFOREST },
+            { "Chain" , BOSS_KEY_BLACKFOREST },
+            { "ElderBark" , BOSS_KEY_BLACKFOREST },
+            { "Root" , BOSS_KEY_BLACKFOREST },
+            // Mountain
+            { "Silver" , BOSS_KEY_SWAMP },
+            { "WolfHairBundle" , BOSS_KEY_SWAMP },
+            { "WolfPelt" , BOSS_KEY_SWAMP },
+            { "WolfClaw" , BOSS_KEY_SWAMP },
+            { "WolfFang" , BOSS_KEY_SWAMP },
+            { "JuteRed" , BOSS_KEY_SWAMP },
+            { "Obsidian" , BOSS_KEY_SWAMP },
+            // Plains
+            { "BlackMetal" , BOSS_KEY_MOUNTAIN },
+            { "Tar" , BOSS_KEY_MOUNTAIN },
+            { "Needle" , BOSS_KEY_MOUNTAIN },
+            { "LinenThread" , BOSS_KEY_MOUNTAIN },
+            // Mistlands
+            { "BlackMarble" , BOSS_KEY_PLAIN },
+            { "BlackCore" , BOSS_KEY_PLAIN },
+            { "Carapace" , BOSS_KEY_PLAIN },
+            { "Eitr" , BOSS_KEY_PLAIN },
+            { "ScaleHide" , BOSS_KEY_PLAIN },
+            { "Wisp" , BOSS_KEY_PLAIN },
+            { "YggdrasilWood" , BOSS_KEY_PLAIN }
+        };
+
+        public readonly Dictionary<string, string> FoodKeysList = new Dictionary<string, string>
+        {
+            // Black Forest
+            { "Blueberries", BOSS_KEY_MEADOW },
+            { "MushroomYellow", BOSS_KEY_MEADOW },
+            { "Carrot", BOSS_KEY_MEADOW },
+            // Swamp
+            { "Turnip" , BOSS_KEY_BLACKFOREST },
+            { "Bloodbag" , BOSS_KEY_BLACKFOREST },
+            { "Ooze" , BOSS_KEY_BLACKFOREST },
+            { "SerpentMeat" , BOSS_KEY_BLACKFOREST },
+            { "SerpentMeatCooked" , BOSS_KEY_BLACKFOREST },
+            // Mountain
+            { "FreezeGland" , BOSS_KEY_SWAMP },
+            { "WolfMeat" , BOSS_KEY_SWAMP },
+            { "Onion" , BOSS_KEY_SWAMP },
+            // Plains
+            { "Barley" , BOSS_KEY_MOUNTAIN },
+            { "LoxMeat" , BOSS_KEY_MOUNTAIN },
+            { "BarleyFlour" , BOSS_KEY_MOUNTAIN },
+            { "Cloudberry" , BOSS_KEY_MOUNTAIN },
+            { "ChickenMeat" , BOSS_KEY_MOUNTAIN },
+            { "ChickenEgg" , BOSS_KEY_MOUNTAIN },
+            { "BreadDough" , BOSS_KEY_MOUNTAIN },
+            // Mistlands
+            { "GiantBloodSack" , BOSS_KEY_PLAIN },
+            { "BugMeat" , BOSS_KEY_PLAIN },
+            { "RoyalJelly" , BOSS_KEY_PLAIN },
+            { "HareMeat" , BOSS_KEY_PLAIN },
+            { "Sap" , BOSS_KEY_PLAIN },
+            { "MushroomJotunPuffs" , BOSS_KEY_PLAIN }
         };
 
         public const string RPCNAME_ServerListKeys = "VV_ServerListKeys";
@@ -469,7 +550,12 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         private bool HasTamingKey(string creature)
         {
-            if (!creature.IsNullOrWhiteSpace() && TamingKeysList.ContainsKey(creature))
+            if (creature.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            if (TamingKeysList.ContainsKey(creature))
             {
                 return HasKey(TamingKeysList[creature]);
             }
@@ -485,7 +571,12 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         private bool HasSummoningKey(string creature)
         {
-            if (!creature.IsNullOrWhiteSpace() && SummoningKeysList.ContainsKey(creature))
+            if (creature.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            if (SummoningKeysList.ContainsKey(creature))
             {
                 return HasKey(SummoningKeysList[creature]);
             }
@@ -500,12 +591,95 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         private bool HasGuardianKey(string guardianPower)
         {
-            if (!guardianPower.IsNullOrWhiteSpace() && GuardianKeysList.ContainsKey(guardianPower))
+            if (guardianPower.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            if (GuardianKeysList.ContainsKey(guardianPower))
             {
                 return HasKey(GuardianKeysList[guardianPower]);
             }
 
             return false; // If there are other mods that add powers will need to revisit this
+        }
+
+        /// <summary>
+        /// Returns whether the Player contains the necessary key for handling the item.
+        /// </summary>
+        /// <param name="item">Prefab name of the item<</param>
+        /// <param name="checkBossItems"></param>
+        /// <param name="checkMaterials"></param>
+        /// <param name="checkFood"></param>
+        /// <returns></returns>
+        private bool HasItemKey(string item, bool checkBossItems, bool checkMaterials, bool checkFood)
+        {
+            if (item.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            if (checkBossItems && BossItemKeysList.ContainsKey(item))
+            {
+                return HasKey(BossItemKeysList[item]);
+            }
+            else if (checkMaterials && MaterialKeysList.ContainsKey(item))
+            {
+                return HasKey(MaterialKeysList[item]);
+            }
+            else if (checkFood && FoodKeysList.ContainsKey(item))
+            {
+                return HasKey(FoodKeysList[item]);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if an action is blocked based on prefab categories and keys.
+        /// Checks the passed item and the item recipe.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="checkBossItems"></param>
+        /// <param name="checkMaterials"></param>
+        /// <param name="checkFood"></param>
+        /// <returns></returns>
+        private bool IsActionBlocked(ItemDrop.ItemData item, bool checkBossItems, bool checkMaterials, bool checkFood)
+        {
+            if (item?.m_dropPrefab == null || !Instance.HasItemKey(item.m_dropPrefab.name, checkBossItems, checkMaterials, checkFood))
+            {
+                return true;
+            }
+            else
+            {
+                var recipe = ObjectDB.instance.GetRecipe(item);
+                return IsActionBlocked(recipe, checkBossItems, checkMaterials, checkFood);
+            }
+        }
+
+        /// <summary>
+        /// Checks if an action is blocked based on prefab categories and keys.
+        /// Checks the passed recipe.
+        /// </summary>
+        /// <param name="recipe"></param>
+        /// <param name="checkBossItems"></param>
+        /// <param name="checkMaterials"></param>
+        /// <param name="checkFood"></param>
+        /// <returns></returns>
+        private bool IsActionBlocked(Recipe recipe, bool checkBossItems, bool checkMaterials, bool checkFood)
+        {
+            if (recipe != null)
+            {
+                for (int lcv = 0; lcv < recipe.m_resources.Length; lcv++)
+                {
+                    if (!Instance.HasItemKey(recipe.m_resources[lcv].m_resItem?.name, checkBossItems, checkMaterials, checkFood))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -597,23 +771,22 @@ namespace VentureValheim.Progression
             }
             else
             {
-                var player = ProgressionAPI.Instance.GetPlayerByName(playerName);
-
-                if (player != null)
-                {
-                    SendPrivateKey(player, key);
-                }
+                SendPrivateKey(playerName, key);
             }
         }
 
         /// <summary>
         /// Invokes the RPC to add a key to a player.
         /// </summary>
-        /// <param name="player"></param>
+        /// <param name="playerName"></param>
         /// <param name="key"></param>
-        private void SendPrivateKey(Player player, string key)
+        private void SendPrivateKey(string playerName, string key)
         {
-            player.m_nview.InvokeRPC(RPCNAME_SetPrivateKey, key);
+            var id = ProgressionAPI.Instance.GetPlayerID(playerName);
+            if (id != 0)
+            {
+                ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_SetPrivateKey, key);
+            }
         }
 
         /// <summary>
@@ -659,23 +832,22 @@ namespace VentureValheim.Progression
             }
             else
             {
-                var player = ProgressionAPI.Instance.GetPlayerByName(playerName);
-
-                if (player != null)
-                {
-                    SendRemovePrivateKey(player, key);
-                }
+                SendRemovePrivateKey(playerName, key);
             }
         }
 
         /// <summary>
         /// Invokes the RPC to remove the given player's private key.
         /// </summary>
-        /// <param name="player"></param>
+        /// <param name="playerName"></param>
         /// <param name="key"></param>
-        private void SendRemovePrivateKey(Player player, string key)
+        private void SendRemovePrivateKey(string playerName, string key)
         {
-            player.m_nview.InvokeRPC(RPCNAME_RemovePrivateKey, key);
+            var id = ProgressionAPI.Instance.GetPlayerID(playerName);
+            if (id != 0)
+            {
+                ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_RemovePrivateKey, key);
+            }
         }
 
         /// <summary>
@@ -717,21 +889,21 @@ namespace VentureValheim.Progression
             }
             else
             {
-                var player = ProgressionAPI.Instance.GetPlayerByName(playerName);
-                if (player != null)
-                {
-                    SendResetPrivateKeys(player);
-                }
+                SendResetPrivateKeys(playerName);
             }
         }
 
         /// <summary>
-        /// Invokes the RPC to reset the given player's private keys
+        /// Invokes the RPC to reset the given player's private keys.
         /// </summary>
-        /// <param name="player"></param>
-        private void SendResetPrivateKeys(Player player)
+        /// <param name="playerName"></param>
+        private void SendResetPrivateKeys(string playerName)
         {
-            player.m_nview.InvokeRPC(RPCNAME_ResetPrivateKeys);
+            var id = ProgressionAPI.Instance.GetPlayerID(playerName);
+            if (id != 0)
+            {
+                ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_ResetPrivateKeys);
+            }
         }
 
         /// <summary>
@@ -759,7 +931,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Sets the Server keys for a player for tracking
+        /// Sets the Server keys for a player for tracking.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="keys">Comma-seperated string of keys</param>
@@ -1015,9 +1187,10 @@ namespace VentureValheim.Progression
                     {
                         for (int lcv = 0; lcv < nearbyPlayers.Count; lcv++)
                         {
+                            var player = nearbyPlayers[lcv].GetPlayerName();
                             ProgressionPlugin.VentureProgressionLogger.LogDebug(
-                                    $"Attempting to send private key: {name} to \"{nearbyPlayers[lcv].GetPlayerName()}\".");
-                            Instance.SendPrivateKey(nearbyPlayers[lcv], name);
+                                    $"Attempting to send private key: {name} to \"{player}\".");
+                            Instance.SendPrivateKey(player, name);
                         }
                     }
                 }
@@ -1041,31 +1214,6 @@ namespace VentureValheim.Progression
                 if (ProgressionConfiguration.Instance.GetUsePrivateKeys() && !ZNet.instance.IsDedicated())
                 {
                     __result = Instance.HasPrivateKey(name);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Registers RPCs for each Player when created.
-        /// </summary>
-        [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
-        public static class Patch_Player_Awake
-        {
-            private static void Postfix(Player __instance)
-            {
-                if (ProgressionAPI.Instance.IsInTheMainScene() && __instance.m_nview != null)
-                {
-                    ProgressionPlugin.VentureProgressionLogger.LogDebug($"Registering RPCs for key managment.");
-
-                    __instance.m_nview.Register(RPCNAME_SetPrivateKey, new Action<long, string>(Instance.RPC_SetPrivateKey));
-                    __instance.m_nview.Register(RPCNAME_RemovePrivateKey, new Action<long, string>(Instance.RPC_RemovePrivateKey));
-                    __instance.m_nview.Register(RPCNAME_ResetPrivateKeys, new Action<long>(Instance.RPC_ResetPrivateKeys));
-
-                    if (Instance._keyManagerUpdater == null)
-                    {
-                        var obj = GameObject.Instantiate(new GameObject());
-                        Instance._keyManagerUpdater = obj.AddComponent<KeyManagerUpdater>();
-                    }
                 }
             }
         }
@@ -1137,6 +1285,23 @@ namespace VentureValheim.Progression
                     Instance.PrivateKeysList.Add(key);
                 }
 
+                try
+                {
+                    ZRoutedRpc.instance.Register(RPCNAME_SetPrivateKey, new Action<long, string>(Instance.RPC_SetPrivateKey));
+                    ZRoutedRpc.instance.Register(RPCNAME_RemovePrivateKey, new Action<long, string>(Instance.RPC_RemovePrivateKey));
+                    ZRoutedRpc.instance.Register(RPCNAME_ResetPrivateKeys, new Action<long>(Instance.RPC_ResetPrivateKeys));
+                }
+                catch
+                {
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug("Player RPCs have already been registered. Skipping.");
+                }
+
+                if (Instance._keyManagerUpdater == null)
+                {
+                    var obj = GameObject.Instantiate(new GameObject());
+                    Instance._keyManagerUpdater = obj.AddComponent<KeyManagerUpdater>();
+                }
+
                 // Sync data on connect
                 Instance.SendPrivateKeysToServer(Instance.PrivateKeysList);
             }
@@ -1175,10 +1340,23 @@ namespace VentureValheim.Progression
                         ZoneSystem.instance.m_globalKeys.Add(key);
                     }
 
-                    ZRoutedRpc.instance.Register(RPCNAME_ServerListKeys, new Action<long>(Instance.RPC_ServerListKeys));
-                    ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKeys, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKeys));
-                    ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKey, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKey));
-                    ZRoutedRpc.instance.Register(RPCNAME_ServerRemovePrivateKey, new Action<long, string, string>(Instance.RPC_ServerRemovePrivateKey));
+                    // Register Server RPCs
+                    try
+                    {
+                        ZRoutedRpc.instance.Register(RPCNAME_ServerListKeys, new Action<long>(Instance.RPC_ServerListKeys));
+                        ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKeys, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKeys));
+                        ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKey, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKey));
+                        ZRoutedRpc.instance.Register(RPCNAME_ServerRemovePrivateKey, new Action<long, string, string>(Instance.RPC_ServerRemovePrivateKey));
+
+                        ZRoutedRpc.instance.Register(RPCNAME_SetPrivateKey, new Action<long, string>(Instance.RPC_SetPrivateKey));
+                        ZRoutedRpc.instance.Register(RPCNAME_RemovePrivateKey, new Action<long, string>(Instance.RPC_RemovePrivateKey));
+                        ZRoutedRpc.instance.Register(RPCNAME_ResetPrivateKeys, new Action<long>(Instance.RPC_ResetPrivateKeys));
+                    }
+                    catch
+                    {
+                        ProgressionPlugin.VentureProgressionLogger.LogDebug("Server RPCs have already been registered. Skipping.");
+                    }
+
 
                     if (Instance._keyManagerUpdater == null)
                     {
@@ -1299,8 +1477,13 @@ namespace VentureValheim.Progression
                 {
                     if (args.Length >= 3)
                     {
-                        Instance.AddPrivateKey(args[1], args[2]);
-                        args.Context.AddString($"Setting private key {args[1]} for player {args[2]}.");
+                        var name = args[2];
+                        for (int lcv = 3; lcv < args.Length; lcv++)
+                        {
+                            name += " " + args[lcv];
+                        }
+                        Instance.AddPrivateKey(args[1], name);
+                        args.Context.AddString($"Setting private key {args[1]} for player {name}.");
                     }
                     else if (args.Length == 2)
                     {
@@ -1316,8 +1499,13 @@ namespace VentureValheim.Progression
                 {
                     if (args.Length >= 3)
                     {
-                        Instance.RemovePrivateKey(args[1], args[2]);
-                        args.Context.AddString($"Removing private key {args[1]} for player {args[2]}.");
+                        var name = args[2];
+                        for (int lcv = 3; lcv < args.Length; lcv++)
+                        {
+                            name += " " + args[lcv];
+                        }
+                        Instance.RemovePrivateKey(args[1], name);
+                        args.Context.AddString($"Removing private key {args[1]} for player {name}.");
                     }
                     else if (args.Length == 2)
                     {
@@ -1333,8 +1521,14 @@ namespace VentureValheim.Progression
                 {
                     if (args.Length >= 2)
                     {
+
+                        var name = args[1];
+                        for (int lcv = 2; lcv < args.Length; lcv++)
+                        {
+                            name += " " + args[lcv];
+                        }
                         Instance.ResetPrivateKeys(args[1]);
-                        args.Context.AddString($"Private keys cleared for player {args[1]}.");
+                        args.Context.AddString($"Private keys cleared for player {name}.");
                     }
                     else if (args.Length == 1)
                     {
@@ -1385,23 +1579,21 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Only increase taming if the player has the private key
+        /// Only increase taming if the player has the private key.
         /// </summary>
         [HarmonyPatch(typeof(Tameable), nameof(Tameable.DecreaseRemainingTime))]
         public static class Patch_Tameable_DecreaseRemainingTime
         {
             [HarmonyPriority(Priority.Last)]
-            private static bool Prefix(Tameable __instance)
+            private static void Prefix(Tameable __instance, ref float time)
             {
-                if (ProgressionConfiguration.Instance.GetLockTaming() && __instance.m_character != null)
+                if (ProgressionConfiguration.Instance.GetLockTaming())
                 {
-                    if (!Instance.HasTamingKey(__instance.m_character.name))
+                    if (__instance.m_character == null || !Instance.HasTamingKey(__instance.m_character.name))
                     {
-                        return false; // Skip taming
+                        time = 0f;
                     }
                 }
-
-                return true;
             }
         }
 
@@ -1476,6 +1668,119 @@ namespace VentureValheim.Progression
                         __result = false;
                         return false; // Skip summoning
                     }
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Block equipping items without the proper keys.
+        /// </summary>
+        [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.EquipItem))]
+        public static class Patch_Humanoid_EquipItem
+        {
+            [HarmonyPriority(Priority.Last)]
+            private static bool Prefix(Humanoid __instance, ref bool __result, ItemDrop.ItemData item)
+            {
+                if (__instance != Player.m_localPlayer)
+                {
+                    return true;
+                }
+
+                if (ProgressionConfiguration.Instance.GetLockEquipment())
+                {
+                    if (Instance.IsActionBlocked(item, true, true, false))
+                    {
+                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                        __result = false;
+                        return false; // Skip equipping item
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Block opening doors without the proper keys.
+        /// </summary>
+        [HarmonyPatch(typeof(Door), nameof(Door.HaveKey))]
+        public static class Patch_Door_HaveKey
+        {
+            private static void Postfix(Door __instance, ref bool __result)
+            {
+                if (__result && ProgressionConfiguration.Instance.GetLockEquipment() && __instance.m_keyItem != null &&
+                    !Instance.HasItemKey(__instance.m_keyItem.gameObject.name, true, false, false))
+                {
+                    Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                    __result = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Block crafting items without the proper keys.
+        /// </summary>
+        [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.DoCrafting))]
+        public static class Patch_InventoryGui_DoCrafting
+        {
+            [HarmonyPriority(Priority.Last)]
+            private static bool Prefix(InventoryGui __instance)
+            {
+                if (ProgressionConfiguration.Instance.GetLockCrafting())
+                {
+                    if (Instance.IsActionBlocked(__instance.m_craftRecipe, true, true, false))
+                    {
+                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                        return false; // Skip crafting
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Block placing items without the proper keys.
+        /// </summary>
+        [HarmonyPatch(typeof(Player), nameof(Player.PlacePiece))]
+        public static class Patch_Player_PlacePiece
+        {
+            [HarmonyPriority(Priority.Last)]
+            private static bool Prefix(ref bool __result, Piece piece)
+            {
+                if (ProgressionConfiguration.Instance.GetLockBuilding() && piece?.m_resources != null)
+                {
+                    for (int lcv = 0; lcv < piece.m_resources.Length; lcv++)
+                    {
+                        if (!Instance.HasItemKey(piece.m_resources[lcv].m_resItem?.name, true, true, false))
+                        {
+                            Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                            __result = false;
+                            return false; // Skip placing
+                        }
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Block cooking items without the proper keys.
+        /// </summary>
+        [HarmonyPatch(typeof(CookingStation), nameof(CookingStation.OnUseItem))]
+        public static class Patch_CookingStation_OnUseItem
+        {
+            [HarmonyPriority(Priority.Last)]
+            private static bool Prefix(ItemDrop.ItemData item, ref bool __result)
+            {
+                if (ProgressionConfiguration.Instance.GetLockCooking() && Instance.IsActionBlocked(item, false, false, true))
+                {
+                    Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                    __result = false;
+                    return false; // Skip cooking
                 }
 
                 return true;
