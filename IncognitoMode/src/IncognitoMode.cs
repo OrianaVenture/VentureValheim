@@ -86,10 +86,9 @@ namespace VentureValheim.IncognitoMode
         }
 
         /// <summary>
-        /// Change the chat display name, patch low so the change happens after other mods and
-        /// they can still patch after to grab this changed value if they want.
+        /// Change the chat display name, patch higher so the change happens before other mods.
         /// </summary>
-        [HarmonyPriority(Priority.VeryLow)]
+        [HarmonyPriority(Priority.HigherThanNormal)]
         [HarmonyPatch(typeof(Chat), nameof(Chat.OnNewChatMessage))]
         public static class Patch_Chat_OnNewChatMessage
         {

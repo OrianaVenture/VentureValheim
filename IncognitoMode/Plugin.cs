@@ -12,7 +12,7 @@ namespace VentureValheim.IncognitoMode
     public class IncognitoModePlugin : BaseUnityPlugin
     {
         private const string ModName = "IncognitoMode";
-        private const string ModVersion = "0.1.1";
+        private const string ModVersion = "0.1.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -29,7 +29,6 @@ namespace VentureValheim.IncognitoMode
 
         internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
 
-        internal static ConfigEntry<bool> CE_ModEnabled = null!;
         internal static ConfigEntry<string> CE_HiddenByItems = null!;
         internal static ConfigEntry<string> CE_HiddenDisplayName = null!;
         internal static ConfigEntry<bool> CE_HideNameInChat = null!;
@@ -64,8 +63,6 @@ namespace VentureValheim.IncognitoMode
                 true, true, ref CE_ServerConfigLocked);
             ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
 
-            AddConfig("Enabled", general,"Enable module (boolean).",
-                true, true, ref CE_ModEnabled);
             AddConfig("HiddenByItems", general, "Prefab names of helmets that can hide a Player's identity/name (comma-separated string).",
                 true, "HelmetRoot, HelmetFenring, HelmetPadded", ref CE_HiddenByItems);
             AddConfig("HiddenDisplayName", general, "The hidden Player's display name (string).",
@@ -74,9 +71,6 @@ namespace VentureValheim.IncognitoMode
                 true, true, ref CE_HideNameInChat);
 
             #endregion
-
-            if (!CE_ModEnabled.Value)
-                return;
 
             IncognitoModeLogger.LogInfo("I wear a mask, and that mask is not to hide who I am, but to create who I am.");
 

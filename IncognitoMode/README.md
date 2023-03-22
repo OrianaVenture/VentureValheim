@@ -29,6 +29,10 @@ ServerSync is included. Install on the server to enforce the same mod configurat
 
 ## Changelog
 
+### 0.1.2
+
+* Changed the priority of patching the chat name to work with the "me" mod
+
 ### 0.1.1
 
 * Added the "hidden" effect to apply to the chat name too
