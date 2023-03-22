@@ -21,7 +21,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.24";
+        private const string ModVersion = "0.0.25";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -37,7 +37,6 @@ namespace VentureValheim.Progression
         { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
 
         private static ConfigEntry<bool> CE_ServerConfigLocked = null!;
-        private static ConfigEntry<bool> CE_ModEnabled = null!;
         public static ConfigEntry<bool> CE_GenerateGameData = null!;
 
         // Progression Manager
@@ -52,7 +51,6 @@ namespace VentureValheim.Progression
         public static ConfigEntry<string> CE_BlockedPrivateKeys = null!;
         public static ConfigEntry<string> CE_AllowedPrivateKeys = null!;
         public static ConfigEntry<string> CE_EnforcedPrivateKeys = null!;
-        public static ConfigEntry<bool> CE_UnlockAllHaldorItems = null!;
         public static ConfigEntry<bool> CE_LockTaming = null!;
         public static ConfigEntry<string> CE_OverrideLockTamingDefaults = null!;
         public static ConfigEntry<bool> CE_LockGuardianPower = null!;
@@ -86,6 +84,17 @@ namespace VentureValheim.Progression
         public static ConfigEntry<bool> CE_AutoScaleItems = null!;
         public static ConfigEntry<bool> CE_AutoScaleItemsIgnoreDefaults = null!;
 
+        // Trader Configuration
+        public static ConfigEntry<bool> CE_UnlockAllHaldorItems = null!;
+        public static ConfigEntry<string> CE_HelmetYuleKey = null!;
+        public static ConfigEntry<string> CE_HelmetDvergerKey = null!;
+        public static ConfigEntry<string> CE_BeltStrengthKey = null!;
+        public static ConfigEntry<string> CE_YmirRemainsKey = null!;
+        public static ConfigEntry<string> CE_FishingRodKey = null!;
+        public static ConfigEntry<string> CE_FishingBaitKey = null!;
+        public static ConfigEntry<string> CE_ThunderstoneKey = null!;
+        public static ConfigEntry<string> CE_ChickenEggKey = null!;
+
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
             string extendedDescription = GetExtendedDescription(description, synced);
@@ -110,13 +119,12 @@ namespace VentureValheim.Progression
             const string keys = "Keys";
             const string skills = "Skills";
             const string autoScaling = "Auto-Scaling";
+            const string trader = "Trader";
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean)",
                 true, true, ref CE_ServerConfigLocked);
             ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
 
-            AddConfig("Enabled", general, "Enable module (boolean).",
-                true, true, ref CE_ModEnabled);
             AddConfig("GenerateGameDataFiles", general, "Finds all items and creatures and creates data files in your config path for viewing only (boolean).",
                 false, false, ref CE_GenerateGameData);
 
@@ -153,9 +161,6 @@ namespace VentureValheim.Progression
             AddConfig("EnforcedPrivateKeys", keys,
                 "Always add these keys to the player's private list on startup (comma-separated).",
                 true, "", ref CE_EnforcedPrivateKeys);
-            AddConfig("UnlockAllHaldorItems", keys,
-                "True to remove the key check from Haldor entirely and unlock all items (boolean).",
-                true, false, ref CE_UnlockAllHaldorItems);
             AddConfig("LockTaming", keys,
                 "True to lock the ability to tame creatures based on keys. Uses private key if enabled, global key if not (boolean).",
                 true, false, ref CE_LockTaming);
@@ -236,10 +241,36 @@ namespace VentureValheim.Progression
             AddConfig("AutoScaleItems", autoScaling,
                 "Auto-scale Items (boolean).",
                 true, true, ref CE_AutoScaleItems);
-            #endregion
 
-            if (!CE_ModEnabled.Value)
-                return;
+            AddConfig("UnlockAllHaldorItems", trader,
+                "True to remove the key check from Haldor entirely and unlock all items (boolean).",
+                true, false, ref CE_UnlockAllHaldorItems);
+            AddConfig("HelmetYuleKey", trader,
+                "Custom key for unlocking the Yule Hat. Leave blank to use default (string).",
+                true, "", ref CE_HelmetYuleKey);
+            AddConfig("HelmetDvergerKey", trader,
+                "Custom key for unlocking the Dverger Circlet. Leave blank to use default (string).",
+                true, "", ref CE_HelmetDvergerKey);
+            AddConfig("BeltStrengthKey", trader,
+                "Custom key for unlocking the Megingjord. Leave blank to use default (string).",
+                true, "", ref CE_BeltStrengthKey);
+            AddConfig("YmirRemainsKey", trader,
+                "Custom key for unlocking Ymir Flesh. Leave blank to use default (string).",
+                true, "", ref CE_YmirRemainsKey);
+            AddConfig("FishingRodKey", trader,
+                "Custom key for unlocking the Fishing Rod. Leave blank to use default (string).",
+                true, "", ref CE_FishingRodKey);
+            AddConfig("FishingBaitKey", trader,
+                "Custom key for unlocking Fishing Bait. Leave blank to use default (string).",
+                true, "", ref CE_FishingBaitKey);
+            AddConfig("ThunderstoneKey", trader,
+                "Custom key for unlocking the Thunder Stone. Leave blank to use default (string).",
+                true, "", ref CE_ThunderstoneKey);
+            AddConfig("ChickenEggKey", trader,
+                "Custom key for unlocking the Egg. Leave blank to use default (string).",
+                true, "", ref CE_ChickenEggKey);
+
+            #endregion
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
@@ -294,7 +325,6 @@ namespace VentureValheim.Progression
         public string GetBlockedPrivateKeys();
         public string GetAllowedPrivateKeys();
         public string GetEnforcedPrivateKeys();
-        public bool GetUnlockAllHaldorItems();
         public bool GetLockTaming();
         public string GetOverrideLockTamingDefaults();
         public bool GetLockGuardianPower();
@@ -325,6 +355,17 @@ namespace VentureValheim.Progression
         public string GetAutoScaleCreatureHealth();
         public string GetAutoScaleCreatureDamage();
         public bool GetAutoScaleItems();
+
+        // Trader Configuration
+        public bool GetUnlockAllHaldorItems();
+        public string GetHelmetYuleKey();
+        public string GetHelmetDvergerKey();
+        public string GetBeltStrengthKey();
+        public string GetYmirRemainsKey();
+        public string GetFishingRodKey();
+        public string GetFishingBaitKey();
+        public string GetThunderstoneKey();
+        public string GetChickenEggKey();
     }
 
     public class ProgressionConfiguration : IProgressionConfiguration
@@ -358,7 +399,6 @@ namespace VentureValheim.Progression
         public string GetBlockedPrivateKeys() => ProgressionPlugin.CE_BlockedPrivateKeys.Value;
         public string GetAllowedPrivateKeys() => ProgressionPlugin.CE_AllowedPrivateKeys.Value;
         public string GetEnforcedPrivateKeys() => ProgressionPlugin.CE_EnforcedPrivateKeys.Value;
-        public bool GetUnlockAllHaldorItems() => ProgressionPlugin.CE_UnlockAllHaldorItems.Value;
         public bool GetLockTaming() => ProgressionPlugin.CE_LockTaming.Value;
         public string GetOverrideLockTamingDefaults() => ProgressionPlugin.CE_OverrideLockTamingDefaults.Value;
         public bool GetLockGuardianPower() => ProgressionPlugin.CE_LockGuardianPower.Value;
@@ -389,5 +429,16 @@ namespace VentureValheim.Progression
         public string GetAutoScaleCreatureHealth() => ProgressionPlugin.CE_AutoScaleCreatureHealth.Value;
         public string GetAutoScaleCreatureDamage() => ProgressionPlugin.CE_AutoScaleCreatureDamage.Value;
         public bool GetAutoScaleItems() => ProgressionPlugin.CE_AutoScaleItems.Value;
+
+        // Trader Configuration
+        public bool GetUnlockAllHaldorItems() => ProgressionPlugin.CE_UnlockAllHaldorItems.Value;
+        public string GetHelmetYuleKey() => ProgressionPlugin.CE_HelmetYuleKey.Value;
+        public string GetHelmetDvergerKey() => ProgressionPlugin.CE_HelmetDvergerKey.Value;
+        public string GetBeltStrengthKey() => ProgressionPlugin.CE_BeltStrengthKey.Value;
+        public string GetYmirRemainsKey() => ProgressionPlugin.CE_YmirRemainsKey.Value;
+        public string GetFishingRodKey() => ProgressionPlugin.CE_FishingRodKey.Value;
+        public string GetFishingBaitKey() => ProgressionPlugin.CE_FishingBaitKey.Value;
+        public string GetThunderstoneKey() => ProgressionPlugin.CE_ThunderstoneKey.Value;
+        public string GetChickenEggKey() => ProgressionPlugin.CE_ChickenEggKey.Value;
     }
 }

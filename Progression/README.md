@@ -4,9 +4,9 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-This mod is in Beta: Use at your own risk! (make a backup of your data before you update). You will likely need to generate a fresh config file.
+This mod is in Beta: Use at your own risk! (make a backup of your data before you update). Please check the release notes for information about configuration changes after updates.
 
-World Advancement and Progression lets you fine tune world settings. Ideal to use on multiplayer/RP (roleplay) servers to control world advancement.
+Have more control over the world progression. Rebalance creatures and items, control skill levels, and manage world and individual player progress!
 
 ## Features
 
@@ -14,9 +14,7 @@ NOTE: This mod is under heavy development and is not finished. All pre-releases 
 
 The main feature of this mod is to have an easy way to fully customize the world difficulty and to control the rate at which the world and individual player advances. Set the difficulty of each biome and configure all creatures and items by using the automatic scaling system. You may also define your own custom configuration for individual creatures and items (including other modded content). This mod can dynamically create a game balance that is very different from the Vanilla gameplay experience!
 
-WARNING: If you are using an in-game configuration manager you may be missing out of vital information about the settings! When in doubt please read the config descriptions included in the config file. The information included in the file will not always match the information provided in this readme.
-
-Below are some explanations of features and how to configure them. See more details in the config file. Generate the config file by launching the game once with this mod installed.
+Below are some explanations of features and how to configure them. See more details in the config file. Generate the config file by launching the game once with this mod installed. The information included in the file will not always match the information provided in this readme.
 
 ### Public & Private Key Management
 
@@ -45,7 +43,6 @@ When this mod is installed there will be a key "cleanup" performed for the serve
 * BlockedPrivateKeys: Stop only these keys being added to the player's key list when UsePrivateKeys is true (use this or AllowedPrivateKeys)
 * AllowedPrivateKeys: Allow only these keys being added to the player's key list when UsePrivateKeys is true (use this or BlockedPrivateKeys, if the BlockedPrivateKeys has any values it will use that setting)
 * EnforcedPrivateKeys: Always add these keys to the player's private list on startup (regardless of other settings)
-* UnlockAllHaldorItems: If true bypasses the key check for haldor's items and unlocks everything
 * LockTaming: If true you can only tame certain creatures if you have the required key.
 * OverrideLockTamingDefaults: Define your own required keys to tame specific creatures or leave blank to use the defaults. Example: Boar, defeated_eikthyr, Wolf, defeated_dragon, Lox, defeated_goblinking
 * LockGuardianPower: If true locks the ability to get or use boss powers based on the required key.
@@ -56,6 +53,12 @@ When this mod is installed there will be a key "cleanup" performed for the serve
 * LockBuilding: If true you can only build pieces made from boss items or biome metals/materials if you have the required key
 * LockCooking: If true you can only cook items made from biome materials if you have the required key
 * UseBossKeysForSkillLevel and BossKeysSkillPerKey explained under Skill Manager section below
+
+#### Trader Configuration Options
+
+There are more key options specifically for the Haldor trader under their own section. All vanilla items have their own configuration option if you wish to override the required key to unlock them. If these configurations are left blank it will use the game defaults. If you wish to remove only some key requirements you can achieve this by setting the item keys to your own custom key like "Trader" and then "enforce" this key in the appropriate configuration mentioned above so all players can access it. Similarly, you can lock items by specifying a custom key that is then never added to the game (or only given to certain players when using private keys).
+
+* UnlockAllHaldorItems: If true bypasses the key check for Haldor's items and unlocks everything
 
 #### Vanilla Public Keys
 
@@ -175,25 +178,17 @@ Vanilla items are grouped by custom types and are assigned the biome in which th
 | | | ChestRobe = 35 |
 | | | LegsRobe = 36 |
 
-### Other Features
+## Installation
 
-* ServerSync included
-
-## Developers (Always In Progress)
-
-Want to define customizations of your own mod with these features so your users don't have to? If there is something you need let me know and I can add support for your mod!
-
-### Custom Biomes
-
-Planned features include: Define your own biomes and add them to the scaling system by using any int value as a key that is not used. This mod's default values can be overridden to set custom scaling after initialization.
-
-Examples (Will update this for first official release):
-
-* To add a Biome '10' that is one biome harder than Plains (4th hardest by default, Meadows is 0th) use: AddBiome(10, 5)
-* To add a Biome '10' that is 250% harder than the baseline use: AddCustomBiome(10, 2.5)
-* To override Meadow's difficulty after it has been initialized: AddBiome(0, 8, true) or AddCustomBiome(0, 1.3, true)
+This mod needs to be on both the client and server for all features to work. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.0.25
+
+* Added new configuration section for the trader! Moved UnlockAllHaldorItems to this new category, you will have to update this config
+* Fixed an issue where keys would load after equipping the player on login, so things would not equip automatically
+* Removed the ModEnabled config since it doesn't really do anything important
 
 ### 0.0.24
 
@@ -283,7 +278,6 @@ Examples (Will update this for first official release):
 * Added ability to restore vanilla game data without a game restart for autoscaling (in testing).
 * Optimization for Key and Skills managers caching.
 * Fixed biome ordering for Mistland, Ashland, DeepNorth.
-
 
 See all patch notes on Github.
 

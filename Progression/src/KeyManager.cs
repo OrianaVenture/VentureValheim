@@ -381,6 +381,50 @@ namespace VentureValheim.Progression
             }
         }
 
+        /// <summary>
+        /// Reads the configuration values and creates a dictionary of all vanilla trader items
+        /// and their new key requirements.
+        /// </summary>
+        /// <returns></returns>
+        protected Dictionary<string, string> GetTraderConfiguration()
+        {
+            var trades = new Dictionary<string, string>();
+            if (!ProgressionConfiguration.Instance.GetHelmetYuleKey().IsNullOrWhiteSpace())
+            {
+                trades.Add("HelmetYule", ProgressionConfiguration.Instance.GetHelmetYuleKey());
+            }
+            if (!ProgressionConfiguration.Instance.GetHelmetDvergerKey().IsNullOrWhiteSpace())
+            {
+                trades.Add("HelmetDverger", ProgressionConfiguration.Instance.GetHelmetDvergerKey());
+            }
+            if (!ProgressionConfiguration.Instance.GetBeltStrengthKey().IsNullOrWhiteSpace())
+            {
+                trades.Add("BeltStrength", ProgressionConfiguration.Instance.GetBeltStrengthKey());
+            }
+            if (!ProgressionConfiguration.Instance.GetYmirRemainsKey().IsNullOrWhiteSpace())
+            {
+                trades.Add("YmirRemains", ProgressionConfiguration.Instance.GetYmirRemainsKey());
+            }
+            if (!ProgressionConfiguration.Instance.GetFishingRodKey().IsNullOrWhiteSpace())
+            {
+                trades.Add("FishingRod", ProgressionConfiguration.Instance.GetFishingRodKey());
+            }
+            if (!ProgressionConfiguration.Instance.GetFishingBaitKey().IsNullOrWhiteSpace())
+            {
+                trades.Add("FishingBait", ProgressionConfiguration.Instance.GetFishingBaitKey());
+            }
+            if (!ProgressionConfiguration.Instance.GetThunderstoneKey().IsNullOrWhiteSpace())
+            {
+                trades.Add("Thunderstone", ProgressionConfiguration.Instance.GetThunderstoneKey());
+            }
+            if (!ProgressionConfiguration.Instance.GetChickenEggKey().IsNullOrWhiteSpace())
+            {
+                trades.Add("ChickenEgg", ProgressionConfiguration.Instance.GetChickenEggKey());
+            }
+
+            return trades;
+        }
+
         private string GetOldFilePath(string original)
         {
             return original + ".oldkeys";
@@ -1238,11 +1282,15 @@ namespace VentureValheim.Progression
         /// Load private keys from the player file if the data exists,
         /// fallback try to load a legacy save file. Cleans up private keys
         /// based off configurations then syncs the data with the server.
+        ///
+        /// Patches before EquipInventoryItems since that is the first method
+        /// that needs access to the player private keys, and only happens
+        /// during the Player.Load method.
         /// </summary>
-        [HarmonyPatch(typeof(Player), nameof(Player.Load))]
+        [HarmonyPatch(typeof(Player), nameof(Player.EquipIventoryItems))]
         public static class Patch_Player_Load
         {
-            private static void Postfix(Player __instance)
+            private static void Prefix(Player __instance)
             {
                 if (!ProgressionAPI.Instance.IsInTheMainScene())
                 {
@@ -1436,6 +1484,26 @@ namespace VentureValheim.Progression
                 if (ProgressionConfiguration.Instance.GetUnlockAllHaldorItems())
                 {
                     __result = new List<Trader.TradeItem>(__instance.m_items);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set up custom keys for Haldor's items.
+        /// </summary>
+        [HarmonyPatch(typeof(Trader), nameof(Trader.Start))]
+        public static class Patch_Trader_Start
+        {
+            [HarmonyPriority(Priority.First)]
+            private static void Postfix(Trader __instance)
+            {
+                var keys = Instance.GetTraderConfiguration();
+                foreach (var item in __instance.m_items)
+                {
+                    if (keys.ContainsKey(item.m_prefab.name))
+                    {
+                        item.m_requiredGlobalKey = keys[item.m_prefab.name];
+                    }
                 }
             }
         }
