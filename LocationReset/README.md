@@ -20,8 +20,6 @@ If you want sky locations to reset even if players have built/died around the en
 
 There are advanced options in the config file to set individual reset times for certain locations. To use the advanced options set OverrideResetTimes to true, you must then customize all overridden values. Any locations not specified will use the default value and cannot be changed individually. If you do not want specific locations to reset you can set the reset time to an arbitrarily large value like 100000, or any value that will be greater than the number of expected passed in-game days.
 
-ServerSync is included with this mod.
-
 ### Locations Supported
 
 "Sky locations" are any dungeon or location that is generated suspended in the sky in the game. If the location has a teleporting feature it probably is located in the sky. The following are considered "sky locations":
@@ -47,8 +45,6 @@ Due to loading times and the very random nature of the world spawning system the
 * Some items are not respawned like black forest barrels, boulders, and mistlands giant mineables. I could not find an easy way to identify these items without also destroying trees and rocks.
 * Item duplication should not happen, but is possible if timing conditions are right. If you see only a few parts of locations being duplicated you do not need to be concerned or report it as a bug since it is likely not consistently reproducible. However, if an entire location is being duplicated then please report the problem.
 * When a new zone or location is loaded there is an expected small lag spike. This happens in vanilla already, but might also be noticeable when this mod is performing a reset.
-* When you first log in all locations in the area will not reset even if applicable, you will need to leave the area and reload it.
-* Multiplayer sessions may get weird if you and another player trigger a reset for the same location at the same time. If you report any issues please mention if you were running through the area with more than one player with you.
 
 ### Other Mod Support
 
@@ -65,9 +61,16 @@ The following locations from other mods are supported:
 
 ## Installation
 
-This mod needs to be on the client, it will work even if other players do not have it installed. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations should take immediate effect
+This mod needs to be on the client, it will work even if other players do not have it installed. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations should take immediate effect.
 
 ## Changelog
+
+### 0.2.2
+
+* Fixed issue with multiplayer sessions triggering multiple resets due to reset day not being recorded correctly, plus more internal error checking
+* Changed how zone sizes of locations are calculated to improve accuracy of location deletion (still have some work left to get it perfect)
+* Added resetting for doors that require keys to open (sunken crypts and citadel, should support custom content)
+* Added missing wear and tear damage to resetting dungeons
 
 ### 0.2.1
 

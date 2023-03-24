@@ -1,3 +1,4 @@
+using HarmonyLib;
 using System.Collections;
 using UnityEngine;
 
@@ -5,14 +6,24 @@ namespace VentureValheim.LocationReset
 {
     public static class DungeonGeneratorExtension
     {
+        public const string RPCNAME_DGSetLastResetNow = "VV_DGSetLastResetNow";
+
         public static void SetLastResetNow(this DungeonGenerator dg)
         {
-            dg?.m_nview?.GetZDO()?.Set(LocationReset.LAST_RESET, LocationReset.GetGameDay());
+            dg.m_nview?.InvokeRPC(ZRoutedRpc.Everybody, RPCNAME_DGSetLastResetNow);
+        }
+
+        public static void RPC_SetLastResetNow(this DungeonGenerator dg, long sender)
+        {
+            if (dg.m_nview != null && dg.m_nview.IsOwner())
+            {
+                dg.m_nview.GetZDO()?.Set(LocationReset.LAST_RESET, LocationReset.GetGameDay());
+            }
         }
 
         public static int GetLastReset(this DungeonGenerator dg)
         {
-            return dg?.m_nview?.GetZDO()?.GetInt(LocationReset.LAST_RESET, -1) ?? -1;
+            return dg.m_nview?.GetZDO()?.GetInt(LocationReset.LAST_RESET, -1) ?? -1;
         }
 
         public static bool NeedsReset(this DungeonGenerator dg)
@@ -33,6 +44,15 @@ namespace VentureValheim.LocationReset
             }
 
             return false;
+        }
+
+        [HarmonyPatch(typeof(DungeonGenerator), nameof(DungeonGenerator.Awake))]
+        public static class Patch_DungeonGenerator_Awake
+        {
+            private static void Postfix(DungeonGenerator __instance)
+            {
+                __instance.m_nview.Register(RPCNAME_DGSetLastResetNow, __instance.RPC_SetLastResetNow);
+            }
         }
     }
 
