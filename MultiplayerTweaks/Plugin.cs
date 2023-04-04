@@ -12,7 +12,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.4.7";
+        private const string ModVersion = "0.4.8";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -98,7 +98,7 @@ namespace VentureValheim.MultiplayerTweaks
             AddConfig("SkillLossOnPVPDeath", general, "False to prevent skill loss on a PVP death (boolean).",
                 true, true, ref CE_SkillLossOnPVPDeath);
 
-            AddConfig("PlayerDefaultSpawnPoint", arrival, "Coordinates for the default player spawn point (x,z) no parentheses, leave empty to use game default (comma-separated floats).",
+            AddConfig("PlayerDefaultSpawnPoint", arrival, "Coordinates for the default player spawn point (x,y,z) no parentheses, leave empty to use game default (comma-separated floats).",
                 true, "", ref CE_PlayerDefaultSpawnPoint);
             AddConfig("EnableValkrie", arrival, "True to enable Valkrie Intro (boolean).",
                 true, true, ref CE_EnableValkrie);

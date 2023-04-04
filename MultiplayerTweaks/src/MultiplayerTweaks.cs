@@ -242,38 +242,17 @@ namespace VentureValheim.MultiplayerTweaks
         }
 
         /// <summary>
-        /// Skips Player map pins updates if overridden and configured always off.
+        /// Force the player's public position on or off based of configs.
         /// </summary>
-        [HarmonyPriority(Priority.Last)]
-        [HarmonyPatch(typeof(Minimap), nameof(Minimap.UpdatePlayerPins))]
-        public static class Patch_Minimap_UpdatePlayerPins
+        [HarmonyPatch(typeof(ZNet), nameof(ZNet.SetPublicReferencePosition))]
+        public static class Patch_ZNet_SetPublicReferencePosition
         {
-            private static bool Prefix()
-            {
-                if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins() && !MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn())
-                {
-                    return false; // Skip original
-                }
-
-                return true; // Continue
-            }
-        }
-
-        /// <summary>
-        /// Disable the Player map pin toggle if overridden.
-        /// </summary>
-        [HarmonyPriority(Priority.Last)]
-        [HarmonyPatch(typeof(Minimap), nameof(Minimap.OnTogglePublicPosition))]
-        public static class Patch_Minimap_OnTogglePublicPosition
-        {
-            private static bool Prefix()
+            private static void Prefix(ref bool pub)
             {
                 if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins())
                 {
-                    return false; // Skip original
+                    pub = MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn();
                 }
-
-                return true; // Continue
             }
         }
 
@@ -310,7 +289,7 @@ namespace VentureValheim.MultiplayerTweaks
         /// <param name="iconname"></param>
         /// <param name="position"></param>
         /// <returns></returns>
-        private bool GetCustomSpawnPoint(string iconname, out Vector3 position)
+        public bool GetCustomSpawnPoint(string iconname, out Vector3 position)
         {
             var point = MultiplayerTweaksPlugin.GetPlayerDefaultSpawnPoint();
             if (!point.IsNullOrWhiteSpace())
@@ -320,14 +299,35 @@ namespace VentureValheim.MultiplayerTweaks
                 {
                     try
                     {
+                        MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogWarning("Depreciated use of the x,z config format. Please use the new x,y,z format for best results!");
+
                         float x = float.Parse(coordinates[0]);
                         float z = float.Parse(coordinates[1]);
+
                         if (ZoneSystem.instance.GetGroundHeight(new Vector3(x, 0f, z), out var height))
                         {
                             position = new Vector3(x, height + 2f, z);
-                            MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogDebug($"Spawning at position: {x}, {height}, {z}.");
+                            //MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogDebug($"Spawning at position: {x}, {height}, {z}.");
                             return true;
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError("Error setting the new spawn point. Check your configuration for formatting issues.");
+                        MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError(e);
+                    }
+                }
+                else if (coordinates.Length == 3)
+                {
+                    try
+                    {
+                        float x = float.Parse(coordinates[0]);
+                        float y = float.Parse(coordinates[1]);
+                        float z = float.Parse(coordinates[2]);
+
+                        position = new Vector3(x, y, z);
+                        //MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogDebug($"Spawning at position: {x}, {y}, {z}.");
+                        return true;
                     }
                     catch (Exception e)
                     {

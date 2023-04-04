@@ -22,13 +22,11 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 
 ### Player Default Spawn Point
 
-Set the PlayerDefaultSpawnPoint by entering an x,z pair (for example: 20.5, -80.7), or leave this config blank to use the default start location. This mod will calculate the y position for you based on the ground height at the location. To get your player's current position in game you can use the vanilla "pos" command, which will return your position in an x,y,z format (for example 20.5, 5.3, -80.7). This is the location the game will use when spawning new players, or respawning dead players with no bed point.
+Set the PlayerDefaultSpawnPoint by entering an x,y,z pair (for example: 20.5, 10, -80.7), or leave this config blank to use the default start location. To get your player's current position in game you can use the vanilla "pos" command, which will return your position in an x,y,z format. This is the location the game will use when spawning new players, or respawning dead players with no bed point.
 
 ### Hugin Tutorials
 
 The base game added a setting to toggle Hugin tutorials on or off under the misc category. This mod will now use the game setting rather than the old config setting. However, since it is not a feature in the base game, this mod will still add all discovered tutorials to the player's "seen" list when tutorials are disabled. If the tutorials at the beginning of the game annoy you, turn off tutorials until you need to see any new tutorials your character discovers. There will not be a flood of tutorials to shift through when you finally need them again!
-
-If you use another mod that relies on Hugin spawns (otherwise known as the Raven), EnableHugin must be true for that mod to work. (If you still want to disable tutorials with my mod I can make an update for compatibility with other mods if you send me all the deets!)
 
 ### I Have Arrived!
 
@@ -51,6 +49,11 @@ Gives you the ability to force PVP always on or always off (OverridePlayerPVP mu
 This mod needs to be on both the client and server for all features to work. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.4.8
+
+* Changed the format for the PlayerDefaultSpawnPoint config from x,z to x,y,z to fix an issue where the ground height could not always be determined, thus defaulting to using the standing stones spawn area. Please update this config to use the new system for best results.
+* Removed an unnecessary minimap patch for forcing player map positions to improve compatibility with other mods.
 
 ### 0.4.7
 
