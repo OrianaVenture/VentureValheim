@@ -118,6 +118,7 @@ Under the general section of the config file there is a GenerateGameDataFiles se
 * EnableAutoScaling must be set to True to enable these features.
 * AutoScaleType: Vanilla, Linear, Exponential, or Custom. If set to Vanilla these auto-scaling features will not be enabled!
 * AutoScaleFactor: Change the biome scaling factor.
+* AutoScaleIgnoreOverrides: When true ignores the overrides specified in the yaml files. (yaml files explained below)
 
 If you do not want to rescale the whole game and just want to change just a few things (or a lot of things, you do you) you can use the "Custom" scaling type to ignore the mod defaults and just scale things in your yaml override(s). If any information is missing from your yaml configuration that is needed for scaling the mod will fallback to using the default values for the missing fields. Custom scaling will use the linear scaling methods whenever applicable.
 
@@ -183,6 +184,10 @@ Vanilla items are grouped by custom types and are assigned the biome in which th
 This mod needs to be on both the client and server for all features to work. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.0.26
+
+* Added new config option AutoScaleIgnoreOverrides for ignoring the yaml file when using the auto-scaling feature.
 
 ### 0.0.25
 

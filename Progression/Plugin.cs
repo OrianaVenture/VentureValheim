@@ -21,7 +21,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.25";
+        private const string ModVersion = "0.0.26";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -77,6 +77,7 @@ namespace VentureValheim.Progression
         public static ConfigEntry<bool> CE_AutoScaling = null!;
         public static ConfigEntry<string> CE_AutoScaleType = null!;
         public static ConfigEntry<float> CE_AutoScaleFactor = null!;
+        public static ConfigEntry<bool> CE_AutoScaleIgnoreOverrides = null!;
         public static ConfigEntry<bool> CE_AutoScaleCreatures = null!;
         public static ConfigEntry<string> CE_AutoScaleCreatureHealth = null!;
         public static ConfigEntry<string> CE_AutoScaleCreatureDamage = null!;
@@ -221,7 +222,7 @@ namespace VentureValheim.Progression
                 true, (int)SkillsManager.SKILL_MINIMUM, ref CE_MinimumSkillLevel);
 
             AddConfig("EnableAutoScaling", autoScaling,
-                "Enabled the Auto-scaling feature (boolean).",
+                "Enable the Auto-scaling feature (boolean).",
                 true, false, ref CE_AutoScaling);
             AddConfig("AutoScaleType", autoScaling,
                 "Auto-scaling type: Vanilla, Linear, Exponential, or Custom (string).",
@@ -229,6 +230,9 @@ namespace VentureValheim.Progression
             AddConfig("AutoScaleFactor", autoScaling,
                 "Auto-scaling factor, 0.75 = 75% growth per biome \"difficulty order\" (float).",
                 true, 0.75f, ref CE_AutoScaleFactor);
+            AddConfig("AutoScaleIgnoreOverrides", autoScaling,
+                "When true ignores the overrides specified in the yaml files (boolean).",
+                true, false, ref CE_AutoScaleIgnoreOverrides);
             AddConfig("AutoScaleCreatures", autoScaling,
                 "Auto-scale Creatures (boolean).",
                 true, true, ref CE_AutoScaleCreatures);
@@ -351,6 +355,7 @@ namespace VentureValheim.Progression
         public bool GetUseAutoScaling();
         public string GetAutoScaleType();
         public float GetAutoScaleFactor();
+        public bool GetAutoScaleIgnoreOverrides();
         public bool GetAutoScaleCreatures();
         public string GetAutoScaleCreatureHealth();
         public string GetAutoScaleCreatureDamage();
@@ -425,6 +430,7 @@ namespace VentureValheim.Progression
         public bool GetUseAutoScaling() => ProgressionPlugin.CE_AutoScaling.Value;
         public string GetAutoScaleType() => ProgressionPlugin.CE_AutoScaleType.Value;
         public float GetAutoScaleFactor() => ProgressionPlugin.CE_AutoScaleFactor.Value;
+        public bool GetAutoScaleIgnoreOverrides() => ProgressionPlugin.CE_AutoScaleIgnoreOverrides.Value;
         public bool GetAutoScaleCreatures() => ProgressionPlugin.CE_AutoScaleCreatures.Value;
         public string GetAutoScaleCreatureHealth() => ProgressionPlugin.CE_AutoScaleCreatureHealth.Value;
         public string GetAutoScaleCreatureDamage() => ProgressionPlugin.CE_AutoScaleCreatureDamage.Value;

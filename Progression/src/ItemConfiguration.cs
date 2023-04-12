@@ -353,7 +353,8 @@ namespace VentureValheim.Progression
             InitializeArmor();
             InitializeShields();
 
-            if (WorldConfiguration.Instance.WorldScale != WorldConfiguration.Scaling.Vanilla)
+            if (WorldConfiguration.Instance.WorldScale != WorldConfiguration.Scaling.Vanilla &&
+                !ProgressionConfiguration.Instance.GetAutoScaleIgnoreOverrides())
             {
                 ReadCustomValues();
             }

@@ -292,7 +292,8 @@ namespace VentureValheim.Progression
             AddCreatureConfiguration("TheHive", biome, WorldConfiguration.Difficulty.Expert);
             AddCreatureConfiguration("Hive", biome, WorldConfiguration.Difficulty.Boss);
 
-            if (WorldConfiguration.Instance.WorldScale != WorldConfiguration.Scaling.Vanilla)
+            if (WorldConfiguration.Instance.WorldScale != WorldConfiguration.Scaling.Vanilla &&
+                !ProgressionConfiguration.Instance.GetAutoScaleIgnoreOverrides())
             {
                 ReadCustomValues();
             }
