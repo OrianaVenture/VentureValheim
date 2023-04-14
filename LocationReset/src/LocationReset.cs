@@ -221,9 +221,11 @@ namespace VentureValheim.LocationReset
                     continue;
                 }
 
-                if (obj.GetComponent<DungeonGenerator>() != null || obj.GetComponent<LocationProxy>() != null)
+                if (obj.GetComponent<DungeonGenerator>() != null ||
+                    obj.GetComponent<LocationProxy>() != null ||
+                    obj.GetComponent<Player>() != null)
                 {
-                    // Do not destroy the generators
+                    // Do not destroy the generators or Players
                     continue;
                 }
 
@@ -381,8 +383,18 @@ namespace VentureValheim.LocationReset
                 return;
             }
 
-            Vector3 position = dg.transform.position + dg.m_zoneCenter;
-            // TODO: Find the center of every dungeon accurately, test radius precision
+            Vector3 position = dg.transform.position + dg.m_zoneCenter; // Fallback position
+
+            Collider[] hits = Physics.OverlapBox(dg.transform.position, dg.transform.localScale / 2, Quaternion.identity);
+            foreach (var hit in hits)
+            {
+                if (hit.gameObject.GetComponent<EnvZone>() != null)
+                {
+                    position = hit.gameObject.transform.position; // Optimal position
+                    break;
+                }
+            }
+
             var distance = GetMaximumDistance(dg.m_zoneSize.x / 2, dg.m_zoneSize.z / 2);
             bool skyLocation = dg.transform.position.y >= LOCATION_MINIMUM;
 

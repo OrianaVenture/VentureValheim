@@ -34,7 +34,6 @@ There are advanced options in the config file to set individual reset times for 
 
 If you are using another mod that adds custom locations or dungeons you may see this mod behave unexpectedly. If you would like support added for another mod please reach out to me in my discord (link below).
 
-
 ### Limitations
 
 Due to loading times and the very random nature of the world spawning system there may be cases where this mod behaves strangely.
@@ -43,7 +42,7 @@ Due to loading times and the very random nature of the world spawning system the
 * Resetting ground locations can potentially remove pickables around a location that are not respawned like stones, branches, or berry bushes.
 * If you move very fast (or admin fly) through an area you may see locations change as they regenerate, especially noticeable in the plains. If you move too fast through an area while triggering a reset you can cause item duplication.
 * Some items are not respawned like black forest barrels, boulders, and mistlands giant mineables. I could not find an easy way to identify these items without also destroying trees and rocks.
-* Item duplication should not happen, but is possible if timing conditions are right. If you see only a few parts of locations being duplicated you do not need to be concerned or report it as a bug since it is likely not consistently reproducible. However, if an entire location is being duplicated then please report the problem.
+* Item duplication should not happen, but is possible if timing conditions are right. If you can consistency reproduce duplication issues please report the problem.
 * When a new zone or location is loaded there is an expected small lag spike. This happens in vanilla already, but might also be noticeable when this mod is performing a reset.
 
 ### Other Mod Support
@@ -56,19 +55,24 @@ The following locations from other mods are supported:
 ### Possible Future Improvements
 
 * Manual reset commands
-* Finding a way to reset items listed in limitations.
+* Finding a way to reset items listed in limitations
 * Support for other mods (by request)
 
 ## Installation
 
-This mod needs to be on the client, it will work even if other players do not have it installed. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations should take immediate effect.
+This mod needs to be on the client, it will work even if other players do not have it installed but may behave unexpectedly when playing around other players without the mod. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations should take immediate effect.
 
 ## Changelog
+
+### 0.2.3
+
+* Changed how zone centers of locations are determined to improve accuracy of location deletion
+* Removed the ModEnabled config since it doesn't really do anything important
 
 ### 0.2.2
 
 * Fixed issue with multiplayer sessions triggering multiple resets due to reset day not being recorded correctly, plus more internal error checking
-* Changed how zone sizes of locations are calculated to improve accuracy of location deletion (still have some work left to get it perfect)
+* Changed how zone sizes of locations are calculated to improve accuracy of location deletion
 * Added resetting for doors that require keys to open (sunken crypts and citadel, should support custom content)
 * Added missing wear and tear damage to resetting dungeons
 

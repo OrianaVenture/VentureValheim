@@ -21,7 +21,7 @@ namespace VentureValheim.LocationReset
         }
 
         private const string ModName = "LocationReset";
-        private const string ModVersion = "0.2.2";
+        private const string ModVersion = "0.2.3";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -38,7 +38,6 @@ namespace VentureValheim.LocationReset
 
         private static ConfigEntry<bool> CE_ServerConfigLocked = null!;
 
-        private static ConfigEntry<bool> CE_ModEnabled = null!;
         private static ConfigEntry<int> CE_ResetTime = null!;
         private static ConfigEntry<bool> CE_SkipPlayerGroundPieceCheck = null!;
 
@@ -148,8 +147,6 @@ namespace VentureValheim.LocationReset
                 true, true, ref CE_ServerConfigLocked);
             ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
 
-            AddConfig("Enabled", general,"Enable module (boolean).",
-                true, true, ref CE_ModEnabled);
             AddConfig("ResetTime", general, "Default number of in-game days for reset, one day is about 30 minutes (int).",
                 true, 30, ref CE_ResetTime);
             AddConfig("SkipPlayerGroundPieceCheck", general, "When True will reset locations even if player placed pieces " +
@@ -180,9 +177,6 @@ namespace VentureValheim.LocationReset
                 true, 30, ref CE_QueenResetTime);
 
             #endregion
-
-            if (!CE_ModEnabled.Value)
-                return;
 
             LocationResetLogger.LogInfo("LocationReset getting ready for mass destruction. Consider making backups before using this mod!");
 
