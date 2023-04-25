@@ -202,7 +202,7 @@ namespace VentureValheim.Progression
                 var scale = WorldConfiguration.Instance.GetBiomeScaling(BiomeType);
                 int baseHealth = CreatureConfiguration.Instance.GetBaseHealth(CreatureDifficulty);
                 var health = CreatureConfiguration.Instance.CalculateHealth(scale, baseHealth);
-                return ProgressionAPI.Instance.PrettifyNumber(health);
+                return ProgressionAPI.PrettifyNumber(health);
             }
         }
 

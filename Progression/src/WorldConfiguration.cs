@@ -377,7 +377,7 @@ namespace VentureValheim.Progression
             {
                 if (ProgressionConfiguration.Instance.GetGenerateGameData())
                 {
-                    ProgressionAPI.Instance.GenerateData(true);
+                    ProgressionAPI.GenerateData(true);
                 }
 
                 SetupWorld(ProgressionConfiguration.Instance.GetAutoScaleType(), ProgressionConfiguration.Instance.GetAutoScaleFactor());
@@ -445,7 +445,7 @@ namespace VentureValheim.Progression
             try
             {
                 var healthString = ProgressionConfiguration.Instance.GetAutoScaleCreatureHealth();
-                var arr = ProgressionAPI.Instance.StringToIntArray(healthString);
+                var arr = ProgressionAPI.StringToIntArray(healthString);
                 CreatureConfiguration.Instance.SetBaseHealth(arr);
             }
             catch
@@ -456,7 +456,7 @@ namespace VentureValheim.Progression
             try
             {
                 var damageString = ProgressionConfiguration.Instance.GetAutoScaleCreatureDamage();
-                var arr = ProgressionAPI.Instance.StringToIntArray(damageString);
+                var arr = ProgressionAPI.StringToIntArray(damageString);
                 CreatureConfiguration.Instance.SetBaseDamage(arr);
             }
             catch
@@ -483,7 +483,7 @@ namespace VentureValheim.Progression
         {
             private static void Postfix(Player __instance)
             {
-                if (ProgressionAPI.Instance.IsInTheMainScene())
+                if (ProgressionAPI.IsInTheMainScene())
                 {
                     // Setup scaling on first spawn only
                     if (!Instance._scalingInitialized && (Player.m_localPlayer == null || __instance == Player.m_localPlayer))

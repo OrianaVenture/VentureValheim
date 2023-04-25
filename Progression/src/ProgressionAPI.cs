@@ -24,17 +24,13 @@ namespace VentureValheim.Progression
             get => _instance;
         }
 
-        public void Initialize()
-        {
-        }
-
         /// <summary>
         /// Adds a configuration for the given biome with the specified scaling order.
         /// </summary>
         /// <param name="biome"></param>
         /// <param name="order"></param>
         /// <param name="overrideBiome"></param>
-        public void AddCustomBiome(Heightmap.Biome biome, int order, bool overrideBiome = false)
+        public static void AddCustomBiome(Heightmap.Biome biome, int order, bool overrideBiome = false)
         {
             var internalBiome = GetProgressionBiome(biome);
             WorldConfiguration.Instance.AddBiome(internalBiome, order, overrideBiome);
@@ -46,7 +42,7 @@ namespace VentureValheim.Progression
         /// <param name="biome"></param>
         /// <param name="scale"></param>
         /// <param name="overrideBiome"></param>
-        public void AddCustomBiome(Heightmap.Biome biome, int order, float scale, bool overrideBiome = false)
+        public static void AddCustomBiome(Heightmap.Biome biome, int order, float scale, bool overrideBiome = false)
         {
             var internalBiome = GetProgressionBiome(biome);
             WorldConfiguration.Instance.AddCustomBiome(internalBiome, scale, order, overrideBiome);
@@ -57,7 +53,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="biome"></param>
         /// <returns></returns>
-        public WorldConfiguration.Biome GetProgressionBiome(Heightmap.Biome biome)
+        public static WorldConfiguration.Biome GetProgressionBiome(Heightmap.Biome biome)
         {
             switch (biome)
             {
@@ -143,7 +139,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public ItemDrop GetItemDrop(string name)
+        public static ItemDrop GetItemDrop(string name)
         {
             ItemDrop item = null;
 
@@ -169,7 +165,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public Humanoid GetHumanoid(string name)
+        public static Humanoid GetHumanoid(string name)
         {
             Humanoid character = null;
 
@@ -202,7 +198,7 @@ namespace VentureValheim.Progression
         /// Prints out useful game data to json files.
         /// </summary>
         /// <param name="overwrite"></param>
-        public void GenerateData(bool overwrite = false)
+        public static void GenerateData(bool overwrite = false)
         {
             var path = $"{Paths.ConfigPath}{Path.DirectorySeparatorChar}{"ItemDropData"}";
             if (!Directory.Exists(path) || overwrite == true)
@@ -326,7 +322,7 @@ namespace VentureValheim.Progression
             }
         }
 
-        public bool IsInTheMainScene()
+        public static bool IsInTheMainScene()
         {
             return SceneManager.GetActiveScene().name.Equals("main");
         }
@@ -336,7 +332,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public HashSet<string> StringToSet(string str)
+        public static HashSet<string> StringToSet(string str)
         {
             var set = new HashSet<string>();
 
@@ -358,7 +354,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public Dictionary<string, string> StringToDictionary(string str)
+        public static Dictionary<string, string> StringToDictionary(string str)
         {
             var dict = new Dictionary<string, string>();
 
@@ -383,7 +379,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public int[] StringToIntArray(string str)
+        public static int[] StringToIntArray(string str)
         {
             if (!str.IsNullOrWhiteSpace())
             {
@@ -405,7 +401,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool GetGlobalKey(string key)
+        public static bool GetGlobalKey(string key)
         {
             return ZoneSystem.instance.m_globalKeys.Contains(key);
         }
@@ -414,7 +410,7 @@ namespace VentureValheim.Progression
         /// Method to add a global key to bypass patches.
         /// </summary>
         /// <param name="key"></param>
-        public void AddGlobalKey(string key)
+        public static void AddGlobalKey(string key)
         {
             if (key.IsNullOrWhiteSpace())
             {
@@ -434,7 +430,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="playerName"></param>
         /// <returns></returns>
-        public long GetPlayerID(string playerName)
+        public static long GetPlayerID(string playerName)
         {
             var nameSimple = playerName.Trim().ToLower();
             var players = ZNet.instance.GetPlayerList();
@@ -455,7 +451,7 @@ namespace VentureValheim.Progression
         /// Returns the player name of the client player if exists.
         /// </summary>
         /// <returns></returns>
-        public string GetLocalPlayerName()
+        public static string GetLocalPlayerName()
         {
             var profile = Game.instance.GetPlayerProfile();
             if (profile != null)
@@ -473,7 +469,7 @@ namespace VentureValheim.Progression
         /// <param name="roundTo">5 by default</param>
         /// <param name="roundUp">true by default</param>
         /// <returns></returns>
-        public int PrettifyNumber(int number, int roundTo = 5, bool roundUp = true)
+        public static int PrettifyNumber(int number, int roundTo = 5, bool roundUp = true)
         {
             var remainder = number % roundTo;
             if (remainder == 0)

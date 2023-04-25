@@ -185,6 +185,11 @@ This mod needs to be on both the client and server for all features to work. Whe
 
 ## Changelog
 
+### 0.0.27
+
+* Bug fix for blocking taming not always working correctly, not comparing correct prefab name so getting false negatives
+* Small qol refactors (see github for full commit)
+
 ### 0.0.26
 
 * Added new config option AutoScaleIgnoreOverrides for ignoring the yaml file when using the auto-scaling feature.
@@ -201,7 +206,7 @@ This mod needs to be on both the client and server for all features to work. Whe
 * Similarly added ability to lock crafting (defaults to on)
 * Similarly added ability to lock building (defaults to on)
 * Similarly added ability to lock cooking (defaults to on)
-* Bug fix for blocking taming not always working correctly
+* Bug fix for blocking taming not always working correctly, taming happening almost instantly
 * Added Flesh Rippers to auto-scaling with new item type "Fist"
 * Improved key commands so that they work on any player online rather than only players in your same chunk
 * Improved key commands to accept player names with spaces

@@ -593,7 +593,7 @@ namespace VentureValheim.Progression
         {
             foreach (ItemClassification data in _itemData.Values)
             {
-                ItemDrop item = ProgressionAPI.Instance.GetItemDrop(data.Name);
+                ItemDrop item = ProgressionAPI.GetItemDrop(data.Name);
 
                 if (item == null)
                 {
@@ -771,7 +771,7 @@ namespace VentureValheim.Progression
 
             foreach (ItemClassification data in _itemData.Values)
             {
-                ItemDrop item = ProgressionAPI.Instance.GetItemDrop(data.Name);
+                ItemDrop item = ProgressionAPI.GetItemDrop(data.Name);
 
                 if (item != null)
                 {
@@ -812,7 +812,7 @@ namespace VentureValheim.Progression
         {
             foreach (ItemClassification data in _itemData.Values)
             {
-                ItemDrop item = ProgressionAPI.Instance.GetItemDrop(data.Name);
+                ItemDrop item = ProgressionAPI.GetItemDrop(data.Name);
 
                 if (item != null)
                 {

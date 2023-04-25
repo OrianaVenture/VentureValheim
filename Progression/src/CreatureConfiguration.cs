@@ -147,7 +147,7 @@ namespace VentureValheim.Progression
 
                 foreach (var attack in cc.VanillaAttacks)
                 {
-                    ItemDrop item = ProgressionAPI.Instance.GetItemDrop(attack.Key);
+                    ItemDrop item = ProgressionAPI.GetItemDrop(attack.Key);
                     if (item != null)
                     {
                         var damage = cc.GetAttack(attack.Key, maxTotalDamage);
@@ -348,7 +348,7 @@ namespace VentureValheim.Progression
         {
             foreach (CreatureClassification cc in _creatureData.Values)
             {
-                var creature = ProgressionAPI.Instance.GetHumanoid(cc.Name);
+                var creature = ProgressionAPI.GetHumanoid(cc.Name);
                 if (creature != null)
                 {
                     var health = cc.GetHealth();
@@ -383,7 +383,7 @@ namespace VentureValheim.Progression
 
             foreach (CreatureClassification cc in _creatureData.Values)
             {
-                var creature = ProgressionAPI.Instance.GetHumanoid(cc.Name);
+                var creature = ProgressionAPI.GetHumanoid(cc.Name);
                 if (creature != null)
                 {
                     var attacks = new List<GameObject>();
@@ -421,7 +421,7 @@ namespace VentureValheim.Progression
         {
             foreach (CreatureClassification creatureClass in _creatureData.Values)
             {
-                var creature = ProgressionAPI.Instance.GetHumanoid(creatureClass.Name);
+                var creature = ProgressionAPI.GetHumanoid(creatureClass.Name);
                 if (creature != null)
                 {
                     if (creatureClass.VanillaHealth != null)
@@ -433,7 +433,7 @@ namespace VentureValheim.Progression
                     {
                         foreach (var attack in creatureClass.VanillaAttacks)
                         {
-                            ItemDrop item = ProgressionAPI.Instance.GetItemDrop(attack.Key);
+                            ItemDrop item = ProgressionAPI.GetItemDrop(attack.Key);
                             if (item != null)
                             {
                                 ConfigureAttack(ref item, attack.Value);

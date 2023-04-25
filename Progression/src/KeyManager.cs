@@ -278,13 +278,13 @@ namespace VentureValheim.Progression
             if (!BlockedGlobalKeys.Equals(blockedGlobalKeys))
             {
                 BlockedGlobalKeys = blockedGlobalKeys;
-                BlockedGlobalKeysList = ProgressionAPI.Instance.StringToSet(blockedGlobalKeys);
+                BlockedGlobalKeysList = ProgressionAPI.StringToSet(blockedGlobalKeys);
             }
 
             if (!AllowedGlobalKeys.Equals(allowedGlobalKeys))
             {
                 AllowedGlobalKeys = allowedGlobalKeys;
-                AllowedGlobalKeysList = ProgressionAPI.Instance.StringToSet(allowedGlobalKeys);
+                AllowedGlobalKeysList = ProgressionAPI.StringToSet(allowedGlobalKeys);
             }
         }
 
@@ -298,13 +298,13 @@ namespace VentureValheim.Progression
             if (!BlockedPrivateKeys.Equals(blockedPrivateKeys))
             {
                 BlockedPrivateKeys = blockedPrivateKeys;
-                BlockedPrivateKeysList = ProgressionAPI.Instance.StringToSet(blockedPrivateKeys);
+                BlockedPrivateKeysList = ProgressionAPI.StringToSet(blockedPrivateKeys);
             }
 
             if (!AllowedPrivateKeys.Equals(allowedPrivateKeys))
             {
                 AllowedPrivateKeys = allowedPrivateKeys;
-                AllowedPrivateKeysList = ProgressionAPI.Instance.StringToSet(allowedPrivateKeys);
+                AllowedPrivateKeysList = ProgressionAPI.StringToSet(allowedPrivateKeys);
             }
         }
 
@@ -318,13 +318,13 @@ namespace VentureValheim.Progression
             if (!EnforcedGlobalKeys.Equals(enforcedGlobalKeys))
             {
                 EnforcedGlobalKeys = enforcedGlobalKeys;
-                EnforcedGlobalKeysList = ProgressionAPI.Instance.StringToSet(enforcedGlobalKeys);
+                EnforcedGlobalKeysList = ProgressionAPI.StringToSet(enforcedGlobalKeys);
             }
 
             if (!EnforcedPrivateKeys.Equals(enforcedPrivateKeys))
             {
                 EnforcedPrivateKeys = enforcedPrivateKeys;
-                EnforcedPrivateKeysList = ProgressionAPI.Instance.StringToSet(enforcedPrivateKeys);
+                EnforcedPrivateKeysList = ProgressionAPI.StringToSet(enforcedPrivateKeys);
             }
         }
 
@@ -348,7 +348,7 @@ namespace VentureValheim.Progression
                 }
                 else
                 {
-                    TamingKeysList = ProgressionAPI.Instance.StringToDictionary(tamingString);
+                    TamingKeysList = ProgressionAPI.StringToDictionary(tamingString);
                 }
             }
         }
@@ -376,7 +376,7 @@ namespace VentureValheim.Progression
                 }
                 else
                 {
-                    SummoningKeysList = ProgressionAPI.Instance.StringToDictionary(summoningString);
+                    SummoningKeysList = ProgressionAPI.StringToDictionary(summoningString);
                 }
             }
         }
@@ -545,17 +545,12 @@ namespace VentureValheim.Progression
         {
             if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
             {
-                if (Instance.HasPrivateKey(key))
-                {
-                    return true;
-                }
+                return Instance.HasPrivateKey(key);
             }
-            else if (Instance.HasGlobalKey(key))
+            else
             {
-                return true;
+                return Instance.HasGlobalKey(key);
             }
-
-            return false;
         }
 
         /// <summary>
@@ -690,7 +685,7 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         private bool IsActionBlocked(ItemDrop.ItemData item, bool checkBossItems, bool checkMaterials, bool checkFood)
         {
-            if (item?.m_dropPrefab == null || !Instance.HasItemKey(item.m_dropPrefab.name, checkBossItems, checkMaterials, checkFood))
+            if (item?.m_dropPrefab == null || !Instance.HasItemKey(Utils.GetPrefabName(item.m_dropPrefab), checkBossItems, checkMaterials, checkFood))
             {
                 return true;
             }
@@ -716,7 +711,12 @@ namespace VentureValheim.Progression
             {
                 for (int lcv = 0; lcv < recipe.m_resources.Length; lcv++)
                 {
-                    if (!Instance.HasItemKey(recipe.m_resources[lcv].m_resItem?.name, checkBossItems, checkMaterials, checkFood))
+                    if(recipe.m_resources[lcv].m_resItem == null)
+                    {
+                        return false;
+                    }
+
+                    if (!Instance.HasItemKey(Utils.GetPrefabName(recipe.m_resources[lcv].m_resItem.gameObject), checkBossItems, checkMaterials, checkFood))
                     {
                         return true;
                     }
@@ -776,7 +776,7 @@ namespace VentureValheim.Progression
                 return false;
             }
 
-            return ProgressionAPI.Instance.GetGlobalKey(key);
+            return ProgressionAPI.GetGlobalKey(key);
         }
 
         #region Add Private Key
@@ -826,7 +826,7 @@ namespace VentureValheim.Progression
         /// <param name="key"></param>
         private void SendPrivateKey(string playerName, string key)
         {
-            var id = ProgressionAPI.Instance.GetPlayerID(playerName);
+            var id = ProgressionAPI.GetPlayerID(playerName);
             if (id != 0)
             {
                 ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_SetPrivateKey, key);
@@ -887,7 +887,7 @@ namespace VentureValheim.Progression
         /// <param name="key"></param>
         private void SendRemovePrivateKey(string playerName, string key)
         {
-            var id = ProgressionAPI.Instance.GetPlayerID(playerName);
+            var id = ProgressionAPI.GetPlayerID(playerName);
             if (id != 0)
             {
                 ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_RemovePrivateKey, key);
@@ -943,7 +943,7 @@ namespace VentureValheim.Progression
         /// <param name="playerName"></param>
         private void SendResetPrivateKeys(string playerName)
         {
-            var id = ProgressionAPI.Instance.GetPlayerID(playerName);
+            var id = ProgressionAPI.GetPlayerID(playerName);
             if (id != 0)
             {
                 ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_ResetPrivateKeys);
@@ -971,7 +971,7 @@ namespace VentureValheim.Progression
         private void SendPrivateKeysToServer(HashSet<string> keys)
         {
             string setString = string.Join<string>(",", keys);
-            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerSetPrivateKeys, setString, ProgressionAPI.Instance.GetLocalPlayerName());
+            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerSetPrivateKeys, setString, ProgressionAPI.GetLocalPlayerName());
         }
 
         /// <summary>
@@ -984,7 +984,7 @@ namespace VentureValheim.Progression
         {
             if (!name.IsNullOrWhiteSpace())
             {
-                var set = ProgressionAPI.Instance.StringToSet(keys);
+                var set = ProgressionAPI.StringToSet(keys);
                 ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: {set.Count} keys found for peer {sender}: \"{name}\".");
                 SetServerKeys(name, set);
             }
@@ -996,7 +996,7 @@ namespace VentureValheim.Progression
         /// <param name="key"></param>
         private void SendPrivateKeyToServer(string key)
         {
-            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerSetPrivateKey, key, ProgressionAPI.Instance.GetLocalPlayerName());
+            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerSetPrivateKey, key, ProgressionAPI.GetLocalPlayerName());
         }
 
         /// <summary>
@@ -1019,7 +1019,7 @@ namespace VentureValheim.Progression
         /// <param name="key"></param>
         private void SendRemovePrivateKeyFromServer(string key)
         {
-            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerRemovePrivateKey, key, ProgressionAPI.Instance.GetLocalPlayerName());
+            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerRemovePrivateKey, key, ProgressionAPI.GetLocalPlayerName());
         }
 
         /// <summary>
@@ -1195,6 +1195,19 @@ namespace VentureValheim.Progression
             }
         }
 
+        /// <summary>
+        /// Applies the burning effect and displays the blocked action message.
+        /// </summary>
+        /// <param name="player"></param>
+        private void ApplyBlockedActionEffects(Player player)
+        {
+            if (player != null)
+            {
+                player.GetSEMan()?.AddStatusEffect("Burning", resetTime: false);
+                player.Message(MessageHud.MessageType.Center, ProgressionConfiguration.Instance.GetBlockedActionMessage());
+            }
+        }
+
         #region Patches
 
         /// <summary>
@@ -1203,7 +1216,7 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.SetGlobalKey))]
         public static class Patch_ZoneSystem_SetGlobalKey
         {
-            [HarmonyPriority(Priority.Last)]
+            [HarmonyPriority(Priority.Low)]
             private static bool Prefix(string name)
             {
                 if (Instance.BlockGlobalKey(ProgressionConfiguration.Instance.GetBlockAllGlobalKeys(), name))
@@ -1292,7 +1305,7 @@ namespace VentureValheim.Progression
         {
             private static void Prefix(Player __instance)
             {
-                if (!ProgressionAPI.Instance.IsInTheMainScene())
+                if (!ProgressionAPI.IsInTheMainScene())
                 {
                     return;
                 }
@@ -1306,7 +1319,7 @@ namespace VentureValheim.Progression
 
                 if (__instance.m_customData.ContainsKey(PLAYER_SAVE_KEY))
                 {
-                    loadedKeys = ProgressionAPI.Instance.StringToSet(__instance.m_customData[PLAYER_SAVE_KEY]);
+                    loadedKeys = ProgressionAPI.StringToSet(__instance.m_customData[PLAYER_SAVE_KEY]);
                 }
                 else
                 {
@@ -1440,7 +1453,6 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(RandEventSystem), nameof(RandEventSystem.HaveGlobalKeys))]
         public static class Patch_RandEventSystem_HaveGlobalKeys
         {
-            [HarmonyPriority(Priority.Last)]
             private static bool Prefix()
             {
                 if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
@@ -1451,7 +1463,7 @@ namespace VentureValheim.Progression
                 return true;
             }
 
-            // TODO set priority if there are mod conflicts
+            [HarmonyPriority(Priority.Low)]
             private static void Postfix(ref bool __result)
             {
                 if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
@@ -1467,7 +1479,7 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(Trader), nameof(Trader.GetAvailableItems))]
         public static class Patch_Trader_GetAvailableItems
         {
-            [HarmonyPriority(Priority.Last)]
+            [HarmonyPriority(Priority.Low)]
             private static bool Prefix()
             {
                 if (ProgressionConfiguration.Instance.GetUnlockAllHaldorItems())
@@ -1500,9 +1512,13 @@ namespace VentureValheim.Progression
                 var keys = Instance.GetTraderConfiguration();
                 foreach (var item in __instance.m_items)
                 {
-                    if (keys.ContainsKey(item.m_prefab.name))
+                    if (item.m_prefab != null)
                     {
-                        item.m_requiredGlobalKey = keys[item.m_prefab.name];
+                        var name = Utils.GetPrefabName(item.m_prefab.gameObject);
+                        if (keys.ContainsKey(name))
+                        {
+                            item.m_requiredGlobalKey = keys[name];
+                        }
                     }
                 }
             }
@@ -1533,7 +1549,7 @@ namespace VentureValheim.Progression
                 {
                     if (args.Length >= 2)
                     {
-                        ProgressionAPI.Instance.AddGlobalKey(args[1]);
+                        ProgressionAPI.AddGlobalKey(args[1]);
                         args.Context.AddString($"Setting global key {args[1]}.");
                     }
                     else
@@ -1652,25 +1668,17 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(Tameable), nameof(Tameable.DecreaseRemainingTime))]
         public static class Patch_Tameable_DecreaseRemainingTime
         {
-            [HarmonyPriority(Priority.Last)]
+            [HarmonyPriority(Priority.Low)]
             private static void Prefix(Tameable __instance, ref float time)
             {
                 if (ProgressionConfiguration.Instance.GetLockTaming())
                 {
-                    if (__instance.m_character == null || !Instance.HasTamingKey(__instance.m_character.name))
+                    if (__instance.m_character == null ||
+                        !Instance.HasTamingKey(Utils.GetPrefabName(__instance.m_character.gameObject)))
                     {
                         time = 0f;
                     }
                 }
-            }
-        }
-
-        private void ApplyBlockedActionEffects(Player player)
-        {
-            if (player != null)
-            {
-                player.GetSEMan()?.AddStatusEffect("Burning", resetTime: false);
-                player.Message(MessageHud.MessageType.Center, ProgressionConfiguration.Instance.GetBlockedActionMessage());
             }
         }
 
@@ -1680,7 +1688,7 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(ItemStand), nameof(ItemStand.DelayedPowerActivation))]
         public static class Patch_ItemStand_DelayedPowerActivation
         {
-            [HarmonyPriority(Priority.Last)]
+            [HarmonyPriority(Priority.Low)]
             private static bool Prefix(ItemStand __instance)
             {
                 if (ProgressionConfiguration.Instance.GetLockGuardianPower())
@@ -1702,7 +1710,7 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(Player), nameof(Player.ActivateGuardianPower))]
         public static class Patch_Player_ActivateGuardianPower
         {
-            [HarmonyPriority(Priority.Last)]
+            [HarmonyPriority(Priority.Low)]
             private static bool Prefix(Player __instance, ref bool __result)
             {
                 if (!__instance.m_guardianPower.IsNullOrWhiteSpace() && ProgressionConfiguration.Instance.GetLockGuardianPower())
@@ -1725,12 +1733,12 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.SpawnBoss))]
         public static class Patch_OfferingBowl_SpawnBoss
         {
-            [HarmonyPriority(Priority.Last)]
+            [HarmonyPriority(Priority.Low)]
             private static bool Prefix(OfferingBowl __instance, ref bool __result)
             {
                 if (ProgressionConfiguration.Instance.GetLockBossSummons() && __instance.m_bossPrefab != null)
                 {
-                    if (!Instance.HasSummoningKey(__instance.m_bossPrefab.name))
+                    if (!Instance.HasSummoningKey(Utils.GetPrefabName(__instance.m_bossPrefab.gameObject)))
                     {
                         Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                         __result = false;
@@ -1748,7 +1756,7 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.EquipItem))]
         public static class Patch_Humanoid_EquipItem
         {
-            [HarmonyPriority(Priority.Last)]
+            [HarmonyPriority(Priority.Low)]
             private static bool Prefix(Humanoid __instance, ref bool __result, ItemDrop.ItemData item)
             {
                 if (__instance != Player.m_localPlayer)
@@ -1776,10 +1784,11 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(Door), nameof(Door.HaveKey))]
         public static class Patch_Door_HaveKey
         {
+            [HarmonyPriority(Priority.Low)]
             private static void Postfix(Door __instance, ref bool __result)
             {
                 if (__result && ProgressionConfiguration.Instance.GetLockEquipment() && __instance.m_keyItem != null &&
-                    !Instance.HasItemKey(__instance.m_keyItem.gameObject.name, true, false, false))
+                    !Instance.HasItemKey(Utils.GetPrefabName(__instance.m_keyItem.gameObject), true, false, false))
                 {
                     Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                     __result = false;
@@ -1793,7 +1802,7 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.DoCrafting))]
         public static class Patch_InventoryGui_DoCrafting
         {
-            [HarmonyPriority(Priority.Last)]
+            [HarmonyPriority(Priority.Low)]
             private static bool Prefix(InventoryGui __instance)
             {
                 if (ProgressionConfiguration.Instance.GetLockCrafting())
@@ -1815,14 +1824,15 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(Player), nameof(Player.PlacePiece))]
         public static class Patch_Player_PlacePiece
         {
-            [HarmonyPriority(Priority.Last)]
+            [HarmonyPriority(Priority.Low)]
             private static bool Prefix(ref bool __result, Piece piece)
             {
                 if (ProgressionConfiguration.Instance.GetLockBuilding() && piece?.m_resources != null)
                 {
                     for (int lcv = 0; lcv < piece.m_resources.Length; lcv++)
                     {
-                        if (!Instance.HasItemKey(piece.m_resources[lcv].m_resItem?.name, true, true, false))
+                        if (piece.m_resources[lcv]?.m_resItem != null &&
+                            !Instance.HasItemKey(Utils.GetPrefabName(piece.m_resources[lcv].m_resItem.gameObject), true, true, false))
                         {
                             Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                             __result = false;
@@ -1841,7 +1851,7 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(CookingStation), nameof(CookingStation.OnUseItem))]
         public static class Patch_CookingStation_OnUseItem
         {
-            [HarmonyPriority(Priority.Last)]
+            [HarmonyPriority(Priority.Low)]
             private static bool Prefix(ItemDrop.ItemData item, ref bool __result)
             {
                 if (ProgressionConfiguration.Instance.GetLockCooking() && Instance.IsActionBlocked(item, false, false, true))
