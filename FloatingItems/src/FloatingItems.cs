@@ -62,7 +62,7 @@ namespace VentureValheim.FloatingItems
                 }
             }
 
-            var sinkingPrefabsString = FloatingItemsPlugin.GetFloatingItems();
+            var sinkingPrefabsString = FloatingItemsPlugin.GetSinkingItems();
             Instance.SinkingPrefabs = new HashSet<string>();
 
             if (!sinkingPrefabsString.IsNullOrWhiteSpace())

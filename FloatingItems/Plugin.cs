@@ -12,7 +12,7 @@ namespace VentureValheim.FloatingItems
     public class FloatingItemsPlugin : BaseUnityPlugin
     {
         private const string ModName = "VentureFloatingItems";
-        private const string ModVersion = "0.1.0";
+        private const string ModVersion = "0.1.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -33,13 +33,14 @@ namespace VentureValheim.FloatingItems
         internal static ConfigEntry<string> CE_SinkingItems = null!;
         internal static ConfigEntry<bool> CE_FloatTrophies = null!;
         internal static ConfigEntry<bool> CE_FloatMeat = null!;
+        internal static ConfigEntry<bool> CE_FloatHides = null!;
         internal static ConfigEntry<bool> CE_FloatGearAndCraftable = null!;
 
         public static string GetFloatingItems() => CE_FloatingItems.Value;
         public static string GetSinkingItems() => CE_SinkingItems.Value;
         public static bool GetFloatTrophies() => CE_FloatTrophies.Value;
         public static bool GetFloatMeat() => CE_FloatMeat.Value;
-        public static bool GetFloatHides() => CE_FloatMeat.Value;
+        public static bool GetFloatHides() => CE_FloatHides.Value;
         public static bool GetFloatGearAndCraftable() => CE_FloatGearAndCraftable.Value;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
@@ -71,13 +72,13 @@ namespace VentureValheim.FloatingItems
             AddConfig("FloatingItems", general, "Additional prefab names of the items you want to float (comma-separated string).",
                 true, "SerpentScale", ref CE_FloatingItems);
             AddConfig("SinkingItems", general, "Additional prefab names of the items you want to always sink (comma-separated string).",
-                true, "BronzeNails, IronNails", ref CE_FloatingItems);
+                true, "BronzeNails, IronNails", ref CE_SinkingItems);
             AddConfig("FloatTrophies", general, "Apply floating to all trophies (boolean).",
                 true, true, ref CE_FloatTrophies);
             AddConfig("FloatMeat", general, "Apply floating to all types of meat (boolean).",
                 true, true, ref CE_FloatMeat);
             AddConfig("FloatHides", general, "Apply floating to all leathers and jute fabrics (boolean).",
-                true, true, ref CE_FloatMeat);
+                true, true, ref CE_FloatHides);
             AddConfig("FloatGearAndCraftable", general, "Apply floating to all craftable items and other gear (boolean).",
                 true, true, ref CE_FloatGearAndCraftable);
 

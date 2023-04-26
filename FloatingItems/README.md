@@ -25,6 +25,10 @@ This mod needs to be on all clients with matching configurations to work properl
 
 ## Changelog
 
+### 0.1.1
+
+* Bug fix for different configs not applying correctly (This is why you don't rush things when you copy/paste code)
+
 ### 0.1.0
 
 * First release
