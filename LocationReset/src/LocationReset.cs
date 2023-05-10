@@ -479,7 +479,6 @@ namespace VentureValheim.LocationReset
 
             Vector3 position = loc.transform.position;
             ZoneSystem.ZoneLocation zone = ZoneSystem.instance.GetLocation(hash);
-            // TODO: Find the center of every location accurately, test radius precision
             float locationRadius = Mathf.Max(zone.m_exteriorRadius, zone.m_interiorRadius);
             float distance = GetMaximumDistance(locationRadius, locationRadius);
 

@@ -26,6 +26,13 @@ namespace VentureValheim.LocationReset
             return loc.m_nview?.GetZDO()?.GetInt(LocationReset.LAST_RESET, -1) ?? -1;
         }
 
+        /// <summary>
+        /// Checks if a LocationProxy needs a reset, if no time has been previously recorded
+        /// sets the current day as the last reset time.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <param name="hash"></param>
+        /// <returns></returns>
         public static bool NeedsReset(this LocationProxy loc, int hash)
         {
             var lastReset = loc.GetLastReset();
@@ -72,8 +79,8 @@ namespace VentureValheim.LocationReset
 
         public IEnumerator WaitForReset()
         {
-            yield return null;
             yield return new WaitForSeconds(5);
+            yield return null;
             var loc = gameObject.GetComponent<LocationProxy>();
             if (loc != null)
             {
@@ -85,11 +92,13 @@ namespace VentureValheim.LocationReset
 
                     while (!LocationReset.LocalPlayerBeyondRange(loc.transform.position))
                     {
-                        if (LocationReset.LocalPlayerInRange(loc.transform.position, range))
+                        if (LocationReset.LocalPlayerInRange(loc.transform.position, range) &&
+                            ZNetScene.instance.IsAreaReady(loc.transform.position))
                         {
                             LocationReset.Instance.TryReset(loc);
                             break;
                         }
+
                         yield return new WaitForSeconds(1);
                     }
                 }

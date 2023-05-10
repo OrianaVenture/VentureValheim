@@ -26,6 +26,12 @@ namespace VentureValheim.LocationReset
             return dg.m_nview?.GetZDO()?.GetInt(LocationReset.LAST_RESET, -1) ?? -1;
         }
 
+        /// <summary>
+        /// Checks if a DungeonGenerator needs a reset, if no time has been previously recorded
+        /// sets the current day as the last reset time.
+        /// </summary>
+        /// <param name="dg"></param>
+        /// <returns></returns>
         public static bool NeedsReset(this DungeonGenerator dg)
         {
             var lastReset = dg.GetLastReset();
@@ -72,8 +78,8 @@ namespace VentureValheim.LocationReset
 
         public IEnumerator WaitForReset()
         {
-            yield return null;
             yield return new WaitForSeconds(5);
+            yield return null;
             var dg = gameObject.GetComponent<DungeonGenerator>();
             if (dg != null)
             {
@@ -81,7 +87,8 @@ namespace VentureValheim.LocationReset
 
                 while (!LocationReset.LocalPlayerBeyondRange(dg.transform.position))
                 {
-                    if (LocationReset.LocalPlayerInRange(dg.transform.position, range))
+                    if (LocationReset.LocalPlayerInRange(dg.transform.position, range) &&
+                        ZNetScene.instance.IsAreaReady(dg.transform.position))
                     {
                         LocationReset.Instance.TryReset(dg);
                         break;

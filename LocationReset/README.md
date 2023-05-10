@@ -4,11 +4,11 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Automatically reset Dungeons and Locations with a customizable in-game day rate. Inspired by DungeonReset mod by Tekla.
+Automatically reset Dungeons, Locations, and Leviathans with a customizable in-game day rate. Inspired by DungeonReset mod by Tekla.
 
 ## Features
 
-Resets dungeons/locations when a player approaches them given there is no "player activity" nearby. Locations will not reset until the second time it is visited with this mod installed given the ResetTime has been reached. For example, if you install this mod then visit a burial chamber on Day 100 it will not reset until visited on or after day 130 (given the default reset time is 30).
+Resets dungeons/locations when a player approaches them given the player is hosting the chunk and there is no "player activity" nearby. Locations will not reset until the second time it is visited with this mod installed given the ResetTime has been reached. For example, if you install this mod then visit a burial chamber on Day 100 it will not reset until visited on or after day 130 (given the default reset time is 30). Similarly, this mod has the ability to reset Leviathans in their original spawn locations.
 
 Player activity includes:
 
@@ -33,6 +33,12 @@ There are advanced options in the config file to set individual reset times for 
 "Ground locations" are every other type of location in the game. This mod supports resetting all kinds of ground locations including abandoned buildings, shipwrecks, infested trees, tar pits, etc. If you do not want to reset ground locations set ResetGroundLocations to False. This will not apply for meadows farms/villages or fuling camps as those locations are considered dungeons and are in a separate category.
 
 If you are using another mod that adds custom locations or dungeons you may see this mod behave unexpectedly. If you would like support added for another mod please reach out to me in my discord (link below).
+
+### Leviathans
+
+Leviathans will respawn in their original locations when resetting is enabled given there are none found in the zone. When causing a Leviathan to dive after mining the "leave" time will be recorded as the "visited" day, and the Leviathan will not delete itself as it does in vanilla. Upon reloading a zone the Leviathan will appear again on the surface unchanged from when last visited. Once a reset time has been reached the leviathan will delete itself upon the next time it is loaded. Currently you must reload the zone after a Leviathan is deleted to get them to respawn.
+
+This feature may impact performance more so than resetting Dungeons and Locations. If you have performance issues with this mod consider disabling Leviathan resetting when you do not need it on.
 
 ### Limitations
 
@@ -60,9 +66,18 @@ The following locations from other mods are supported:
 
 ## Installation
 
-This mod needs to be on the client, it will work even if other players do not have it installed but may behave unexpectedly when playing around other players without the mod. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations should take immediate effect.
+This mod needs to be on the client, it will work even if other players do not have it installed but may behave unexpectedly when playing around other players without the mod. For best results have everyone install the mod. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations should take immediate effect.
 
 ## Changelog
+
+### 0.3.0
+
+* Small optimization to the reset timing for dungeons and locations, now checks the area is ready before performing a reset - should help reduce small duplication errors
+* Major addition of Leviathan Resetting with new configs! (defaults to on! be aware when you upgrade the mod)
+
+### 0.2.4
+
+* Added in a check for performing a reset only if the player is hosting the chunk to help mitigate multiplayer issues with reset times not being recorded properly and triggering multiple resets too soon.
 
 ### 0.2.3
 

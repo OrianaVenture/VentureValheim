@@ -21,7 +21,7 @@ namespace VentureValheim.LocationReset
         }
 
         private const string ModName = "LocationReset";
-        private const string ModVersion = "0.2.3";
+        private const string ModVersion = "0.3.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -52,6 +52,9 @@ namespace VentureValheim.LocationReset
         private static ConfigEntry<int> CE_CampResetTime = null!;
         private static ConfigEntry<int> CE_MineResetTime = null!;
         private static ConfigEntry<int> CE_QueenResetTime = null!;
+
+        private static ConfigEntry<bool> CE_EnableLeviathanReset = null!;
+        private static ConfigEntry<int> CE_LeviathanResetTime = null!;
 
         private static readonly int TrollCave02 = "TrollCave02".GetStableHashCode();
         private static readonly string DGVillage = "DG_MeadowsVillage";
@@ -120,6 +123,10 @@ namespace VentureValheim.LocationReset
         public static bool GetSkipPlayerGroundPieceCheck() => CE_SkipPlayerGroundPieceCheck.Value;
         public static bool GetResetGroundLocations() => CE_ResetGroundLocations.Value;
 
+        public static bool GetEnableLeviathanReset() => CE_EnableLeviathanReset.Value;
+        public static int GetLeviathanResetTime() => CE_LeviathanResetTime.Value;
+
+
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
             string extendedDescription = GetExtendedDescription(description, synced);
@@ -142,6 +149,7 @@ namespace VentureValheim.LocationReset
 
             const string general = "General";
             const string advanced = "Advanced";
+            const string leviathans = "Leviathans";
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean).",
                 true, true, ref CE_ServerConfigLocked);
@@ -175,6 +183,11 @@ namespace VentureValheim.LocationReset
                 true, 30, ref CE_MineResetTime);
             AddConfig("QueenResetTime", advanced, "Number of in-game days for resetting mistland infested citadel (int).",
                 true, 30, ref CE_QueenResetTime);
+
+            AddConfig("EnableLeviathanReset", leviathans, "True to enable resetting Leviathans (boolean).",
+                true, true, ref CE_EnableLeviathanReset);
+            AddConfig("LeviathanResetTime", leviathans, "Default number of in-game days for reset, one day is about 30 minutes (int).",
+                true, 30, ref CE_LeviathanResetTime);
 
             #endregion
 
