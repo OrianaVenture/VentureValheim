@@ -75,10 +75,6 @@ This mod needs to be on the client, it will work even if other players do not ha
 * Small optimization to the reset timing for dungeons and locations, now checks the area is ready before performing a reset - should help reduce small duplication errors
 * Major addition of Leviathan Resetting with new configs! (defaults to on! be aware when you upgrade the mod)
 
-### 0.2.4
-
-* Added in a check for performing a reset only if the player is hosting the chunk to help mitigate multiplayer issues with reset times not being recorded properly and triggering multiple resets too soon.
-
 ### 0.2.3
 
 * Changed how zone centers of locations are determined to improve accuracy of location deletion
