@@ -70,6 +70,11 @@ This mod needs to be on the client, it will work even if other players do not ha
 
 ## Changelog
 
+### 0.3.1
+
+* Reworked resetting logic of dungeons and locations to only happen if the player is the "chunk owner". Should fix a bug where reset times were not being recorded correctly and caused multiple resets to happen in a short amount of time
+* Added a redundant error check to ensure a reset does not happen unless the reset time is set properly
+
 ### 0.3.0
 
 * Small optimization to the reset timing for dungeons and locations, now checks the area is ready before performing a reset - should help reduce small duplication errors

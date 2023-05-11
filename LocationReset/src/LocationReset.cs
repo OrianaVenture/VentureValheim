@@ -370,13 +370,6 @@ namespace VentureValheim.LocationReset
             LocationResetPlugin.LocationResetLogger.LogDebug($"Trying to reset DungeonGenerator located at: " +
                 $"{dg.transform.position}, center: {dg.m_zoneCenter}");
 
-            // Potential fix for multiplayer issues up for consideration
-            /*if (!dg.m_nview.IsOwner())
-            {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"Player does not own the chunk for DungeonGenerator reset. Skipping.");
-                return;
-            }*/
-
             if (!dg.NeedsReset())
             {
                 LocationResetPlugin.LocationResetLogger.LogDebug($"DungeonGenerator does not need a reset. Skipping.");
@@ -416,7 +409,11 @@ namespace VentureValheim.LocationReset
         /// <param name="distance"></param>
         public void Reset(DungeonGenerator dg, Vector3 position, float distance)
         {
-            dg.SetLastResetNow();
+            if (!dg.SetLastResetNow())
+            {
+                LocationResetPlugin.LocationResetLogger.LogDebug($"There was an issue setting the reset time, abort.");
+                return;
+            }
 
             // Destroy location
             if (dg.transform.position.y < LOCATION_MINIMUM)
@@ -462,13 +459,6 @@ namespace VentureValheim.LocationReset
         {
             LocationResetPlugin.LocationResetLogger.LogDebug($"Trying to reset LocationProxy located at: {loc.transform.position}");
 
-            // Potential fix for multiplayer issues up for consideration
-            /*if (!loc.m_nview.IsOwner())
-            {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"Player does not own the chunk for LocationProxy reset. Skipping.");
-                return;
-            }*/
-
             int hash = loc.m_nview?.GetZDO()?.GetInt("location") ?? 0;
 
             if (hash == 0 || !loc.NeedsReset(hash))
@@ -502,7 +492,11 @@ namespace VentureValheim.LocationReset
         /// <param name="locationHash"></param>
         public void Reset(LocationProxy loc, Vector3 position, float distance, int locationHash)
         {
-            loc.SetLastResetNow();
+            if (!loc.SetLastResetNow())
+            {
+                LocationResetPlugin.LocationResetLogger.LogDebug($"There was an issue setting the reset time, abort.");
+                return;
+            }
 
             // Destroy location
             if (!SkyLocationHashes.Contains(locationHash))

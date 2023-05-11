@@ -8,17 +8,15 @@ namespace VentureValheim.LocationReset
     {
         public const string RPCNAME_DGSetLastResetNow = "VV_DGSetLastResetNow";
 
-        public static void SetLastResetNow(this DungeonGenerator dg)
+        public static bool SetLastResetNow(this DungeonGenerator dg)
         {
-            dg.m_nview?.InvokeRPC(ZRoutedRpc.Everybody, RPCNAME_DGSetLastResetNow);
-        }
-
-        public static void RPC_SetLastResetNow(this DungeonGenerator dg, long sender)
-        {
-            if (dg.m_nview != null && dg.m_nview.IsOwner())
+            if (dg.m_nview?.GetZDO() == null || !dg.m_nview.IsOwner())
             {
-                dg.m_nview.GetZDO()?.Set(LocationReset.LAST_RESET, LocationReset.GetGameDay());
+                return false;
             }
+
+            dg.m_nview.GetZDO().Set(LocationReset.LAST_RESET, LocationReset.GetGameDay());
+            return true;
         }
 
         public static int GetLastReset(this DungeonGenerator dg)
@@ -51,15 +49,6 @@ namespace VentureValheim.LocationReset
 
             return false;
         }
-
-        [HarmonyPatch(typeof(DungeonGenerator), nameof(DungeonGenerator.Awake))]
-        public static class Patch_DungeonGenerator_Awake
-        {
-            private static void Postfix(DungeonGenerator __instance)
-            {
-                __instance.m_nview.Register(RPCNAME_DGSetLastResetNow, __instance.RPC_SetLastResetNow);
-            }
-        }
     }
 
     /// <summary>
@@ -83,6 +72,7 @@ namespace VentureValheim.LocationReset
             var dg = gameObject.GetComponent<DungeonGenerator>();
             if (dg != null)
             {
+                int tries = 0;
                 float range = LocationReset.GetResetRange(dg.transform.position.y);
 
                 while (!LocationReset.LocalPlayerBeyondRange(dg.transform.position))
@@ -90,8 +80,20 @@ namespace VentureValheim.LocationReset
                     if (LocationReset.LocalPlayerInRange(dg.transform.position, range) &&
                         ZNetScene.instance.IsAreaReady(dg.transform.position))
                     {
-                        LocationReset.Instance.TryReset(dg);
-                        break;
+                        if (dg.m_nview != null && dg.m_nview.IsOwner())
+                        {
+                            LocationReset.Instance.TryReset(dg);
+                            break;
+                        }
+                        else
+                        {
+                            tries++;
+                        }
+
+                        if (tries > 100)
+                        {
+                            break;
+                        }
                     }
 
                     yield return new WaitForSeconds(1);

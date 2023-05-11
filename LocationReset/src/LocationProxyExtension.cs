@@ -8,17 +8,15 @@ namespace VentureValheim.LocationReset
     {
         public const string RPCNAME_LPSetLastResetNow = "VV_LPSetLastResetNow";
 
-        public static void SetLastResetNow(this LocationProxy loc)
+        public static bool SetLastResetNow(this LocationProxy loc)
         {
-            loc.m_nview?.InvokeRPC(ZRoutedRpc.Everybody, RPCNAME_LPSetLastResetNow);
-        }
-
-        public static void RPC_SetLastResetNow(this LocationProxy loc, long sender)
-        {
-            if (loc.m_nview != null && loc.m_nview.IsOwner())
+            if (loc.m_nview?.GetZDO() == null || !loc.m_nview.IsOwner())
             {
-                loc.m_nview.GetZDO()?.Set(LocationReset.LAST_RESET, LocationReset.GetGameDay());
+                return false;
             }
+
+            loc.m_nview.GetZDO().Set(LocationReset.LAST_RESET, LocationReset.GetGameDay());
+            return true;
         }
 
         public static int GetLastReset(this LocationProxy loc)
@@ -52,15 +50,6 @@ namespace VentureValheim.LocationReset
 
             return false;
         }
-
-        [HarmonyPatch(typeof(LocationProxy), nameof(LocationProxy.Awake))]
-        public static class Patch_LocationProxy_Awake
-        {
-            private static void Postfix(LocationProxy __instance)
-            {
-                __instance.m_nview.Register(RPCNAME_LPSetLastResetNow, __instance.RPC_SetLastResetNow);
-            }
-        }
     }
 
     /// <summary>
@@ -88,6 +77,7 @@ namespace VentureValheim.LocationReset
 
                 if (hash != 0)
                 {
+                    int tries = 0;
                     float range = LocationReset.GetResetRange(hash);
 
                     while (!LocationReset.LocalPlayerBeyondRange(loc.transform.position))
@@ -95,8 +85,20 @@ namespace VentureValheim.LocationReset
                         if (LocationReset.LocalPlayerInRange(loc.transform.position, range) &&
                             ZNetScene.instance.IsAreaReady(loc.transform.position))
                         {
-                            LocationReset.Instance.TryReset(loc);
-                            break;
+                            if (loc.m_nview != null && loc.m_nview.IsOwner())
+                            {
+                                LocationReset.Instance.TryReset(loc);
+                                break;
+                            }
+                            else
+                            {
+                                tries++;
+                            }
+
+                            if (tries > 100)
+                            {
+                                break;
+                            }
                         }
 
                         yield return new WaitForSeconds(1);
