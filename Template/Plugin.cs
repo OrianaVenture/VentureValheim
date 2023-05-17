@@ -28,9 +28,7 @@ namespace VentureValheim.Template
         private static readonly ConfigSync ConfigurationSync = new(ModGUID)
         { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
 
-        internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
-
-        internal static ConfigEntry<bool> CE_ModEnabled = null!;
+        internal static ConfigEntry<bool> CE_ServerConfigLocked = null!;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
@@ -56,13 +54,9 @@ namespace VentureValheim.Template
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean).",
                 true, true, ref CE_ServerConfigLocked);
-            AddConfig("Enabled", general,"Enable module (boolean).",
-                true, true, ref CE_ModEnabled);
+            ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
 
             #endregion
-
-            if (!CE_ModEnabled.Value)
-                return;
 
             TemplateLogger.LogInfo("Initializing Template configurations...");
 
