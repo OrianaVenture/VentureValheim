@@ -17,6 +17,7 @@ namespace VentureValheim.DeluxeParticles
         [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.Awake))]
         public static class Patch_ObjectDB_Awake
         {
+            [HarmonyPriority(Priority.Last)]
             private static void Postfix()
             {
                 if (SceneManager.GetActiveScene().name.Equals("main"))

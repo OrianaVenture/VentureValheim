@@ -12,6 +12,10 @@ This mod is client side only and has no configuration options. Does not need to 
 
 ## Changelog
 
+### 0.1.1
+
+* Set priority of game patch to last to better support other mods and custom items.
+
 ### 0.1.0
 
 * First release
