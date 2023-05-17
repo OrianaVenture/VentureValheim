@@ -22,6 +22,10 @@ This mod is client side only and has no configuration options. Does not need to 
 
 ## Changelog
 
+### 0.1.6
+
+* Update for game patch 0.216.5, backwards compatible.
+
 ### 0.1.5
 
 * Added support for new seasonal items from the mistlands update.

@@ -1,5 +1,4 @@
 using HarmonyLib;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace VentureValheim.NoSeasonalRestrictions
@@ -50,7 +49,7 @@ namespace VentureValheim.NoSeasonalRestrictions
         {
             try
             {
-                var obj = ZNetScene.m_instance.GetPrefab(name);
+                var obj = ZNetScene.instance.GetPrefab(name);
                 obj.GetComponent<Piece>().m_enabled = true;
                 return;
             }
@@ -65,7 +64,7 @@ namespace VentureValheim.NoSeasonalRestrictions
         /// <summary>
         /// Enables the given Recipe if found
         /// </summary>
-        /// <param name="name">The Item's shared name for identifying the recipe</param>
+        /// <param name="name">The Prefab's name</param>
         private static void EnableRecipe(string name)
         {
             try
@@ -91,9 +90,9 @@ namespace VentureValheim.NoSeasonalRestrictions
         /// <summary>
         /// Helper method to identify disabled entities
         /// </summary>
-        private static void ListDisabledItems()
+        /*private static void ListDisabledItems()
         {
-            foreach (GameObject obj in ZNetScene.m_instance.m_prefabs)
+            foreach (GameObject obj in ZNetScene.instance.m_prefabs)
             {
                 try
                 {
@@ -126,6 +125,6 @@ namespace VentureValheim.NoSeasonalRestrictions
                     NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Error with ListDisabledItems: {obj.name}");
                 }
             }
-        }
+        }*/
     }
 }
