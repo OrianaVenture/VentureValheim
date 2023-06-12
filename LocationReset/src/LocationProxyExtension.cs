@@ -73,7 +73,7 @@ namespace VentureValheim.LocationReset
             var loc = gameObject.GetComponent<LocationProxy>();
             if (loc != null)
             {
-                int hash = loc.m_nview?.GetZDO()?.GetInt("location") ?? 0;
+                int hash = loc.m_nview?.GetZDO()?.GetInt(ZDOVars.s_location) ?? 0;
 
                 if (hash != 0)
                 {

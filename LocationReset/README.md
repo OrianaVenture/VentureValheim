@@ -70,6 +70,12 @@ This mod needs to be on the client, it will work even if other players do not ha
 
 ## Changelog
 
+### 0.4.0
+
+* Update for game patch 0.216.9
+* Bug fix for multiple leviathans spawning in the same place in multiplayer (needs extra testing)
+* Bug fix for ground locations not detecting player built pieces correctly (incorrect radius check)
+
 ### 0.3.1
 
 * Reworked resetting logic of dungeons and locations to only happen if the player is the "chunk owner". Should fix a bug where reset times were not being recorded correctly and caused multiple resets to happen in a short amount of time

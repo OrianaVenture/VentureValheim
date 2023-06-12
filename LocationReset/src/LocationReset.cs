@@ -316,7 +316,7 @@ namespace VentureValheim.LocationReset
         /// <param name="obj"></param>
         private static void DeleteObject(ref GameObject obj)
         {
-            obj.GetComponent<ZNetView>()?.GetZDO()?.SetOwner(ZDOMan.instance.GetMyID());
+            obj.GetComponent<ZNetView>()?.GetZDO()?.SetOwner(ZDOMan.GetSessionID());
 
             ZNetScene.instance.Destroy(obj);
         }
@@ -354,7 +354,7 @@ namespace VentureValheim.LocationReset
             if (door != null && door.m_keyItem != null && InBounds(obj.transform.position, position, distance))
             {
                 LocationResetPlugin.LocationResetLogger.LogDebug($"Attempting to reset a door at {obj.transform.position}.");
-                door.m_nview?.GetZDO()?.Set("state", 0);
+                door.m_nview?.GetZDO()?.Set(ZDOVars.s_state, 0);
                 door.UpdateState();
             }
         }
@@ -459,7 +459,7 @@ namespace VentureValheim.LocationReset
         {
             LocationResetPlugin.LocationResetLogger.LogDebug($"Trying to reset LocationProxy located at: {loc.transform.position}");
 
-            int hash = loc.m_nview?.GetZDO()?.GetInt("location") ?? 0;
+            int hash = loc.m_nview?.GetZDO()?.GetInt(ZDOVars.s_location) ?? 0;
 
             if (hash == 0 || !loc.NeedsReset(hash))
             {
@@ -472,7 +472,7 @@ namespace VentureValheim.LocationReset
             float locationRadius = Mathf.Max(zone.m_exteriorRadius, zone.m_interiorRadius);
             float distance = GetMaximumDistance(locationRadius, locationRadius);
 
-            if (PlayerActivity(position, locationRadius, SkyLocationHashes.Contains(hash)))
+            if (PlayerActivity(position, distance, SkyLocationHashes.Contains(hash)))
             {
                 LocationResetPlugin.LocationResetLogger.LogDebug($"There is player activity here! Skipping.");
                 return;
@@ -521,7 +521,7 @@ namespace VentureValheim.LocationReset
         public void Regenerate(LocationProxy loc, int locationHash)
         {
             var zone = ZoneSystem.instance.GetLocation(locationHash);
-            int seed = loc.m_nview?.GetZDO()?.GetInt("seed") ?? 0;
+            int seed = loc.m_nview?.GetZDO()?.GetInt(ZDOVars.s_seed) ?? 0;
 
             foreach (ZNetView obj in zone.m_netViews)
             {
@@ -558,7 +558,6 @@ namespace VentureValheim.LocationReset
 
                     GameObject gameObject = UnityEngine.Object.Instantiate(obj.gameObject, objPosition, objRotation);
                     gameObject.SetActive(value: true);
-                    gameObject.GetComponent<ZNetView>()?.GetZDO()?.SetPGWVersion(ZoneSystem.instance.m_pgwVersion);
                 }
             }
 
@@ -587,7 +586,7 @@ namespace VentureValheim.LocationReset
         {
             private static void Postfix(LocationProxy __instance)
             {
-                var location = __instance.m_nview?.GetZDO()?.GetInt("location");
+                var location = __instance.m_nview?.GetZDO()?.GetInt(ZDOVars.s_location);
 
                 if (location == null || location.Value == 0)
                 {

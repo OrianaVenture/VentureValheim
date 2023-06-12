@@ -8,6 +8,7 @@ namespace VentureValheim.LocationReset
     public class ZoneSystemReset
     {
         private static readonly int LeviathanHash = "Leviathan".GetStableHashCode();
+        private static readonly int SpawnSystemHash = "_ZoneCtrl".GetStableHashCode();
         private static List<ZoneSystem.ZoneVegetation> ResetVegetation;
         private static ZoneSystemResetComponent ResetComponent;
 
@@ -39,10 +40,12 @@ namespace VentureValheim.LocationReset
                         if (objects != null)
                         {
                             int leviathansInZone = 0;
+                            bool zoneOwner = false;
                             foreach (var obj in objects)
                             {
                                 if (obj.m_prefab == LeviathanHash)
                                 {
+                                    // Count Leviathans in zone
                                     var levi = ZNetScene.instance.FindInstance(obj);
                                     var leviathan = levi?.transform.root.GetComponent<Leviathan>();
                                     if (leviathan != null && leviathan.CheckDelete(out bool deleted))
@@ -61,9 +64,14 @@ namespace VentureValheim.LocationReset
                                         reset = false;
                                     }
                                 }
+                                else if (obj.m_prefab == SpawnSystemHash)
+                                {
+                                    // Check zone ownership
+                                    zoneOwner = obj.IsOwner();
+                                }
                             }
 
-                            if (leviathansInZone == 0)
+                            if (leviathansInZone == 0 && zoneOwner)
                             {
                                 // TODO: Figure out how to delete a Leviathan and regenerate it in the same pass
                                 // Currently is not spawning right after deleting them
