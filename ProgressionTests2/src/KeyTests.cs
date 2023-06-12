@@ -49,15 +49,15 @@ namespace VentureValheim.ProgressionTests
             var mockManager = new Mock<IKeyManager>();
             mockManager.Setup(x => x.BlockedGlobalKeys).Returns(a);
             mockManager.Setup(x => x.AllowedGlobalKeys).Returns(b);
-            var set1 = ProgressionAPI.Instance.StringToSet(a);
-            var set2 = ProgressionAPI.Instance.StringToSet(b);
+            var set1 = ProgressionAPI.StringToSet(a);
+            var set2 = ProgressionAPI.StringToSet(b);
             mockManager.Setup(x => x.BlockedGlobalKeysList).Returns(set1);
             mockManager.Setup(x => x.AllowedGlobalKeysList).Returns(set2);
 
             mockManager.Setup(x => x.BlockedPrivateKeys).Returns(c);
             mockManager.Setup(x => x.AllowedPrivateKeys).Returns(d);
-            var set3 = ProgressionAPI.Instance.StringToSet(c);
-            var set4 = ProgressionAPI.Instance.StringToSet(d);
+            var set3 = ProgressionAPI.StringToSet(c);
+            var set4 = ProgressionAPI.StringToSet(d);
             mockManager.Setup(x => x.BlockedPrivateKeysList).Returns(set3);
             mockManager.Setup(x => x.AllowedPrivateKeysList).Returns(set4);
 
@@ -133,8 +133,8 @@ namespace VentureValheim.ProgressionTests
             var keyManager = Setup("", "", "", "");
             keyManager.UpdateGlobalKeyConfigurationTest(a, b);
 
-            var set1 = ProgressionAPI.Instance.StringToSet(a);
-            var set2 = ProgressionAPI.Instance.StringToSet(b);
+            var set1 = ProgressionAPI.StringToSet(a);
+            var set2 = ProgressionAPI.StringToSet(b);
 
             Assert.Equal(a, keyManager.BlockedGlobalKeys);
             Assert.Equal(b, keyManager.AllowedGlobalKeys);
@@ -151,7 +151,7 @@ namespace VentureValheim.ProgressionTests
             var mockManager = new Mock<IKeyManager>();
             mockManager.SetupGet(x => x.BlockedGlobalKeys).Returns(a);
             mockManager.SetupGet(x => x.AllowedGlobalKeys).Returns(b);
-            var set3 = ProgressionAPI.Instance.StringToSet("Test1,Test2,Test3");
+            var set3 = ProgressionAPI.StringToSet("Test1,Test2,Test3");
             mockManager.SetupGet(x => x.BlockedGlobalKeysList).Returns(set3);
             mockManager.SetupGet(x => x.AllowedGlobalKeysList).Returns(set3);
 
@@ -173,7 +173,7 @@ namespace VentureValheim.ProgressionTests
         public void CountPrivateBossKeys_All(string keys, int expected)
         {
             var mockManager = new Mock<IKeyManager>();
-            var set = ProgressionAPI.Instance.StringToSet(keys);
+            var set = ProgressionAPI.StringToSet(keys);
             mockManager.SetupGet(x => x.PrivateKeysList).Returns(set);
 
             var keyManager = new TestKeyManager(mockManager.Object);
@@ -237,8 +237,8 @@ namespace VentureValheim.ProgressionTests
             var keyManager = Setup("", "", "", "");
             keyManager.UpdatePrivateKeyConfigurationTest(a, b);
 
-            var set1 = ProgressionAPI.Instance.StringToSet(a);
-            var set2 = ProgressionAPI.Instance.StringToSet(b);
+            var set1 = ProgressionAPI.StringToSet(a);
+            var set2 = ProgressionAPI.StringToSet(b);
 
             Assert.Equal(a, keyManager.BlockedPrivateKeys);
             Assert.Equal(b, keyManager.AllowedPrivateKeys);
@@ -255,7 +255,7 @@ namespace VentureValheim.ProgressionTests
             var mockManager = new Mock<IKeyManager>();
             mockManager.SetupGet(x => x.BlockedPrivateKeys).Returns(a);
             mockManager.SetupGet(x => x.AllowedPrivateKeys).Returns(b);
-            var set3 = ProgressionAPI.Instance.StringToSet("Test1,Test2,Test3");
+            var set3 = ProgressionAPI.StringToSet("Test1,Test2,Test3");
             mockManager.SetupGet(x => x.BlockedPrivateKeysList).Returns(set3);
             mockManager.SetupGet(x => x.AllowedPrivateKeysList).Returns(set3);
 

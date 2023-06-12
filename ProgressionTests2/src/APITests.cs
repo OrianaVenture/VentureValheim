@@ -29,11 +29,11 @@ namespace VentureValheim.ProgressionTests
             set2.Add("killed_Jesus");
 
             Assert.Single(set1);
-            Assert.Equal(set1, ProgressionAPI.Instance.StringToSet(string1));
+            Assert.Equal(set1, ProgressionAPI.StringToSet(string1));
             Assert.Equal(3, set2.Count);
-            Assert.Equal(set2, ProgressionAPI.Instance.StringToSet(string2));
+            Assert.Equal(set2, ProgressionAPI.StringToSet(string2));
             Assert.Equal(3, set2.Count);
-            Assert.Equal(set2, ProgressionAPI.Instance.StringToSet(string3));
+            Assert.Equal(set2, ProgressionAPI.StringToSet(string3));
         }
 
         [Fact]
@@ -49,11 +49,11 @@ namespace VentureValheim.ProgressionTests
             dict2.Add("Wolf", "defeated_dragon");
             dict2.Add("Lox", "defeated_goblinking");
 
-            Assert.Equal(dict1, ProgressionAPI.Instance.StringToDictionary(string1));
+            Assert.Equal(dict1, ProgressionAPI.StringToDictionary(string1));
             Assert.Equal(3, dict2.Count);
-            Assert.Equal(dict2, ProgressionAPI.Instance.StringToDictionary(string2));
+            Assert.Equal(dict2, ProgressionAPI.StringToDictionary(string2));
             Assert.Equal(3, dict2.Count);
-            Assert.Equal(dict2, ProgressionAPI.Instance.StringToDictionary(string3));
+            Assert.Equal(dict2, ProgressionAPI.StringToDictionary(string3));
         }
 
         [Theory]
@@ -71,7 +71,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData(100, 5, false, 100)]
         public void PrettifyNumber_All(int num, int roundTo, bool roundUp, int expected)
         {
-            Assert.Equal(expected, ProgressionAPI.Instance.PrettifyNumber(num, roundTo, roundUp));
+            Assert.Equal(expected, ProgressionAPI.PrettifyNumber(num, roundTo, roundUp));
         }
 
         [Fact]
