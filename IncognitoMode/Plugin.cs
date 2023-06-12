@@ -12,7 +12,7 @@ namespace VentureValheim.IncognitoMode
     public class IncognitoModePlugin : BaseUnityPlugin
     {
         private const string ModName = "IncognitoMode";
-        private const string ModVersion = "0.1.2";
+        private const string ModVersion = "0.2.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -63,7 +63,7 @@ namespace VentureValheim.IncognitoMode
                 true, true, ref CE_ServerConfigLocked);
             ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
 
-            AddConfig("HiddenByItems", general, "Prefab names of helmets that can hide a Player's identity/name (comma-separated string).",
+            AddConfig("HiddenByItems", general, "Prefab names of helmet/shoulder items that can hide a Player's name (comma-separated string).",
                 true, "HelmetRoot, HelmetFenring, HelmetPadded", ref CE_HiddenByItems);
             AddConfig("HiddenDisplayName", general, "The hidden Player's display name (string).",
                 true, "???", ref CE_HiddenDisplayName);

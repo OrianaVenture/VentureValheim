@@ -14,10 +14,10 @@ namespace VentureValheim.IncognitoMode
             get => _instance;
         }
 
-        private const string HELMET_HIDDEN = "VV_HelmetHidden";
+        private const string NAME_HIDDEN = "VV_NameHidden";
 
-        private string HelmetPrefabsString = "";
-        private HashSet<string> HelmetPrefabs = new HashSet<string>();
+        private string ItemPrefabsString = "";
+        private HashSet<string> ItemPrefabs = new HashSet<string>();
 
         public static string GetDisplayName()
         {
@@ -26,20 +26,25 @@ namespace VentureValheim.IncognitoMode
 
         public void Update()
         {
-            if (!IncognitoModePlugin.GetHiddenByItems().Equals(Instance.HelmetPrefabsString))
+            if (!IncognitoModePlugin.GetHiddenByItems().Equals(Instance.ItemPrefabsString))
             {
-                HelmetPrefabsString = IncognitoModePlugin.GetHiddenByItems();
-                HelmetPrefabs = new HashSet<string>();
+                ItemPrefabsString = IncognitoModePlugin.GetHiddenByItems();
+                ItemPrefabs = new HashSet<string>();
 
-                if (!HelmetPrefabsString.IsNullOrWhiteSpace())
+                if (!ItemPrefabsString.IsNullOrWhiteSpace())
                 {
-                    var prefabs = HelmetPrefabsString.Split(',');
+                    var prefabs = ItemPrefabsString.Split(',');
                     for (var lcv = 0; lcv < prefabs.Length; lcv++)
                     {
-                        HelmetPrefabs.Add(prefabs[lcv].Trim());
+                        ItemPrefabs.Add(prefabs[lcv].Trim());
                     }
                 }
             }
+        }
+
+        private void SetHidden(ref Player player, bool hidden)
+        {
+            player?.m_nview?.GetZDO()?.Set(NAME_HIDDEN, hidden);
         }
 
         /// <summary>
@@ -50,7 +55,7 @@ namespace VentureValheim.IncognitoMode
         {
             private static void Postfix(Player __instance, ref string __result)
             {
-                var hidden = __instance.m_nview?.GetZDO()?.GetBool(HELMET_HIDDEN) ?? false;
+                var hidden = __instance.m_nview?.GetZDO()?.GetBool(NAME_HIDDEN) ?? false;
 
                 if (hidden)
                 {
@@ -71,16 +76,26 @@ namespace VentureValheim.IncognitoMode
 			    {
                     Instance.Update();
 
+                    bool hidden = false;
                     var helmet = __instance.m_helmetItem;
-                    if (helmet != null && Instance.HelmetPrefabs.Contains(helmet.m_dropPrefab?.name))
+                    var back = __instance.m_shoulderItem;
+                    var utility = __instance.m_utilityItem;
+
+                    if (helmet != null && Instance.ItemPrefabs.Contains(helmet.m_dropPrefab?.name))
                     {
-                        __instance.m_nview.GetZDO().Set(HELMET_HIDDEN, true);
+                        hidden = true;
                     }
-                    else
+                    else if (back != null && Instance.ItemPrefabs.Contains(back.m_dropPrefab?.name))
                     {
-                        __instance.m_nview.GetZDO().Set(HELMET_HIDDEN, false);
+                        hidden = true;
                     }
-			    }
+                    else if (utility != null && Instance.ItemPrefabs.Contains(utility.m_dropPrefab?.name))
+                    {
+                        hidden = true;
+                    }
+
+                    Instance.SetHidden(ref __instance, hidden);
+                }
 
             }
         }
@@ -92,28 +107,28 @@ namespace VentureValheim.IncognitoMode
         [HarmonyPatch(typeof(Chat), nameof(Chat.OnNewChatMessage))]
         public static class Patch_Chat_OnNewChatMessage
         {
-            private static void Prefix(ref string user)
+            private static void Prefix(ref UserInfo user)
             {
                 if (IncognitoModePlugin.GetHideNameInChat())
                 {
                     Player speaker = null;
-                    var players = Player.m_players;
+                    var players = Player.s_players;
 
                     for (int lcv = 0; lcv < players.Count; lcv++)
                     {
                         var player = players[lcv].GetPlayerName();
-                        if (player.Equals(user))
+                        if (player.Equals(user.Name))
                         {
                             speaker = players[lcv];
                             break;
                         }
                     }
 
-                    var hidden = speaker?.m_nview?.GetZDO()?.GetBool(HELMET_HIDDEN) ?? false;
+                    var hidden = speaker?.m_nview?.GetZDO()?.GetBool(NAME_HIDDEN) ?? false;
 
                     if (hidden)
                     {
-                        user = GetDisplayName();
+                        user.Name = GetDisplayName();
                     }
                 }
             }
