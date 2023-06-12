@@ -162,18 +162,7 @@ namespace VentureValheim.Progression
         /// <returns>level or closest bound for the skill</returns>
         protected float NormalizeSkillLevel(float level)
         {
-            float maximum;
-
-            if (ProgressionConfiguration.Instance.GetOverrideMaximumSkillLevel())
-            {
-                maximum = ProgressionConfiguration.Instance.GetMaximumSkillLevel();
-            }
-            else
-            {
-                maximum = SKILL_MAXIMUM;
-            }
-
-            return Mathf.Clamp(level, SKILL_MINIMUM, maximum);
+            return Mathf.Clamp(level, GetSkillDrainFloor(), GetSkillGainCeiling());
         }
 
         /// <summary>

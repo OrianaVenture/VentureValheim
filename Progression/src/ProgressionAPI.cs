@@ -174,13 +174,13 @@ namespace VentureValheim.Progression
                 try
                 {
                     // Try hash code
-                    var gameObject = ZNetScene.m_instance.m_namedPrefabs[name.GetStableHashCode()];
+                    var gameObject = ZNetScene.instance.m_namedPrefabs[name.GetStableHashCode()];
                     character = gameObject.GetComponent<Humanoid>();
                 }
                 catch
                 {
                     // Failed, try slow search
-                    var prefabs = ZNetScene.m_instance.m_prefabs;
+                    var prefabs = ZNetScene.instance.m_prefabs;
                     for (int lcv = 0; lcv < prefabs.Count; lcv++)
                     {
                         if (prefabs[lcv].name.Equals(name))
@@ -246,7 +246,7 @@ namespace VentureValheim.Progression
             {
                 Directory.CreateDirectory(path);
 
-                foreach (GameObject obj in ZNetScene.m_instance.m_prefabs)
+                foreach (GameObject obj in ZNetScene.instance.m_prefabs)
                 {
                     try
                     {
@@ -440,7 +440,7 @@ namespace VentureValheim.Progression
                 var player = players[lcv].m_name.Trim().ToLower();
                 if (player.Equals(nameSimple))
                 {
-                    return players[lcv].m_characterID.m_userID;
+                    return players[lcv].m_characterID.UserID;
                 }
             }
 

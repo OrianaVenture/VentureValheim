@@ -93,6 +93,8 @@ Don't know how to use commands? Dedicated servers do not allow for use of comman
 
 Have more control over Skill loss and gain. When using skill capping any skills that are already above the maximum skill cap will remain "frozen" and will not gain, but can still be lowered on death. Console cheats will still work as intended. Other mods that change how skill gain and loss functions may cause unexpected behaviors. Turn off this feature if using another mod for skill management if you see mod conflicts.
 
+Want to just lose accumulation points when you die? This is possible if you set UseAbsoluteSkillDrain = true, and AbsoluteSkillDrain = 0.
+
 #### Configuration Options
 
 * EnableSkillManager must be set to True to enable these features.
@@ -184,6 +186,12 @@ Vanilla items are grouped by custom types and are assigned the biome in which th
 This mod needs to be on both the client and server for all features to work. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.0.28
+
+* Update for game patch 0.216.9
+* Fixed skill drain edge cases for skill manager where skills could rarely drop below the skill floor
+* Bug fix for keys saving to incorrect character when switching between them in the same game session
 
 ### 0.0.27
 

@@ -1203,7 +1203,7 @@ namespace VentureValheim.Progression
         {
             if (player != null)
             {
-                player.GetSEMan()?.AddStatusEffect("Burning", resetTime: false);
+                player.GetSEMan()?.AddStatusEffect(Character.s_statusEffectBurning, resetTime: false);
                 player.Message(MessageHud.MessageType.Center, ProgressionConfiguration.Instance.GetBlockedActionMessage());
             }
         }
@@ -1280,13 +1280,21 @@ namespace VentureValheim.Progression
         {
             private static void Prefix(Player __instance)
             {
-                if (__instance.m_customData.ContainsKey(PLAYER_SAVE_KEY))
+                if (!ProgressionAPI.IsInTheMainScene())
                 {
-                    __instance.m_customData[PLAYER_SAVE_KEY] = Instance.GetPrivateKeysString();
+                    // Prevent keys from last game session saving to the wrong player file when using logout
+                    Instance.ResetPlayer();
                 }
                 else
                 {
-                    __instance.m_customData.Add(PLAYER_SAVE_KEY, Instance.GetPrivateKeysString());
+                    if (__instance.m_customData.ContainsKey(PLAYER_SAVE_KEY))
+                    {
+                        __instance.m_customData[PLAYER_SAVE_KEY] = Instance.GetPrivateKeysString();
+                    }
+                    else
+                    {
+                        __instance.m_customData.Add(PLAYER_SAVE_KEY, Instance.GetPrivateKeysString());
+                    }
                 }
             }
         }
@@ -1300,7 +1308,7 @@ namespace VentureValheim.Progression
         /// that needs access to the player private keys, and only happens
         /// during the Player.Load method.
         /// </summary>
-        [HarmonyPatch(typeof(Player), nameof(Player.EquipIventoryItems))]
+        [HarmonyPatch(typeof(Player), nameof(Player.EquipInventoryItems))]
         public static class Patch_Player_Load
         {
             private static void Prefix(Player __instance)
@@ -1438,7 +1446,7 @@ namespace VentureValheim.Progression
             {
                 if (__result && ProgressionConfiguration.Instance.GetUsePrivateKeys())
                 {
-                    var player = zdo.GetString("playerName", "");
+                    var player = zdo.GetString(ZDOVars.s_playerName, "");
                     if (!player.IsNullOrWhiteSpace())
                     {
                         __result = Instance.PlayerHasPrivateEventKey(player, ev);
