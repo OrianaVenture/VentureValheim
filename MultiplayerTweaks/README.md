@@ -18,7 +18,6 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 * Toggle PVP always on or off.
 * Toggle teleporting on a PVP death.
 * Toggle skill loss on a PVP death.
-* ServerSync included.
 
 ### Player Default Spawn Point
 
@@ -49,6 +48,11 @@ Gives you the ability to force PVP always on or always off (OverridePlayerPVP mu
 This mod needs to be on both the client and server for all features to work. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.5.0
+
+* Update for game patch 0.216.9
+* Removed the ModEnabled config since it doesn't really do anything important
 
 ### 0.4.8
 

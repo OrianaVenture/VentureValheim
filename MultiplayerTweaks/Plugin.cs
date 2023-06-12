@@ -12,7 +12,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.4.8";
+        private const string ModVersion = "0.5.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -28,7 +28,6 @@ namespace VentureValheim.MultiplayerTweaks
         { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
 
         internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
-        internal static ConfigEntry<bool> CE_ModEnabled = null!;
         internal static ConfigEntry<int> CE_MaximumPlayers = null!;
         internal static ConfigEntry<bool> CE_EnableValkrie = null!;
         internal static ConfigEntry<bool> CE_EnableHaldorMapPin = null!;
@@ -85,8 +84,6 @@ namespace VentureValheim.MultiplayerTweaks
                 true, true, ref CE_ServerConfigLocked);
             ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
 
-            AddConfig("Enabled", general,"Enable module (boolean).",
-                true, true, ref CE_ModEnabled);
             AddConfig("MaximumPlayers", general, "Maximum Players for the Server (integer).",
                 true, 10, ref CE_MaximumPlayers);
             AddConfig("OverridePlayerPVP", general, "Override Player pvp behavior (boolean).",
@@ -117,9 +114,6 @@ namespace VentureValheim.MultiplayerTweaks
                 true, true, ref CE_ForcePlayerMapPinsOn);
 
             #endregion
-
-            if (!CE_ModEnabled.Value)
-                return;
 
             MultiplayerTweaksLogger.LogInfo("Initializing MultiplayerTweaks!");
 

@@ -28,9 +28,9 @@ namespace VentureValheim.MultiplayerTweaks
         /// <returns></returns>
         public bool IsPlayer(ZDOID id)
         {
-            if (id != null && !id.IsNone() && Player.m_players != null)
+            if (id != null && !id.IsNone() && Player.s_players != null)
             {
-                var players = Player.m_players;
+                var players = Player.s_players;
                 for (int lcv = 0; lcv < players.Count; lcv++)
                 {
                     if (players[lcv].GetZDOID().Equals(id))
@@ -174,7 +174,7 @@ namespace VentureValheim.MultiplayerTweaks
 
                 if (MultiplayerTweaksPlugin.GetOverridePlayerPVP())
                 {
-                    __instance.m_nview?.GetZDO()?.Set("pvp", MultiplayerTweaksPlugin.GetForcePlayerPVPOn());
+                    __instance.m_nview?.GetZDO()?.Set(ZDOVars.s_pvp, MultiplayerTweaksPlugin.GetForcePlayerPVPOn());
                     __instance.m_pvp = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
                     InventoryGui.instance.m_pvp.isOn = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
                 }
