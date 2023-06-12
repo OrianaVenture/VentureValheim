@@ -60,7 +60,7 @@
         <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>$(GamePath)\BepInEx\core\0Harmony.dll</HintPath>
         </Reference>
-        <Reference Include="BepInEx, Version=5.4.19.0, Culture=neutral, PublicKeyToken=null">
+        <Reference Include="BepInEx, Version=5.4.21.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>$(GamePath)\BepInEx\core\BepInEx.dll</HintPath>
         </Reference>
         <Reference Include="assembly_guiutils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
