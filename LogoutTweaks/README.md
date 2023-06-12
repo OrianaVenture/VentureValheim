@@ -4,25 +4,24 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Apply your stamina and status effects from your last logout. Use on servers to prevent "stamina logging".
+Saves and applies your status effects from your last logout.
 
 ## Features
 
-This mod saves previously untracked data from your last logout to a new file for next login.
+On logout saves your current status effects to the player file to reapply them on next login. Works well for basic status effects like the rested bonus and potion effects. Can reapply effects like poison damage, but does not track the damage done, thus these effects do no damage.
 
-### Status Effects
+## Installation
 
-When enabled applies all status effects from your last logout including your rested bonus.
-
-### Stamina
-
-When enabled it will apply the last stamina value from your last logout. If no file is found this value is set to 0 to prevent "stamina logging". Adds a 5 second delay to your stamina regen.
-
-### Other Features
-
-* ServerSync included
+This mod is client side only and has no configuration options. Does not need to be on the server.
 
 ## Changelog
+
+### 0.4.0
+
+* Update for game patch 0.216.9
+* Upgraded file storage to use the player save file rather than an additional file (you will lose your last logout session upon upgrading, you can delete the extra files previously created by this mod)
+* Removed stamina feature since it is now in vanilla
+* Removed config file, no longer needed
 
 ### 0.3.1
 
@@ -79,4 +78,4 @@ All issues can be reported on the project Github. To report issues please be as 
 1. Version of this mod you are using.
 2. List of the other mods being used.
 
-All feedback, ideas, and requests are welcome! You can message me on the [Odin Plus](https://discord.gg/vYfFHxpJgN) discord, or at my discord [Venture Gaming](https://discord.gg/tAd5hapt88).
+All feedback, ideas, and requests are welcome! You can message me at my discord [Venture Gaming](https://discord.gg/tAd5hapt88).
