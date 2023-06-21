@@ -21,7 +21,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.28";
+        private const string ModVersion = "0.0.29";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -37,25 +37,28 @@ namespace VentureValheim.Progression
         { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
 
         private static ConfigEntry<bool> CE_ServerConfigLocked = null!;
-        public static ConfigEntry<bool> CE_GenerateGameData = null!;
+        // TODO public static ConfigEntry<bool> CE_AdminBypass = null!;
 
-        // Progression Manager
-        public static ConfigEntry<string> CE_BlockedActionMessage = null!;
+        // Key Manager
         public static ConfigEntry<bool> CE_BlockAllGlobalKeys = null!;
         public static ConfigEntry<string> CE_BlockedGlobalKeys = null!;
         public static ConfigEntry<string> CE_AllowedGlobalKeys = null!;
         public static ConfigEntry<string> CE_EnforcedGlobalKeys = null!;
-        public static ConfigEntry<bool> CE_UseBossKeysForSkillLevel = null!;
-        public static ConfigEntry<int> CE_BossKeysSkillPerKey = null!;
         public static ConfigEntry<bool> CE_UsePrivateKeys = null!;
         public static ConfigEntry<string> CE_BlockedPrivateKeys = null!;
         public static ConfigEntry<string> CE_AllowedPrivateKeys = null!;
         public static ConfigEntry<string> CE_EnforcedPrivateKeys = null!;
+
+        // Locking
+        public static ConfigEntry<bool> CE_UseBlockedActionMessage = null!;
+        public static ConfigEntry<string> CE_BlockedActionMessage = null!;
         public static ConfigEntry<bool> CE_LockTaming = null!;
         public static ConfigEntry<string> CE_OverrideLockTamingDefaults = null!;
         public static ConfigEntry<bool> CE_LockGuardianPower = null!;
         public static ConfigEntry<bool> CE_LockBossSummons = null!;
         public static ConfigEntry<string> CE_OverrideLockBossSummonsDefaults = null!;
+        public static ConfigEntry<bool> CE_UnlockBossSummonsOverTime = null!;
+        public static ConfigEntry<int> CE_UnlockBossSummonsTime = null!;
         public static ConfigEntry<bool> CE_LockEquipment = null!;
         public static ConfigEntry<bool> CE_LockCrafting = null!;
         public static ConfigEntry<bool> CE_LockBuilding = null!;
@@ -72,18 +75,8 @@ namespace VentureValheim.Progression
         public static ConfigEntry<int> CE_MaximumSkillLevel = null!;
         public static ConfigEntry<bool> CE_OverrideMinimumSkillLevel = null!;
         public static ConfigEntry<int> CE_MinimumSkillLevel = null!;
-
-        // Auto-Scaling Configuration
-        public static ConfigEntry<bool> CE_AutoScaling = null!;
-        public static ConfigEntry<string> CE_AutoScaleType = null!;
-        public static ConfigEntry<float> CE_AutoScaleFactor = null!;
-        public static ConfigEntry<bool> CE_AutoScaleIgnoreOverrides = null!;
-        public static ConfigEntry<bool> CE_AutoScaleCreatures = null!;
-        public static ConfigEntry<string> CE_AutoScaleCreatureHealth = null!;
-        public static ConfigEntry<string> CE_AutoScaleCreatureDamage = null!;
-        public static ConfigEntry<bool> CE_AutoScaleCreaturesIgnoreDefaults = null!;
-        public static ConfigEntry<bool> CE_AutoScaleItems = null!;
-        public static ConfigEntry<bool> CE_AutoScaleItemsIgnoreDefaults = null!;
+        public static ConfigEntry<bool> CE_UseBossKeysForSkillLevel = null!;
+        public static ConfigEntry<int> CE_BossKeysSkillPerKey = null!;
 
         // Trader Configuration
         public static ConfigEntry<bool> CE_UnlockAllHaldorItems = null!;
@@ -118,20 +111,18 @@ namespace VentureValheim.Progression
 
             const string general = "General";
             const string keys = "Keys";
+            const string locking = "Locking";
             const string skills = "Skills";
-            const string autoScaling = "Auto-Scaling";
             const string trader = "Trader";
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean)",
                 true, true, ref CE_ServerConfigLocked);
             ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
+            // TODO AddConfig("AdminBypass", general,
+                //"True to allow admins to bypass locking settings (boolean)",
+                //false, true, ref CE_AdminBypass);
 
-            AddConfig("GenerateGameDataFiles", general, "Finds all items and creatures and creates data files in your config path for viewing only (boolean).",
-                false, false, ref CE_GenerateGameData);
-
-            AddConfig("BlockedActionMessage", keys,
-                "Generic blocked display message used in this mod (string).",
-                true, "The Gods Reject You", ref CE_BlockedActionMessage);
+            // Keys
             AddConfig("BlockAllGlobalKeys", keys,
                 "True to stop all global keys from being added to the global list (boolean).",
                 true, true, ref CE_BlockAllGlobalKeys);
@@ -144,12 +135,6 @@ namespace VentureValheim.Progression
             AddConfig("EnforcedGlobalKeys", keys,
                 "Always add these keys to the global list on startup (comma-separated).",
                 true, "", ref CE_EnforcedGlobalKeys);
-            AddConfig("UseBossKeysForSkillLevel", keys,
-                "True to use private player boss keys to control skill floor/ceiling values (boolean).",
-                true, false, ref CE_UseBossKeysForSkillLevel);
-            AddConfig("BossKeysSkillPerKey", keys,
-                "Skill drain floor and skill gain ceiling increased this amount per boss defeated (boolean).",
-                true, 10, ref CE_BossKeysSkillPerKey);
             AddConfig("UsePrivateKeys", keys,
                 "True to use private player keys to control game behavior (boolean).",
                 true, false, ref CE_UsePrivateKeys);
@@ -162,34 +147,49 @@ namespace VentureValheim.Progression
             AddConfig("EnforcedPrivateKeys", keys,
                 "Always add these keys to the player's private list on startup (comma-separated).",
                 true, "", ref CE_EnforcedPrivateKeys);
-            AddConfig("LockTaming", keys,
+
+            // Locking
+            AddConfig("UseBlockedActionMessage", locking,
+                "True to enable the blocked display message used in this mod (string).",
+                true, true, ref CE_UseBlockedActionMessage);
+            AddConfig("BlockedActionMessage", locking,
+                "Generic blocked display message used in this mod (string).",
+                true, "The Gods Reject You", ref CE_BlockedActionMessage);
+            AddConfig("LockTaming", locking,
                 "True to lock the ability to tame creatures based on keys. Uses private key if enabled, global key if not (boolean).",
                 true, false, ref CE_LockTaming);
-            AddConfig("OverrideLockTamingDefaults", keys,
+            AddConfig("OverrideLockTamingDefaults", locking,
                 "Override keys needed to Tame creatures. Leave blank to use defaults (comma-separated prefab,key pairs).",
                 true, "", ref CE_OverrideLockTamingDefaults);
-            AddConfig("LockGuardianPower", keys,
+            AddConfig("LockGuardianPower", locking,
                 "True to lock the ability to get and use guardian powers based on keys. Uses private key if enabled, global key if not (boolean).",
                 true, true, ref CE_LockGuardianPower);
-            AddConfig("LockBossSummons", keys,
+            AddConfig("LockBossSummons", locking,
                 "True to lock the ability to spawn bosses based on keys. Uses private key if enabled, global key if not (boolean).",
                 true, true, ref CE_LockBossSummons);
-            AddConfig("OverrideLockBossSummonsDefaults", keys,
+            AddConfig("OverrideLockBossSummonsDefaults", locking,
                 "Override keys needed to summon bosses. Leave blank to use defaults (comma-separated prefab,key pairs).",
                 true, "", ref CE_OverrideLockBossSummonsDefaults);
-            AddConfig("LockEquipment", keys,
+            AddConfig("UnlockBossSummonsOverTime", locking,
+                "True to unlock the ability to spawn bosses based on in-game days passed when LockBossSummons is True (boolean).",
+                true, false, ref CE_UnlockBossSummonsOverTime);
+            AddConfig("UnlockBossSummonsTime", locking,
+                "Number of in-game days required to unlock the next boss in the sequence when UnlockBossSummonsOverTime is True (int).",
+                true, 100, ref CE_UnlockBossSummonsTime);
+            AddConfig("LockEquipment", locking,
                 "True to lock the ability to equip or use boss items or items made from biome metals/materials based on keys. Uses private key if enabled, global key if not (boolean).",
                 true, true, ref CE_LockEquipment);
-            AddConfig("LockCrafting", keys,
+            AddConfig("LockCrafting", locking,
                 "True to lock the ability to craft items based on boss items and biome metals/materials and keys. Uses private key if enabled, global key if not (boolean).",
                 true, true, ref CE_LockCrafting);
-            AddConfig("LockBuilding", keys,
+            AddConfig("LockBuilding", locking,
                 "True to lock the ability to build based on boss items and biome metals/materials and keys. Uses private key if enabled, global key if not (boolean).",
                 true, true, ref CE_LockBuilding);
-            AddConfig("LockCooking", keys,
+            AddConfig("LockCooking", locking,
                 "True to lock the ability to cook with biome food materials based on keys. Uses private key if enabled, global key if not (boolean).",
                 true, true, ref CE_LockCooking);
 
+            // Skills
             AddConfig("EnableSkillManager", skills,
                 "Enable the Skill Manager feature (boolean).",
                 true, true, ref CE_EnableSkillManager);
@@ -220,32 +220,14 @@ namespace VentureValheim.Progression
             AddConfig("MinimumSkillLevel", skills,
                 "If overridden, the minimum (floor) skill level for all skill loss (int).",
                 true, (int)SkillsManager.SKILL_MINIMUM, ref CE_MinimumSkillLevel);
+            AddConfig("UseBossKeysForSkillLevel", skills,
+                "True to use unlocked boss keys to control skill floor/ceiling values (boolean).",
+                true, false, ref CE_UseBossKeysForSkillLevel);
+            AddConfig("BossKeysSkillPerKey", skills,
+                "Skill drain floor and skill gain ceiling increased this amount per boss defeated (boolean).",
+                true, 10, ref CE_BossKeysSkillPerKey);
 
-            AddConfig("EnableAutoScaling", autoScaling,
-                "Enable the Auto-scaling feature (boolean).",
-                true, false, ref CE_AutoScaling);
-            AddConfig("AutoScaleType", autoScaling,
-                "Auto-scaling type: Vanilla, Linear, Exponential, or Custom (string).",
-                true, "Vanilla", ref CE_AutoScaleType);
-            AddConfig("AutoScaleFactor", autoScaling,
-                "Auto-scaling factor, 0.75 = 75% growth per biome \"difficulty order\" (float).",
-                true, 0.75f, ref CE_AutoScaleFactor);
-            AddConfig("AutoScaleIgnoreOverrides", autoScaling,
-                "When true ignores the overrides specified in the yaml files (boolean).",
-                true, false, ref CE_AutoScaleIgnoreOverrides);
-            AddConfig("AutoScaleCreatures", autoScaling,
-                "Auto-scale Creatures (boolean).",
-                true, true, ref CE_AutoScaleCreatures);
-            AddConfig("AutoScaleCreaturesHealth", autoScaling,
-                "Override the Base Health distribution for Creatures (comma-separated list of 6 integers) (string).",
-                true, "", ref CE_AutoScaleCreatureHealth);
-            AddConfig("AutoScaleCreaturesDamage", autoScaling,
-                "Override the Base Damage distribution for Creatures (comma-separated list of 6 integers) (string).",
-                true, "", ref CE_AutoScaleCreatureDamage);
-            AddConfig("AutoScaleItems", autoScaling,
-                "Auto-scale Items (boolean).",
-                true, true, ref CE_AutoScaleItems);
-
+            // Trader
             AddConfig("UnlockAllHaldorItems", trader,
                 "True to remove the key check from Haldor entirely and unlock all items (boolean).",
                 true, false, ref CE_UnlockAllHaldorItems);
@@ -314,26 +296,28 @@ namespace VentureValheim.Progression
 
     public interface IProgressionConfiguration
     {
-        // General
-        public bool GetGenerateGameData();
+        // TODO public bool GetAdminBypass();
 
         // Key Manager
-        public string GetBlockedActionMessage();
         public bool GetBlockAllGlobalKeys();
         public string GetBlockedGlobalKeys();
         public string GetAllowedGlobalKeys();
         public string GetEnforcedGlobalKeys();
-        public bool GetUseBossKeysForSkillLevel();
-        public int GetBossKeysSkillPerKey();
         public bool GetUsePrivateKeys();
         public string GetBlockedPrivateKeys();
         public string GetAllowedPrivateKeys();
         public string GetEnforcedPrivateKeys();
+
+        // Locking
+        public bool GetUseBlockedActionMessage();
+        public string GetBlockedActionMessage();
         public bool GetLockTaming();
         public string GetOverrideLockTamingDefaults();
         public bool GetLockGuardianPower();
         public bool GetLockBossSummons();
         public string GetOverrideLockBossSummonsDefaults();
+        public bool GetUnlockBossSummonsOverTime();
+        public int GetUnlockBossSummonsTime();
         public bool GetLockEquipment();
         public bool GetLockCrafting();
         public bool GetLockBuilding();
@@ -350,16 +334,8 @@ namespace VentureValheim.Progression
         public int GetMaximumSkillLevel();
         public bool GetOverrideMinimumSkillLevel();
         public int GetMinimumSkillLevel();
-
-        // Auto-Scaling Configuration
-        public bool GetUseAutoScaling();
-        public string GetAutoScaleType();
-        public float GetAutoScaleFactor();
-        public bool GetAutoScaleIgnoreOverrides();
-        public bool GetAutoScaleCreatures();
-        public string GetAutoScaleCreatureHealth();
-        public string GetAutoScaleCreatureDamage();
-        public bool GetAutoScaleItems();
+        public bool GetUseBossKeysForSkillLevel();
+        public int GetBossKeysSkillPerKey();
 
         // Trader Configuration
         public bool GetUnlockAllHaldorItems();
@@ -389,32 +365,34 @@ namespace VentureValheim.Progression
             get => _instance;
         }
 
-        // General
-        public bool GetGenerateGameData() => ProgressionPlugin.CE_GenerateGameData.Value;
+        // TODO public bool GetAdminBypass() => ProgressionPlugin.CE_AdminBypass.Value;
 
-        // Key Manager
-        public string GetBlockedActionMessage() => ProgressionPlugin.CE_BlockedActionMessage.Value;
+        // Keys
         public bool GetBlockAllGlobalKeys() => ProgressionPlugin.CE_BlockAllGlobalKeys.Value;
         public string GetBlockedGlobalKeys() => ProgressionPlugin.CE_BlockedGlobalKeys.Value;
         public string GetAllowedGlobalKeys() => ProgressionPlugin.CE_AllowedGlobalKeys.Value;
         public string GetEnforcedGlobalKeys() => ProgressionPlugin.CE_EnforcedGlobalKeys.Value;
-        public bool GetUseBossKeysForSkillLevel() => ProgressionPlugin.CE_UseBossKeysForSkillLevel.Value;
-        public int GetBossKeysSkillPerKey() => ProgressionPlugin.CE_BossKeysSkillPerKey.Value;
         public bool GetUsePrivateKeys() => ProgressionPlugin.CE_UsePrivateKeys.Value;
         public string GetBlockedPrivateKeys() => ProgressionPlugin.CE_BlockedPrivateKeys.Value;
         public string GetAllowedPrivateKeys() => ProgressionPlugin.CE_AllowedPrivateKeys.Value;
         public string GetEnforcedPrivateKeys() => ProgressionPlugin.CE_EnforcedPrivateKeys.Value;
+
+        // Locking
+        public bool GetUseBlockedActionMessage() => ProgressionPlugin.CE_UseBlockedActionMessage.Value;
+        public string GetBlockedActionMessage() => ProgressionPlugin.CE_BlockedActionMessage.Value;
         public bool GetLockTaming() => ProgressionPlugin.CE_LockTaming.Value;
         public string GetOverrideLockTamingDefaults() => ProgressionPlugin.CE_OverrideLockTamingDefaults.Value;
         public bool GetLockGuardianPower() => ProgressionPlugin.CE_LockGuardianPower.Value;
         public bool GetLockBossSummons() => ProgressionPlugin.CE_LockBossSummons.Value;
         public string GetOverrideLockBossSummonsDefaults() => ProgressionPlugin.CE_OverrideLockBossSummonsDefaults.Value;
+        public bool GetUnlockBossSummonsOverTime() => ProgressionPlugin.CE_UnlockBossSummonsOverTime.Value;
+        public int GetUnlockBossSummonsTime() => ProgressionPlugin.CE_UnlockBossSummonsTime.Value;
         public bool GetLockEquipment() => ProgressionPlugin.CE_LockEquipment.Value;
         public bool GetLockCrafting() => ProgressionPlugin.CE_LockCrafting.Value;
         public bool GetLockBuilding() => ProgressionPlugin.CE_LockBuilding.Value;
         public bool GetLockCooking() => ProgressionPlugin.CE_LockCooking.Value;
 
-        // Skills Manager
+        // Skills
         public bool GetEnableSkillManager() => ProgressionPlugin.CE_EnableSkillManager.Value;
         public bool GetAllowSkillDrain() => ProgressionPlugin.CE_AllowSkillDrain.Value;
         public bool GetUseAbsoluteSkillDrain() => ProgressionPlugin.CE_UseAbsoluteSkillDrain.Value;
@@ -425,18 +403,10 @@ namespace VentureValheim.Progression
         public int GetMaximumSkillLevel() => ProgressionPlugin.CE_MaximumSkillLevel.Value;
         public bool GetOverrideMinimumSkillLevel() => ProgressionPlugin.CE_OverrideMinimumSkillLevel.Value;
         public int GetMinimumSkillLevel() => ProgressionPlugin.CE_MinimumSkillLevel.Value;
+        public bool GetUseBossKeysForSkillLevel() => ProgressionPlugin.CE_UseBossKeysForSkillLevel.Value;
+        public int GetBossKeysSkillPerKey() => ProgressionPlugin.CE_BossKeysSkillPerKey.Value;
 
-        // Auto-Scaling Configuration
-        public bool GetUseAutoScaling() => ProgressionPlugin.CE_AutoScaling.Value;
-        public string GetAutoScaleType() => ProgressionPlugin.CE_AutoScaleType.Value;
-        public float GetAutoScaleFactor() => ProgressionPlugin.CE_AutoScaleFactor.Value;
-        public bool GetAutoScaleIgnoreOverrides() => ProgressionPlugin.CE_AutoScaleIgnoreOverrides.Value;
-        public bool GetAutoScaleCreatures() => ProgressionPlugin.CE_AutoScaleCreatures.Value;
-        public string GetAutoScaleCreatureHealth() => ProgressionPlugin.CE_AutoScaleCreatureHealth.Value;
-        public string GetAutoScaleCreatureDamage() => ProgressionPlugin.CE_AutoScaleCreatureDamage.Value;
-        public bool GetAutoScaleItems() => ProgressionPlugin.CE_AutoScaleItems.Value;
-
-        // Trader Configuration
+        // Trader
         public bool GetUnlockAllHaldorItems() => ProgressionPlugin.CE_UnlockAllHaldorItems.Value;
         public string GetHelmetYuleKey() => ProgressionPlugin.CE_HelmetYuleKey.Value;
         public string GetHelmetDvergerKey() => ProgressionPlugin.CE_HelmetDvergerKey.Value;

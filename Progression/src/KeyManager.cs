@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using BepInEx;
 using HarmonyLib;
 using UnityEngine;
@@ -48,7 +47,7 @@ namespace VentureValheim.Progression
         private KeyManagerUpdater _keyManagerUpdater;
 
         /// <summary>
-        /// Updates class data if chached values have expired.
+        /// Updates class data if cached values have expired.
         /// </summary>
         public class KeyManagerUpdater : MonoBehaviour
         {
@@ -87,8 +86,8 @@ namespace VentureValheim.Progression
         public string EnforcedPrivateKeys { get; protected set; }
         public string TamingKeys { get; protected set; }
         public string SummoningKeys { get; protected set; }
-        public HashSet<string> BlockedGlobalKeysList  { get; protected set; }
-        public HashSet<string> AllowedGlobalKeysList  { get; protected set; }
+        public HashSet<string> BlockedGlobalKeysList { get; protected set; }
+        public HashSet<string> AllowedGlobalKeysList { get; protected set; }
         public HashSet<string> EnforcedGlobalKeysList { get; protected set; }
         public HashSet<string> BlockedPrivateKeysList { get; protected set; }
         public HashSet<string> AllowedPrivateKeysList { get; protected set; }
@@ -101,34 +100,42 @@ namespace VentureValheim.Progression
 
         public const string BOSS_KEY_MEADOW = "defeated_eikthyr";
         public const string BOSS_KEY_BLACKFOREST = "defeated_gdking";
-        public const string BOSS_KEY_SWAMP= "defeated_bonemass";
+        public const string BOSS_KEY_SWAMP = "defeated_bonemass";
         public const string BOSS_KEY_MOUNTAIN = "defeated_dragon";
         public const string BOSS_KEY_PLAIN = "defeated_goblinking";
         public const string BOSS_KEY_MISTLAND = "defeated_queen";
 
-        public readonly string[] BossKeys = new string[TOTAL_BOSSES]
-            { BOSS_KEY_MEADOW, BOSS_KEY_BLACKFOREST, BOSS_KEY_SWAMP, BOSS_KEY_MOUNTAIN, BOSS_KEY_PLAIN, BOSS_KEY_MISTLAND };
         public const int TOTAL_BOSSES = 6;
+        public readonly Dictionary<string, int> BossKeyOrderList = new Dictionary<string, int>
+        {
+            { "", 0 },
+            { BOSS_KEY_MEADOW, 1 },
+            { BOSS_KEY_BLACKFOREST, 2 },
+            { BOSS_KEY_SWAMP, 3 },
+            { BOSS_KEY_MOUNTAIN, 4 },
+            { BOSS_KEY_PLAIN, 5 },
+            { BOSS_KEY_MISTLAND, 6 }
+        };
 
         public readonly Dictionary<string, string> GuardianKeysList = new Dictionary<string, string>
         {
             { "GP_Eikthyr", BOSS_KEY_MEADOW },
             { "GP_TheElder", BOSS_KEY_BLACKFOREST },
-            { "GP_Bonemass" , BOSS_KEY_SWAMP },
-            { "GP_Moder" , BOSS_KEY_MOUNTAIN },
-            { "GP_Yagluth" , BOSS_KEY_PLAIN },
-            { "GP_Queen" , BOSS_KEY_MISTLAND }
+            { "GP_Bonemass", BOSS_KEY_SWAMP },
+            { "GP_Moder", BOSS_KEY_MOUNTAIN },
+            { "GP_Yagluth", BOSS_KEY_PLAIN },
+            { "GP_Queen", BOSS_KEY_MISTLAND }
         };
 
         public readonly Dictionary<string, string> BossItemKeysList = new Dictionary<string, string>
         {
             { "HardAntler", BOSS_KEY_MEADOW },
             { "CryptKey", BOSS_KEY_BLACKFOREST },
-            { "Wishbone" , BOSS_KEY_SWAMP },
-            { "DragonTear" , BOSS_KEY_MOUNTAIN },
-            { "YagluthDrop" , BOSS_KEY_PLAIN },
-            { "DvergrKey" , BOSS_KEY_PLAIN },
-            { "QueenDrop" , BOSS_KEY_MISTLAND }
+            { "Wishbone", BOSS_KEY_SWAMP },
+            { "DragonTear", BOSS_KEY_MOUNTAIN },
+            { "YagluthDrop", BOSS_KEY_PLAIN },
+            { "DvergrKey", BOSS_KEY_PLAIN },
+            { "QueenDrop", BOSS_KEY_MISTLAND }
         };
 
         public readonly Dictionary<string, string> MaterialKeysList = new Dictionary<string, string>
@@ -141,32 +148,32 @@ namespace VentureValheim.Progression
             { "BronzeNails", BOSS_KEY_MEADOW },
             { "TrollHide", BOSS_KEY_MEADOW },
             // Swamp
-            { "Iron" , BOSS_KEY_BLACKFOREST },
-            { "IronNails" , BOSS_KEY_BLACKFOREST },
-            { "Chain" , BOSS_KEY_BLACKFOREST },
-            { "ElderBark" , BOSS_KEY_BLACKFOREST },
-            { "Root" , BOSS_KEY_BLACKFOREST },
+            { "Iron", BOSS_KEY_BLACKFOREST },
+            { "IronNails", BOSS_KEY_BLACKFOREST },
+            { "Chain", BOSS_KEY_BLACKFOREST },
+            { "ElderBark", BOSS_KEY_BLACKFOREST },
+            { "Root", BOSS_KEY_BLACKFOREST },
             // Mountain
-            { "Silver" , BOSS_KEY_SWAMP },
-            { "WolfHairBundle" , BOSS_KEY_SWAMP },
-            { "WolfPelt" , BOSS_KEY_SWAMP },
-            { "WolfClaw" , BOSS_KEY_SWAMP },
-            { "WolfFang" , BOSS_KEY_SWAMP },
-            { "JuteRed" , BOSS_KEY_SWAMP },
-            { "Obsidian" , BOSS_KEY_SWAMP },
+            { "Silver", BOSS_KEY_SWAMP },
+            { "WolfHairBundle", BOSS_KEY_SWAMP },
+            { "WolfPelt", BOSS_KEY_SWAMP },
+            { "WolfClaw", BOSS_KEY_SWAMP },
+            { "WolfFang", BOSS_KEY_SWAMP },
+            { "JuteRed", BOSS_KEY_SWAMP },
+            { "Obsidian", BOSS_KEY_SWAMP },
             // Plains
-            { "BlackMetal" , BOSS_KEY_MOUNTAIN },
-            { "Tar" , BOSS_KEY_MOUNTAIN },
-            { "Needle" , BOSS_KEY_MOUNTAIN },
-            { "LinenThread" , BOSS_KEY_MOUNTAIN },
+            { "BlackMetal", BOSS_KEY_MOUNTAIN },
+            { "Tar", BOSS_KEY_MOUNTAIN },
+            { "Needle", BOSS_KEY_MOUNTAIN },
+            { "LinenThread", BOSS_KEY_MOUNTAIN },
             // Mistlands
-            { "BlackMarble" , BOSS_KEY_PLAIN },
-            { "BlackCore" , BOSS_KEY_PLAIN },
-            { "Carapace" , BOSS_KEY_PLAIN },
-            { "Eitr" , BOSS_KEY_PLAIN },
-            { "ScaleHide" , BOSS_KEY_PLAIN },
-            { "Wisp" , BOSS_KEY_PLAIN },
-            { "YggdrasilWood" , BOSS_KEY_PLAIN }
+            { "BlackMarble", BOSS_KEY_PLAIN },
+            { "BlackCore", BOSS_KEY_PLAIN },
+            { "Carapace", BOSS_KEY_PLAIN },
+            { "Eitr", BOSS_KEY_PLAIN },
+            { "ScaleHide", BOSS_KEY_PLAIN },
+            { "Wisp", BOSS_KEY_PLAIN },
+            { "YggdrasilWood", BOSS_KEY_PLAIN }
         };
 
         public readonly Dictionary<string, string> FoodKeysList = new Dictionary<string, string>
@@ -176,30 +183,30 @@ namespace VentureValheim.Progression
             { "MushroomYellow", BOSS_KEY_MEADOW },
             { "Carrot", BOSS_KEY_MEADOW },
             // Swamp
-            { "Turnip" , BOSS_KEY_BLACKFOREST },
-            { "Bloodbag" , BOSS_KEY_BLACKFOREST },
-            { "Ooze" , BOSS_KEY_BLACKFOREST },
-            { "SerpentMeat" , BOSS_KEY_BLACKFOREST },
-            { "SerpentMeatCooked" , BOSS_KEY_BLACKFOREST },
+            { "Turnip", BOSS_KEY_BLACKFOREST },
+            { "Bloodbag", BOSS_KEY_BLACKFOREST },
+            { "Ooze", BOSS_KEY_BLACKFOREST },
+            { "SerpentMeat", BOSS_KEY_BLACKFOREST },
+            { "SerpentMeatCooked", BOSS_KEY_BLACKFOREST },
             // Mountain
-            { "FreezeGland" , BOSS_KEY_SWAMP },
-            { "WolfMeat" , BOSS_KEY_SWAMP },
-            { "Onion" , BOSS_KEY_SWAMP },
+            { "FreezeGland", BOSS_KEY_SWAMP },
+            { "WolfMeat", BOSS_KEY_SWAMP },
+            { "Onion", BOSS_KEY_SWAMP },
             // Plains
-            { "Barley" , BOSS_KEY_MOUNTAIN },
-            { "LoxMeat" , BOSS_KEY_MOUNTAIN },
-            { "BarleyFlour" , BOSS_KEY_MOUNTAIN },
-            { "Cloudberry" , BOSS_KEY_MOUNTAIN },
-            { "ChickenMeat" , BOSS_KEY_MOUNTAIN },
-            { "ChickenEgg" , BOSS_KEY_MOUNTAIN },
-            { "BreadDough" , BOSS_KEY_MOUNTAIN },
+            { "Barley", BOSS_KEY_MOUNTAIN },
+            { "LoxMeat", BOSS_KEY_MOUNTAIN },
+            { "BarleyFlour", BOSS_KEY_MOUNTAIN },
+            { "Cloudberry", BOSS_KEY_MOUNTAIN },
+            { "ChickenMeat", BOSS_KEY_MOUNTAIN },
+            { "ChickenEgg", BOSS_KEY_MOUNTAIN },
+            { "BreadDough", BOSS_KEY_MOUNTAIN },
             // Mistlands
-            { "GiantBloodSack" , BOSS_KEY_PLAIN },
-            { "BugMeat" , BOSS_KEY_PLAIN },
-            { "RoyalJelly" , BOSS_KEY_PLAIN },
-            { "HareMeat" , BOSS_KEY_PLAIN },
-            { "Sap" , BOSS_KEY_PLAIN },
-            { "MushroomJotunPuffs" , BOSS_KEY_PLAIN }
+            { "GiantBloodSack", BOSS_KEY_PLAIN },
+            { "BugMeat", BOSS_KEY_PLAIN },
+            { "RoyalJelly", BOSS_KEY_PLAIN },
+            { "HareMeat", BOSS_KEY_PLAIN },
+            { "Sap", BOSS_KEY_PLAIN },
+            { "MushroomJotunPuffs", BOSS_KEY_PLAIN }
         };
 
         public const string RPCNAME_ServerListKeys = "VV_ServerListKeys";
@@ -211,8 +218,6 @@ namespace VentureValheim.Progression
         public const string RPCNAME_ResetPrivateKeys = "VV_ResetPrivateKeys";
 
         public const string PLAYER_SAVE_KEY = "VV_PrivateKeys";
-
-        private static string _filepath = "";
 
         private static int _cachedPublicBossKeys = -1;
         private static int _cachedPrivateBossKeys = -1;
@@ -244,7 +249,6 @@ namespace VentureValheim.Progression
 
             PrivateKeysList = new HashSet<string>();
 
-            _filepath = "";
             _cachedPublicBossKeys = -1;
             _cachedPrivateBossKeys = -1;
         }
@@ -367,11 +371,12 @@ namespace VentureValheim.Progression
                 {
                     SummoningKeysList = new Dictionary<string, string>
                     {
+                        { "Eikthyr", "" },
                         { "gd_king", BOSS_KEY_MEADOW },
                         { "Bonemass", BOSS_KEY_BLACKFOREST },
-                        { "Dragon" , BOSS_KEY_SWAMP },
-                        { "GoblinKing" , BOSS_KEY_MOUNTAIN },
-                        { "SeekerQueen" , BOSS_KEY_PLAIN },
+                        { "Dragon", BOSS_KEY_SWAMP },
+                        { "GoblinKing", BOSS_KEY_MOUNTAIN },
+                        { "SeekerQueen", BOSS_KEY_PLAIN },
                     };
                 }
                 else
@@ -423,16 +428,6 @@ namespace VentureValheim.Progression
             }
 
             return trades;
-        }
-
-        private string GetOldFilePath(string original)
-        {
-            return original + ".oldkeys";
-        }
-
-        private string GetFilePath(string original)
-        {
-            return original + ".keys";
         }
 
         /// <summary>
@@ -509,7 +504,7 @@ namespace VentureValheim.Progression
         {
             if (key.IsNullOrWhiteSpace())
             {
-                return false;
+                return true;
             }
 
             return PrivateKeysList.Contains(key);
@@ -617,7 +612,35 @@ namespace VentureValheim.Progression
 
             if (SummoningKeysList.ContainsKey(creature))
             {
-                return HasKey(SummoningKeysList[creature]);
+                if (HasKey(SummoningKeysList[creature]))
+                {
+                    if (ProgressionConfiguration.Instance.GetUnlockBossSummonsOverTime())
+                    {
+                        return SummoningTimeReached(SummoningKeysList[creature], ProgressionAPI.GetGameDay());
+                    }
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// True if the in-game days passed allows for the creature to be summoned.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected bool SummoningTimeReached(string key, int gameDay)
+        {
+            if (BossKeyOrderList.ContainsKey(key))
+            {
+                int requiredDay = BossKeyOrderList[key] * ProgressionConfiguration.Instance.GetUnlockBossSummonsTime();
+                return gameDay >= requiredDay;
             }
 
             return true;
@@ -711,7 +734,7 @@ namespace VentureValheim.Progression
             {
                 for (int lcv = 0; lcv < recipe.m_resources.Length; lcv++)
                 {
-                    if(recipe.m_resources[lcv].m_resItem == null)
+                    if (recipe.m_resources[lcv].m_resItem == null)
                     {
                         return false;
                     }
@@ -734,9 +757,9 @@ namespace VentureValheim.Progression
         {
             int count = 0;
 
-            for (int lcv = 0; lcv < BossKeys.Length; lcv++)
+            foreach (var key in BossKeyOrderList.Keys)
             {
-                if (PrivateKeysList.Contains(BossKeys[lcv]))
+                if (PrivateKeysList.Contains(key))
                 {
                     count++;
                 }
@@ -753,9 +776,9 @@ namespace VentureValheim.Progression
         {
             int count = 0;
 
-            for (int lcv = 0; lcv < BossKeys.Length; lcv++)
+            foreach (var key in BossKeyOrderList.Keys)
             {
-                if (HasGlobalKey(BossKeys[lcv]))
+                if (HasGlobalKey(key))
                 {
                     count++;
                 }
@@ -773,7 +796,7 @@ namespace VentureValheim.Progression
         {
             if (key.IsNullOrWhiteSpace())
             {
-                return false;
+                return true;
             }
 
             return ProgressionAPI.GetGlobalKey(key);
@@ -1125,83 +1148,12 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Loads the saved file given the file path has been initialized.
-        /// </summary>
-        /// <param name="filesource"></param>
-        /// <returns></returns>
-        private HashSet<string> LoadFile(FileHelpers.FileSource filesource)
-        {
-            // TODO depreciate this in the future
-            FileReader fileReader = null;
-            HashSet<string> keys = new HashSet<string>();
-            try
-            {
-                fileReader = new FileReader(GetFilePath(_filepath), filesource);
-
-                byte[] data;
-
-                BinaryReader binary = fileReader.m_binary;
-                int count = binary.ReadInt32();
-                data = binary.ReadBytes(count);
-                int count2 = binary.ReadInt32();
-                binary.ReadBytes(count2);
-
-                var package = new ZPackage(data);
-
-                int length = package.ReadInt();
-                for (int lcv = 0; lcv < length; lcv++)
-                {
-                    string key = package.ReadString();
-                    keys.Add(key);
-                }
-
-                fileReader.Dispose();
-
-                // Upgrade to new mod version by deleting files if they exist
-                ProgressionPlugin.VentureProgressionLogger.LogInfo("Performing mod version upgrade. Deleting key files, they are no longer used!");
-                File.Delete(GetFilePath(_filepath));
-                File.Delete(GetOldFilePath(_filepath));
-            }
-            catch
-            {
-                fileReader?.Dispose();
-            }
-
-            return keys;
-        }
-
-        /// <summary>
-        /// Set the file path if not already defined.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns>Returns true if the file path is defined.</returns>
-        protected bool SetFilePaths(string path)
-        {
-            if (_filepath.IsNullOrWhiteSpace())
-            {
-                if(!path.IsNullOrWhiteSpace())
-                {
-                    _filepath = path;
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
         /// Applies the burning effect and displays the blocked action message.
         /// </summary>
         /// <param name="player"></param>
         private void ApplyBlockedActionEffects(Player player)
         {
-            if (player != null)
+            if (player != null && ProgressionConfiguration.Instance.GetUseBlockedActionMessage())
             {
                 player.GetSEMan()?.AddStatusEffect(Character.s_statusEffectBurning, resetTime: false);
                 player.Message(MessageHud.MessageType.Center, ProgressionConfiguration.Instance.GetBlockedActionMessage());
@@ -1213,20 +1165,13 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Skips the original ZoneSystem.SetGlobalKey method if a key is blocked.
         /// </summary>
-        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.SetGlobalKey))]
+        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.SetGlobalKey), new Type[] { typeof(string) })]
         public static class Patch_ZoneSystem_SetGlobalKey
         {
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(string name)
             {
-                if (Instance.BlockGlobalKey(ProgressionConfiguration.Instance.GetBlockAllGlobalKeys(), name))
-                {
-                    ProgressionPlugin.VentureProgressionLogger.LogDebug($"Skipping adding global key: {name}.");
-                    return false; // Skip adding the global key
-                }
-
-                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Adding global key: {name}.");
-                return true; // Continue adding the global key
+                return Instance.SkipAddKeyMethod(name);
             }
 
             private static void Postfix(string name)
@@ -1258,12 +1203,48 @@ namespace VentureValheim.Progression
             }
         }
 
+        // Server side global key cleanup logic, used for servers with vanilla players
+        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.RPC_SetGlobalKey))]
+        public static class Patch_ZoneSystem_RPC_SetGlobalKey
+        {
+            [HarmonyPriority(Priority.Low)]
+            private static bool Prefix(string name)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogDebug($"RPC_SetGlobalKey called for: {name}.");
+                bool runOriginal = Instance.SkipAddKeyMethod(name);
+                if (!runOriginal)
+                {
+                    ZoneSystem.instance.SendGlobalKeys(ZRoutedRpc.Everybody);
+                }
+
+                return runOriginal;
+            }
+        }
+
+        /// <summary>
+        /// Returns false if the global key is blocked. Used to determine if the add global key game methods
+        /// should be skipped or not.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private bool SkipAddKeyMethod(string key)
+        {
+            if (Instance.BlockGlobalKey(ProgressionConfiguration.Instance.GetBlockAllGlobalKeys(), key))
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Skipping adding global key: {key}.");
+                return false; // Skip adding the global key
+            }
+
+            ProgressionPlugin.VentureProgressionLogger.LogDebug($"Adding global key: {key}.");
+            return true; // Continue adding the global key
+        }
+
         /// <summary>
         /// If using private keys, returns true if the key is in the global list when
         /// the instance is a dedicated server, or true if the local player has the private key.
         /// If not using private keys uses default behavior.
         /// </summary>
-        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.GetGlobalKey))]
+        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.GetGlobalKey), new Type[] { typeof(string) })]
         public static class Patch_ZoneSystem_GetGlobalKey
         {
             private static void Postfix(string name, ref bool __result)
@@ -1328,15 +1309,6 @@ namespace VentureValheim.Progression
                 if (__instance.m_customData.ContainsKey(PLAYER_SAVE_KEY))
                 {
                     loadedKeys = ProgressionAPI.StringToSet(__instance.m_customData[PLAYER_SAVE_KEY]);
-                }
-                else
-                {
-                    // Upgrade mod version by reading file when not yet in custom data
-                    var profile = Game.instance.GetPlayerProfile();
-                    if (Instance.SetFilePaths(profile.GetPath()))
-                    {
-                        loadedKeys = Instance.LoadFile(profile.m_fileSource);
-                    }
                 }
 
                 // Add loaded private keys if not blocked

@@ -25,12 +25,12 @@ namespace VentureValheim.ProgressionTests
             public void UpdateGlobalKeyConfigurationTest(string a, string b) => UpdateGlobalKeyConfiguration(a, b);
             public void UpdatePrivateKeyConfigurationTest(string a, string b) => UpdatePrivateKeyConfiguration(a, b);
             public int CountPrivateBossKeysTest() => CountPrivateBossKeys();
-            public bool SetFilePathsTest(string path) => SetFilePaths(path);
             public bool PrivateKeyIsBlockedTest(string key) => PrivateKeyIsBlocked(key);
             protected override bool HasGlobalKey(string key)
             {
                 return true;
             }
+            public bool SummoningTimeReachedTest(string key, int gameDay) => SummoningTimeReached(key, gameDay);
         }
 
         private const string string1 = "killedTroll";
@@ -42,6 +42,14 @@ namespace VentureValheim.ProgressionTests
             var mockManager = new Mock<IKeyManager>();
 
             return new TestKeyManager(mockManager.Object);
+        }
+
+        private void SetupConfiguration(int bossSummonsTime)
+        {
+            var mockManager = new Mock<IProgressionConfiguration>();
+            mockManager.Setup(x => x.GetUnlockBossSummonsTime()).Returns(bossSummonsTime);
+
+            new ProgressionConfiguration(mockManager.Object);
         }
 
         private TestKeyManager Setup(string a, string b, string c, string d)
@@ -181,18 +189,6 @@ namespace VentureValheim.ProgressionTests
             Assert.Equal(expected, keyManager.CountPrivateBossKeysTest());
         }
 
-        [Fact]
-        public void SetFilePaths_EnsurePathUpdatesOnce()
-        {
-            var keyManager = Setup();
-
-            Assert.False(keyManager.SetFilePathsTest(null));
-            Assert.False(keyManager.SetFilePathsTest(""));
-            Assert.False(keyManager.SetFilePathsTest(""));
-            Assert.True(keyManager.SetFilePathsTest("APathThatExists"));
-            Assert.True(keyManager.SetFilePathsTest(""));
-        }
-
         [Theory]
         [InlineData("", string1)]
         [InlineData("", string2)]
@@ -267,6 +263,29 @@ namespace VentureValheim.ProgressionTests
             Assert.Equal(b, keyManager.AllowedPrivateKeys);
             Assert.Equal(set3, keyManager.BlockedPrivateKeysList);
             Assert.Equal(set3, keyManager.AllowedPrivateKeysList);
+        }
+
+        [Theory]
+        [InlineData("", 10, true)]
+        [InlineData("", 99, true)]
+        [InlineData("", 100, true)]
+        [InlineData("", 101, true)]
+        [InlineData("", 200, true)]
+        [InlineData("defeated_eikthyr", 10, false)]
+        [InlineData("defeated_eikthyr", 99, false)]
+        [InlineData("defeated_eikthyr", 100, true)]
+        [InlineData("defeated_eikthyr", 101, true)]
+        [InlineData("defeated_eikthyr", 200, true)]
+        [InlineData("defeated_dragon", 100, false)]
+        [InlineData("defeated_dragon", 399, false)]
+        [InlineData("defeated_dragon", 400, true)]
+        [InlineData("defeated_dragon", 401, true)]
+        [InlineData("defeated_dragon", 500, true)]
+        public void SummoningTimeReachedTest(string key, int day, bool expected)
+        {
+            var keyManager = Setup("", "", "", "");
+            SetupConfiguration(100);
+            Assert.Equal(expected, keyManager.SummoningTimeReachedTest(key, day));
         }
     }
 }
