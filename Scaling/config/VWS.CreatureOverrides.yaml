@@ -1,0 +1,61 @@
+# To override any default creature values add your customizations to this file.
+# Place this file in your bepinex config folder.
+# The only required information is the name fields, you only need include values you want to override.
+#
+# Declare a custom creature configuration using its prefab name then you may:
+# 1. Override Health
+#
+# 2. Override Biome
+# Biomes are specified with a number to support custom biomes.
+# Meadows is 0, see readme for possible values.
+# Note: Biome is required to auto-scale any creature not defined in this mod.
+#
+# 3. Override Difficulty
+# Difficulties are a range from 1-6. 1 is "Harmless", 6 is "Boss".
+# To ignore scaling for a creature set the Difficulty to 0 (vanilla).
+# Note: Difficulty is required to auto-scale any creature not defined in this mod.
+# If not specified the value will be set to "Average".
+#
+# 4. Override any attack used by the creature with the attack's ItemDrop prefab name.
+# You may override the total damage of an attack by declaring the new amount with "totalDamage".
+# This will rescale the existing damage distribution to the declared value.
+# If the totalDamage is specified it will use that value and ignore any other custom damage type values.
+# -OR-
+# You may override the original damage distribution by specifying new values for each damage type.
+# Any damage type not specified will be set to 0 by default (except chop and pickaxe damages).
+# This will override the chop and pickaxe damages ONLY if you define them.
+#
+# Example (copy and edit this below the ---)
+#
+# creatures:
+#   - name: Eikthyr
+#     health: 600.0
+#     attacks:
+#       - name: Eikthyr_stomp
+#         totalDamage: 20.0
+#       - name: Eikthyr_antler
+#         slash: 10.0
+#         pierce: 10.0
+#         chop: 1000.0
+#         pickaxe: 1000.0
+#   - name: MyCustomCreature
+#     biome: 7
+#     difficulty: 4
+#
+# This example will:
+# 1. Override Eikthyr's health to be 600,
+# set the stomp attack to do 20 total damage,
+# and set the antler attack to the defined custom values.
+# 2. Add a new creature MyCustomCreature with biome Ocean,
+# and set the difficulty to "Intermediate".
+#
+# Note: this mod will not auto scale chop or pickaxe damage, but will use any values explicitly overridden.
+#
+# Need some guidance on getting the prefab names? You can generate all this data
+# by setting the GenerateGameData config to true and entering a world once with this mod installed.
+# This will provide creature and item names and original values for your viewing pleasure.
+#
+# Yaml Reminder: any line followed by a '#' will be ignored, these are considered notes.
+# Enter your custom data below the ---
+
+---
