@@ -1,5 +1,4 @@
 using HarmonyLib;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace VentureValheim.NoPuke
@@ -21,7 +20,7 @@ namespace VentureValheim.NoPuke
             {
                 if (SceneManager.GetActiveScene().name.Equals("main"))
                 {
-                    var se = ObjectDB.instance.GetStatusEffect("Puke");
+                    var se = ObjectDB.instance.GetStatusEffect("Puke".GetStableHashCode());
                     if (se != null)
                     {
                         se.m_startEffects = new EffectList();

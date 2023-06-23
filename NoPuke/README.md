@@ -12,6 +12,10 @@ This mod is client side only and has no configuration options. Does not need to 
 
 ## Changelog
 
+### 0.1.1
+
+* Preliminary update for Hildir's Request, compatible with game version 0.216.9
+
 ### 0.1.0
 
 * First release
