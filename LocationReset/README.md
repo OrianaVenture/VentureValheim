@@ -12,13 +12,11 @@ Resets dungeons/locations when a player approaches them given the player is host
 
 Player activity includes:
 
-* A Player has built anything near or inside the dungeon
-* There is a Tombstone near or inside the dungeon
-* There is a Player inside the dungeon
+* A Player has built anything near the entrance to or inside the location
+* There is a Tombstone near the entrance to or inside the location
+* There is a Player inside the location
 
-If you want sky locations to reset even if players have built/died around the entrance set the SkipPlayerGroundPieceCheck config to true. This will change the logic to check only for activity inside the sky location. This check will always occur for ground locations, you cannot disable it for them. The check for player activity is dependant on the size of the location, bigger dungeons will have a wider range for the activity check. If you suspect the mod is not working as intended it might be due to this player activity check, test the reset on a new area where no player has built to ensure the mod is working as intended.
-
-There are advanced options in the config file to set individual reset times for certain locations. To use the advanced options set OverrideResetTimes to true, you must then customize all overridden values. Any locations not specified will use the default value and cannot be changed individually. If you do not want specific locations to reset you can set the reset time to an arbitrarily large value like 100000, or any value that will be greater than the number of expected passed in-game days.
+There are advanced options in the config file to set individual reset times for certain locations. To use the advanced options set OverrideResetTimes to true, you must then customize all overridden values. Any locations not specified in the config will use the default value and cannot be changed individually. If you do not want specific locations to reset you can set the reset time to an arbitrarily large value like 100000, or any value that will be greater than the number of expected passed in-game days.
 
 ### Locations Supported
 
@@ -34,11 +32,22 @@ There are advanced options in the config file to set individual reset times for 
 
 If you are using another mod that adds custom locations or dungeons you may see this mod behave unexpectedly. If you would like support added for another mod please reach out to me in my discord (link below).
 
+### Skip Player Ground Piece Check
+
+If you want "sky locations" to reset even if players have built/died around the entrance set the SkipPlayerGroundPieceCheck config to true. This will change the logic to check only for activity inside the sky location. This check will always occur for ground locations, you cannot disable it for them. The check for player activity is dependant on the size of the location, bigger dungeons will have a wider range for the activity check. If you suspect the mod is not working as intended it might be due to this player activity check, test the reset on a new area where no player has built to ensure the mod is working as intended.
+
+<details close>
+<summary>Expand/Collapse Hildir Note (Spoilers!)</summary>
+
+You may notice that Sealed Towers (Hildir plains dungeon) are not resetting. Since you must build to enter the tower it is very likely the mod is detecting your player placed pieces and is refusing to reset. Your placed pieces must be about 16 meters away from the tower itself, or about 8 wooden walls length. If you do not see a log line like "Done regenerating location Hildir_plainsfortress ..." then it did not reset. Turn on bepinex debug logs to see more detailed information.
+
+</details>
+
 ### Leviathans
 
 Leviathans will respawn in their original locations when resetting is enabled given there are none found in the zone. When causing a Leviathan to dive after mining the "leave" time will be recorded as the "visited" day, and the Leviathan will not delete itself as it does in vanilla. Upon reloading a zone the Leviathan will appear again on the surface unchanged from when last visited. Once a reset time has been reached the leviathan will delete itself upon the next time it is loaded. Currently you must reload the zone after a Leviathan is deleted to get them to respawn.
 
-This feature may impact performance more so than resetting Dungeons and Locations. If you have performance issues with this mod consider disabling Leviathan resetting when you do not need it on.
+This feature may impact performance more so than resetting dungeons and Locations. If you have performance issues with this mod consider disabling Leviathan resetting when you do not need it on.
 
 ### Limitations
 
@@ -69,6 +78,17 @@ The following locations from other mods are supported:
 This mod needs to be on the client, it will work even if other players do not have it installed but may behave unexpectedly when playing around other players without the mod. For best results have everyone install the mod. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations should take immediate effect.
 
 ## Changelog
+
+### 0.5.0
+
+* Update for game patch version 0.217.14 (Hildir's Request)
+* Internal code refactor to simplify resetting, now auto-detects dungeons and all reset tracking moved to LocationProxy object
+  * Improved compatibility for custom dungeons from other mods (does not apply for non-dungeon sky locations)
+  * You will lose reset times on all dungeons when upgrading, they will be treated as if the mod was newly installed
+* Bug fix for frost caves and mistlands dungeons regenerating with different seeds
+* Reworked resetting logic of leviathans to only happen if the player is the "chunk owner" (similar update happened in 0.3.1)
+* Added ItemDrop to recognized type for resets, this will now delete and respawn things you can throw on the ground
+* Extended the range of triggering resets to 100 meters for all locations and dungeons (sky locations previously 30)
 
 ### 0.4.0
 

@@ -9,7 +9,6 @@ namespace VentureValheim.LocationReset
     public static class LeviathanExtension
     {
         private const string LEVIATHAN_TIME = "VV_LeviathanTime";
-        private const string RPCNAME_SetLastResetNow = "VV_LeviSetLastResetNow";
 
         public static int GetLastSubmerged(this Leviathan leviathan)
         {
@@ -18,14 +17,9 @@ namespace VentureValheim.LocationReset
 
         public static void SetLastSubmerged(this Leviathan leviathan, int day)
         {
-            leviathan.m_nview?.InvokeRPC(ZRoutedRpc.Everybody, RPCNAME_SetLastResetNow);
-        }
-
-        public static void RPC_SetLastSubmerged(this Leviathan leviathan, long sender)
-        {
             if (leviathan.m_nview != null && leviathan.m_nview.IsOwner())
             {
-                leviathan.m_nview.GetZDO()?.Set(LEVIATHAN_TIME, LocationReset.GetGameDay());
+                leviathan.m_nview.GetZDO()?.Set(LEVIATHAN_TIME, day);
             }
         }
 
@@ -79,18 +73,6 @@ namespace VentureValheim.LocationReset
             return false;
         }
 
-        [HarmonyPatch(typeof(Leviathan), nameof(Leviathan.Awake))]
-        public static class Patch_Leviathan_Awake
-        {
-            private static void Postfix(Leviathan __instance)
-            {
-                if (LocationResetPlugin.GetEnableLeviathanReset())
-                {
-                    __instance.m_nview.Register(RPCNAME_SetLastResetNow, __instance.RPC_SetLastSubmerged);
-                }
-            }
-        }
-
         /// <summary>
         /// Change the Destroy function from the Leviathans so they remain in the world after sinking.
         /// </summary>
@@ -132,7 +114,7 @@ namespace VentureValheim.LocationReset
                     if (__instance != null && __instance.m_left)
                     {
                         var day = LocationReset.GetGameDay();
-                        var time = __instance.m_nview?.GetZDO()?.GetInt(LEVIATHAN_TIME, -1);
+                        var time = __instance.m_nview?.GetZDO()?.GetInt(LEVIATHAN_TIME, -1) ?? -1;
                         if (time == -1 || day - time >= LocationResetPlugin.GetLeviathanResetTime())
                         {
                             __instance.SetLastSubmerged(day);

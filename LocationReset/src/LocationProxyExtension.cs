@@ -6,8 +6,6 @@ namespace VentureValheim.LocationReset
 {
     public static class LocationProxyExtension
     {
-        public const string RPCNAME_LPSetLastResetNow = "VV_LPSetLastResetNow";
-
         public static bool SetLastResetNow(this LocationProxy loc)
         {
             if (loc.m_nview?.GetZDO() == null || !loc.m_nview.IsOwner())
@@ -37,6 +35,7 @@ namespace VentureValheim.LocationReset
             if (lastReset < 0)
             {
                 loc.SetLastResetNow();
+                LocationResetPlugin.LocationResetLogger.LogDebug($"Location does not need a reset. No timer found.");
                 return false;
             }
 
@@ -48,6 +47,7 @@ namespace VentureValheim.LocationReset
                 return true;
             }
 
+            LocationResetPlugin.LocationResetLogger.LogDebug($"Location does not need a reset. {resetTime - timePassed} days remaining.");
             return false;
         }
     }
@@ -58,6 +58,7 @@ namespace VentureValheim.LocationReset
     /// </summary>
     public class LocationProxyReset : MonoBehaviour
     {
+        private const float RESET_RANGE = 100f;
         IEnumerator resetCoroutine;
 
         public void Start()
@@ -78,16 +79,15 @@ namespace VentureValheim.LocationReset
                 if (hash != 0)
                 {
                     int tries = 0;
-                    float range = LocationReset.GetResetRange(hash);
 
                     while (!LocationReset.LocalPlayerBeyondRange(loc.transform.position))
                     {
-                        if (LocationReset.LocalPlayerInRange(loc.transform.position, range) &&
+                        if (LocationReset.LocalPlayerInRange(loc.transform.position, RESET_RANGE) &&
                             ZNetScene.instance.IsAreaReady(loc.transform.position))
                         {
                             if (loc.m_nview != null && loc.m_nview.IsOwner())
                             {
-                                LocationReset.Instance.TryReset(loc);
+                                LocationReset.Instance.TryReset(loc, hash);
                                 break;
                             }
                             else
