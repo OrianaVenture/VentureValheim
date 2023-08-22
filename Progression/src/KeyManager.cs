@@ -549,34 +549,6 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Returns whether the indicated player has the required keys for a random event.
-        /// Random events are decided by the server.
-        /// </summary>
-        /// <param name="name">Player name</param>
-        /// <param name="ev"></param>
-        /// <returns></returns>
-        public bool PlayerHasPrivateEventKey(string name, RandomEvent ev)
-        {
-            for (int lcv = 0; lcv < ev.m_requiredGlobalKeys.Count; lcv++)
-            {
-                if (!Instance.ServerHasPrivateKey(ev.m_requiredGlobalKeys[lcv], name))
-                {
-                    return false;
-                }
-            }
-
-            for (int lcv = 0; lcv < ev.m_notRequiredGlobalKeys.Count; lcv++)
-            {
-                if (Instance.ServerHasPrivateKey(ev.m_notRequiredGlobalKeys[lcv], name))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Returns whether the Player contains the necessary key for taming the specified creature,
         /// or true if the configuration does not exist for the creature.
         /// </summary>
@@ -1160,6 +1132,16 @@ namespace VentureValheim.Progression
             }
         }
 
+        /// <summary>
+        /// Returns a lower case string of a GlobalKeys enum.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static string GetGlobalKeysEnumString(GlobalKeys key)
+        {
+            return key.ToString().ToLower();
+        }
+
         #region Patches
 
         /// <summary>
@@ -1381,6 +1363,12 @@ namespace VentureValheim.Progression
                         ZoneSystem.instance.m_globalKeys.Add(key);
                     }
 
+                    if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
+                    {
+                        // Add player based raids setting
+                        ZoneSystem.instance.GlobalKeyAdd(GetGlobalKeysEnumString(GlobalKeys.PlayerEvents));
+                    }
+
                     // Register Server RPCs
                     try
                     {
@@ -1404,51 +1392,6 @@ namespace VentureValheim.Progression
                         var obj = GameObject.Instantiate(new GameObject());
                         Instance._keyManagerUpdater = obj.AddComponent<KeyManagerUpdater>();
                     }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Tack on the check private keys logic to the CheckBase method.
-        /// </summary>
-        [HarmonyPatch(typeof(RandEventSystem), nameof(RandEventSystem.CheckBase))]
-        public static class Patch_RandEventSystem_CheckBase
-        {
-            private static void Postfix(ref bool __result, RandomEvent ev, ZDO zdo)
-            {
-                if (__result && ProgressionConfiguration.Instance.GetUsePrivateKeys())
-                {
-                    var player = zdo.GetString(ZDOVars.s_playerName, "");
-                    if (!player.IsNullOrWhiteSpace())
-                    {
-                        __result = Instance.PlayerHasPrivateEventKey(player, ev);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Trick the random event system to enter the CheckBase patch if using private keys.
-        /// </summary>
-        [HarmonyPatch(typeof(RandEventSystem), nameof(RandEventSystem.HaveGlobalKeys))]
-        public static class Patch_RandEventSystem_HaveGlobalKeys
-        {
-            private static bool Prefix()
-            {
-                if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
-                {
-                    return false; // Skip main method to save some calculations
-                }
-
-                return true;
-            }
-
-            [HarmonyPriority(Priority.Low)]
-            private static void Postfix(ref bool __result)
-            {
-                if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
-                {
-                    __result = true;
                 }
             }
         }

@@ -21,7 +21,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.0.29";
+        private const string ModVersion = "0.1.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -137,7 +137,7 @@ namespace VentureValheim.Progression
                 true, "", ref CE_EnforcedGlobalKeys);
             AddConfig("UsePrivateKeys", keys,
                 "True to use private player keys to control game behavior (boolean).",
-                true, false, ref CE_UsePrivateKeys);
+                true, true, ref CE_UsePrivateKeys);
             AddConfig("BlockedPrivateKeys", keys,
                 "Stop only these keys being added to the player's key list when UsePrivateKeys is true (comma-separated).",
                 true, "", ref CE_BlockedPrivateKeys);

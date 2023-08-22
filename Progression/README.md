@@ -12,6 +12,20 @@ The main feature of this mod is to have an easy way to control the rate at which
 
 Below are some explanations of features and how to configure them. See more details in the config file. Generate the config file by launching the game once with this mod installed. The information included in the file will not always match the information provided in this readme.
 
+### Hildir Update Notes
+
+There were changes to the vanilla commands that may be confusing. There are now "player unique keys" being used which are not the same thing as this mod's private key system. Please note these commands will not influence your private keys when using that feature, you must use the commands added (explained below under Key Management -> Commands) to manage private keys for this mod.
+
+* listkeys command now shows you your vanilla player unique keys
+* Original resetkeys command will now also reset your vanilla player unique keys in addition to global keys
+* Additional vanilla key commands were added to manage vanilla player unique keys: setkeyplayer, removekeyplayer
+
+There is now a feature in vanilla for "player based events". Using the private key system the player based raid setting will be applied automatically at startup. The old logic for this feature has been removed and is no longer supported at this time.
+
+There are likely new bugs with existing features and the new game content, please report any issues you encounter.
+
+** This information is subject to change in a future update
+
 <details open>
 <summary>Expand/Collapse Features</summary>
 
@@ -38,6 +52,32 @@ This mod also adds a private player key system in which data is saved to the cha
 * BlockedPrivateKeys: Stop only these keys being added to the player's key list when UsePrivateKeys is true (use this or AllowedPrivateKeys)
 * AllowedPrivateKeys: Allow only these keys being added to the player's key list when UsePrivateKeys is true (use this or BlockedPrivateKeys, if the BlockedPrivateKeys has any values it will use that setting)
 * EnforcedPrivateKeys: Always add these keys to the player's private list on startup (regardless of other settings)
+
+#### Vanilla Public Keys
+
+* defeated_eikthyr
+* defeated_gdking
+* defeated_bonemass
+* defeated_dragon
+* defeated_goblinking
+* defeated_queen
+* defeated_hive
+* KilledTroll
+* killed_surtling
+* KilledBat
+* nomap
+* noportals
+* Hildir1
+* Hildir2
+* Hildir3
+
+#### Commands
+
+Due to the changes this mod makes the vanilla "setkey" command will not function as expected in most cases. There is an added command "setglobalkey" that will work in it's place. For private keys there are 4 new commands added that work similar to the vanilla public key commands: setprivatekey, removeprivatekey, resetprivatekeys, listprivatekeys. For example, you can set your local player's key with "setprivatekey defeated_eikthyr", or any online player with "setprivatekey defeated_eikthyr PlayerName".
+
+The server also tracks the player's keys in each game session. This list is cleared on a server restart and data for each player will only be available once the player reconnects. The command is "listserverkeys", if you are hosting the data will be available in the console window. If you have a dedicated server you can send this command to the server from the client and the data will be printed to the bepinex/logoutput.log file.
+
+Don't know how to use commands? Dedicated servers do not allow for use of commands, but there are mods that can enable them (like Server devcommands by JereKuusela). All of these commands are considered "cheats" except the "listprivatekeys" command. To use cheats you must enable them with the "devcommands" command, you may have to be an admin for them to work.
 
 ### Locking
 
@@ -66,29 +106,6 @@ Using equipment, crafting, building, and cooking can all be locked with individu
 There are more key options specifically for the Haldor trader under their own section. All vanilla items have their own configuration option if you wish to override the required key to unlock them. If these configurations are left blank it will use the game defaults. If you wish to remove only some key requirements you can achieve this by setting the item keys to your own custom key like "Trader" and then "enforce" this key in the appropriate configuration mentioned above so all players can access it. Similarly, you can lock items by specifying a custom key that is then never added to the game (or only given to certain players when using private keys).
 
 * UnlockAllHaldorItems: If true bypasses the key check for Haldor's items and unlocks everything
-
-#### Vanilla Public Keys
-
-* defeated_eikthyr
-* defeated_gdking
-* defeated_bonemass
-* defeated_dragon
-* defeated_goblinking
-* defeated_queen
-* defeated_hive
-* KilledTroll
-* killed_surtling
-* KilledBat
-* nomap
-* noportals
-
-#### Commands
-
-Due to the changes this mod makes the vanilla "setkey" command will not function as expected in most cases. There is an added command "setglobalkey" that will work in it's place. For private keys there are 4 new commands added that work similar to the vanilla public key commands: setprivatekey, removeprivatekey, resetprivatekeys, listprivatekeys. For example, you can set your local player's key with "setprivatekey defeated_eikthyr", or any online player with "setprivatekey defeated_eikthyr PlayerName".
-
-The server also tracks the player's keys in each game session. This list is cleared on a server restart and data for each player will only be available once the player reconnects. The command is "listserverkeys", if you are hosting the data will be available in the console window. If you have a dedicated server you can send this command to the server from the client and the data will be printed to the bepinex/logoutput.log file.
-
-Don't know how to use commands? Dedicated servers do not allow for use of commands, but there are mods that can enable them (like Server devcommands by JereKuusela). All of these commands are considered "cheats" except the "listprivatekeys" command. To use cheats you must enable them with the "devcommands" command, you may have to be an admin for them to work.
 
 ### Skill Manager
 
@@ -126,6 +143,13 @@ This mod will partially work server-side only to control the global key list. If
 If you do not install this mod on the server then any player can change the configurations however they please. Raids will not be selected correctly when using private keys.
 
 ## Changelog
+
+### 0.1.0
+
+* Update for game patch version 0.217.14 (Please read Hildir update notes at top)
+* First official release, bug fixing to come for Hildir as reported
+* UsePrivateKeys config now defaults to true
+* Removed private key implementation for raids, now sets and uses the vanilla world modifier for player based raids
 
 ### 0.0.29
 
