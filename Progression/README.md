@@ -145,9 +145,13 @@ This mod will partially work server-side only to control the global key list. If
 
 ### Client-Side Only?
 
-If you do not install this mod on the server then any player can change the configurations however they please. Raids will not be selected correctly when using private keys.
+If you do not install this mod on the server then any player can change the configurations however they please.
 
 ## Changelog
+
+### 0.1.2
+
+* Added check to ensure player events key is not added multiple times after restart (part of corruption issue)
 
 ### 0.1.1
 

@@ -1414,7 +1414,11 @@ namespace VentureValheim.Progression
                     if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
                     {
                         // Add player based raids setting
-                        ZoneSystem.instance.GlobalKeyAdd(GetGlobalKeysEnumString(GlobalKeys.PlayerEvents));
+                        var eventKey = GetGlobalKeysEnumString(GlobalKeys.PlayerEvents);
+                        if (!ZoneSystem.instance.m_globalKeys.Contains(eventKey))
+                        {
+                            ZoneSystem.instance.GlobalKeyAdd(eventKey);
+                        }
                     }
 
                     // Register Server RPCs
