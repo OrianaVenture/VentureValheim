@@ -149,6 +149,11 @@ If you do not install this mod on the server then any player can change the conf
 
 ## Changelog
 
+### 0.1.3
+
+* Created save recovery patch to fix duplicate world modifiers entry
+* GlobalKeyAdd use false for canSaveToServerOptionKeys parameter to avoid duplicate entry
+
 ### 0.1.2
 
 * Added check to ensure player events key is not added multiple times after restart (part of corruption issue)
