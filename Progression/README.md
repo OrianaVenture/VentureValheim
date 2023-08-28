@@ -22,6 +22,8 @@ There were changes to the vanilla commands that may be confusing. There are now 
 
 There is now a feature in vanilla for "player based events". Using the private key system the player based raid setting will be applied automatically at startup. The old logic for this feature has been removed and is no longer supported at this time.
 
+In order to preserve the new world modifiers (that act as global keys) this mod now has a built in system to check keys are "qualifying". All the keys listed in the Vanilla Public Keys section below are considered "qualifying keys". All keys that do not fall under this list will not be added to player private keys, and will not be blocked from the public key list. There is a new configuration option QualifyingKeys where you can add additional keys from other mods so they can be supported.
+
 There are likely new bugs with existing features and the new game content, please report any issues you encounter.
 
 ** This information is subject to change in a future update
@@ -39,7 +41,11 @@ What is a key and what is controlled by them? In vanilla Valheim there exists a 
 
 #### Private Key Management
 
-This mod also adds a private player key system in which data is saved to the character file. You can use this private key system to tailor game functionality to individuals rather than the vanilla default server-wide global keys. Gameplay will be altered when using private keys: The player that is hosting a loaded chunk will control the worldly spawns, and raids will only spawn on players when appropriate. For example, a player A with no keys that is in a base with a player B with all the boss keys can still get all those raids, but if player A is alone they should not get higher level raids. If player A loads and hosts an area and is later joined by player B, the area should not spawn the higher level monsters that become unlocked with keys. Private keys will be added to any player within a 100 meter range of the hosting player when the action occurs. For example, when a boss dies any player close enough to the chunk-hosting player should also get the private key, but a player online on the other side of the map will not get it.
+This mod also adds a private player key system in which data is saved to the character file. You can use this private key system to tailor game functionality to individuals rather than the vanilla default server-wide global keys. Gameplay will be altered when using private keys: The player that is hosting a loaded "chunk" will control the worldly spawns. For example, a player A with no keys joins player B with all the boss keys and starts seeing Fuling night spawns, but if player A is alone they should not get higher level spawns. If player A loads and hosts an area and is later joined by player B, the area should not spawn the higher level monsters that become unlocked with keys.
+
+Private keys will be added to any player within a 100 meter range of the hosting player when the action occurs. For example, when a boss dies any player close enough to the chunk-hosting player should also get the private key, but a player online on the other side of the map will not get it.
+
+After the Hildir update a new game setting was added to vanilla for player-based raids. When using private keys this mod will enable this setting for you automatically.
 
 #### Key Configuration Options
 
@@ -52,8 +58,9 @@ This mod also adds a private player key system in which data is saved to the cha
 * BlockedPrivateKeys: Stop only these keys being added to the player's key list when UsePrivateKeys is true (use this or AllowedPrivateKeys)
 * AllowedPrivateKeys: Allow only these keys being added to the player's key list when UsePrivateKeys is true (use this or BlockedPrivateKeys, if the BlockedPrivateKeys has any values it will use that setting)
 * EnforcedPrivateKeys: Always add these keys to the player's private list on startup (regardless of other settings)
+* QualifyingKeys: Additional keys you would like to be tracked by this mod, use if you have other mods that add keys. You do not need to specify the vanilla keys as they are added automatically.
 
-#### Vanilla Public Keys
+#### Vanilla Public Keys (That this mod will track)
 
 * defeated_eikthyr
 * defeated_gdking
@@ -65,8 +72,6 @@ This mod also adds a private player key system in which data is saved to the cha
 * KilledTroll
 * killed_surtling
 * KilledBat
-* nomap
-* noportals
 * Hildir1
 * Hildir2
 * Hildir3
@@ -143,6 +148,12 @@ This mod will partially work server-side only to control the global key list. If
 If you do not install this mod on the server then any player can change the configurations however they please. Raids will not be selected correctly when using private keys.
 
 ## Changelog
+
+### 0.1.1
+
+* Hard check added to ensure keys are not world modifiers, fixes world save corruption issue (super apologies for this)
+* QualifyingKeys config added to allow support for other mods due to hard check
+* Private key cleanup will now remove all keys that are non-qualifying, make sure to configure this new setting
 
 ### 0.1.0
 

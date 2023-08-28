@@ -86,6 +86,7 @@ namespace VentureValheim.Progression
         public string EnforcedPrivateKeys { get; protected set; }
         public string TamingKeys { get; protected set; }
         public string SummoningKeys { get; protected set; }
+        public string QualifyingKeys { get; protected set; }
         public HashSet<string> BlockedGlobalKeysList { get; protected set; }
         public HashSet<string> AllowedGlobalKeysList { get; protected set; }
         public HashSet<string> EnforcedGlobalKeysList { get; protected set; }
@@ -94,6 +95,7 @@ namespace VentureValheim.Progression
         public HashSet<string> EnforcedPrivateKeysList { get; protected set; }
         public Dictionary<string, string> TamingKeysList { get; protected set; }
         public Dictionary<string, string> SummoningKeysList { get; protected set; }
+        public HashSet<string> QualifyingKeysList { get; protected set; }
 
         public HashSet<string> PrivateKeysList { get; protected set; }
         public Dictionary<string, HashSet<string>> ServerPrivateKeysList { get; protected set; }
@@ -238,6 +240,23 @@ namespace VentureValheim.Progression
             AllowedPrivateKeysList = new HashSet<string>();
             EnforcedPrivateKeysList = new HashSet<string>();
 
+            QualifyingKeys = "";
+            QualifyingKeysList = new HashSet<string>()
+            {
+                BOSS_KEY_MEADOW,
+                BOSS_KEY_BLACKFOREST,
+                BOSS_KEY_SWAMP,
+                BOSS_KEY_MOUNTAIN,
+                BOSS_KEY_PLAIN,
+                BOSS_KEY_MISTLAND,
+                "KilledTroll",
+                "killed_surtling",
+                "KilledBat",
+                "Hildir1",
+                "Hildir2",
+                "Hildir3"
+            };
+
             // Null if defaults need to be set
             TamingKeys = null;
             SummoningKeys = null;
@@ -265,11 +284,32 @@ namespace VentureValheim.Progression
 
         public void UpdateConfigs()
         {
+            UpdateQualifyingKeysConfiguration(ProgressionConfiguration.Instance.GetQualifyingKeys());
             UpdateGlobalKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedGlobalKeys(), ProgressionConfiguration.Instance.GetAllowedGlobalKeys());
             UpdatePrivateKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedPrivateKeys(), ProgressionConfiguration.Instance.GetAllowedPrivateKeys());
             UpdateEnforcedKeyConfiguration(ProgressionConfiguration.Instance.GetEnforcedGlobalKeys(), ProgressionConfiguration.Instance.GetEnforcedPrivateKeys());
             UpdateTamingConfiguration(ProgressionConfiguration.Instance.GetOverrideLockTamingDefaults());
             UpdateSummoningConfiguration(ProgressionConfiguration.Instance.GetOverrideLockBossSummonsDefaults());
+        }
+
+        /// <summary>
+        /// Set the values for QualifyingKeysList if changed.
+        /// </summary>
+        /// <param name="qualifyingKeys"></param>
+        protected void UpdateQualifyingKeysConfiguration(string qualifyingKeys)
+        {
+            if (!QualifyingKeys.Equals(qualifyingKeys))
+            {
+                QualifyingKeys = qualifyingKeys;
+                var additionalStrings = ProgressionAPI.StringToSet(qualifyingKeys);
+                foreach(var key in additionalStrings)
+                {
+                    if (!QualifyingKeysList.Contains(key))
+                    {
+                        QualifyingKeysList.Add(key);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -444,6 +484,12 @@ namespace VentureValheim.Progression
                 return true;
             }
 
+            if (!QualifyingKeysList.Contains(globalKey))
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogDebug($"{globalKey} is non-qualifying, can not block.");
+                return false;
+            }
+
             if (blockAll)
             {
                 return (AllowedGlobalKeysList.Count > 0) ? !AllowedGlobalKeysList.Contains(globalKey) : true;
@@ -476,7 +522,7 @@ namespace VentureValheim.Progression
         /// false when allowed and in the allowed list or both lists are empty.</returns>
         protected bool PrivateKeyIsBlocked(string key)
         {
-            if (key.IsNullOrWhiteSpace())
+            if (key.IsNullOrWhiteSpace() || !QualifyingKeysList.Contains(key))
             {
                 return true;
             }
@@ -538,7 +584,7 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         public bool HasKey(string key)
         {
-            if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
+            if (ProgressionConfiguration.Instance.GetUsePrivateKeys() && Instance.QualifyingKeysList.Contains(key))
             {
                 return Instance.HasPrivateKey(key);
             }
@@ -1231,7 +1277,9 @@ namespace VentureValheim.Progression
         {
             private static void Postfix(string name, ref bool __result)
             {
-                if (ProgressionConfiguration.Instance.GetUsePrivateKeys() && !ZNet.instance.IsDedicated())
+                if (ProgressionConfiguration.Instance.GetUsePrivateKeys() &&
+                    !ZNet.instance.IsDedicated() &&
+                    Instance.QualifyingKeysList.Contains(name))
                 {
                     __result = Instance.HasPrivateKey(name);
                 }
