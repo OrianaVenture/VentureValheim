@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarmTorches", "WarmTorches\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SeaOfNoodles", "SeaOfNoodles\SeaOfNoodles.csproj", "{1E37799B-5DC2-47AF-B54D-CB432DAECBE8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoGrass", "NoGrass\NoGrass.csproj", "{51734AFC-6E30-4F21-9232-9B0190E81067}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,10 @@ Global
 		{1E37799B-5DC2-47AF-B54D-CB432DAECBE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E37799B-5DC2-47AF-B54D-CB432DAECBE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E37799B-5DC2-47AF-B54D-CB432DAECBE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51734AFC-6E30-4F21-9232-9B0190E81067}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51734AFC-6E30-4F21-9232-9B0190E81067}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51734AFC-6E30-4F21-9232-9B0190E81067}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51734AFC-6E30-4F21-9232-9B0190E81067}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
