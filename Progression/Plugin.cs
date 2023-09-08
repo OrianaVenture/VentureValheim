@@ -21,7 +21,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.1.3";
+        private const string ModVersion = "0.1.4";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -79,7 +79,7 @@ namespace VentureValheim.Progression
         public static ConfigEntry<bool> CE_UseBossKeysForSkillLevel = null!;
         public static ConfigEntry<int> CE_BossKeysSkillPerKey = null!;
 
-        // Trader Configuration
+        // Trader (Haldor) Configuration
         public static ConfigEntry<bool> CE_UnlockAllHaldorItems = null!;
         public static ConfigEntry<string> CE_HelmetYuleKey = null!;
         public static ConfigEntry<string> CE_HelmetDvergerKey = null!;
@@ -89,6 +89,12 @@ namespace VentureValheim.Progression
         public static ConfigEntry<string> CE_FishingBaitKey = null!;
         public static ConfigEntry<string> CE_ThunderstoneKey = null!;
         public static ConfigEntry<string> CE_ChickenEggKey = null!;
+
+        // Hildir Configuration
+        public static ConfigEntry<bool> CE_UnlockAllHildirItems = null!;
+        public static ConfigEntry<string> CE_CryptItemsKey = null!;
+        public static ConfigEntry<string> CE_CaveItemsKey = null!;
+        public static ConfigEntry<string> CE_TowerItemsKey = null!;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
@@ -115,6 +121,7 @@ namespace VentureValheim.Progression
             const string locking = "Locking";
             const string skills = "Skills";
             const string trader = "Trader";
+            const string hildir = "Hildir";
 
             AddConfig("Force Server Config", general, "Force Server Config (boolean)",
                 true, true, ref CE_ServerConfigLocked);
@@ -260,6 +267,20 @@ namespace VentureValheim.Progression
                 "Custom key for unlocking the Egg. Leave blank to use default (string).",
                 true, "", ref CE_ChickenEggKey);
 
+            // Hildir
+            AddConfig("UnlockAllHildirItems", hildir,
+                "True to remove the key check from Hildir entirely and unlock all items (boolean).",
+                true, false, ref CE_UnlockAllHildirItems);
+            AddConfig("CryptItemsKey", hildir,
+                "Custom key for unlocking the Crypt Dungeon items. Leave blank to use default (string).",
+                true, "", ref CE_CryptItemsKey);
+            AddConfig("CaveItemsKey", hildir,
+                "Custom key for unlocking the Cave Dungeon items. Leave blank to use default (string).",
+                true, "", ref CE_CaveItemsKey);
+            AddConfig("TowerItemsKey", hildir,
+                "Custom key for unlocking the Tower Dungeon items. Leave blank to use default (string).",
+                true, "", ref CE_TowerItemsKey);
+
             #endregion
 
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -352,6 +373,12 @@ namespace VentureValheim.Progression
         public string GetFishingBaitKey();
         public string GetThunderstoneKey();
         public string GetChickenEggKey();
+
+        // Hildir Configuration
+        public bool GetUnlockAllHildirItems();
+        public string GetCryptItemsKey();
+        public string GetCaveItemsKey();
+        public string GetTowerItemsKey();
     }
 
     public class ProgressionConfiguration : IProgressionConfiguration
@@ -422,5 +449,11 @@ namespace VentureValheim.Progression
         public string GetFishingBaitKey() => ProgressionPlugin.CE_FishingBaitKey.Value;
         public string GetThunderstoneKey() => ProgressionPlugin.CE_ThunderstoneKey.Value;
         public string GetChickenEggKey() => ProgressionPlugin.CE_ChickenEggKey.Value;
+
+        // Hildir
+        public bool GetUnlockAllHildirItems() => ProgressionPlugin.CE_UnlockAllHildirItems.Value;
+        public string GetCryptItemsKey() => ProgressionPlugin.CE_CryptItemsKey.Value;
+        public string GetCaveItemsKey() => ProgressionPlugin.CE_CaveItemsKey.Value;
+        public string GetTowerItemsKey() => ProgressionPlugin.CE_TowerItemsKey.Value;
     }
 }

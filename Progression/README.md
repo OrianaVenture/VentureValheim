@@ -4,7 +4,7 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Control skill levels, haldor's items, and manage world and individual player keys! Lock different actions behind an enforced boss progression to control the rate at which players advance.
+Control skill levels, trader items, and manage world and individual player keys! Lock different actions behind an enforced boss progression to control the rate at which players advance.
 
 ## Features
 
@@ -22,7 +22,7 @@ There were changes to the vanilla commands that may be confusing. There are now 
 
 There is now a feature in vanilla for "player based events". Using the private key system the player based raid setting will be applied automatically at startup. The old logic for this feature has been removed and is no longer supported at this time.
 
-In order to preserve the new world modifiers (that act as global keys) this mod now has a built in system to check keys are "qualifying". All the keys listed in the Vanilla Public Keys section below are considered "qualifying keys". All keys that do not fall under this list will not be added to player private keys, and will not be blocked from the public key list. There is a new configuration option QualifyingKeys where you can add additional keys from other mods so they can be supported.
+In order to preserve the new world modifiers (that act as global keys) this mod now has a built in system to check keys are "qualifying". All the keys listed in the Vanilla Public Keys section below are considered "qualifying keys". All keys that do not fall under this list will not be added to player private keys, and will not be blocked from the public key list. There is a new configuration option QualifyingKeys where you can add additional keys from other mods (or your own custom defined keys) so they can be supported.
 
 There are likely new bugs with existing features and the new game content, please report any issues you encounter.
 
@@ -108,9 +108,10 @@ Using equipment, crafting, building, and cooking can all be locked with individu
 
 ### Trader Configuration Options
 
-There are more key options specifically for the Haldor trader under their own section. All vanilla items have their own configuration option if you wish to override the required key to unlock them. If these configurations are left blank it will use the game defaults. If you wish to remove only some key requirements you can achieve this by setting the item keys to your own custom key like "Trader" and then "enforce" this key in the appropriate configuration mentioned above so all players can access it. Similarly, you can lock items by specifying a custom key that is then never added to the game (or only given to certain players when using private keys).
+There are more key options specifically for Haldor under it's own section called "Trader". Similarly there is a section for Hildir. All vanilla items have their own configuration option if you wish to override the required key to unlock them. If these configurations are left blank it will use the game defaults. If you wish to remove only some item key requirements you can achieve this by setting the item keys to your own custom key like "Trader" and then "enforce" this key in the appropriate configuration mentioned above so all players can access it. Similarly, you can lock items by specifying a custom key that is then never added to the game (or only given to certain players when using private keys).
 
 * UnlockAllHaldorItems: If true bypasses the key check for Haldor's items and unlocks everything
+* UnlockAllHildirItems: If true bypasses the key check for Hildir's items and unlocks everything
 
 ### Skill Manager
 
@@ -148,6 +149,11 @@ This mod will partially work server-side only to control the global key list. If
 If you do not install this mod on the server then any player can change the configurations however they please.
 
 ## Changelog
+
+### 0.1.4
+
+* Added new configurations for Hildir trade items
+* Bug fix for instances where hiding all trader items throws an error
 
 ### 0.1.3
 

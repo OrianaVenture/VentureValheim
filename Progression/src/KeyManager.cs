@@ -108,6 +108,10 @@ namespace VentureValheim.Progression
         public const string BOSS_KEY_PLAIN = "defeated_goblinking";
         public const string BOSS_KEY_MISTLAND = "defeated_queen";
 
+        public const string HILDIR_KEY_CRYPT = "Hildir1";
+        public const string HILDIR_KEY_CAVE = "Hildir2";
+        public const string HILDIR_KEY_TOWER = "Hildir3";
+
         public const int TOTAL_BOSSES = 6;
         public readonly Dictionary<string, int> BossKeyOrderList = new Dictionary<string, int>
         {
@@ -212,6 +216,8 @@ namespace VentureValheim.Progression
             { "MushroomJotunPuffs", BOSS_KEY_PLAIN }
         };
 
+        public Dictionary<string, string> HildirOriginalItemsList { get; protected set; }
+
         public const string RPCNAME_ServerListKeys = "VV_ServerListKeys";
         public const string RPCNAME_ServerSetPrivateKeys = "VV_ServerSetPrivateKeys";
         public const string RPCNAME_ServerSetPrivateKey = "VV_ServerSetPrivateKey";
@@ -253,9 +259,9 @@ namespace VentureValheim.Progression
                 "KilledTroll",
                 "killed_surtling",
                 "KilledBat",
-                "Hildir1",
-                "Hildir2",
-                "Hildir3"
+                HILDIR_KEY_CRYPT,
+                HILDIR_KEY_CAVE,
+                HILDIR_KEY_TOWER
             };
 
             // Null if defaults need to be set
@@ -428,7 +434,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Reads the configuration values and creates a dictionary of all vanilla trader items
+        /// Reads the configuration values and creates a dictionary of all Haldor items
         /// and their new key requirements.
         /// </summary>
         /// <returns></returns>
@@ -466,6 +472,64 @@ namespace VentureValheim.Progression
             if (!ProgressionConfiguration.Instance.GetChickenEggKey().IsNullOrWhiteSpace())
             {
                 trades.Add("ChickenEgg", ProgressionConfiguration.Instance.GetChickenEggKey());
+            }
+
+            return trades;
+        }
+
+        /// <summary>
+        /// Record Hildir's original item-key requirements.
+        /// </summary>
+        /// <param name="items"></param>
+        protected void SetHildirOriginalItemsList(List<Trader.TradeItem> items)
+        {
+            if (HildirOriginalItemsList == null)
+            {
+                HildirOriginalItemsList = new Dictionary<string, string>();
+                foreach (var item in items)
+                {
+                    if (item.m_prefab != null)
+                    {
+                        var name = Utils.GetPrefabName(item.m_prefab.gameObject);
+                        if (!HildirOriginalItemsList.ContainsKey(name))
+                        {
+                            HildirOriginalItemsList.Add(name, item.m_requiredGlobalKey);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads the configuration values and creates a dictionary of all Hildir items
+        /// and their new key requirements.
+        /// </summary>
+        /// <returns></returns>
+        protected Dictionary<string, string> GetHildirConfiguration(List<Trader.TradeItem> items)
+        {
+            SetHildirOriginalItemsList(items);
+
+            var keyReplacements = new Dictionary<string, string>();
+            if (!ProgressionConfiguration.Instance.GetCryptItemsKey().IsNullOrWhiteSpace())
+            {
+                keyReplacements.Add(HILDIR_KEY_CRYPT, ProgressionConfiguration.Instance.GetCryptItemsKey());
+            }
+            if (!ProgressionConfiguration.Instance.GetCaveItemsKey().IsNullOrWhiteSpace())
+            {
+                keyReplacements.Add(HILDIR_KEY_CAVE, ProgressionConfiguration.Instance.GetCaveItemsKey());
+            }
+            if (!ProgressionConfiguration.Instance.GetTowerItemsKey().IsNullOrWhiteSpace())
+            {
+                keyReplacements.Add(HILDIR_KEY_TOWER, ProgressionConfiguration.Instance.GetTowerItemsKey());
+            }
+
+            var trades = new Dictionary<string, string>();
+            foreach (var item in HildirOriginalItemsList)
+            {
+                if (keyReplacements.ContainsKey(item.Value))
+                {
+                    trades.Add(item.Key, keyReplacements[item.Value]);
+                }
             }
 
             return trades;
@@ -1500,21 +1564,13 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(Trader), nameof(Trader.GetAvailableItems))]
         public static class Patch_Trader_GetAvailableItems
         {
-            [HarmonyPriority(Priority.Low)]
-            private static bool Prefix()
-            {
-                if (ProgressionConfiguration.Instance.GetUnlockAllHaldorItems())
-                {
-                    return false; // Skip main method to save some calculations
-                }
-
-                return true;
-            }
-
             [HarmonyPriority(Priority.First)]
             private static void Postfix(Trader __instance, ref List<Trader.TradeItem> __result)
             {
-                if (ProgressionConfiguration.Instance.GetUnlockAllHaldorItems())
+                var name = Utils.GetPrefabName(__instance.gameObject);
+
+                if ((name.Equals("Haldor") && ProgressionConfiguration.Instance.GetUnlockAllHaldorItems()) ||
+                    ((name.Equals("Hildir") && ProgressionConfiguration.Instance.GetUnlockAllHildirItems())))
                 {
                     __result = new List<Trader.TradeItem>(__instance.m_items);
                 }
@@ -1522,7 +1578,22 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Set up custom keys for Haldor's items.
+        /// Fix error thrown when index is 0 and no items exist.
+        /// </summary>
+        [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.SelectItem))]
+        public static class Patch_StoreGui_SelectItem
+        {
+            private static void Prefix(StoreGui __instance, ref int index)
+            {
+                if (__instance.m_itemList.Count == 0)
+                {
+                    index = -1;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set up custom keys for Trader items.
         /// </summary>
         [HarmonyPatch(typeof(Trader), nameof(Trader.Start))]
         public static class Patch_Trader_Start
@@ -1530,15 +1601,29 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.First)]
             private static void Postfix(Trader __instance)
             {
-                var keys = Instance.GetTraderConfiguration();
-                foreach (var item in __instance.m_items)
+                var traderName = Utils.GetPrefabName(__instance.gameObject);
+                Dictionary<string, string> items = null;
+
+                if (traderName.Equals("Haldor"))
                 {
-                    if (item.m_prefab != null)
+                    items = Instance.GetTraderConfiguration();
+                }
+                else if (traderName.Equals("Hildir"))
+                {
+                    items = Instance.GetHildirConfiguration(__instance.m_items);
+                }
+
+                if (items != null)
+                {
+                    foreach (var item in __instance.m_items)
                     {
-                        var name = Utils.GetPrefabName(item.m_prefab.gameObject);
-                        if (keys.ContainsKey(name))
+                        if (item.m_prefab != null)
                         {
-                            item.m_requiredGlobalKey = keys[name];
+                            var name = Utils.GetPrefabName(item.m_prefab.gameObject);
+                            if (items.ContainsKey(name))
+                            {
+                                item.m_requiredGlobalKey = items[name];
+                            }
                         }
                     }
                 }
