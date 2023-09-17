@@ -21,7 +21,7 @@ namespace VentureValheim.LocationReset
         }
 
         private const string ModName = "LocationReset";
-        private const string ModVersion = "0.5.0";
+        private const string ModVersion = "0.5.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -52,68 +52,80 @@ namespace VentureValheim.LocationReset
         private static ConfigEntry<int> CE_CampResetTime = null!;
         private static ConfigEntry<int> CE_MineResetTime = null!;
         private static ConfigEntry<int> CE_QueenResetTime = null!;
+        private static ConfigEntry<int> CE_HildirBurialResetTime = null!;
+        private static ConfigEntry<int> CE_HildirCaveResetTime = null!;
+        private static ConfigEntry<int> CE_HildirTowerResetTime = null!;
 
         private static ConfigEntry<bool> CE_EnableLeviathanReset = null!;
         private static ConfigEntry<int> CE_LeviathanResetTime = null!;
 
-        private static readonly int TrollCave02 = "TrollCave02".GetStableHashCode();
-        private static readonly string DGVillage = "DG_MeadowsVillage";
-        private static readonly string DGFarm = "DG_MeadowsFarm";
-        private static readonly string DGBurial = "DG_ForestCrypt";
-        private static readonly string DGCrypt = "DG_SunkenCrypt";
-        private static readonly string DGCave = "DG_Cave";
-        private static readonly string DGCamp = "DG_GoblinCamp";
-        private static readonly string DGMine = "DG_DvergrTown";
-        private static readonly string DGQueen = "DG_DvergrBoss";
+        private static readonly int Hash_TrollCave02 = "TrollCave02".GetStableHashCode();
+        private static readonly int Hash_Village = "WoodVillage1".GetStableHashCode();
+        private static readonly int Hash_Farm = "WoodFarm1".GetStableHashCode();
+        private static readonly int Hash_Burial2 = "Crypt2".GetStableHashCode();
+        private static readonly int Hash_Burial3 = "Crypt3".GetStableHashCode();
+        private static readonly int Hash_Burial4 = "Crypt4".GetStableHashCode();
+        private static readonly int Hash_Crypt = "SunkenCrypt4".GetStableHashCode();
+        private static readonly int Hash_Cave = "MountainCave02".GetStableHashCode();
+        private static readonly int Hash_Camp = "GoblinCamp2".GetStableHashCode();
+        private static readonly int Hash_Mine1 = "Mistlands_DvergrTownEntrance1".GetStableHashCode();
+        private static readonly int Hash_Mine2 = "Mistlands_DvergrTownEntrance2".GetStableHashCode();
+        private static readonly int Hash_Queen = "Mistlands_DvergrBossEntrance1".GetStableHashCode();
+        private static readonly int Hash_HildirBurial = "Hildir_crypt".GetStableHashCode();
+        private static readonly int Hash_HildirCave = "Hildir_cave".GetStableHashCode();
+        private static readonly int Hash_HildirTower = "Hildir_plainsfortress".GetStableHashCode();
 
         public static int GetResetTime(int hash)
         {
             if (CE_OverrideResetTimes.Value)
             {
-                if (hash == TrollCave02)
+                if (hash == Hash_TrollCave02)
                 {
                     return CE_TrollResetTime.Value;
                 }
-            }
-
-            return CE_ResetTime.Value;
-        }
-
-        public static int GetResetTime(string prefab)
-        {
-            if (CE_OverrideResetTimes.Value)
-            {
-                if (prefab.Contains(DGVillage))
+                else if (hash == Hash_Village)
                 {
                     return CE_VillageResetTime.Value;
                 }
-                else if (prefab.Contains(DGFarm))
+                else if (hash == Hash_Farm)
                 {
                     return CE_FarmResetTime.Value;
                 }
-                else if (prefab.Contains(DGBurial))
+                else if (hash == Hash_Burial2 || hash == Hash_Burial3 || hash == Hash_Burial4)
                 {
                     return CE_BurialResetTime.Value;
                 }
-                else if (prefab.Contains(DGCrypt))
+                else if (hash == Hash_Crypt)
                 {
                     return CE_CryptResetTime.Value;
                 }
-                else if (prefab.Contains(DGCave))
+                else if (hash == Hash_Cave)
                 {
                     return CE_CaveResetTime.Value;
                 }
-                else if (prefab.Contains(DGCamp))
+                else if (hash == Hash_Camp)
                 {
                     return CE_CampResetTime.Value;
                 }
-                else if (prefab.Contains(DGMine))
+                else if (hash == Hash_Mine1 || hash == Hash_Mine2)
                 {
                     return CE_MineResetTime.Value;
                 }
-                else if (prefab.Contains(DGQueen))
+                else if (hash == Hash_Queen)
                 {
                     return CE_QueenResetTime.Value;
+                }
+                else if (hash == Hash_HildirBurial)
+                {
+                    return CE_HildirBurialResetTime.Value;
+                }
+                else if (hash == Hash_HildirCave)
+                {
+                    return CE_HildirCaveResetTime.Value;
+                }
+                else if (hash == Hash_HildirTower)
+                {
+                    return CE_HildirTowerResetTime.Value;
                 }
             }
 
@@ -183,6 +195,12 @@ namespace VentureValheim.LocationReset
                 true, 30, ref CE_MineResetTime);
             AddConfig("QueenResetTime", advanced, "Number of in-game days for resetting mistland infested citadel (int).",
                 true, 30, ref CE_QueenResetTime);
+            AddConfig("HildirCryptResetTime", advanced, "Number of in-game days for resetting hildir's black forest crypts (int).",
+                true, 30, ref CE_HildirBurialResetTime);
+            AddConfig("HildirCaveResetTime", advanced, "Number of in-game days for resetting hildir's mountain caves (int).",
+                true, 30, ref CE_HildirCaveResetTime);
+            AddConfig("HildirTowerResetTime", advanced, "Number of in-game days for resetting hildir's plain towers (int).",
+                true, 30, ref CE_HildirTowerResetTime);
 
             AddConfig("EnableLeviathanReset", leviathans, "True to enable resetting Leviathans (boolean).",
                 true, true, ref CE_EnableLeviathanReset);

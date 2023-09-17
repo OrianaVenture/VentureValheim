@@ -79,6 +79,11 @@ This mod needs to be on the client, it will work even if other players do not ha
 
 ## Changelog
 
+### 0.5.1
+
+* Fixed configs not selecting the correct reset times and just using default
+* Added advanced configs for new Hildir's Request dungeons
+
 ### 0.5.0
 
 * Update for game patch version 0.217.14 (Hildir's Request)
