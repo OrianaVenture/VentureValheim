@@ -60,7 +60,7 @@ After the Hildir update a new game setting was added to vanilla for player-based
 * EnforcedPrivateKeys: Always add these keys to the player's private list on startup (regardless of other settings)
 * QualifyingKeys: Additional keys you would like to be tracked by this mod, use if you have other mods that add keys. You do not need to specify the vanilla keys as they are added automatically.
 
-#### Vanilla Public Keys (That this mod will track)
+#### Vanilla Public Keys (That this mod will track by default)
 
 * defeated_eikthyr
 * defeated_gdking
@@ -138,7 +138,7 @@ This was a previous feature of this mod that has been pulled out into it's own m
 
 ## Installation
 
-This mod needs to be on both the client and server for all features to work. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations will not always take effect until the player relogs into the world/server.
+This mod needs to be on both the client and server for all features to work. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ### Server-Side Only?
 
@@ -149,6 +149,15 @@ This mod will partially work server-side only to control the global key list. If
 If you do not install this mod on the server then any player can change the configurations however they please.
 
 ## Changelog
+
+### 0.2.0
+
+* Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work
+* Added new config for admins to bypass locking settings
+* Added new config to toggle blocked action fire effect
+* Added missing items to locking system: lox pelt, blue jute, sharpening stone, thistle, entrails
+  * Note: entrails set to defeating Eikthyr (not Elder) due to meadows draugr villages
+* Fixed issue with cauldron not locking cooking
 
 ### 0.1.4
 

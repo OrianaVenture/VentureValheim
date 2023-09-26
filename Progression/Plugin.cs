@@ -4,10 +4,11 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using ServerSync;
+using Jotunn.Managers;
 
 namespace VentureValheim.Progression
 {
+    [BepInDependency(Jotunn.Main.ModGuid)]
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class ProgressionPlugin : BaseUnityPlugin
     {
@@ -21,23 +22,17 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.1.4";
+        private const string ModVersion = "0.2.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
-        private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
+        private static string ConfigFileFullPath = BepInEx.Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
         public static readonly ManualLogSource VentureProgressionLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         #region ConfigurationEntries
-
-        private static readonly ConfigSync ConfigurationSync = new(ModGUID)
-        { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
-
-        private static ConfigEntry<bool> CE_ServerConfigLocked = null!;
-        // TODO public static ConfigEntry<bool> CE_AdminBypass = null!;
 
         // Key Manager
         public static ConfigEntry<bool> CE_BlockAllGlobalKeys = null!;
@@ -51,8 +46,10 @@ namespace VentureValheim.Progression
         public static ConfigEntry<string> CE_QualifyingKeys = null!;
 
         // Locking
+        public static ConfigEntry<bool> CE_AdminBypass = null!;
         public static ConfigEntry<bool> CE_UseBlockedActionMessage = null!;
         public static ConfigEntry<string> CE_BlockedActionMessage = null!;
+        public static ConfigEntry<bool> CE_UseBlockedActionEffect = null!;
         public static ConfigEntry<bool> CE_LockTaming = null!;
         public static ConfigEntry<string> CE_OverrideLockTamingDefaults = null!;
         public static ConfigEntry<bool> CE_LockGuardianPower = null!;
@@ -96,13 +93,14 @@ namespace VentureValheim.Progression
         public static ConfigEntry<string> CE_CaveItemsKey = null!;
         public static ConfigEntry<string> CE_TowerItemsKey = null!;
 
+        private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
+        private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
+
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
             string extendedDescription = GetExtendedDescription(description, synced);
-            configEntry = Config.Bind(section, key, value, extendedDescription);
-
-            SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
-            syncedConfigEntry.SynchronizedConfig = synced;
+            configEntry = Config.Bind(section, key, value,
+                new ConfigDescription(extendedDescription, null, synced ? AdminConfig : ClientConfig));
         }
 
         public string GetExtendedDescription(string description, bool synchronizedSetting)
@@ -116,19 +114,11 @@ namespace VentureValheim.Progression
         {
             #region Configuration
 
-            const string general = "General";
             const string keys = "Keys";
             const string locking = "Locking";
             const string skills = "Skills";
             const string trader = "Trader";
             const string hildir = "Hildir";
-
-            AddConfig("Force Server Config", general, "Force Server Config (boolean)",
-                true, true, ref CE_ServerConfigLocked);
-            ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
-            // TODO AddConfig("AdminBypass", general,
-                //"True to allow admins to bypass locking settings (boolean)",
-                //false, true, ref CE_AdminBypass);
 
             // Keys
             AddConfig("BlockAllGlobalKeys", keys,
@@ -160,12 +150,18 @@ namespace VentureValheim.Progression
                 true, "", ref CE_QualifyingKeys);
 
             // Locking
+            AddConfig("AdminBypass", locking,
+                "True to allow admins to bypass locking settings (boolean)",
+                true, false, ref CE_AdminBypass);
             AddConfig("UseBlockedActionMessage", locking,
                 "True to enable the blocked display message used in this mod (string).",
                 true, true, ref CE_UseBlockedActionMessage);
             AddConfig("BlockedActionMessage", locking,
                 "Generic blocked display message used in this mod (string).",
                 true, "The Gods Reject You", ref CE_BlockedActionMessage);
+            AddConfig("UseBlockedActionEffect", locking,
+                "True to enable the blocked display effect (fire) used in this mod (string).",
+                true, true, ref CE_UseBlockedActionEffect);
             AddConfig("LockTaming", locking,
                 "True to lock the ability to tame creatures based on keys. Uses private key if enabled, global key if not (boolean).",
                 true, false, ref CE_LockTaming);
@@ -295,7 +291,7 @@ namespace VentureValheim.Progression
 
         private void SetupWatcher()
         {
-            FileSystemWatcher watcher = new(Paths.ConfigPath, ConfigFileName);
+            FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
             watcher.Changed += ReadConfigValues;
             watcher.Created += ReadConfigValues;
             watcher.Renamed += ReadConfigValues;
@@ -321,8 +317,6 @@ namespace VentureValheim.Progression
 
     public interface IProgressionConfiguration
     {
-        // TODO public bool GetAdminBypass();
-
         // Key Manager
         public bool GetBlockAllGlobalKeys();
         public string GetBlockedGlobalKeys();
@@ -335,8 +329,10 @@ namespace VentureValheim.Progression
         public string GetQualifyingKeys();
 
         // Locking
+        public bool GetAdminBypass();
         public bool GetUseBlockedActionMessage();
         public string GetBlockedActionMessage();
+        public bool GetUseBlockedActionEffect();
         public bool GetLockTaming();
         public string GetOverrideLockTamingDefaults();
         public bool GetLockGuardianPower();
@@ -397,8 +393,6 @@ namespace VentureValheim.Progression
             get => _instance;
         }
 
-        // TODO public bool GetAdminBypass() => ProgressionPlugin.CE_AdminBypass.Value;
-
         // Keys
         public bool GetBlockAllGlobalKeys() => ProgressionPlugin.CE_BlockAllGlobalKeys.Value;
         public string GetBlockedGlobalKeys() => ProgressionPlugin.CE_BlockedGlobalKeys.Value;
@@ -411,19 +405,82 @@ namespace VentureValheim.Progression
         public string GetQualifyingKeys() => ProgressionPlugin.CE_QualifyingKeys.Value;
 
         // Locking
+        public bool GetAdminBypass() => ProgressionPlugin.CE_AdminBypass.Value;
         public bool GetUseBlockedActionMessage() => ProgressionPlugin.CE_UseBlockedActionMessage.Value;
         public string GetBlockedActionMessage() => ProgressionPlugin.CE_BlockedActionMessage.Value;
-        public bool GetLockTaming() => ProgressionPlugin.CE_LockTaming.Value;
+        public bool GetUseBlockedActionEffect() => ProgressionPlugin.CE_UseBlockedActionEffect.Value;
+        public bool GetLockTaming()
+        {
+            if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return false;
+            }
+            return ProgressionPlugin.CE_LockTaming.Value;
+        }
+
         public string GetOverrideLockTamingDefaults() => ProgressionPlugin.CE_OverrideLockTamingDefaults.Value;
-        public bool GetLockGuardianPower() => ProgressionPlugin.CE_LockGuardianPower.Value;
-        public bool GetLockBossSummons() => ProgressionPlugin.CE_LockBossSummons.Value;
+
+        public bool GetLockGuardianPower()
+        {
+            if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return false;
+            }
+            return ProgressionPlugin.CE_LockGuardianPower.Value;
+        }
+
+        public bool GetLockBossSummons()
+        {
+            if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return false;
+            }
+            return ProgressionPlugin.CE_LockBossSummons.Value;
+        }
+
         public string GetOverrideLockBossSummonsDefaults() => ProgressionPlugin.CE_OverrideLockBossSummonsDefaults.Value;
         public bool GetUnlockBossSummonsOverTime() => ProgressionPlugin.CE_UnlockBossSummonsOverTime.Value;
         public int GetUnlockBossSummonsTime() => ProgressionPlugin.CE_UnlockBossSummonsTime.Value;
-        public bool GetLockEquipment() => ProgressionPlugin.CE_LockEquipment.Value;
-        public bool GetLockCrafting() => ProgressionPlugin.CE_LockCrafting.Value;
-        public bool GetLockBuilding() => ProgressionPlugin.CE_LockBuilding.Value;
-        public bool GetLockCooking() => ProgressionPlugin.CE_LockCooking.Value;
+
+        public bool GetLockEquipment()
+        {
+            if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return false;
+            }
+
+            return ProgressionPlugin.CE_LockEquipment.Value;
+        }
+
+        public bool GetLockCrafting()
+        {
+            if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return false;
+            }
+
+            return ProgressionPlugin.CE_LockCrafting.Value;
+        }
+
+        public bool GetLockBuilding()
+        {
+            if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return false;
+            }
+
+            return ProgressionPlugin.CE_LockBuilding.Value;
+        }
+
+        public bool GetLockCooking()
+        {
+            if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return false;
+            }
+
+            return ProgressionPlugin.CE_LockCooking.Value;
+        }
 
         // Skills
         public bool GetEnableSkillManager() => ProgressionPlugin.CE_EnableSkillManager.Value;

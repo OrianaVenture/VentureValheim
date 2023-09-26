@@ -160,6 +160,7 @@ namespace VentureValheim.Progression
             { "Chain", BOSS_KEY_BLACKFOREST },
             { "ElderBark", BOSS_KEY_BLACKFOREST },
             { "Root", BOSS_KEY_BLACKFOREST },
+            { "SharpeningStone", BOSS_KEY_BLACKFOREST },
             // Mountain
             { "Silver", BOSS_KEY_SWAMP },
             { "WolfHairBundle", BOSS_KEY_SWAMP },
@@ -173,6 +174,7 @@ namespace VentureValheim.Progression
             { "Tar", BOSS_KEY_MOUNTAIN },
             { "Needle", BOSS_KEY_MOUNTAIN },
             { "LinenThread", BOSS_KEY_MOUNTAIN },
+            { "LoxPelt", BOSS_KEY_MOUNTAIN },
             // Mistlands
             { "BlackMarble", BOSS_KEY_PLAIN },
             { "BlackCore", BOSS_KEY_PLAIN },
@@ -180,7 +182,8 @@ namespace VentureValheim.Progression
             { "Eitr", BOSS_KEY_PLAIN },
             { "ScaleHide", BOSS_KEY_PLAIN },
             { "Wisp", BOSS_KEY_PLAIN },
-            { "YggdrasilWood", BOSS_KEY_PLAIN }
+            { "YggdrasilWood", BOSS_KEY_PLAIN },
+            { "JuteBlue", BOSS_KEY_PLAIN }
         };
 
         public readonly Dictionary<string, string> FoodKeysList = new Dictionary<string, string>
@@ -189,6 +192,8 @@ namespace VentureValheim.Progression
             { "Blueberries", BOSS_KEY_MEADOW },
             { "MushroomYellow", BOSS_KEY_MEADOW },
             { "Carrot", BOSS_KEY_MEADOW },
+            { "Thistle", BOSS_KEY_MEADOW },
+            { "Entrails", BOSS_KEY_MEADOW }, // soft lock due to draugr villages
             // Swamp
             { "Turnip", BOSS_KEY_BLACKFOREST },
             { "Bloodbag", BOSS_KEY_BLACKFOREST },
@@ -764,17 +769,11 @@ namespace VentureValheim.Progression
                 return false;
             }
 
-            if (checkBossItems && BossItemKeysList.ContainsKey(item))
+            if ((checkBossItems && BossItemKeysList.ContainsKey(item) && !HasKey(BossItemKeysList[item])) ||
+               (checkMaterials && MaterialKeysList.ContainsKey(item) && !HasKey(MaterialKeysList[item])) ||
+               (checkFood && FoodKeysList.ContainsKey(item) && !HasKey(FoodKeysList[item])))
             {
-                return HasKey(BossItemKeysList[item]);
-            }
-            else if (checkMaterials && MaterialKeysList.ContainsKey(item))
-            {
-                return HasKey(MaterialKeysList[item]);
-            }
-            else if (checkFood && FoodKeysList.ContainsKey(item))
-            {
-                return HasKey(FoodKeysList[item]);
+                return false;
             }
 
             return true;
@@ -795,11 +794,9 @@ namespace VentureValheim.Progression
             {
                 return true;
             }
-            else
-            {
-                var recipe = ObjectDB.instance.GetRecipe(item);
-                return IsActionBlocked(recipe, checkBossItems, checkMaterials, checkFood);
-            }
+
+            var recipe = ObjectDB.instance.GetRecipe(item);
+            return IsActionBlocked(recipe, checkBossItems, checkMaterials, checkFood);
         }
 
         /// <summary>
@@ -1236,10 +1233,17 @@ namespace VentureValheim.Progression
         /// <param name="player"></param>
         private void ApplyBlockedActionEffects(Player player)
         {
-            if (player != null && ProgressionConfiguration.Instance.GetUseBlockedActionMessage())
+            if (player != null)
             {
-                player.GetSEMan()?.AddStatusEffect(Character.s_statusEffectBurning, resetTime: false);
-                player.Message(MessageHud.MessageType.Center, ProgressionConfiguration.Instance.GetBlockedActionMessage());
+                if (ProgressionConfiguration.Instance.GetUseBlockedActionEffect())
+                {
+                    player.GetSEMan()?.AddStatusEffect(Character.s_statusEffectBurning, resetTime: false);
+                }
+
+                if (ProgressionConfiguration.Instance.GetUseBlockedActionMessage())
+                {
+                    player.Message(MessageHud.MessageType.Center, ProgressionConfiguration.Instance.GetBlockedActionMessage());
+                }
             }
         }
 
@@ -1911,13 +1915,13 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(InventoryGui __instance)
             {
-                if (ProgressionConfiguration.Instance.GetLockCrafting())
+                var lockCrafting = ProgressionConfiguration.Instance.GetLockCrafting();
+                var lockCooking = ProgressionConfiguration.Instance.GetLockCooking();
+
+                if ((lockCrafting || lockCooking) && Instance.IsActionBlocked(__instance.m_craftRecipe, lockCrafting, lockCrafting, lockCooking))
                 {
-                    if (Instance.IsActionBlocked(__instance.m_craftRecipe, true, true, false))
-                    {
-                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                        return false; // Skip crafting
-                    }
+                    Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                    return false; // Skip crafting or cooking
                 }
 
                 return true;
