@@ -4,30 +4,26 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using ServerSync;
+using Jotunn.Utils;
 
 namespace VentureValheim.FloatingItems
 {
+    [BepInDependency(Jotunn.Main.ModGuid)]
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class FloatingItemsPlugin : BaseUnityPlugin
     {
         private const string ModName = "VentureFloatingItems";
-        private const string ModVersion = "0.1.1";
+        private const string ModVersion = "0.2.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
-        private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
+        private static string ConfigFileFullPath = BepInEx.Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
         public static readonly ManualLogSource FloatingItemsLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         #region ConfigurationEntries
-
-        private static readonly ConfigSync ConfigurationSync = new(ModGUID)
-        { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
-
-        internal static ConfigEntry<bool> CE_ServerConfigLocked = null!;
 
         internal static ConfigEntry<string> CE_FloatingItems = null!;
         internal static ConfigEntry<string> CE_SinkingItems = null!;
@@ -43,13 +39,14 @@ namespace VentureValheim.FloatingItems
         public static bool GetFloatHides() => CE_FloatHides.Value;
         public static bool GetFloatGearAndCraftable() => CE_FloatGearAndCraftable.Value;
 
+        private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
+        private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
+
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
             string extendedDescription = GetExtendedDescription(description, synced);
-            configEntry = Config.Bind(section, key, value, extendedDescription);
-
-            SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
-            syncedConfigEntry.SynchronizedConfig = synced;
+            configEntry = Config.Bind(section, key, value, 
+                new ConfigDescription(extendedDescription, null, synced ? AdminConfig : ClientConfig));
         }
 
         public string GetExtendedDescription(string description, bool synchronizedSetting)
@@ -64,10 +61,6 @@ namespace VentureValheim.FloatingItems
             #region Configuration
 
             const string general = "General";
-
-            AddConfig("Force Server Config", general, "Force Server Config (boolean).",
-                true, true, ref CE_ServerConfigLocked);
-            ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
 
             AddConfig("FloatingItems", general, "Additional prefab names of the items you want to float (comma-separated string).",
                 true, "SerpentScale", ref CE_FloatingItems);
@@ -96,7 +89,7 @@ namespace VentureValheim.FloatingItems
 
         private void SetupWatcher()
         {
-            FileSystemWatcher watcher = new(Paths.ConfigPath, ConfigFileName);
+            FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
             watcher.Changed += ReadConfigValues;
             watcher.Created += ReadConfigValues;
             watcher.Renamed += ReadConfigValues;
