@@ -106,9 +106,13 @@ If you were previously using this feature in my other mod the configs are very s
 
 ## Installation
 
-This mod needs to be on the client to work. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations will not always take effect until the player relogs into the world/server.
+This mod needs to be on all clients to work properly. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations will not take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.2.0
+
+* Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work
 
 ### 0.1.0
 

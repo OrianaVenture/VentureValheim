@@ -10,7 +10,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.Scaling</RootNamespace>
         <AssemblyName>VentureValheim.Scaling</AssemblyName>
-        <Version>0.1.0</Version>
+        <Version>0.2.0</Version>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>
@@ -78,9 +78,9 @@
         <Reference Include="assembly_valheim, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\assembly_valheim_publicized.dll</HintPath>
         </Reference>
-        <Reference Include="ServerSync, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-            <SpecificVersion>False</SpecificVersion>
-            <HintPath>..\lib\ServerSync.dll</HintPath>
+        <Reference Include="Jotunn, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <SpecificVersion>false</SpecificVersion>
+        <HintPath>..\lib\Jotunn.dll</HintPath>
         </Reference>
         <Reference Include="System" />
         <Reference Include="System.Core" />
@@ -110,9 +110,6 @@
     </ItemGroup>
     <ItemGroup>
         <Content Include="ILRepack.targets" />
-        <Content Include="..\lib\ServerSync.dll">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="ILRepack.Lib.MSBuild.Task">

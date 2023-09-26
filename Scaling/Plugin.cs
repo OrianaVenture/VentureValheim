@@ -4,10 +4,11 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using ServerSync;
+using Jotunn.Utils;
 
 namespace VentureValheim.Scaling
 {
+    [BepInDependency(Jotunn.Main.ModGuid)]
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class ScalingPlugin : BaseUnityPlugin
     {
@@ -21,11 +22,11 @@ namespace VentureValheim.Scaling
         }
 
         private const string ModName = "WorldScaling";
-        private const string ModVersion = "0.1.0";
+        private const string ModVersion = "0.2.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
-        private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
+        private static string ConfigFileFullPath = BepInEx.Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
@@ -33,10 +34,6 @@ namespace VentureValheim.Scaling
 
         #region ConfigurationEntries
 
-        private static readonly ConfigSync ConfigurationSync = new(ModGUID)
-        { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
-
-        private static ConfigEntry<bool> CE_ServerConfigLocked = null!;
         public static ConfigEntry<bool> CE_GenerateGameData = null!;
 
         // Auto-Scaling Configuration
@@ -48,13 +45,14 @@ namespace VentureValheim.Scaling
         public static ConfigEntry<string> CE_AutoScaleCreatureDamage = null!;
         public static ConfigEntry<bool> CE_AutoScaleItems = null!;
 
+        private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
+        private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
+
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
             string extendedDescription = GetExtendedDescription(description, synced);
-            configEntry = Config.Bind(section, key, value, extendedDescription);
-
-            SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
-            syncedConfigEntry.SynchronizedConfig = synced;
+            configEntry = Config.Bind(section, key, value,
+                new ConfigDescription(extendedDescription, null, synced ? AdminConfig : ClientConfig));
         }
 
         public string GetExtendedDescription(string description, bool synchronizedSetting)
@@ -71,10 +69,6 @@ namespace VentureValheim.Scaling
             const string general = "General";
             const string creatures = "Creatures";
             const string items = "Items";
-
-            AddConfig("Force Server Config", general, "Force Server Config (boolean)",
-                true, true, ref CE_ServerConfigLocked);
-            ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
 
             AddConfig("GenerateGameDataFiles", general, "Finds all items and creatures and creates data files in your config path for viewing only (boolean).",
                 false, false, ref CE_GenerateGameData);
@@ -116,7 +110,7 @@ namespace VentureValheim.Scaling
 
         private void SetupWatcher()
         {
-            FileSystemWatcher watcher = new(Paths.ConfigPath, ConfigFileName);
+            FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
             watcher.Changed += ReadConfigValues;
             watcher.Created += ReadConfigValues;
             watcher.Renamed += ReadConfigValues;
