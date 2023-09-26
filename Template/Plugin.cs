@@ -5,7 +5,6 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using ServerSync;
 
 namespace VentureValheim.Template
 {
