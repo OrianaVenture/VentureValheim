@@ -5,10 +5,11 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using ServerSync;
+using Jotunn.Utils;
 
 namespace VentureValheim.NeedForSpeed
 {
+    [BepInDependency(Jotunn.Main.ModGuid)]
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class NeedForSpeedPlugin : BaseUnityPlugin
     {
@@ -22,22 +23,17 @@ namespace VentureValheim.NeedForSpeed
         }
 
         private const string ModName = "NeedForSpeed";
-        private const string ModVersion = "0.1.0";
+        private const string ModVersion = "0.2.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
-        private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
+        private static string ConfigFileFullPath = BepInEx.Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
         public static readonly ManualLogSource NeedForSpeedLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         #region ConfigurationEntries
-
-        private static readonly ConfigSync ConfigurationSync = new(ModGUID)
-        { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
-
-        internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
 
         internal static ConfigEntry<bool> CE_ModEnabled = null!;
         internal static ConfigEntry<float> CE_JogSpeedMultiplier = null!;
@@ -46,13 +42,14 @@ namespace VentureValheim.NeedForSpeed
         public float GetJogSpeedMultiplier() => CE_JogSpeedMultiplier.Value;
         public float GetRunSpeedMultiplier() => CE_RunSpeedMultiplier.Value;
 
+        private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
+        private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
+
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
             string extendedDescription = GetExtendedDescription(description, synced);
-            configEntry = Config.Bind(section, key, value, extendedDescription);
-
-            SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
-            syncedConfigEntry.SynchronizedConfig = synced;
+            configEntry = Config.Bind(section, key, value,
+                new ConfigDescription(extendedDescription, null, synced ? AdminConfig : ClientConfig));
         }
 
         public string GetExtendedDescription(string description, bool synchronizedSetting)
@@ -68,8 +65,6 @@ namespace VentureValheim.NeedForSpeed
 
             const string general = "General";
 
-            AddConfig("Force Server Config", general, "Force Server Config (boolean).",
-                true, true, ref CE_ServerConfigLocked);
             AddConfig("Enabled", general,"Enable module (boolean).",
                 true, true, ref CE_ModEnabled);
             AddConfig("JogSpeedMultiplier", general, "Jog Speed Multiplier, 1.3 is 30% faster (float).",
@@ -96,7 +91,7 @@ namespace VentureValheim.NeedForSpeed
 
         private void SetupWatcher()
         {
-            FileSystemWatcher watcher = new(Paths.ConfigPath, ConfigFileName);
+            FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
             watcher.Changed += ReadConfigValues;
             watcher.Created += ReadConfigValues;
             watcher.Renamed += ReadConfigValues;

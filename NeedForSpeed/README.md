@@ -11,9 +11,16 @@ Detects when the player is on cleared ground (a path) and applies a speed boost 
 Gives you options to increase (or decrease) the speed the player jogs and runs on paths. This multiplier will work on paths created by the hoe and pickaxe, as well as paths created by naturally spawning structures (and tar pits?).
 
 * Ability to configure the run and jog speed multipliers individually.
-* ServerSync included.
+
+## Installation
+
+This mod needs to be on the client to work. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players.
 
 ## Changelog
+
+### 0.2.0
+
+* Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work
 
 ### 0.1.0
 
