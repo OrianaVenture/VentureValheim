@@ -16,7 +16,7 @@ Currently, equipped helmet, shoulder, and utility items are supported. Will work
 
 All players will have to have this mod installed for hidden names to work 100% of the time. Any player who does not have this installed will not have their name hidden (even for players with the mod installed).
 
-ServerSync is included. Install on the server to enforce the same mod configuration for all players.
+This mod needs to be on all clients to work properly. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players.
 
 ### Vanilla Helmet Prefabs
 
@@ -32,6 +32,10 @@ ServerSync is included. Install on the server to enforce the same mod configurat
 * HelmetCarapace
 
 ## Changelog
+
+### 0.3.0
+
+* Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work
 
 ### 0.2.0
 
