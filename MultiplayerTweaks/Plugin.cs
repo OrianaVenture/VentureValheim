@@ -4,19 +4,20 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using ServerSync;
+using Jotunn.Utils;
 
 namespace VentureValheim.MultiplayerTweaks
 {
+    [BepInDependency(Jotunn.Main.ModGuid)]
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.5.0";
+        private const string ModVersion = "0.6.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
-        private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
+        private static string ConfigFileFullPath = BepInEx.Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
@@ -24,13 +25,10 @@ namespace VentureValheim.MultiplayerTweaks
 
         #region ConfigurationEntries
 
-        private static readonly ConfigSync ConfigurationSync = new(ModGUID)
-        { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
-
-        internal ConfigEntry<bool> CE_ServerConfigLocked = null!;
         internal static ConfigEntry<int> CE_MaximumPlayers = null!;
         internal static ConfigEntry<bool> CE_EnableValkrie = null!;
         internal static ConfigEntry<bool> CE_EnableHaldorMapPin = null!;
+        internal static ConfigEntry<bool> CE_EnableHildirMapPin = null!;
         internal static ConfigEntry<bool> CE_EnableArrivalMessage = null!;
         internal static ConfigEntry<bool> CE_EnableArrivalMessageShout = null!;
         internal static ConfigEntry<string> CE_OverrideArrivalMessage = null!;
@@ -45,6 +43,7 @@ namespace VentureValheim.MultiplayerTweaks
         public static int GetMaximumPlayers() => CE_MaximumPlayers.Value;
         public static bool GetEnableValkrie() => CE_EnableValkrie.Value;
         public static bool GetEnableHaldorMapPin() => CE_EnableHaldorMapPin.Value;
+        public static bool GetEnableHildirMapPin() => CE_EnableHildirMapPin.Value;
         public static bool GetEnableArrivalMessage() => CE_EnableArrivalMessage.Value;
         public static bool GetEnableArrivalMessageShout() => CE_EnableArrivalMessageShout.Value;
         public static string GetOverrideArrivalMessage() => CE_OverrideArrivalMessage.Value;
@@ -56,13 +55,14 @@ namespace VentureValheim.MultiplayerTweaks
         public static bool GetTeleportOnPVPDeath() => CE_TeleportOnPVPDeath.Value;
         public static bool GetSkillLossOnPVPDeath() => CE_SkillLossOnPVPDeath.Value;
 
+        private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
+        private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
+
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
             string extendedDescription = GetExtendedDescription(description, synced);
-            configEntry = Config.Bind(section, key, value, extendedDescription);
-
-            SyncedConfigEntry<T> syncedConfigEntry = ConfigurationSync.AddConfigEntry(configEntry);
-            syncedConfigEntry.SynchronizedConfig = synced;
+            configEntry = Config.Bind(section, key, value,
+                new ConfigDescription(extendedDescription, null, synced ? AdminConfig : ClientConfig));
         }
 
         public string GetExtendedDescription(string description, bool synchronizedSetting)
@@ -79,10 +79,6 @@ namespace VentureValheim.MultiplayerTweaks
             const string general = "General";
             const string map = "Map";
             const string arrival = "Arrival";
-
-            AddConfig("Force Server Config", general, "Force Server Config (boolean).",
-                true, true, ref CE_ServerConfigLocked);
-            ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
 
             AddConfig("MaximumPlayers", general, "Maximum Players for the Server (integer).",
                 true, 10, ref CE_MaximumPlayers);
@@ -108,6 +104,8 @@ namespace VentureValheim.MultiplayerTweaks
 
             AddConfig("EnableHaldorMapPin", map, "True to allow Haldor map pin on Minimap (boolean).",
                 true, true, ref CE_EnableHaldorMapPin);
+            AddConfig("EnableHildirMapPin", map, "True to allow Hildir map pin on Minimap (boolean).",
+                true, true, ref CE_EnableHildirMapPin);
             AddConfig("OverridePlayerMapPositions", map, "Override Player map pin position behavior for Minimap (boolean).",
                 true, false, ref CE_OverridePlayerMapPins);
             AddConfig("ForcePlayerMapPositionOn", map, "True to always show Player position on Minimap when OverridePlayerMapPositions is True (boolean).",
@@ -129,7 +127,7 @@ namespace VentureValheim.MultiplayerTweaks
 
         private void SetupWatcher()
         {
-            FileSystemWatcher watcher = new(Paths.ConfigPath, ConfigFileName);
+            FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
             watcher.Changed += ReadConfigValues;
             watcher.Created += ReadConfigValues;
             watcher.Renamed += ReadConfigValues;

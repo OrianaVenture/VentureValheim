@@ -4,7 +4,7 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Commonly requested tweaks for servers and single player modes. Toggle the Valkyrie, track Hugin tutorials, customize arrival messages, hide the Haldor map pin, PVP options, and more!
+Commonly requested tweaks for servers and single player modes. Toggle the Valkyrie, track Hugin tutorials, customize arrival messages, hide the Haldor/Hildir map pins, PVP options, and more!
 
 ## Features
 
@@ -13,7 +13,7 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 * Toggle Valkyrie opening cut scene.
 * Add Hugin tutorials to the seen list when tutorials are turned off.
 * Toggle or customize the "I have arrived!" message on new player connection.
-* Toggle the Haldor trader Map Pin.
+* Toggle the Haldor and Hildir trader Map Pins.
 * Toggle Player Map Position Icons always on or off.
 * Toggle PVP always on or off.
 * Toggle teleporting on a PVP death.
@@ -31,9 +31,9 @@ The base game added a setting to toggle Hugin tutorials on or off under the misc
 
 This mod gives you the ability to customize the arrival message, or turn it off completely. Change the default vanilla "shout" to a normal message (UseArrivalShout = false) to get rid of the arrival pings but still use the login message. Set your own message string with OverrideArrivalMessage to change the arrival message for all players.
 
-### Haldor Map Pin
+### Haldor/Hildir Map Pins
 
-This mod gives you the ability to block the Haldor trader map pin from showing on the map. This feature is flexible and can be disabled or enabled at any time. If disabled (EnableHaldorMapPin = false) the pin will not show for all players when the Haldor trader is discovered. Useful for keeping the location of Haldor a secret until you choose to reveal it!
+This mod gives you the ability to block the trader map pins from showing on the map. This feature is flexible and can be disabled or enabled at any time. If disabled (EnableHaldorMapPin = false) the pin will not show for all players when the Haldor trader is discovered. Useful for keeping the location of Haldor a secret until you choose to reveal it! Similar config for Hildir map pin included.
 
 ### Player Map Pin Position
 
@@ -45,9 +45,14 @@ Gives you the ability to force PVP always on or always off (OverridePlayerPVP mu
 
 ## Installation
 
-This mod needs to be on both the client and server for all features to work. When this mod is put on a server it will sync the configurations from the server to all clients on connection. Live changes to the configurations will not always take effect until the player relogs into the world/server.
+This mod needs to be on both the client and server for all features to work. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.6.0
+
+* Added new configuration option to hide Hildir map pin.
+* Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work
 
 ### 0.5.0
 

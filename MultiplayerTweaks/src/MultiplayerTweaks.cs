@@ -44,7 +44,7 @@ namespace VentureValheim.MultiplayerTweaks
         }
 
         /// <summary>
-        /// Removes any Haldor locations from the icons list for a zone.
+        /// Removes any Haldor/Hildir locations from the icons list for a zone.
         /// This ensures they are not added to the player minimap.
         /// </summary>
         [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.GetLocationIcons))]
@@ -52,21 +52,28 @@ namespace VentureValheim.MultiplayerTweaks
         {
             private static void Postfix(ref Dictionary<Vector3, string> icons)
             {
-                if (!MultiplayerTweaksPlugin.GetEnableHaldorMapPin())
+                if (MultiplayerTweaksPlugin.GetEnableHaldorMapPin() && 
+                    MultiplayerTweaksPlugin.GetEnableHildirMapPin())
                 {
-                    var list = new List<Vector3>();
-                    foreach (var item in icons)
-                    {
-                        if (item.Value.Equals("Vendor_BlackForest"))
-                        {
-                            list.Add(item.Key);
-                        }
-                    }
+                    return;
+                }
 
-                    foreach (var item in list)
+                var list = new List<Vector3>();
+                foreach (var item in icons)
+                {
+                    if (!MultiplayerTweaksPlugin.GetEnableHaldorMapPin() && item.Value.Equals("Vendor_BlackForest"))
                     {
-                        icons.Remove(item);
+                        list.Add(item.Key);
                     }
+                    else if (!MultiplayerTweaksPlugin.GetEnableHildirMapPin() && item.Value.Equals("Hildir_camp"))
+                    {
+                        list.Add(item.Key);
+                    }
+                }
+
+                foreach (var item in list)
+                {
+                    icons.Remove(item);
                 }
             }
         }
