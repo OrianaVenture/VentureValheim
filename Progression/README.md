@@ -150,6 +150,10 @@ If you do not install this mod on the server then any player can change the conf
 
 ## Changelog
 
+### 0.2.1
+
+* Update for game patch 0.217.22, bepinex version 5.4.22.0
+
 ### 0.2.0
 
 * Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work
