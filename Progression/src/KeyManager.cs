@@ -1247,16 +1247,6 @@ namespace VentureValheim.Progression
             }
         }
 
-        /// <summary>
-        /// Returns a lower case string of a GlobalKeys enum.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static string GetGlobalKeysEnumString(GlobalKeys key)
-        {
-            return key.ToString().ToLower();
-        }
-
         #region Patches
 
         /// <summary>
@@ -1483,11 +1473,7 @@ namespace VentureValheim.Progression
                     if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
                     {
                         // Add player based raids setting
-                        var eventKey = GetGlobalKeysEnumString(GlobalKeys.PlayerEvents);
-                        if (!ZoneSystem.instance.m_globalKeys.Contains(eventKey))
-                        {
-                            ZoneSystem.instance.GlobalKeyAdd(eventKey, false);
-                        }
+                        ZoneSystem.instance.m_globalKeysEnums.Add(GlobalKeys.PlayerEvents);
                     }
 
                     // Register Server RPCs

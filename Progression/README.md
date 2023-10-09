@@ -150,6 +150,10 @@ If you do not install this mod on the server then any player can change the conf
 
 ## Changelog
 
+### 0.2.2
+
+* Fixed issue with PlayerEvents world modifier not being applied correctly (was disabling raids when using private keys)
+
 ### 0.2.1
 
 * Update for game patch 0.217.22, bepinex version 5.4.22.0
