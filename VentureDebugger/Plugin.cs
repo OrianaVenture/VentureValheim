@@ -9,7 +9,7 @@ namespace VentureValheim.VentureDebugger
     public class VentureDebuggerPlugin : BaseUnityPlugin
     {
         private const string ModName = "VentureDebugger";
-        private const string ModVersion = "0.0.1";
+        private const string ModVersion = "0.0.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 

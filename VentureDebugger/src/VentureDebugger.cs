@@ -12,7 +12,7 @@ namespace VentureValheim.VentureDebugger
         [HarmonyPatch(typeof(Pickable), nameof(Pickable.UpdateRespawn))]
         public static class Patch_Pickable_UpdateRespawn
         {
-            private static void Finalizer(Pickable __instance, Exception __exception)
+            private static Exception Finalizer(Pickable __instance, Exception __exception)
             {
                 if (__instance != null && __exception != null)
                 {
@@ -21,6 +21,8 @@ namespace VentureValheim.VentureDebugger
                     var timeNow = ZNet.instance.GetTime();
                     __instance.m_nview.GetZDO().Set(ZDOVars.s_pickedTime, timeNow.Ticks);
                 }
+
+                return null;
             }
         }
     }

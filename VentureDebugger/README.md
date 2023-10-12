@@ -20,6 +20,10 @@ This mod is client side only and has no configuration options. Does not need to 
 
 ## Changelog
 
+### 0.0.2
+
+* Modified Pickable.UpdateRespawn to fully catch all exceptions and not allow passthrough
+
 ### 0.0.1
 
 * Added fix for Pickable.UpdateRespawn ArgumentOutOfRangeException
