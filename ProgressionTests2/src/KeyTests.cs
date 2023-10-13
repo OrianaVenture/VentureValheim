@@ -287,5 +287,28 @@ namespace VentureValheim.ProgressionTests
             SetupConfiguration(100);
             Assert.Equal(expected, keyManager.SummoningTimeReachedTest(key, day));
         }
+
+        [Theory]
+        [InlineData("PlayerDamage", true)]
+        [InlineData("PlayerEvents", true)]
+        [InlineData("Fire", true)]
+        [InlineData("DeathDeleteItems", true)]
+        [InlineData("AllPiecesUnlocked", true)]
+        [InlineData("NoMap", true)]
+        [InlineData("NoPortals", true)]
+        [InlineData("Preset", true)]
+        [InlineData("NonServerOption", false)]
+        [InlineData("defeated_eikthyr", false)]
+        [InlineData("defeated_gdking", false)]
+        [InlineData("KilledTroll", false)]
+        [InlineData("Count", false)]
+        [InlineData("CustomKey1", false)]
+        [InlineData("CustomKey2", false)]
+        [InlineData("CustomKey3", false)]
+        public void GlobalKeyServerOptionTest(string key, bool expected)
+        {
+            ZoneSystem.GetKeyValue(key.ToLower(), out string value, out GlobalKeys gk);
+            Assert.Equal(expected, gk < GlobalKeys.NonServerOption);
+        }
     }
 }

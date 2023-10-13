@@ -28,7 +28,7 @@ namespace VentureValheim.Progression
         public bool HasPrivateKey(string key);
     }
 
-    public class KeyManager : IKeyManager
+    public partial class KeyManager : IKeyManager
     {
         static KeyManager() { }
         protected KeyManager()
@@ -87,7 +87,6 @@ namespace VentureValheim.Progression
         public string EnforcedPrivateKeys { get; protected set; }
         public string TamingKeys { get; protected set; }
         public string SummoningKeys { get; protected set; }
-        public string QualifyingKeys { get; protected set; }
         public HashSet<string> BlockedGlobalKeysList { get; protected set; }
         public HashSet<string> AllowedGlobalKeysList { get; protected set; }
         public HashSet<string> EnforcedGlobalKeysList { get; protected set; }
@@ -96,7 +95,6 @@ namespace VentureValheim.Progression
         public HashSet<string> EnforcedPrivateKeysList { get; protected set; }
         public Dictionary<string, string> TamingKeysList { get; protected set; }
         public Dictionary<string, string> SummoningKeysList { get; protected set; }
-        public HashSet<string> QualifyingKeysList { get; protected set; }
 
         public HashSet<string> PrivateKeysList { get; protected set; }
         public Dictionary<string, HashSet<string>> ServerPrivateKeysList { get; protected set; }
@@ -252,23 +250,6 @@ namespace VentureValheim.Progression
             AllowedPrivateKeysList = new HashSet<string>();
             EnforcedPrivateKeysList = new HashSet<string>();
 
-            QualifyingKeys = "";
-            QualifyingKeysList = new HashSet<string>()
-            {
-                BOSS_KEY_MEADOW,
-                BOSS_KEY_BLACKFOREST,
-                BOSS_KEY_SWAMP,
-                BOSS_KEY_MOUNTAIN,
-                BOSS_KEY_PLAIN,
-                BOSS_KEY_MISTLAND,
-                "KilledTroll",
-                "killed_surtling",
-                "KilledBat",
-                HILDIR_KEY_CRYPT,
-                HILDIR_KEY_CAVE,
-                HILDIR_KEY_TOWER
-            };
-
             // Null if defaults need to be set
             TamingKeys = null;
             SummoningKeys = null;
@@ -296,32 +277,11 @@ namespace VentureValheim.Progression
 
         public void UpdateConfigs()
         {
-            UpdateQualifyingKeysConfiguration(ProgressionConfiguration.Instance.GetQualifyingKeys());
             UpdateGlobalKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedGlobalKeys(), ProgressionConfiguration.Instance.GetAllowedGlobalKeys());
             UpdatePrivateKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedPrivateKeys(), ProgressionConfiguration.Instance.GetAllowedPrivateKeys());
             UpdateEnforcedKeyConfiguration(ProgressionConfiguration.Instance.GetEnforcedGlobalKeys(), ProgressionConfiguration.Instance.GetEnforcedPrivateKeys());
             UpdateTamingConfiguration(ProgressionConfiguration.Instance.GetOverrideLockTamingDefaults());
             UpdateSummoningConfiguration(ProgressionConfiguration.Instance.GetOverrideLockBossSummonsDefaults());
-        }
-
-        /// <summary>
-        /// Set the values for QualifyingKeysList if changed.
-        /// </summary>
-        /// <param name="qualifyingKeys"></param>
-        protected void UpdateQualifyingKeysConfiguration(string qualifyingKeys)
-        {
-            if (!QualifyingKeys.Equals(qualifyingKeys))
-            {
-                QualifyingKeys = qualifyingKeys;
-                var additionalStrings = ProgressionAPI.StringToSet(qualifyingKeys);
-                foreach(var key in additionalStrings)
-                {
-                    if (!QualifyingKeysList.Contains(key))
-                    {
-                        QualifyingKeysList.Add(key);
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -540,6 +500,17 @@ namespace VentureValheim.Progression
             return trades;
         }
 
+        private bool IsWorldModifier(string key)
+        {
+            ZoneSystem.GetKeyValue(key.ToLower(), out string value, out GlobalKeys gk);
+            if (gk < GlobalKeys.NonServerOption)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Whether to block a Global Key based on configuration settings.
         /// </summary>
@@ -554,7 +525,7 @@ namespace VentureValheim.Progression
                 return true;
             }
 
-            if (!QualifyingKeysList.Contains(globalKey))
+            if (IsWorldModifier(globalKey))
             {
                 ProgressionPlugin.VentureProgressionLogger.LogDebug($"{globalKey} is non-qualifying, can not block.");
                 return false;
@@ -592,7 +563,7 @@ namespace VentureValheim.Progression
         /// false when allowed and in the allowed list or both lists are empty.</returns>
         protected bool PrivateKeyIsBlocked(string key)
         {
-            if (key.IsNullOrWhiteSpace() || !QualifyingKeysList.Contains(key))
+            if (key.IsNullOrWhiteSpace() || IsWorldModifier(key))
             {
                 return true;
             }
@@ -649,12 +620,14 @@ namespace VentureValheim.Progression
         /// <summary>
         /// If using private keys returns whether the Player has unlocked the given key.
         /// Otherwise returns whether the global key is unlocked.
+        ///
+        /// World Modifier keys should not be passed into this method.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
         public bool HasKey(string key)
         {
-            if (ProgressionConfiguration.Instance.GetUsePrivateKeys() && Instance.QualifyingKeysList.Contains(key))
+            if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
             {
                 return Instance.HasPrivateKey(key);
             }
@@ -1338,7 +1311,7 @@ namespace VentureValheim.Progression
             {
                 if (ProgressionConfiguration.Instance.GetUsePrivateKeys() &&
                     !ZNet.instance.IsDedicated() &&
-                    Instance.QualifyingKeysList.Contains(name))
+                    !Instance.IsWorldModifier(name))
                 {
                     __result = Instance.HasPrivateKey(name);
                 }

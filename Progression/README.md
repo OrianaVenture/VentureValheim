@@ -22,8 +22,6 @@ There were changes to the vanilla commands that may be confusing. There are now 
 
 There is now a feature in vanilla for "player based events". Using the private key system the player based raid setting will be applied automatically at startup. The old logic for this feature has been removed and is no longer supported at this time.
 
-In order to preserve the new world modifiers (that act as global keys) this mod now has a built in system to check keys are "qualifying". All the keys listed in the Vanilla Public Keys section below are considered "qualifying keys". All keys that do not fall under this list will not be added to player private keys, and will not be blocked from the public key list. There is a new configuration option QualifyingKeys where you can add additional keys from other mods (or your own custom defined keys) so they can be supported.
-
 There are likely new bugs with existing features and the new game content, please report any issues you encounter.
 
 ** This information is subject to change in a future update
@@ -58,7 +56,6 @@ After the Hildir update a new game setting was added to vanilla for player-based
 * BlockedPrivateKeys: Stop only these keys being added to the player's key list when UsePrivateKeys is true (use this or AllowedPrivateKeys)
 * AllowedPrivateKeys: Allow only these keys being added to the player's key list when UsePrivateKeys is true (use this or BlockedPrivateKeys, if the BlockedPrivateKeys has any values it will use that setting)
 * EnforcedPrivateKeys: Always add these keys to the player's private list on startup (regardless of other settings)
-* QualifyingKeys: Additional keys you would like to be tracked by this mod, use if you have other mods that add keys. You do not need to specify the vanilla keys as they are added automatically.
 
 #### Vanilla Public Keys (That this mod will track by default)
 
@@ -150,6 +147,12 @@ If you do not install this mod on the server then any player can change the conf
 
 ## Changelog
 
+### 0.2.3
+
+* Removed the Qualifying keys feature added in 0.1.1, mod will now correctly identify world modifiers without further configuration
+* Orphaned config QualifyingKeys will remain in your config files but is not used
+* If using other mods that add keys between the updates (0.1.1 - 0.2.2) they may now be in your global key list (might not cause issues, but be aware)
+
 ### 0.2.2
 
 * Fixed issue with PlayerEvents world modifier not being applied correctly (was disabling raids when using private keys)
@@ -210,11 +213,6 @@ If you do not install this mod on the server then any player can change the conf
 * Update for game patch 0.216.9
 * Fixed skill drain edge cases for skill manager where skills could rarely drop below the skill floor
 * Bug fix for keys saving to incorrect character when switching between them in the same game session
-
-### 0.0.27
-
-* Bug fix for blocking taming not always working correctly, not comparing correct prefab name so getting false negatives
-* Small qol refactors (see github for full commit)
 
 See all patch notes on Github.
 

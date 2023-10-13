@@ -22,7 +22,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.2.2";
+        private const string ModVersion = "0.2.3";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -43,7 +43,6 @@ namespace VentureValheim.Progression
         public static ConfigEntry<string> CE_BlockedPrivateKeys = null!;
         public static ConfigEntry<string> CE_AllowedPrivateKeys = null!;
         public static ConfigEntry<string> CE_EnforcedPrivateKeys = null!;
-        public static ConfigEntry<string> CE_QualifyingKeys = null!;
 
         // Locking
         public static ConfigEntry<bool> CE_AdminBypass = null!;
@@ -145,9 +144,6 @@ namespace VentureValheim.Progression
             AddConfig("EnforcedPrivateKeys", keys,
                 "Always add these keys to the player's private list on startup (comma-separated).",
                 true, "", ref CE_EnforcedPrivateKeys);
-            AddConfig("QualifyingKeys", keys,
-                "Additonal keys to be tracked by this mod, vanilla keys included automatically (comma-separated).",
-                true, "", ref CE_QualifyingKeys);
 
             // Locking
             AddConfig("AdminBypass", locking,
@@ -326,7 +322,6 @@ namespace VentureValheim.Progression
         public string GetBlockedPrivateKeys();
         public string GetAllowedPrivateKeys();
         public string GetEnforcedPrivateKeys();
-        public string GetQualifyingKeys();
 
         // Locking
         public bool GetAdminBypass();
@@ -402,7 +397,6 @@ namespace VentureValheim.Progression
         public string GetBlockedPrivateKeys() => ProgressionPlugin.CE_BlockedPrivateKeys.Value;
         public string GetAllowedPrivateKeys() => ProgressionPlugin.CE_AllowedPrivateKeys.Value;
         public string GetEnforcedPrivateKeys() => ProgressionPlugin.CE_EnforcedPrivateKeys.Value;
-        public string GetQualifyingKeys() => ProgressionPlugin.CE_QualifyingKeys.Value;
 
         // Locking
         public bool GetAdminBypass() => ProgressionPlugin.CE_AdminBypass.Value;
