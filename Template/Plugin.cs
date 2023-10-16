@@ -26,6 +26,8 @@ namespace VentureValheim.Template
 
         #region ConfigurationEntries
 
+        public static ConfigEntry<int> CE_ExampleConfig = null!;
+
         private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
         private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
 
@@ -49,9 +51,8 @@ namespace VentureValheim.Template
 
             const string general = "General";
 
-            AddConfig("Force Server Config", general, "Force Server Config (boolean).",
-                true, true, ref CE_ServerConfigLocked);
-            ConfigurationSync.AddLockingConfigEntry(CE_ServerConfigLocked);
+            AddConfig("Example Config", general, "Example (boolean).",
+                true, true, ref CE_ExampleConfig);
 
             #endregion
 
