@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoGrass", "NoGrass\NoGrass.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VentureDebugger", "VentureDebugger\VentureDebugger.csproj", "{A82A5D10-06F4-4D15-B1FD-493801A89164}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeadingfulIcons", "MeadingfulIcons\MeadingfulIcons.csproj", "{884001A0-E62E-49F3-901A-80B5B1CECF4F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +143,10 @@ Global
 		{A82A5D10-06F4-4D15-B1FD-493801A89164}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A82A5D10-06F4-4D15-B1FD-493801A89164}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A82A5D10-06F4-4D15-B1FD-493801A89164}.Release|Any CPU.Build.0 = Release|Any CPU
+		{884001A0-E62E-49F3-901A-80B5B1CECF4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{884001A0-E62E-49F3-901A-80B5B1CECF4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{884001A0-E62E-49F3-901A-80B5B1CECF4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{884001A0-E62E-49F3-901A-80B5B1CECF4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
