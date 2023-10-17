@@ -26,7 +26,8 @@ namespace VentureValheim.LocationReset
             "SpiderCave01".GetStableHashCode(), // Monsterlabz
             "AshlandsCave_01".GetStableHashCode(), // Monsterlabz
             "AshlandsCave_02".GetStableHashCode(), // Monsterlabz
-            "Loc_MistlandsCave_DoD".GetStableHashCode() // Horem
+            "Loc_MistlandsCave_DoD".GetStableHashCode(), // Horem
+            "CaveDeepNorth_TW".GetStableHashCode() // Therzie Warfare
         };
 
         #region Utility Functions

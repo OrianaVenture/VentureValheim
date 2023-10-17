@@ -66,6 +66,7 @@ The following locations from other mods are supported:
 
 * Monsterlabz: SpiderCave01, AshlandsCave_01, AshlandsCave_02
 * Horem: Loc_MistlandsCave_DoD
+* Therzie: CaveDeepNorth_TW
 
 ### Possible Future Improvements
 
@@ -78,6 +79,10 @@ The following locations from other mods are supported:
 This mod needs to be on the client, it will work even if other players do not have it installed but may behave unexpectedly when playing around other players without the mod. For best results have everyone install the mod. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations should take immediate effect.
 
 ## Changelog
+
+### 0.6.1
+
+* Added support for CaveDeepNorth_TW from Therzie's Warfare mod
 
 ### 0.6.0
 
