@@ -11,6 +11,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class GeneralTweaks
     {
         private static bool _lastHitByPlayer = false;
+        private static double _lastSpawnTime = 0d;
 
         /// <summary>
         /// Checks if any connected player has the given id.
@@ -114,12 +115,13 @@ namespace VentureValheim.MultiplayerTweaks
             }
         }
 
+        /// <summary>
+        /// Set the PVP option if overridden.
+        /// Set local player tracking data.
+        /// </summary>
         [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
         public static class Patch_Player_OnSpawned
         {
-            /// <summary>
-            /// Set the PVP option if overridden.
-            /// </summary>
             private static void Postfix(Player __instance)
             {
                 if (MultiplayerTweaksPlugin.GetOverridePlayerPVP())
@@ -128,6 +130,9 @@ namespace VentureValheim.MultiplayerTweaks
                     __instance.m_pvp = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
                     InventoryGui.instance.m_pvp.isOn = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
                 }
+
+                _lastSpawnTime = ZNet.instance.GetTimeSeconds();
+                _lastHitByPlayer = false;
             }
         }
 
@@ -154,34 +159,46 @@ namespace VentureValheim.MultiplayerTweaks
         {
             private static void Postfix(HitData hit)
             {
-                if (!MultiplayerTweaksPlugin.GetTeleportOnPVPDeath())
+                if (IsPlayer(hit.m_attacker))
                 {
-                    if (IsPlayer(hit.m_attacker))
-                    {
-                        _lastHitByPlayer = true;
-                    }
-                    else
-                    {
-                        _lastHitByPlayer = false;
-                    }
+                    _lastHitByPlayer = true;
+                }
+                else
+                {
+                    _lastHitByPlayer = false;
                 }
             }
         }
 
         /// <summary>
-        /// The game checks for a logout point first when respawning, set this value here.
+        /// The game checks for a logout point first when respawning, set this value here
+        /// when teleporting on death is disabled.
         /// </summary>
         [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.SetDeathPoint))]
         public static class Patch_PlayerProfile_SetDeathPoint
         {
             private static void Postfix(PlayerProfile __instance, Vector3 point)
             {
-                if (!MultiplayerTweaksPlugin.GetTeleportOnPVPDeath())
+                if (!MultiplayerTweaksPlugin.GetTeleportOnAnyDeath() ||
+                    (!MultiplayerTweaksPlugin.GetTeleportOnPVPDeath() && _lastHitByPlayer))
                 {
-                    if (_lastHitByPlayer)
-                    {
-                        __instance.SetLogoutPoint(point);
-                    }
+                    __instance.SetLogoutPoint(point);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Have to trick the game into using the logout point on death.
+        /// </summary>
+        [HarmonyPatch(typeof(Game), nameof(Game.RequestRespawn))]
+        public static class Patch_Game_RequestRespawn
+        {
+            private static void Prefix(ref bool afterDeath)
+            {
+                if (!MultiplayerTweaksPlugin.GetTeleportOnAnyDeath() ||
+                    (!MultiplayerTweaksPlugin.GetTeleportOnPVPDeath() && _lastHitByPlayer))
+                {
+                    afterDeath = false;
                 }
             }
         }
@@ -207,14 +224,24 @@ namespace VentureValheim.MultiplayerTweaks
         }
 
         /// <summary>
-        /// Reset the "last hit by player" tracker.
+        /// Add grace window to respawned players to prevent death loops.
         /// </summary>
-        [HarmonyPatch(typeof(Player), nameof(Player.OnDeath))]
-        public static class Patch_Player_OnDeath
+        [HarmonyPatch(typeof(Character), nameof(Character.CheckDeath))]
+        public static class Patch_Character_CheckDeath
         {
-            private static void Postfix()
+            private static bool Prefix(Character __instance)
             {
-                _lastHitByPlayer = false;
+                if (__instance == Player.m_localPlayer)
+                {
+                    // 15 seconds of immunity
+                    var time = ZNet.instance.GetTimeSeconds() - _lastSpawnTime;
+                    if (time < 15d)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         }
     }

@@ -162,7 +162,6 @@ namespace VentureValheim.MultiplayerTweaks
                         float z = float.Parse(coordinates[2]);
 
                         position = new Vector3(x, y, z);
-                        //MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogDebug($"Spawning at position: {x}, {y}, {z}.");
                         return true;
                     }
                     catch (Exception e)

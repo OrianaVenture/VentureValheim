@@ -15,7 +15,8 @@ namespace VentureValheim.MultiplayerTweaks
         {
             private static void Postfix(ref Dictionary<Vector3, string> icons)
             {
-                if (MultiplayerTweaksPlugin.GetEnableHaldorMapPin() &&
+                if (MultiplayerTweaksPlugin.GetEnableTempleMapPin() &&
+                    MultiplayerTweaksPlugin.GetEnableHaldorMapPin() &&
                     MultiplayerTweaksPlugin.GetEnableHildirMapPin())
                 {
                     return;
@@ -24,13 +25,28 @@ namespace VentureValheim.MultiplayerTweaks
                 var list = new List<Vector3>();
                 foreach (var item in icons)
                 {
-                    if (!MultiplayerTweaksPlugin.GetEnableHaldorMapPin() && item.Value.Equals("Vendor_BlackForest"))
+                    switch (item.Value)
                     {
-                        list.Add(item.Key);
-                    }
-                    else if (!MultiplayerTweaksPlugin.GetEnableHildirMapPin() && item.Value.Equals("Hildir_camp"))
-                    {
-                        list.Add(item.Key);
+                        case "StartTemple":
+                            if (!MultiplayerTweaksPlugin.GetEnableTempleMapPin())
+                            {
+                                list.Add(item.Key);
+                            }
+                            break;
+                        case "Vendor_BlackForest":
+                            if (!MultiplayerTweaksPlugin.GetEnableHaldorMapPin())
+                            {
+                                list.Add(item.Key);
+                            }
+                            break;
+                        case "Hildir_camp":
+                            if (!MultiplayerTweaksPlugin.GetEnableHildirMapPin())
+                            {
+                                list.Add(item.Key);
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 }
 
@@ -68,6 +84,44 @@ namespace VentureValheim.MultiplayerTweaks
                 {
                     pub = MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Prevent the shout world texts list from populating to hide display
+        /// when shout pings are disabled.
+        /// </summary>
+        [HarmonyPatch(typeof(Chat), nameof(Chat.GetShoutWorldTexts))]
+        public static class Patch_Chat_GetShoutWorldTexts
+        {
+            private static bool Prefix()
+            {
+                if (!MultiplayerTweaksPlugin.GetAllowShoutPings())
+                {
+                    return false; // Skip populating list
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Prevent ability to send map pings when config is enabled.
+        /// </summary>
+        [HarmonyPatch(typeof(Chat), nameof(Chat.SendPing))]
+        public static class Patch_Chat_SendPing
+        {
+            [HarmonyPriority(Priority.LowerThanNormal)]
+            private static bool Prefix(ref bool __runOriginal)
+            {
+                // Compatibility for other mod patches (like Groups)
+                // Might not be needed but putting it in anyway
+                if (!MultiplayerTweaksPlugin.GetAllowMapPings() || !__runOriginal)
+                {
+                    return false; // Skip sending ping
+                }
+
+                return true;
             }
         }
     }

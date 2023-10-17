@@ -4,6 +4,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using Jotunn.Managers;
 using Jotunn.Utils;
 
 namespace VentureValheim.MultiplayerTweaks
@@ -13,7 +14,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.6.0";
+        private const string ModVersion = "0.7.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -25,35 +26,105 @@ namespace VentureValheim.MultiplayerTweaks
 
         #region ConfigurationEntries
 
+        // General
+        internal static ConfigEntry<bool> CE_AdminBypass = null!;
         internal static ConfigEntry<int> CE_MaximumPlayers = null!;
+        internal static ConfigEntry<bool> CE_OverridePlayerPVP = null!;
+        internal static ConfigEntry<bool> CE_ForcePlayerPVPOn = null!;
+        internal static ConfigEntry<bool> CE_TeleportOnAnyDeath = null!;
+        internal static ConfigEntry<bool> CE_TeleportOnPVPDeath = null!;
+        internal static ConfigEntry<bool> CE_SkillLossOnPVPDeath = null!;
+        public static bool GetAdminBypass() => CE_AdminBypass.Value;
+        public static int GetMaximumPlayers() => CE_MaximumPlayers.Value;
+        public static bool GetOverridePlayerPVP()
+        {
+            if (GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return false;
+            }
+
+            return CE_OverridePlayerPVP.Value;
+        }
+        public static bool GetForcePlayerPVPOn() => CE_ForcePlayerPVPOn.Value;
+        public static bool GetTeleportOnAnyDeath() => CE_TeleportOnAnyDeath.Value;
+        public static bool GetTeleportOnPVPDeath() => CE_TeleportOnPVPDeath.Value;
+        public static bool GetSkillLossOnPVPDeath() => CE_SkillLossOnPVPDeath.Value;
+
+        // Arrival
+        internal static ConfigEntry<string> CE_PlayerDefaultSpawnPoint = null!;
         internal static ConfigEntry<bool> CE_EnableValkrie = null!;
-        internal static ConfigEntry<bool> CE_EnableHaldorMapPin = null!;
-        internal static ConfigEntry<bool> CE_EnableHildirMapPin = null!;
         internal static ConfigEntry<bool> CE_EnableArrivalMessage = null!;
         internal static ConfigEntry<bool> CE_EnableArrivalMessageShout = null!;
         internal static ConfigEntry<string> CE_OverrideArrivalMessage = null!;
-        internal static ConfigEntry<bool> CE_OverridePlayerMapPins = null!;
-        internal static ConfigEntry<bool> CE_ForcePlayerMapPinsOn = null!;
-        internal static ConfigEntry<string> CE_PlayerDefaultSpawnPoint = null!;
-        internal static ConfigEntry<bool> CE_OverridePlayerPVP = null!;
-        internal static ConfigEntry<bool> CE_ForcePlayerPVPOn = null!;
-        internal static ConfigEntry<bool> CE_TeleportOnPVPDeath = null!;
-        internal static ConfigEntry<bool> CE_SkillLossOnPVPDeath = null!;
-
-        public static int GetMaximumPlayers() => CE_MaximumPlayers.Value;
+        public static string GetPlayerDefaultSpawnPoint() => CE_PlayerDefaultSpawnPoint.Value;
         public static bool GetEnableValkrie() => CE_EnableValkrie.Value;
-        public static bool GetEnableHaldorMapPin() => CE_EnableHaldorMapPin.Value;
-        public static bool GetEnableHildirMapPin() => CE_EnableHildirMapPin.Value;
         public static bool GetEnableArrivalMessage() => CE_EnableArrivalMessage.Value;
         public static bool GetEnableArrivalMessageShout() => CE_EnableArrivalMessageShout.Value;
         public static string GetOverrideArrivalMessage() => CE_OverrideArrivalMessage.Value;
-        public static bool GetOverridePlayerMapPins() => CE_OverridePlayerMapPins.Value;
+
+        // Map
+        internal static ConfigEntry<bool> CE_EnableTempleMapPin = null!;
+        internal static ConfigEntry<bool> CE_EnableHaldorMapPin = null!;
+        internal static ConfigEntry<bool> CE_EnableHildirMapPin = null!;
+        internal static ConfigEntry<bool> CE_OverridePlayerMapPins = null!;
+        internal static ConfigEntry<bool> CE_ForcePlayerMapPinsOn = null!;
+        internal static ConfigEntry<bool> CE_AllowMapPings = null!;
+        internal static ConfigEntry<bool> CE_AllowShoutPings = null!;
+        public static bool GetEnableTempleMapPin()
+        {
+            if (GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return true;
+            }
+
+            return CE_EnableTempleMapPin.Value;
+        }
+        public static bool GetEnableHaldorMapPin()
+        {
+            if (GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return true;
+            }
+
+            return CE_EnableHaldorMapPin.Value;
+        }
+        public static bool GetEnableHildirMapPin()
+        {
+            if (GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return true;
+            }
+
+            return CE_EnableHildirMapPin.Value;
+        }
+        public static bool GetOverridePlayerMapPins()
+        {
+            if (GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return false;
+            }
+
+            return CE_OverridePlayerMapPins.Value;
+        }
         public static bool GetForcePlayerMapPinsOn() => CE_ForcePlayerMapPinsOn.Value;
-        public static string GetPlayerDefaultSpawnPoint() => CE_PlayerDefaultSpawnPoint.Value;
-        public static bool GetOverridePlayerPVP() => CE_OverridePlayerPVP.Value;
-        public static bool GetForcePlayerPVPOn() => CE_ForcePlayerPVPOn.Value;
-        public static bool GetTeleportOnPVPDeath() => CE_TeleportOnPVPDeath.Value;
-        public static bool GetSkillLossOnPVPDeath() => CE_SkillLossOnPVPDeath.Value;
+        public static bool GetAllowMapPings()
+        {
+            if (GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return true;
+            }
+
+            return CE_AllowMapPings.Value;
+        }
+        public static bool GetAllowShoutPings()
+        {
+            if (GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return true;
+            }
+
+            return CE_AllowShoutPings.Value;
+        }
 
         private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
         private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
@@ -80,12 +151,16 @@ namespace VentureValheim.MultiplayerTweaks
             const string map = "Map";
             const string arrival = "Arrival";
 
+            AddConfig("AdminBypass", general, "True to allow admins to bypass some setting restrictions (boolean).",
+                true, false, ref CE_AdminBypass);
             AddConfig("MaximumPlayers", general, "Maximum Players for the Server (integer).",
                 true, 10, ref CE_MaximumPlayers);
             AddConfig("OverridePlayerPVP", general, "Override Player pvp behavior (boolean).",
                 true, false, ref CE_OverridePlayerPVP);
             AddConfig("ForcePlayerPVPOn", general, "True to set pvp always on when OverridePlayerPVP is True (boolean).",
                 true, true, ref CE_ForcePlayerPVPOn);
+            AddConfig("TeleportOnAnyDeath", general, "False to respawn players at their graves on any death (boolean).",
+                true, true, ref CE_TeleportOnAnyDeath);
             AddConfig("TeleportOnPVPDeath", general, "False to respawn players at their graves on a PVP death (boolean).",
                 true, true, ref CE_TeleportOnPVPDeath);
             AddConfig("SkillLossOnPVPDeath", general, "False to prevent skill loss on a PVP death (boolean).",
@@ -102,18 +177,24 @@ namespace VentureValheim.MultiplayerTweaks
             AddConfig("OverrideArrivalMessage", arrival, "Set a new arrival message, leave blank to use default (string).",
                 true, "", ref CE_OverrideArrivalMessage);
 
-            AddConfig("EnableHaldorMapPin", map, "True to allow Haldor map pin on Minimap (boolean).",
+            AddConfig("EnableTempleMapPin", map, "False to hide Starting Temple map pin on Minimap (boolean).",
+                true, true, ref CE_EnableTempleMapPin);
+            AddConfig("EnableHaldorMapPin", map, "False to hide Haldor map pin on Minimap (boolean).",
                 true, true, ref CE_EnableHaldorMapPin);
-            AddConfig("EnableHildirMapPin", map, "True to allow Hildir map pin on Minimap (boolean).",
+            AddConfig("EnableHildirMapPin", map, "False to hide Hildir map pin on Minimap (boolean).",
                 true, true, ref CE_EnableHildirMapPin);
             AddConfig("OverridePlayerMapPositions", map, "Override Player map pin position behavior for Minimap (boolean).",
                 true, false, ref CE_OverridePlayerMapPins);
             AddConfig("ForcePlayerMapPositionOn", map, "True to always show Player position on Minimap when OverridePlayerMapPositions is True (boolean).",
                 true, true, ref CE_ForcePlayerMapPinsOn);
+            AddConfig("AllowMapPings", map, "False to disable pings on the map from players (boolean).",
+                true, true, ref CE_AllowMapPings);
+            AddConfig("AllowShoutPings", map, "False to disable pings on the map when players shout messages (boolean).",
+                true, true, ref CE_AllowShoutPings);
 
             #endregion
 
-            MultiplayerTweaksLogger.LogInfo("Initializing MultiplayerTweaks!");
+            MultiplayerTweaksLogger.LogInfo("Watch me Tweak, now watch me Neigh Neigh.");
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
