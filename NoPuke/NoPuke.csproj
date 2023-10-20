@@ -9,7 +9,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.NoPuke</RootNamespace>
         <AssemblyName>VentureValheim.NoPuke</AssemblyName>
-        <Version>0.1.1</Version>
+        <Version>0.2.0</Version>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>

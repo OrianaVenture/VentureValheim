@@ -1,3 +1,4 @@
+using BepInEx;
 using HarmonyLib;
 using UnityEngine.SceneManagement;
 
@@ -13,6 +14,38 @@ namespace VentureValheim.NoPuke
             get => _instance;
         }
 
+        /// <summary>
+        /// Attempts to get the ItemDrop by the given name's hashcode, if not found searches by string.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <returns>True on sucessful find</returns>
+        public static bool GetItemDrop(string name, out ItemDrop item)
+        {
+            item = null;
+
+            if (!name.IsNullOrWhiteSpace())
+            {
+                try
+                {
+                    // Try hash code
+                    item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode())?.GetComponent<ItemDrop>();
+                }
+                catch
+                {
+                    // Failed, try slow search
+                    item = ObjectDB.instance.GetItemPrefab(name)?.GetComponent<ItemDrop>();
+                }
+
+                if (item != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.Awake))]
         public static class Patch_ObjectDB_Awake
         {
@@ -24,12 +57,22 @@ namespace VentureValheim.NoPuke
                     if (se != null)
                     {
                         se.m_startEffects = new EffectList();
-                        NoPukePlugin.NoPukeLogger.LogInfo("Done disabling puke animations and effects.");
                     }
                     else
                     {
-                        NoPukePlugin.NoPukeLogger.LogInfo("Could not disable puke animations and effects.");
+                        NoPukePlugin.NoPukeLogger.LogWarning("Could not disable puke animations and effects.");
                     }
+
+                    if (GetItemDrop("bonemass_attack_aoe", out var bonemass))
+                    {
+                        bonemass.m_itemData.m_shared.m_startEffect = new EffectList();
+                    }
+                    else
+                    {
+                        NoPukePlugin.NoPukeLogger.LogWarning("Could not disable bonemass puke animations and effects.");
+                    }
+
+                    NoPukePlugin.NoPukeLogger.LogInfo("Done disabling puke animations and effects.");
                 }
             }
         }

@@ -12,6 +12,10 @@ This mod is client side only and has no configuration options. Does not need to 
 
 ## Changelog
 
+### 0.2.0
+
+* Now also disables the Bonemass puking effects during the aoe attack.
+
 ### 0.1.1
 
 * Preliminary update for Hildir's Request, compatible with game version 0.216.9
