@@ -147,6 +147,10 @@ If you do not install this mod on the server then any player can change the conf
 
 ## Changelog
 
+### 0.2.4
+
+* Fixed an issue where item upgrades were not checked for locking. Will now correctly identify item level and will lock items based on current summation of crafting ingredients for items.
+
 ### 0.2.3
 
 * Removed the Qualifying keys feature added in 0.1.1, mod will now correctly identify world modifiers without further configuration

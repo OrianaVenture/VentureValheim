@@ -150,14 +150,14 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// True if the current player is an admin.
+        /// Returns the quality of an item based off the given upgrade
+        /// for that item.
         /// </summary>
+        /// <param name="item">The crafting upgrade item</param>
         /// <returns></returns>
-        public static bool IsAdmin()
+        public static int GetQualityLevel(ItemDrop.ItemData item)
         {
-            return false;
-            // TODO
-            //return ZNet.instance.m_adminList.Contains();
+            return (item == null) ? 1 : (item.m_quality + 1);
         }
     }
 }

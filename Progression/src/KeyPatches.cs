@@ -622,7 +622,7 @@ namespace VentureValheim.Progression
 
                 if (ProgressionConfiguration.Instance.GetLockEquipment())
                 {
-                    if (Instance.IsActionBlocked(item, true, true, false))
+                    if (Instance.IsActionBlocked(item, item.m_quality, true, true, false))
                     {
                         Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                         __result = false;
@@ -664,7 +664,9 @@ namespace VentureValheim.Progression
                 var lockCrafting = ProgressionConfiguration.Instance.GetLockCrafting();
                 var lockCooking = ProgressionConfiguration.Instance.GetLockCooking();
 
-                if ((lockCrafting || lockCooking) && Instance.IsActionBlocked(__instance.m_craftRecipe, lockCrafting, lockCrafting, lockCooking))
+                int quality = ProgressionAPI.GetQualityLevel(__instance.m_craftUpgradeItem);
+
+                if ((lockCrafting || lockCooking) && Instance.IsActionBlocked(__instance.m_craftRecipe, quality, lockCrafting, lockCrafting, lockCooking))
                 {
                     Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                     return false; // Skip crafting or cooking
@@ -710,7 +712,7 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(ItemDrop.ItemData item, ref bool __result)
             {
-                if (ProgressionConfiguration.Instance.GetLockCooking() && Instance.IsActionBlocked(item, false, false, true))
+                if (ProgressionConfiguration.Instance.GetLockCooking() && Instance.IsActionBlocked(item, item.m_quality, false, false, true))
                 {
                     Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                     __result = false;

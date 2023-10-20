@@ -757,11 +757,12 @@ namespace VentureValheim.Progression
         /// Checks the passed item and the item recipe.
         /// </summary>
         /// <param name="item"></param>
+        /// <param name="quality"></param>
         /// <param name="checkBossItems"></param>
         /// <param name="checkMaterials"></param>
         /// <param name="checkFood"></param>
         /// <returns></returns>
-        private bool IsActionBlocked(ItemDrop.ItemData item, bool checkBossItems, bool checkMaterials, bool checkFood)
+        private bool IsActionBlocked(ItemDrop.ItemData item, int quality, bool checkBossItems, bool checkMaterials, bool checkFood)
         {
             if (item?.m_dropPrefab == null || !Instance.HasItemKey(Utils.GetPrefabName(item.m_dropPrefab), checkBossItems, checkMaterials, checkFood))
             {
@@ -769,7 +770,7 @@ namespace VentureValheim.Progression
             }
 
             var recipe = ObjectDB.instance.GetRecipe(item);
-            return IsActionBlocked(recipe, checkBossItems, checkMaterials, checkFood);
+            return IsActionBlocked(recipe, quality, checkBossItems, checkMaterials, checkFood);
         }
 
         /// <summary>
@@ -777,24 +778,35 @@ namespace VentureValheim.Progression
         /// Checks the passed recipe.
         /// </summary>
         /// <param name="recipe"></param>
+        /// <param name="quality"></param>
         /// <param name="checkBossItems"></param>
         /// <param name="checkMaterials"></param>
         /// <param name="checkFood"></param>
         /// <returns></returns>
-        private bool IsActionBlocked(Recipe recipe, bool checkBossItems, bool checkMaterials, bool checkFood)
+        private bool IsActionBlocked(Recipe recipe, int quality, bool checkBossItems, bool checkMaterials, bool checkFood)
         {
             if (recipe != null)
             {
-                for (int lcv = 0; lcv < recipe.m_resources.Length; lcv++)
+                for (int lcv1 = 0; lcv1 < recipe.m_resources.Length; lcv1++)
                 {
-                    if (recipe.m_resources[lcv].m_resItem == null)
+                    if (recipe.m_resources[lcv1].m_resItem == null)
                     {
                         return false;
                     }
 
-                    if (!Instance.HasItemKey(Utils.GetPrefabName(recipe.m_resources[lcv].m_resItem.gameObject), checkBossItems, checkMaterials, checkFood))
+                    // Loop through current quality level and all previous.
+                    // Blocked should account for both base requirements and
+                    // all valid upgrades on an item.
+                    for (int lcv2 = 1; lcv2 <= quality; lcv2++)
                     {
-                        return true;
+                        if (recipe.m_resources[lcv1].GetAmount(lcv2) > 0)
+                        {
+                            if (!Instance.HasItemKey(Utils.GetPrefabName(recipe.m_resources[lcv1].m_resItem.gameObject), checkBossItems, checkMaterials, checkFood))
+                            {
+                                return true;
+                            }
+                            break;
+                        }
                     }
                 }
             }
