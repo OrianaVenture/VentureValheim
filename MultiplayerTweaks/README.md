@@ -17,8 +17,8 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 * Toggle player Map Position Icons always on or off.
 * Toggle PVP always on or off.
 * Toggle teleporting on death, or only on PVP deaths.
-* Toggle skill loss on a PVP death.
-* Toggle player ability to ping the map
+* Toggle skill loss  on death, or only on PVP deaths.
+* Toggle player ability to ping the map.
 
 Admins have the ability to bypass some of these settings when the AdminBypass config is enabled.
 
@@ -48,23 +48,38 @@ There are two ways the player can ping the map: Shouting and Pinging. There are 
 
 This feature should be compatible with the Groups mod, and will allow group pings and respect the settings from that mod.
 
-### Player VS Player
+### Player VS Player (PVP)
 
-Gives you the ability to force PVP always on or always off (OverridePlayerPVP must be set to true, then uses the value of ForcePlayerPVPOn). Disables the toggle in the UI. Live changes to the configs will not apply until a player respawns/relogs. Remember if PVP is off you cannot kill tames without the butcher knife!
+Gives you the ability to force PVP always on or always off (OverridePlayerPVP must be set to true, then uses the value of ForcePlayerPVPOn). Disables the toggle in the UI. Live changes to the configs will not apply until a player respawns/relogs. Remember if PVP is off you cannot kill tames without the butcher knife! Admins are able to bypass this setting.
 
-There is an option to prevent skill loss caused by a PvP death to incentivize players to fight each other on PvP focused servers. You also have the option to turn off teleporting to your bed (or default spawn point) when another player kills you (set TeleportOnPVPDeath to false). Useful for roleplaying situations. Playing with friends and one of them is about to die? Just slap them across the face to pull them back into reality, don't let their spirit wander, the time to fight is here and now!
+### Skill Loss on Death
 
-Admins are able to bypass the PvP always on or always off setting.
+There are two configs for controlling the skill loss on death vanilla feature when set to False:
+
+* SkillLossOnAnyDeath: For any death.
+* SkillLossOnPVPDeath: Only PVP deaths. Incentivize players to fight each other.
+
+These features will work when using the hardcore death penalty world modifier. When using these features the resetcharacter vanilla command may not work as intended.
 
 ### Death Teleporting and Grace Period
 
-Similarly to the TeleportOnPVPDeath option, there is a config for disabling teleporting on death entirely regardless of how the player died (TeleportOnAnyDeath = false). Be warned, if players die in a tight situation they may get stuck in a death loop and will get very angry at your for turning these settings on. There is a short immunity window to help mitigate death loops set to 15 seconds after respawn. This should give players some time to try to escape repeated deaths (or at least get farther away from the scene). If the player receives damage that drains their health to 0 during this grace period they will not die until the grace period ends. This grace period is always active regardless of mod settings.
+There are two configs for controlling the teleporting on death vanilla feature to allow respawning directly on your grave rather than a bed or the default spawn point when set to False:
+
+* TeleportOnAnyDeath: For any death.
+* TeleportOnPVPDeath: Only PVP deaths. Useful for roleplaying situations.
+
+Be warned, if players die in a tight situation they may get stuck in a death loop and will get very angry at your for turning these settings on. There is a short immunity window to help mitigate death loops set to 15 seconds after respawn. This should give players some time to try to escape repeated deaths (or at least get farther away from the scene). If the player receives damage that drains their health to 0 during this grace period they will not die until the grace period ends. This grace period is always active regardless of mod settings.
 
 ## Installation
 
 This mod needs to be on both the client and server for all features to work. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.7.1
+
+* Added new configuration option SkillLossOnAnyDeath to prevent losing skills on any death.
+* Added compatibility with vanilla hardcore death penalty setting for skill loss on death features.
 
 ### 0.7.0
 

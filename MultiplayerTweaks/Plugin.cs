@@ -14,7 +14,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.7.0";
+        private const string ModVersion = "0.7.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -33,6 +33,7 @@ namespace VentureValheim.MultiplayerTweaks
         internal static ConfigEntry<bool> CE_ForcePlayerPVPOn = null!;
         internal static ConfigEntry<bool> CE_TeleportOnAnyDeath = null!;
         internal static ConfigEntry<bool> CE_TeleportOnPVPDeath = null!;
+        internal static ConfigEntry<bool> CE_SkillLossOnAnyDeath = null!;
         internal static ConfigEntry<bool> CE_SkillLossOnPVPDeath = null!;
         public static bool GetAdminBypass() => CE_AdminBypass.Value;
         public static int GetMaximumPlayers() => CE_MaximumPlayers.Value;
@@ -48,6 +49,7 @@ namespace VentureValheim.MultiplayerTweaks
         public static bool GetForcePlayerPVPOn() => CE_ForcePlayerPVPOn.Value;
         public static bool GetTeleportOnAnyDeath() => CE_TeleportOnAnyDeath.Value;
         public static bool GetTeleportOnPVPDeath() => CE_TeleportOnPVPDeath.Value;
+        public static bool GetSkillLossOnAnyDeath() => CE_SkillLossOnAnyDeath.Value;
         public static bool GetSkillLossOnPVPDeath() => CE_SkillLossOnPVPDeath.Value;
 
         // Arrival
@@ -163,6 +165,8 @@ namespace VentureValheim.MultiplayerTweaks
                 true, true, ref CE_TeleportOnAnyDeath);
             AddConfig("TeleportOnPVPDeath", general, "False to respawn players at their graves on a PVP death (boolean).",
                 true, true, ref CE_TeleportOnPVPDeath);
+            AddConfig("SkillLossOnAnyDeath", general, "False to prevent skill loss on any death (boolean).",
+                true, true, ref CE_SkillLossOnAnyDeath);
             AddConfig("SkillLossOnPVPDeath", general, "False to prevent skill loss on a PVP death (boolean).",
                 true, true, ref CE_SkillLossOnPVPDeath);
 

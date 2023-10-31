@@ -204,9 +204,9 @@ namespace VentureValheim.MultiplayerTweaks
         }
 
         /// <summary>
-        /// Prevents skill loss on PvP death when enabled.
-        /// Higher than normal priority to skip other mod skill patches
-        /// including World Advancement and Progression.
+        /// Prevents skill loss on death when enabled.
+        /// Higher than normal priority to allow checking in other mod 
+        /// skill patches including World Advancement and Progression.
         /// </summary>
         [HarmonyPatch(typeof(Skills), nameof(Skills.LowerAllSkills))]
         public static class Patch_Skills_LowerAllSkills
@@ -214,7 +214,28 @@ namespace VentureValheim.MultiplayerTweaks
             [HarmonyPriority(Priority.HigherThanNormal)]
             private static bool Prefix()
             {
-                if (!MultiplayerTweaksPlugin.GetSkillLossOnPVPDeath() && _lastHitByPlayer)
+                if (!MultiplayerTweaksPlugin.GetSkillLossOnAnyDeath() ||
+                    (!MultiplayerTweaksPlugin.GetSkillLossOnPVPDeath() && _lastHitByPlayer))
+                {
+                    return false; // Skip original method
+                }
+
+                return true; // Continue
+            }
+        }
+
+        /// <summary>
+        /// Prevents skill loss on death when enabled and using the
+        /// DeathSkillsReset global key (hardcore death modifier).
+        /// </summary>
+        [HarmonyPatch(typeof(Skills), nameof(Skills.Clear))]
+        public static class Patch_Skills_Clear
+        {
+            [HarmonyPriority(Priority.HigherThanNormal)]
+            private static bool Prefix()
+            {
+                if (!MultiplayerTweaksPlugin.GetSkillLossOnAnyDeath() ||
+                    (!MultiplayerTweaksPlugin.GetSkillLossOnPVPDeath() && _lastHitByPlayer))
                 {
                     return false; // Skip original method
                 }
