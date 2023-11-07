@@ -80,16 +80,16 @@
         <Reference Include="System.Data" />
         <Reference Include="System.Xml" />
         <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.dll</HintPath>
+            <HintPath>$(GamePath)\valheim_Data\Managed\UnityEngine.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
+            <HintPath>$(GamePath)\valheim_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.ImageConversionModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.ImageConversionModule.dll</HintPath>
+            <HintPath>$(GamePath)\valheim_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.ParticleSystemModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.ParticleSystemModule.dll</HintPath>
+            <HintPath>$(GamePath)\valheim_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
