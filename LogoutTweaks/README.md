@@ -16,12 +16,16 @@ This mod is client side only and has no configuration options. Does not need to 
 
 ## Changelog
 
+### 0.4.1
+
+* Bug fix for issues when using mods with custom status effects like Valheim Legends.
+
 ### 0.4.0
 
 * Update for game patch 0.216.9
-* Upgraded file storage to use the player save file rather than an additional file (you will lose your last logout session upon upgrading, you can delete the extra files previously created by this mod)
-* Removed stamina feature since it is now in vanilla
-* Removed config file, no longer needed
+* Upgraded file storage to use the player save file rather than an additional file (you will lose your last logout session upon upgrading, you can delete the extra files .previously created by this mod).
+* Removed stamina feature since it is now in vanilla.
+* Removed config file, no longer needed.
 
 ### 0.3.1
 
@@ -31,8 +35,8 @@ This mod is client side only and has no configuration options. Does not need to 
 ### 0.3.0
 
 * Now tracks all status effects!
-* Fix for stamina config setting, now lets you ignore that feature entirely
-* You will need to generate a new config file
+* Fix for stamina config setting, now lets you ignore that feature entirely.
+* You will need to generate a new config file.
 * Changed file storage structure, expect a warning on version upgrade.
 
 ### 0.2.1

@@ -195,26 +195,26 @@ namespace VentureValheim.LogoutTweaks
                     return;
                 }
 
-                try
+                var data = Instance.LoadData(ref __instance);
+
+                if (data == null)
                 {
-                    var data = Instance.LoadData(ref __instance);
+                    return;
+                }
 
-                    if (data == null)
+                FileData logoutData = data.Value;
+
+                if (logoutData.StatusEffects != null)
+                {
+                    var effects = logoutData.StatusEffects;
+                    for (int lcv = 0; lcv < effects.Count; lcv++)
                     {
-                        return;
-                    }
+                        int name = effects[lcv].Name;
+                        float ttl = effects[lcv].Ttl;
+                        float time = effects[lcv].Time;
 
-                    FileData logoutData = data.Value;
-
-                    if (logoutData.StatusEffects != null)
-                    {
-                        var effects = logoutData.StatusEffects;
-                        for (int lcv = 0; lcv < effects.Count; lcv++)
+                        try
                         {
-                            int name = effects[lcv].Name;
-                            float ttl = effects[lcv].Ttl;
-                            float time = effects[lcv].Time;
-
                             __instance.m_seman.AddStatusEffect(name);
                             StatusEffect statusEffect = __instance.m_seman.GetStatusEffect(name);
                             if (statusEffect != null)
@@ -224,21 +224,21 @@ namespace VentureValheim.LogoutTweaks
                             }
                             else
                             {
-                                LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"Status Effect {name} could not be initialized.");
+                                LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"Status Effect {name} could not be restored.");
                             }
                         }
-
-                        Hud.instance.UpdateStatusEffects(__instance.m_seman.m_statusEffects);
+                        catch (Exception e)
+                        {
+                            LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"Status Effect {name} could not be restored.");
+                            LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug(e);
+                        }
                     }
 
-                    // Wipe data after loading
-                    Instance.ClearData(ref __instance);
+                    Hud.instance.UpdateStatusEffects(__instance.m_seman.m_statusEffects);
                 }
-                catch (Exception e)
-                {
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError("Error loading extra data.");
-                    LogoutTweaksPlugin.LogoutTweaksLogger.LogError(e);
-                }
+
+                // Wipe data after loading
+                Instance.ClearData(ref __instance);
             }
         }
 
