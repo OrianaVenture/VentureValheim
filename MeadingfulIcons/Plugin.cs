@@ -1,11 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using Jotunn.Managers;
 
 namespace VentureValheim.MeadingfulIcons
 {
@@ -14,7 +12,7 @@ namespace VentureValheim.MeadingfulIcons
     public class MeadingfulIconsPlugin : BaseUnityPlugin
     {
         private const string ModName = "MeadingfulIcons";
-        private const string ModVersion = "0.1.0";
+        private const string ModVersion = "0.1.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";

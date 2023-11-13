@@ -17,9 +17,13 @@ Additionally adds a configuration for setting the maximum stack size of all mead
 
 ## Installation
 
-This mod needs to be on all clients to work properly. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations will not take effect until the player relogs into the world/server.
+This mod needs to be on all clients to work properly. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations will not take effect until the player restarts the game.
 
 ## Changelog
+
+### 0.1.1
+
+* Fixed the exception bubbling up when logging out and back in during the same game session.
 
 ### 0.1.0
 

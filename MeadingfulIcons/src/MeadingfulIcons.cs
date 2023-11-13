@@ -20,6 +20,8 @@ namespace VentureValheim.MeadingfulIcons
             get => _instance;
         }
 
+        private static bool _initialized = false;
+
         private static readonly HashSet<string> _meadList = new HashSet<string>()
         {
             "MeadBaseHealthMinor",
@@ -149,17 +151,22 @@ namespace VentureValheim.MeadingfulIcons
         {
             private static void Postfix()
             {
-                if (SceneManager.GetActiveScene().name.Equals("main"))
+                if (!_initialized && SceneManager.GetActiveScene().name.Equals("main"))
                 {
                     try
                     {
-                        AssetBundle bundle = AssetUtils.LoadAssetBundleFromResources("meadingful_icons", Assembly.GetExecutingAssembly());
+                        AssetBundle iconBundle = null;
+                        if (MeadingfulIconsPlugin.GetReplaceIcons())
+                        {
+                            iconBundle = AssetUtils.LoadAssetBundleFromResources("meadingful_icons", Assembly.GetExecutingAssembly());
+                        }
+
                         Sprite baseSprite = null;
                         Texture2D baseSpriteTexture = null;
 
                         if (GetItemDrop("MeadBaseTasty", out var tasty))
                         {
-                            if (tasty.m_itemData.m_shared.m_icons.Length > 0)
+                            if (iconBundle != null && tasty.m_itemData.m_shared.m_icons.Length > 0)
                             {
                                 baseSprite = tasty.m_itemData.m_shared.m_icons[0];
                                 if (baseSprite.texture.isReadable)
@@ -178,9 +185,9 @@ namespace VentureValheim.MeadingfulIcons
                         {
                             if (GetItemDrop(mead, out var item))
                             {
-                                if (MeadingfulIconsPlugin.GetReplaceIcons() && baseSpriteTexture != null)
+                                if (iconBundle != null && baseSpriteTexture != null)
                                 {
-                                    var overlay = bundle.LoadAsset<Sprite>($"VV_{mead}");
+                                    var overlay = iconBundle.LoadAsset<Sprite>($"VV_{mead}");
                                     if (overlay != null && overlay.texture.isReadable)
                                     {
                                         var sprite = MergeTextures($"VV_{mead}", baseSpriteTexture, overlay.texture);
@@ -207,6 +214,8 @@ namespace VentureValheim.MeadingfulIcons
                         MeadingfulIconsPlugin.MeadingfulIconsLogger.LogError("Exception Caught! This mod might not behave as expected.");
                         MeadingfulIconsPlugin.MeadingfulIconsLogger.LogInfo(e);
                     }
+
+                    _initialized = true;
                 }
             }
         }
