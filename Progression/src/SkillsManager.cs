@@ -20,27 +20,8 @@ namespace VentureValheim.Progression
 
         private float _cachedSkillFloor = SKILL_MINIMUM;
         private float _cachedSkillCeiling = SKILL_MAXIMUM;
-        private static float _timer = 0f;
-        private readonly float _update = 10f;
 
-        /// <summary>
-        /// Calculates the minimum and maximum a skill can be raised/lowered based off configurations.
-        /// Updates the cached skill values.
-        /// </summary>
-        public void Update()
-        {
-            var time = Time.time;
-            var delta = time - _timer;
-
-            if (delta > _update)
-            {
-                UpdateCache();
-
-                _timer = time;
-            }
-        }
-
-        protected void UpdateCache()
+        public void UpdateCache()
         {
             if (ProgressionConfiguration.Instance.GetUseBossKeysForSkillLevel())
             {
@@ -55,24 +36,38 @@ namespace VentureValheim.Progression
                     bossesDefeated = GetPublicBossKeysCount();
                 }
 
-                _cachedSkillCeiling = GetBossSkillCeiling(bossesDefeated);
-                _cachedSkillFloor = GetBossSkillFloor(bossesDefeated);
+                _cachedSkillCeiling = ProgressionConfiguration.Instance.GetOverrideMaximumSkillLevel() ?
+                        ProgressionConfiguration.Instance.GetMaximumSkillLevel() :
+                        GetBossSkillCeiling(bossesDefeated);
+                _cachedSkillFloor = ProgressionConfiguration.Instance.GetOverrideMinimumSkillLevel() ?
+                     ProgressionConfiguration.Instance.GetMinimumSkillLevel() :
+                     GetBossSkillFloor(bossesDefeated);
             }
             else
             {
-                _cachedSkillCeiling = SKILL_MAXIMUM;
-                _cachedSkillFloor = SKILL_MINIMUM;
+                _cachedSkillCeiling = GetMaximumSkillLevel();
+                _cachedSkillFloor = GetMinimumSkillLevel();
             }
+        }
 
+        private float GetMaximumSkillLevel()
+        {
             if (ProgressionConfiguration.Instance.GetOverrideMaximumSkillLevel())
             {
-                _cachedSkillCeiling = ProgressionConfiguration.Instance.GetMaximumSkillLevel();
+                return ProgressionConfiguration.Instance.GetMaximumSkillLevel();
             }
 
+            return SKILL_MAXIMUM;
+        }
+
+        private float GetMinimumSkillLevel()
+        {
             if (ProgressionConfiguration.Instance.GetOverrideMinimumSkillLevel())
             {
-                _cachedSkillFloor = ProgressionConfiguration.Instance.GetMinimumSkillLevel();
+                return ProgressionConfiguration.Instance.GetMinimumSkillLevel();
             }
+
+            return SKILL_MINIMUM;
         }
 
         protected virtual int GetPrivateBossKeysCount()
@@ -162,7 +157,7 @@ namespace VentureValheim.Progression
         /// <returns>level or closest bound for the skill</returns>
         protected float NormalizeSkillLevel(float level)
         {
-            return Mathf.Clamp(level, GetSkillDrainFloor(), GetSkillGainCeiling());
+            return Mathf.Clamp(level, SKILL_MINIMUM, GetMaximumSkillLevel());
         }
 
         /// <summary>
@@ -199,8 +194,6 @@ namespace VentureValheim.Progression
                     return __runOriginal;
                 }
 
-                Instance.Update();
-
                 if (!ProgressionConfiguration.Instance.GetEnableSkillManager())
                 {
                     return true; // Do nothing
@@ -233,8 +226,6 @@ namespace VentureValheim.Progression
         {
             private static bool Prefix(Skills.Skill __instance, float factor, ref bool __result)
             {
-                Instance.Update();
-
                 if (!ProgressionConfiguration.Instance.GetEnableSkillManager())
                 {
                     return true; // Do nothing

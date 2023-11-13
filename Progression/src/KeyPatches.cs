@@ -130,16 +130,15 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Load private keys from the player file if the data exists,
-        /// fallback try to load a legacy save file. Cleans up private keys
-        /// based off configurations then syncs the data with the server.
+        /// Load private keys from the player file if the data exists.
+        /// Cleans up private keys based off configurations then syncs the data with the server.
         ///
         /// Patches before EquipInventoryItems since that is the first method
         /// that needs access to the player private keys, and only happens
         /// during the Player.Load method.
         /// </summary>
         [HarmonyPatch(typeof(Player), nameof(Player.EquipInventoryItems))]
-        public static class Patch_Player_Load
+        public static class Patch_Player_EquipInventoryItems
         {
             private static void Prefix(Player __instance)
             {
@@ -186,14 +185,28 @@ namespace VentureValheim.Progression
                     ProgressionPlugin.VentureProgressionLogger.LogDebug("Player RPCs have already been registered. Skipping.");
                 }
 
-                if (Instance._keyManagerUpdater == null)
-                {
-                    var obj = GameObject.Instantiate(new GameObject());
-                    Instance._keyManagerUpdater = obj.AddComponent<KeyManagerUpdater>();
-                }
-
                 // Sync data on connect
                 Instance.SendPrivateKeysToServer(Instance.PrivateKeysList);
+            }
+        }
+
+        /// <summary>
+        /// Add the config updater watcher to the player.
+        /// </summary>
+        [HarmonyPatch(typeof(Player), nameof(Player.SetLocalPlayer))]
+        public static class Patch_Player_SetLocalPlayer
+        {
+            private static void Postfix(Player __instance)
+            {
+                if (!ProgressionAPI.IsInTheMainScene())
+                {
+                    return;
+                }
+
+                if (__instance.GetComponent<KeyManagerUpdater> == null)
+                {
+                    __instance.gameObject.AddComponent<KeyManagerUpdater>();
+                }
             }
         }
 
@@ -717,6 +730,24 @@ namespace VentureValheim.Progression
                     Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                     __result = false;
                     return false; // Skip cooking
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Block portal usage without the proper keys.
+        /// </summary>
+        [HarmonyPatch(typeof(TeleportWorld), nameof(TeleportWorld.Teleport))]
+        public static class Patch_TeleportWorld_Teleport
+        {
+            private static bool Prefix(Player player)
+            {
+                if (player == Player.m_localPlayer && !Instance.HasKey(ProgressionConfiguration.Instance.GetLockPortalsKey()))
+                {
+                    Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                    return false; // Skip portaling
                 }
 
                 return true;

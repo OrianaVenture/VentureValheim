@@ -22,7 +22,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.2.4";
+        private const string ModVersion = "0.2.5";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -60,6 +60,7 @@ namespace VentureValheim.Progression
         public static ConfigEntry<bool> CE_LockCrafting = null!;
         public static ConfigEntry<bool> CE_LockBuilding = null!;
         public static ConfigEntry<bool> CE_LockCooking = null!;
+        public static ConfigEntry<string> CE_LockPortalsKey = null!;
 
         // Skills Manager
         public static ConfigEntry<bool> CE_EnableSkillManager = null!;
@@ -191,6 +192,9 @@ namespace VentureValheim.Progression
             AddConfig("LockCooking", locking,
                 "True to lock the ability to cook with biome food materials based on keys. Uses private key if enabled, global key if not (boolean).",
                 true, true, ref CE_LockCooking);
+            AddConfig("LockPortalsKey", locking,
+                "Use this key to control player ability to use portals (ex: defeated_eikthyr). Leave blank to allow vanilla portal behavior (string).",
+                true, "", ref CE_LockPortalsKey);
 
             // Skills
             AddConfig("EnableSkillManager", skills,
@@ -339,6 +343,7 @@ namespace VentureValheim.Progression
         public bool GetLockCrafting();
         public bool GetLockBuilding();
         public bool GetLockCooking();
+        public string GetLockPortalsKey();
 
         // Skills Manager
         public bool GetEnableSkillManager();
@@ -474,6 +479,16 @@ namespace VentureValheim.Progression
             }
 
             return ProgressionPlugin.CE_LockCooking.Value;
+        }
+
+        public string GetLockPortalsKey()
+        {
+            if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return "";
+            }
+
+            return ProgressionPlugin.CE_LockPortalsKey.Value;
         }
 
         // Skills

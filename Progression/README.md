@@ -83,9 +83,23 @@ Don't know how to use commands? Dedicated servers do not allow for use of comman
 
 ### Locking
 
+Many actions in the game can be locked by world or player progress. If enabled, performing these actions have a fun special effect on failure! If you prefer to opt out of these effects you may edit the UseBlockedActionMessage, BlockedActionMessage, and UseBlockedActionEffect configs. I do not recommend turning off all indicators of failure, otherwise players may get confused.
+
+Admins can bypass locking settings by enabling the AdminBypass setting.
+
+#### Locking Taming
+
 Taming can be locked by keys when enabled. By default Wolf is locked by the defeated_bonemass key and Lox is locked by the defeated_dragon key. You can override this by using the prefab name of the creature, allowing you to add support for content from other mods. When overriding you must define all the creatures since it will no longer include the defaults. When using private keys make sure the player who can tame the animals is the first to load the area since taming is controlled by the player hosting the chunk. You will still see taming hearts (for now), but if you check the taming status on the animals you will see the percentage no longer increases when blocked.
 
-Guardian Powers and Boss Alter Summoning can be locked too. By default summoning is locked the key given by the previous boss in the natural progression order. You can override this by using the prefab name of the creature the alter summons, allowing you to add support for content from other mods. When overriding you must define all the bosses manually (similar to the taming override). Additionally, these actions have a fun special effect on failure!
+#### Locking Bosses
+
+Guardian Powers and Boss Alter Summoning can be locked. By default summoning is locked the key given by the previous boss in the natural progression order. You can override this by using the prefab name of the creature the alter summons, allowing you to add support for content from other mods. When overriding you must define all the bosses manually (similar to the taming override).
+
+#### Locking Portals
+
+The ability to use portals can be locked behind one specified key with the LockPortalsKey setting.
+
+#### Locking Everything Else
 
 Using equipment, crafting, building, and cooking can all be locked with individual settings. The materials are categorized by the biome they are naturally found in. For example, if you lock all these features, if you have not defeated any bosses then you cannot use or craft the antler pickaxe, place a forge, make deer stew, or unlock swamp crypts. When paired with private keys, these features force new players joining your server to follow the progression of the game in order to advance. This will apply to all game items that use vanilla crafting materials.
 
@@ -102,6 +116,7 @@ Using equipment, crafting, building, and cooking can all be locked with individu
 * LockCrafting: If true you can only craft items made from boss items or biome metals/materials if you have the required key
 * LockBuilding: If true you can only build pieces made from boss items or biome metals/materials if you have the required key
 * LockCooking: If true you can only cook items made from biome materials if you have the required key
+* LockPortalsKey: Define your own required key to control player ability to use portals. Leave blank to allow vanilla portal behavior.
 
 ### Trader Configuration Options
 
@@ -146,6 +161,12 @@ This mod will partially work server-side only to control the global key list. If
 If you do not install this mod on the server then any player can change the configurations however they please.
 
 ## Changelog
+
+### 0.2.5
+
+* Fixed issues with skill levels being calculated incorrectly when UseBossKeysForSkillLevel was true.
+* Added new configuration LockPortalsKey to control player ability to use portals. Defaults to off.
+* Added check to make sure activeBosses key is treated like world modifiers.
 
 ### 0.2.4
 

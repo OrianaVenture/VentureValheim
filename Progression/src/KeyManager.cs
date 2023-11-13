@@ -52,14 +52,11 @@ namespace VentureValheim.Progression
         /// </summary>
         public class KeyManagerUpdater : MonoBehaviour
         {
-            private static float _lastUpdateTime = 0f;
+            private static float _lastUpdateTime = Time.time - 10f;
             private static readonly float _updateInterval = 10f;
 
             public void Start()
             {
-                Instance.UpdateConfigs();
-                _cachedPublicBossKeys = Instance.CountPublicBossKeys();
-                _cachedPrivateBossKeys = Instance.CountPrivateBossKeys();
                 ProgressionPlugin.VentureProgressionLogger.LogDebug($"Starting Key Manager Updater.");
             }
 
@@ -71,8 +68,15 @@ namespace VentureValheim.Progression
                 if (delta >= _updateInterval)
                 {
                     Instance.UpdateConfigs();
-                    _cachedPublicBossKeys = Instance.CountPublicBossKeys();
-                    _cachedPrivateBossKeys = Instance.CountPrivateBossKeys();
+
+                    // Only update skill configurations if enabled
+                    if (ProgressionConfiguration.Instance.GetEnableSkillManager())
+                    {
+                        _cachedPublicBossKeys = Instance.CountPublicBossKeys();
+                        _cachedPrivateBossKeys = Instance.CountPrivateBossKeys();
+
+                        SkillsManager.Instance.UpdateCache();
+                    }
 
                     _lastUpdateTime = time;
                 }
@@ -503,7 +507,7 @@ namespace VentureValheim.Progression
         private bool IsWorldModifier(string key)
         {
             ZoneSystem.GetKeyValue(key.ToLower(), out string value, out GlobalKeys gk);
-            if (gk < GlobalKeys.NonServerOption)
+            if (gk < GlobalKeys.NonServerOption || gk == GlobalKeys.activeBosses)
             {
                 return true;
             }
@@ -824,7 +828,7 @@ namespace VentureValheim.Progression
 
             foreach (var key in BossKeyOrderList.Keys)
             {
-                if (PrivateKeysList.Contains(key))
+                if (!key.IsNullOrWhiteSpace() && PrivateKeysList.Contains(key))
                 {
                     count++;
                 }
@@ -843,7 +847,7 @@ namespace VentureValheim.Progression
 
             foreach (var key in BossKeyOrderList.Keys)
             {
-                if (HasGlobalKey(key))
+                if (!key.IsNullOrWhiteSpace() && HasGlobalKey(key))
                 {
                     count++;
                 }
