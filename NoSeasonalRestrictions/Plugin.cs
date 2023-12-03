@@ -9,7 +9,7 @@ namespace VentureValheim.NoSeasonalRestrictions
     public class NoSeasonalRestrictionsPlugin : BaseUnityPlugin
     {
         private const string ModName = "NoSeasonalRestrictions";
-        private const string ModVersion = "0.1.6";
+        private const string ModVersion = "0.1.7";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 
@@ -19,7 +19,7 @@ namespace VentureValheim.NoSeasonalRestrictions
 
         public void Awake()
         {
-            NoSeasonalRestrictionsLogger.LogInfo("Initializing NoSeasonalRestrictions, the weather is hot and snowy!");
+            NoSeasonalRestrictionsLogger.LogInfo("The weather is hot and snowy!");
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);

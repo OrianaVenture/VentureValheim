@@ -13,6 +13,7 @@ The good people of Florida hate seasons. If you also hate seasons install this m
   * Gift Boxes
   * 3 Yule Pieces
   * Jackoturnip
+  * Pointy Hat
   * Maypole
   * Midsummer Crown
 
@@ -21,6 +22,10 @@ The good people of Florida hate seasons. If you also hate seasons install this m
 This mod is client side only and has no configuration options. Does not need to be on the server.
 
 ## Changelog
+
+### 0.1.7
+
+* Added support for new seasonal item HelmetPointyHat.
 
 ### 0.1.6
 

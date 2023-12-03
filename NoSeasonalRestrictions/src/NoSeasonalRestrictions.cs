@@ -39,6 +39,7 @@ namespace VentureValheim.NoSeasonalRestrictions
             EnablePiece("piece_xmastree");
 
             EnableRecipe("Recipe_HelmetMidsummerCrown");
+            EnableRecipe("Recipe_HelmetPointyHat");
         }
 
         /// <summary>
