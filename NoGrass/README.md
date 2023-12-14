@@ -16,6 +16,10 @@ This mod is client side and has no configuration options.
 
 ## Changelog
 
+### 0.1.1
+
+* Update for game patch 0.217.38
+
 ### 0.1.0
 
 * First release
