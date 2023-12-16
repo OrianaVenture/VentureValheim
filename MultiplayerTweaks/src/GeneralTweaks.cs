@@ -1,9 +1,4 @@
 ﻿using HarmonyLib;
-using Steamworks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
 using UnityEngine;
 
 namespace VentureValheim.MultiplayerTweaks
@@ -35,18 +30,6 @@ namespace VentureValheim.MultiplayerTweaks
             return false;
         }
 
-        private static int GetMaximumPlayers()
-        {
-            var number = MultiplayerTweaksPlugin.GetMaximumPlayers();
-
-            if (number < 1)
-            {
-                number = 1;
-            }
-
-            return number;
-        }
-
         /// <summary>
         /// When Tutorials disabled adds the tutorial to the seen list.
         /// This enables tutorial tracking even when Hugin is disabled.
@@ -64,54 +47,6 @@ namespace VentureValheim.MultiplayerTweaks
                 }
 
                 return true; // Continue
-            }
-        }
-
-        /// <summary>
-        /// Patch the maximum player number for SteamGameServer
-        /// </summary>
-        [HarmonyPatch(typeof(SteamGameServer), nameof(SteamGameServer.SetMaxPlayerCount))]
-        public static class Patch_SteamGameServer_SetMaxPlayerCount
-        {
-            private static void Prefix(ref int cPlayersMax)
-            {
-                try
-                {
-                    cPlayersMax = GetMaximumPlayers();
-                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogInfo($"Steam Maximum Server Player Count set to {cPlayersMax}.");
-                }
-                catch (Exception e)
-                {
-                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError("Error patching SteamGameServer.SetMaxPlayerCount with maximum player count.");
-                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError(e);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Patch the maximum player number for ZNet
-        /// </summary>
-        [HarmonyPatch(typeof(ZNet), nameof(ZNet.RPC_PeerInfo))]
-        public static class Patch_ZNet_RPC_PeerInfo
-        {
-            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                var codes = new List<CodeInstruction>(instructions);
-                var method = AccessTools.Method(typeof(ZNet), nameof(ZNet.GetNrOfPlayers));
-                for (var lcv = 1; lcv < codes.Count; lcv++)
-                {
-                    if (codes[lcv].opcode == OpCodes.Ldc_I4_S)
-                    {
-                        if (codes[lcv - 1].operand?.Equals(method) ?? false)
-                        {
-                            var methodCall = AccessTools.Method(typeof(GeneralTweaks), nameof(GeneralTweaks.GetMaximumPlayers));
-                            codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
-                            break;
-                        }
-                    }
-                }
-
-                return codes.AsEnumerable();
             }
         }
 

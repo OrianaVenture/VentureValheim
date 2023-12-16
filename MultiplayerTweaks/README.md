@@ -8,7 +8,6 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 
 ## Features
 
-* Set the maximum player count for servers.
 * Set the default spawn point for all players.
 * Toggle Valkyrie opening cut scene.
 * Add Hugin tutorials to the seen list when tutorials are turned off.
@@ -75,6 +74,11 @@ Be warned, if players die in a tight situation they may get stuck in a death loo
 This mod needs to be on both the client and server for all features to work. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.8.0
+
+* Removed the maximum player count feature from this mod to improve compatibility with other mods like Valheim Plus.
+* If looking for a replacement use MaxPlayerCount: https://valheim.thunderstore.io/package/Azumatt/MaxPlayerCount/
 
 ### 0.7.1
 

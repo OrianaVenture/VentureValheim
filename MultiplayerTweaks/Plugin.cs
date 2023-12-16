@@ -5,7 +5,6 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using Jotunn.Managers;
-using Jotunn.Utils;
 
 namespace VentureValheim.MultiplayerTweaks
 {
@@ -14,7 +13,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.7.1";
+        private const string ModVersion = "0.8.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -28,7 +27,6 @@ namespace VentureValheim.MultiplayerTweaks
 
         // General
         internal static ConfigEntry<bool> CE_AdminBypass = null!;
-        internal static ConfigEntry<int> CE_MaximumPlayers = null!;
         internal static ConfigEntry<bool> CE_OverridePlayerPVP = null!;
         internal static ConfigEntry<bool> CE_ForcePlayerPVPOn = null!;
         internal static ConfigEntry<bool> CE_TeleportOnAnyDeath = null!;
@@ -36,7 +34,6 @@ namespace VentureValheim.MultiplayerTweaks
         internal static ConfigEntry<bool> CE_SkillLossOnAnyDeath = null!;
         internal static ConfigEntry<bool> CE_SkillLossOnPVPDeath = null!;
         public static bool GetAdminBypass() => CE_AdminBypass.Value;
-        public static int GetMaximumPlayers() => CE_MaximumPlayers.Value;
         public static bool GetOverridePlayerPVP()
         {
             if (GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
@@ -155,8 +152,6 @@ namespace VentureValheim.MultiplayerTweaks
 
             AddConfig("AdminBypass", general, "True to allow admins to bypass some setting restrictions (boolean).",
                 true, false, ref CE_AdminBypass);
-            AddConfig("MaximumPlayers", general, "Maximum Players for the Server (integer).",
-                true, 10, ref CE_MaximumPlayers);
             AddConfig("OverridePlayerPVP", general, "Override Player pvp behavior (boolean).",
                 true, false, ref CE_OverridePlayerPVP);
             AddConfig("ForcePlayerPVPOn", general, "True to set pvp always on when OverridePlayerPVP is True (boolean).",
