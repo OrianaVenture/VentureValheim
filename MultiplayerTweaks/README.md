@@ -18,6 +18,8 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 * Toggle teleporting on death, or only on PVP deaths.
 * Toggle skill loss  on death, or only on PVP deaths.
 * Toggle player ability to ping the map.
+* Automatic death grace window on player respawn
+* Boss message banners only send to players within range
 
 Admins have the ability to bypass some of these settings when the AdminBypass config is enabled.
 
@@ -29,9 +31,15 @@ Set the PlayerDefaultSpawnPoint by entering an x,y,z pair (for example: 20.5, 10
 
 The base game added a setting to toggle Hugin tutorials on or off under the misc category. This mod will now use the game setting rather than the old config setting. However, since it is not a feature in the base game, this mod will still add all discovered tutorials to the player's "seen" list when tutorials are disabled. If the tutorials at the beginning of the game annoy you, turn off tutorials until you need to see any new tutorials your character discovers. There will not be a flood of tutorials to shift through when you finally need them again!
 
-### I Have Arrived!
+### Messages
+
+#### I Have Arrived!
 
 This mod gives you the ability to customize the arrival message, or turn it off completely. Change the default vanilla "shout" to a normal message (UseArrivalShout = false) to get rid of the arrival shout and ping but still use the login message. Set your own message string with OverrideArrivalMessage to change the arrival message for all players. When disabling all shout pings (AllowShoutPings = false) it will also apply to this arrival message.
+
+#### Boss Message Banners
+
+When a boss is summoned, alerted, and/or killed there is a server-wide message banner sent to alert players. This can get very annoying in multiplayer games. This mod changes these messages to only send to players within 100 meters of the boss (or other applicable creature) when the message is normally triggered.
 
 ### Haldor/Hildir Map Pins
 
@@ -74,6 +82,10 @@ Be warned, if players die in a tight situation they may get stuck in a death loo
 This mod needs to be on both the client and server for all features to work. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations will not always take effect until the player relogs into the world/server.
 
 ## Changelog
+
+### 0.9.0
+
+* Added feature to only send boss message banners if in 100m range of the boss
 
 ### 0.8.0
 

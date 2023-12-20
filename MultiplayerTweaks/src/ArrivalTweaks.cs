@@ -34,6 +34,17 @@ namespace VentureValheim.MultiplayerTweaks
         }
 
         /// <summary>
+        /// Sends the message to all players in range of the target.
+        /// </summary>
+        /// <param name="baseAI"></param>
+        /// <param name="type"></param>
+        /// <param name="message"></param>
+        private static void SendMessageInRange(BaseAI baseAI, MessageHud.MessageType type, string message)
+        {
+            Player.MessageAllInRange(baseAI.transform.position, 100, type, message);
+        }
+
+        /// <summary>
         /// Replaces the "I have arrived!" message call in Game.UpdateRespawn.
         /// </summary>
         [HarmonyPatch(typeof(Game), nameof(Game.UpdateRespawn))]
@@ -174,6 +185,59 @@ namespace VentureValheim.MultiplayerTweaks
 
             // Default to original behavior
             return ZoneSystem.instance.GetLocationIcon(iconname, out position);
+        }
+
+        /// <summary>
+        /// Replaces the "MessageAll" calls for the BaseAI class with custom SendMessageInRange.
+        /// </summary>
+        /// <param name="instructions"></param>
+        /// <returns></returns>
+        private static IEnumerable<CodeInstruction> ReplaceMessageAll(IEnumerable<CodeInstruction> instructions)
+        {
+            var codes = new List<CodeInstruction>(instructions);
+            var method = AccessTools.Method(typeof(MessageHud), nameof(MessageHud.MessageAll));
+            for (var lcv = 4; lcv < codes.Count; lcv++)
+            {
+                if (codes[lcv].opcode == OpCodes.Callvirt)
+                {
+                    if (codes[lcv].operand?.Equals(method) ?? false)
+                    {
+                        codes[lcv - 4].opcode = OpCodes.Ldarg_0; // this
+                        var methodCall = AccessTools.Method(typeof(ArrivalTweaks), nameof(ArrivalTweaks.SendMessageInRange));
+                        codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
+                        break;
+                    }
+                }
+            }
+
+            return codes.AsEnumerable();
+        }
+
+        [HarmonyPatch(typeof(BaseAI), nameof(BaseAI.Awake))]
+        public static class Patch_BaseAI_Awake
+        {
+            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                return ReplaceMessageAll(instructions);
+            }
+        }
+
+        [HarmonyPatch(typeof(BaseAI), nameof(BaseAI.OnDeath))]
+        public static class Patch_BaseAI_OnDeath
+        {
+            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                return ReplaceMessageAll(instructions);
+            }
+        }
+
+        [HarmonyPatch(typeof(BaseAI), nameof(BaseAI.SetAlerted))]
+        public static class Patch_BaseAI_SetAlerted
+        {
+            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                return ReplaceMessageAll(instructions);
+            }
         }
     }
 }
