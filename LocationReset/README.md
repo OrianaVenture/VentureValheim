@@ -18,6 +18,12 @@ Player activity includes:
 
 There are advanced options in the config file to set individual reset times for certain locations. To use the advanced options set OverrideResetTimes to true, you must then customize all overridden values. Any locations not specified in the config will use the default value and cannot be changed individually. If you do not want specific locations to reset you can set the reset time to an arbitrarily large value like 100000, or any value that will be greater than the number of expected passed in-game days.
 
+### Console Commands
+
+To perform a manual reset use the "resetlocations" command. To specify a range use a whole number: "resetlocations 10". Maximum range for the manual reset command is 100 and defaults to 20. Manual resets will ignore time and Player activity restrictions specified above. This can cause loss of player built structures and tombstones. PLEASE USE WITH CAUTION.
+
+Don't know how to use commands? Dedicated servers do not allow for use of commands, but there are mods that can enable them (like Server devcommands by JereKuusela). The command added by this mod is considered a "cheat". To use cheats you must enable them with the "devcommands" command, you may have to be an admin for them to work depending on what mod you use to access commands.
+
 ### Locations Supported
 
 "Sky locations" are any dungeon or location that is generated suspended in the sky in the game. If the location has a teleporting feature it probably is located in the sky. The following are considered "sky locations":
@@ -64,14 +70,16 @@ Due to loading times and the very random nature of the world spawning system the
 
 The following locations from other mods are supported:
 
-* Monsterlabz: SpiderCave01, AshlandsCave_01, AshlandsCave_02
-* Horem: Loc_MistlandsCave_DoD
-* Therzie: CaveDeepNorth_TW
+* Venture: VV_CopperTinCave, VV_SilverCave (these have their own configs)
+* Monsterlabz: SpiderCave01, AshlandsCave_01, AshlandsCave_02, Mystical_Well0
+* By Horem: Loc_MistlandsCave_DoD
+* By Therzie: CaveDeepNorth_TW
+* Wayshrine by Azumatt: Wayshrine, Wayshrine_Ashlands, Wayshrine_Frost, Wayshrine_Plains, Wayshrine_Skull, Wayshrine_Skull_2
 
 ### Possible Future Improvements
 
-* Manual reset commands
 * Finding a way to reset items listed in limitations
+* Resetting terrain changes (especially for tar pits)
 * Support for other mods (by request)
 
 ## Installation
@@ -79,6 +87,13 @@ The following locations from other mods are supported:
 This mod needs to be on the client, it will work even if other players do not have it installed but may behave unexpectedly when playing around other players without the mod. For best results have everyone install the mod. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations should take immediate effect.
 
 ## Changelog
+
+### 0.7.0
+
+* Added support for Mining Caves
+* Added support for all Wayshrines and Mystical_Well0, these will never reset to prevent issues
+* Added new console command "resetlocations" with optional range parameter
+* Small bug fix where a respawn would apply the wrong rotation to some objects (Quaternion math is special and I'm apparently dyslexic)
 
 ### 0.6.1
 

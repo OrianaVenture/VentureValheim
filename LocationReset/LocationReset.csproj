@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VentureValheim.LocationReset</RootNamespace>
     <AssemblyName>VentureValheim.LocationReset</AssemblyName>
-    <Version>0.6.1</Version>
+    <Version>0.7.0</Version>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>
@@ -97,10 +97,10 @@
     <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>$(GamePath)\valheim_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
-        <Reference Include="Jotunn, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <SpecificVersion>false</SpecificVersion>
-        <HintPath>..\lib\Jotunn.dll</HintPath>
-        </Reference>
+    <Reference Include="Jotunn, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>false</SpecificVersion>
+      <HintPath>..\lib\Jotunn.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Plugin.cs" />

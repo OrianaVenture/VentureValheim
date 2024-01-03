@@ -27,7 +27,20 @@ namespace VentureValheim.LocationReset
             "AshlandsCave_01".GetStableHashCode(), // Monsterlabz
             "AshlandsCave_02".GetStableHashCode(), // Monsterlabz
             "Loc_MistlandsCave_DoD".GetStableHashCode(), // Horem
-            "CaveDeepNorth_TW".GetStableHashCode() // Therzie Warfare
+            "CaveDeepNorth_TW".GetStableHashCode(), // Therzie Warfare
+            "VV_CopperTinCave".GetStableHashCode(), // Mining Caves
+            "VV_SilverCave".GetStableHashCode() // Mining Caves
+        };
+
+        public static readonly HashSet<int> IgnoreLocationHashes = new HashSet<int>
+        {
+            "Mystical_Well0".GetStableHashCode(), // Monsterlabz
+            "Wayshrine".GetStableHashCode(), // Azumatt
+            "Wayshrine_Ashlands".GetStableHashCode(), // Azumatt
+            "Wayshrine_Frost".GetStableHashCode(), // Azumatt
+            "Wayshrine_Plains".GetStableHashCode(), // Azumatt
+            "Wayshrine_Skull".GetStableHashCode(), // Azumatt
+            "Wayshrine_Skull_2".GetStableHashCode() // Azumatt
         };
 
         #region Utility Functions
@@ -415,7 +428,9 @@ namespace VentureValheim.LocationReset
         /// Attempts to reset the location.
         /// </summary>
         /// <param name="loc"></param>
-        public void TryReset(LocationProxy loc, int hash)
+        /// <param name="hash"></param>
+        /// <param name="force">True to bypass time constriant and player activity checks</param>
+        public void TryReset(LocationProxy loc, int hash, bool force = false)
         {
             int seed = loc.m_nview?.GetZDO()?.GetInt(ZDOVars.s_seed) ?? 0;
 
@@ -427,7 +442,7 @@ namespace VentureValheim.LocationReset
                 return;
             }
 
-            if (!loc.NeedsReset(hash))
+            if (!force && !loc.NeedsReset(hash))
             {
                 return;
             }
@@ -435,6 +450,13 @@ namespace VentureValheim.LocationReset
             // Location positioning
             Vector3 position = loc.transform.position;
             ZoneSystem.ZoneLocation zone = ZoneSystem.instance.GetLocation(hash);
+
+            if (zone == null)
+            {
+                LocationResetPlugin.LocationResetLogger.LogDebug($"There was an issue getting the location, abort.");
+                return;
+            }
+
             float locationRadius = Mathf.Max(zone.m_exteriorRadius, zone.m_interiorRadius);
             float distance = GetMaximumDistance(locationRadius, locationRadius);
 
@@ -459,7 +481,7 @@ namespace VentureValheim.LocationReset
                 return;
             }
 
-            if (PlayerActivity(position, distance, skyLocation))
+            if (!force && PlayerActivity(position, distance, skyLocation))
             {
                 LocationResetPlugin.LocationResetLogger.LogDebug($"There is player activity here! Skipping.");
                 return;
@@ -557,7 +579,7 @@ namespace VentureValheim.LocationReset
                         }
 
                         Vector3 objPosition = loc.transform.position + loc.transform.rotation * obj.gameObject.transform.position;
-                        Quaternion objRotation = obj.gameObject.transform.rotation * loc.transform.rotation;
+                        Quaternion objRotation = loc.transform.rotation * obj.gameObject.transform.rotation;
 
                         GameObject gameObject = UnityEngine.Object.Instantiate(obj.gameObject, objPosition, objRotation);
                         gameObject.SetActive(value: true);

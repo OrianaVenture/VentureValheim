@@ -76,7 +76,7 @@ namespace VentureValheim.LocationReset
             {
                 int hash = loc.m_nview?.GetZDO()?.GetInt(ZDOVars.s_location) ?? 0;
 
-                if (hash != 0)
+                if (hash != 0 && !LocationReset.IgnoreLocationHashes.Contains(hash))
                 {
                     int tries = 0;
 

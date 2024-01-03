@@ -22,7 +22,7 @@ namespace VentureValheim.LocationReset
         }
 
         private const string ModName = "LocationReset";
-        private const string ModVersion = "0.6.1";
+        private const string ModVersion = "0.7.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -51,6 +51,8 @@ namespace VentureValheim.LocationReset
         private static ConfigEntry<int> CE_HildirBurialResetTime = null!;
         private static ConfigEntry<int> CE_HildirCaveResetTime = null!;
         private static ConfigEntry<int> CE_HildirTowerResetTime = null!;
+        private static ConfigEntry<int> CE_CopperTinCaveResetTime = null!;
+        private static ConfigEntry<int> CE_SilverCaveResetTime = null!;
 
         private static ConfigEntry<bool> CE_EnableLeviathanReset = null!;
         private static ConfigEntry<int> CE_LeviathanResetTime = null!;
@@ -70,6 +72,8 @@ namespace VentureValheim.LocationReset
         private static readonly int Hash_HildirBurial = "Hildir_crypt".GetStableHashCode();
         private static readonly int Hash_HildirCave = "Hildir_cave".GetStableHashCode();
         private static readonly int Hash_HildirTower = "Hildir_plainsfortress".GetStableHashCode();
+        private static readonly int Hash_SilverCave = "VV_SilverCave".GetStableHashCode();
+        private static readonly int Hash_CopperTinCave = "VV_CopperTinCave".GetStableHashCode();
 
         public static int GetResetTime(int hash)
         {
@@ -122,6 +126,14 @@ namespace VentureValheim.LocationReset
                 else if (hash == Hash_HildirTower)
                 {
                     return CE_HildirTowerResetTime.Value;
+                }
+                else if (hash == Hash_CopperTinCave)
+                {
+                    return CE_CopperTinCaveResetTime.Value;
+                }
+                else if (hash == Hash_SilverCave)
+                {
+                    return CE_SilverCaveResetTime.Value;
                 }
             }
 
@@ -193,6 +205,10 @@ namespace VentureValheim.LocationReset
                 true, 30, ref CE_HildirCaveResetTime);
             AddConfig("HildirTowerResetTime", advanced, "Number of in-game days for resetting hildir's plain towers (int).",
                 true, 30, ref CE_HildirTowerResetTime);
+            AddConfig("CopperTinCaveResetTime", advanced, "Number of in-game days for resetting copper & tin mining caves (int).",
+                true, 30, ref CE_CopperTinCaveResetTime);
+            AddConfig("SilverCaveResetTime", advanced, "Number of in-game days for resetting silver mining caves (int).",
+                true, 30, ref CE_SilverCaveResetTime);
 
             AddConfig("EnableLeviathanReset", leviathans, "True to enable resetting Leviathans (boolean).",
                 true, true, ref CE_EnableLeviathanReset);
