@@ -18,6 +18,7 @@ namespace VentureValheim.MiningCaves
         {
             ClearPrefabCache(typeof(Material));
             ClearPrefabCache(typeof(GameObject));
+            ClearPrefabCache(typeof(Mesh));
 
             AssetBundle bundle = AssetUtils.LoadAssetBundleFromResources("vv_miningcaves", Assembly.GetExecutingAssembly());
 

@@ -45,6 +45,11 @@ If the mod is removed from the server after locations have been generated the ca
 
 ## Changelog
 
+### 0.1.1
+
+* Fixed an issue where items like ores would sometimes not display (needed to clear mesh cache for mocking).
+* Added missing file watcher for updating configurations without a server restart.
+
 ### 0.1.0
 
 * First release

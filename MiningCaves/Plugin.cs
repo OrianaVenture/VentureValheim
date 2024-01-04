@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.IO;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -14,12 +15,14 @@ namespace VentureValheim.MiningCaves
     public class MiningCavesPlugin : BaseUnityPlugin
     {
         private const string ModName = "MiningCaves";
-        private const string ModVersion = "0.1.0";
+        private const string ModVersion = "0.1.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
         public static readonly ManualLogSource MiningCavesLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
+        private static string ConfigFileName = ModGUID + ".cfg";
+        private static string ConfigFileFullPath = BepInEx.Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         #region ConfigurationEntries
         public static ConfigEntry<bool> CE_AdminBypass = null!;
@@ -74,6 +77,37 @@ namespace VentureValheim.MiningCaves
             MiningCavesLogger.LogInfo("So you're mining stuff to craft with and crafting stuff to mine with?");
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
+            SetupWatcher();
+        }
+
+        private void OnDestroy()
+        {
+            Config.Save();
+        }
+
+        private void SetupWatcher()
+        {
+            FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
+            watcher.Changed += ReadConfigValues;
+            watcher.Created += ReadConfigValues;
+            watcher.Renamed += ReadConfigValues;
+            watcher.IncludeSubdirectories = true;
+            watcher.SynchronizingObject = ThreadingHelper.SynchronizingObject;
+            watcher.EnableRaisingEvents = true;
+        }
+
+        private void ReadConfigValues(object sender, FileSystemEventArgs e)
+        {
+            if (!File.Exists(ConfigFileFullPath)) return;
+            try
+            {
+                MiningCavesLogger.LogDebug("Attempting to reload configuration...");
+                Config.Reload();
+            }
+            catch
+            {
+                MiningCavesLogger.LogError($"There was an issue loading {ConfigFileName}");
+            }
         }
     }
 }
