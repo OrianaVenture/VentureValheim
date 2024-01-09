@@ -37,11 +37,11 @@ namespace VentureValheim.Progression
                 }
 
                 _cachedSkillCeiling = ProgressionConfiguration.Instance.GetOverrideMaximumSkillLevel() ?
-                        ProgressionConfiguration.Instance.GetMaximumSkillLevel() :
-                        GetBossSkillCeiling(bossesDefeated);
+                    ProgressionConfiguration.Instance.GetMaximumSkillLevel() :
+                    GetBossSkillCeiling(bossesDefeated);
                 _cachedSkillFloor = ProgressionConfiguration.Instance.GetOverrideMinimumSkillLevel() ?
-                     ProgressionConfiguration.Instance.GetMinimumSkillLevel() :
-                     GetBossSkillFloor(bossesDefeated);
+                    ProgressionConfiguration.Instance.GetMinimumSkillLevel() :
+                    GetBossSkillFloor(bossesDefeated);
             }
             else
             {

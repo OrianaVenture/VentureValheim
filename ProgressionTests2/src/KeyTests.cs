@@ -82,7 +82,7 @@ namespace VentureValheim.ProgressionTests
             var keyManager = Setup(a, b, "", "");
 
             Assert.True(keyManager.BlockGlobalKey(true, "random_string"));
-            Assert.True(keyManager.BlockGlobalKey(true, "killedTroll"));
+            Assert.True(keyManager.BlockGlobalKey(true, "killedtroll"));
         }
 
         [Theory]
@@ -94,7 +94,7 @@ namespace VentureValheim.ProgressionTests
             var keyManager = Setup(a, b, "", "");
 
             Assert.True(keyManager.BlockGlobalKey(true, "random_string"));
-            Assert.False(keyManager.BlockGlobalKey(true, "killedTroll"));
+            Assert.False(keyManager.BlockGlobalKey(true, "killedtroll"));
         }
 
         [Theory]
@@ -107,7 +107,7 @@ namespace VentureValheim.ProgressionTests
             var keyManager = Setup(a, b, "", "");
 
             Assert.False(keyManager.BlockGlobalKey(false, "random_string"));
-            Assert.False(keyManager.BlockGlobalKey(false, "killedTroll"));
+            Assert.False(keyManager.BlockGlobalKey(false, "killedtroll"));
         }
 
         [Theory]
@@ -119,7 +119,7 @@ namespace VentureValheim.ProgressionTests
             var keyManager = Setup(a, b, "", "");
 
             Assert.False(keyManager.BlockGlobalKey(false, "random_string"));
-            Assert.True(keyManager.BlockGlobalKey(false, "killedTroll"));
+            Assert.True(keyManager.BlockGlobalKey(false, "killedtroll"));
         }
 
         [Fact]
@@ -198,7 +198,7 @@ namespace VentureValheim.ProgressionTests
             var keyManager = Setup("", "", a, b);
 
             Assert.True(keyManager.PrivateKeyIsBlockedTest("random_string"));
-            Assert.False(keyManager.PrivateKeyIsBlockedTest("killedTroll"));
+            Assert.False(keyManager.PrivateKeyIsBlockedTest("killedtroll"));
         }
 
         [Theory]
@@ -213,7 +213,7 @@ namespace VentureValheim.ProgressionTests
             var keyManager = Setup("", "", a, b);
 
             Assert.False(keyManager.PrivateKeyIsBlockedTest("random_string"));
-            Assert.True(keyManager.PrivateKeyIsBlockedTest("killedTroll"));
+            Assert.True(keyManager.PrivateKeyIsBlockedTest("killedtroll"));
         }
 
         [Fact]

@@ -22,11 +22,11 @@ namespace VentureValheim.ProgressionTests
             string string3 = " killedTroll , killedBear   , killed_Jesus ";
 
             var set1 = new HashSet<string>();
-            set1.Add("killedTroll");
+            set1.Add("killedtroll");
             var set2 = new HashSet<string>();
-            set2.Add("killedTroll");
-            set2.Add("killedBear");
-            set2.Add("killed_Jesus");
+            set2.Add("killedtroll");
+            set2.Add("killedbear");
+            set2.Add("killed_jesus");
 
             Assert.Single(set1);
             Assert.Equal(set1, ProgressionAPI.StringToSet(string1));

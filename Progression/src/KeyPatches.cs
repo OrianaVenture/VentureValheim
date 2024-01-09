@@ -18,11 +18,12 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(string name)
             {
-                return Instance.SkipAddKeyMethod(name);
+                return Instance.SkipAddKeyMethod(name.ToLower());
             }
 
             private static void Postfix(string name)
             {
+                name = name.ToLower();
                 if (Player.m_localPlayer != null && !Instance.BlockPrivateKey(name))
                 {
                     List<Player> nearbyPlayers = new List<Player>();
@@ -58,7 +59,7 @@ namespace VentureValheim.Progression
             private static bool Prefix(string name)
             {
                 ProgressionPlugin.VentureProgressionLogger.LogDebug($"RPC_SetGlobalKey called for: {name}.");
-                bool runOriginal = Instance.SkipAddKeyMethod(name);
+                bool runOriginal = Instance.SkipAddKeyMethod(name.ToLower());
                 if (!runOriginal)
                 {
                     ZoneSystem.instance.SendGlobalKeys(ZRoutedRpc.Everybody);
@@ -96,11 +97,29 @@ namespace VentureValheim.Progression
         {
             private static void Postfix(string name, ref bool __result)
             {
+                name = name.ToLower();
                 if (ProgressionConfiguration.Instance.GetUsePrivateKeys() &&
                     !ZNet.instance.IsDedicated() &&
                     !Instance.IsWorldModifier(name))
                 {
                     __result = Instance.HasPrivateKey(name);
+                }
+            }
+        }
+
+        /// <summary>
+        /// If using private keys, returns the player private key list.
+        /// If not using private keys or is a dedicated server uses default behavior.
+        /// </summary>
+        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.GetGlobalKeys))]
+        public static class Patch_ZoneSystem_GetGlobalKeys
+        {
+            private static void Postfix(ref List<string> __result)
+            {
+                if (ProgressionConfiguration.Instance.GetUsePrivateKeys() &&
+                    !ZNet.instance.IsDedicated())
+                {
+                    __result = new List<string>(Instance.PrivateKeysList);
                 }
             }
         }
@@ -240,7 +259,7 @@ namespace VentureValheim.Progression
                     // Add enforced global keys regardless of settings
                     foreach (var key in Instance.EnforcedGlobalKeysList)
                     {
-                        ZoneSystem.instance.m_globalKeys.Add(key);
+                        ZoneSystem.instance.m_globalKeys.Add(key.ToLower());
                     }
 
                     if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
@@ -279,7 +298,7 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Fix my mistake of adding GlobalKeys.PlayerEvents to the list multiple times
         /// </summary>
-        [HarmonyPatch(typeof(ZPlayFabMatchmaking), nameof(ZPlayFabMatchmaking.CreateLobby))]
+        [HarmonyPatch(typeof(ZPlayFabMatchmaking), "CreateLobby")]
         public static class Patch_ZPlayFabMatchmaking_CreateLobby
         {
             private static void Prefix()
@@ -291,7 +310,7 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Fix my mistake of adding GlobalKeys.PlayerEvents to the list multiple times (server patch)
         /// </summary>
-        [HarmonyPatch(typeof(ZSteamMatchmaking), nameof(ZSteamMatchmaking.RegisterServer))]
+        [HarmonyPatch(typeof(ZSteamMatchmaking), "RegisterServer")]
         public static class Patch_ZSteamMatchmaking_RegisterServer
         {
             private static void Prefix(ref List<string> modifiers)
@@ -425,6 +444,19 @@ namespace VentureValheim.Progression
                     {
                         args.Context.AddString("Syntax: setglobalkey [key]");
                     }
+                }, isCheat: true, isNetwork: false, onlyServer: true);
+                new Terminal.ConsoleCommand("listglobalkeys", "", delegate (Terminal.ConsoleEventArgs args)
+                {
+                    var keys = ProgressionAPI.GetGlobalKeys();
+                    args.Context.AddString($"Total Keys {keys.Count}");
+                    foreach (string key in keys)
+                    {
+                        args.Context.AddString(key);
+                    }
+                }, isCheat: true, isNetwork: false, onlyServer: true);
+                new Terminal.ConsoleCommand("resetglobalkeys", "", delegate (Terminal.ConsoleEventArgs args)
+                {
+                    ZoneSystem.instance.ResetGlobalKeys();
                 }, isCheat: true, isNetwork: false, onlyServer: true);
                 new Terminal.ConsoleCommand("setprivatekey", "[name] [optional: player name]", delegate (Terminal.ConsoleEventArgs args)
                 {
@@ -580,8 +612,14 @@ namespace VentureValheim.Progression
         public static class Patch_Player_ActivateGuardianPower
         {
             [HarmonyPriority(Priority.Low)]
-            private static bool Prefix(Player __instance, ref bool __result)
+            private static bool Prefix(Player __instance, ref bool __result, ref bool __runOriginal)
             {
+                // Check for other mods skipping first
+                if (__runOriginal == false)
+                {
+                    return false;
+                }
+
                 if (!__instance.m_guardianPower.IsNullOrWhiteSpace() && ProgressionConfiguration.Instance.GetLockGuardianPower())
                 {
                     if (!Instance.HasGuardianKey(__instance.m_guardianPower))

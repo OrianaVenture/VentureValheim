@@ -28,7 +28,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Converts a comma separated string to a HashSet of strings.
+        /// Converts a comma separated string to a HashSet of lowercase strings.
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
@@ -41,7 +41,7 @@ namespace VentureValheim.Progression
                 List<string> keys = str.Split(',').ToList();
                 for (var lcv = 0; lcv < keys.Count; lcv++)
                 {
-                    set.Add(keys[lcv].Trim());
+                    set.Add(keys[lcv].Trim().ToLower());
                 }
             }
 
@@ -85,6 +85,15 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
+        /// Method to get the global keys list to bypass patches.
+        /// </summary>
+        /// <returns></returns>
+        public static HashSet<string> GetGlobalKeys()
+        {
+            return ZoneSystem.instance.m_globalKeys;
+        }
+
+        /// <summary>
         /// Method to add a global key to bypass patches.
         /// </summary>
         /// <param name="key"></param>
@@ -95,6 +104,7 @@ namespace VentureValheim.Progression
                 return;
             }
 
+            key = key.ToLower();
             if (!ZoneSystem.instance.m_globalKeys.Contains(key))
             {
                 ZoneSystem.instance.m_globalKeys.Add(key);

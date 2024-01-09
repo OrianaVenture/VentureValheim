@@ -8,56 +8,48 @@ Control skill levels, trader items, and manage world and individual player keys!
 
 ## Features
 
-The main feature of this mod is to have an easy way to control the rate at which the world and individual player advances.
-
-Below are some explanations of features and how to configure them. See more details in the config file. Generate the config file by launching the game once with this mod installed. The information included in the file will not always match the information provided in this readme.
-
-### Hildir Update Notes
-
-There were changes to the vanilla commands that may be confusing. There are now "player unique keys" being used which are not the same thing as this mod's private key system. Please note these commands will not influence your private keys when using that feature, you must use the commands added (explained below under Key Management -> Commands) to manage private keys for this mod.
-
-* listkeys command now shows you your vanilla player unique keys
-* Original resetkeys command will now also reset your vanilla player unique keys in addition to global keys
-* Additional vanilla key commands were added to manage vanilla player unique keys: setkeyplayer, removekeyplayer
-
-There is now a feature in vanilla for "player based events". Using the private key system the player based raid setting will be applied automatically at startup. The old logic for this feature has been removed and is no longer supported at this time.
-
-There are likely new bugs with existing features and the new game content, please report any issues you encounter.
-
-** This information is subject to change in a future update
+The main feature of this mod is to have an easy way to control the rate at which the world and individual player advances. Below are some explanations of features and how to configure them. See more details in the config file. Generate the config file by launching the game once with this mod installed. The information included in the file will not always match the information provided in this readme.
 
 <details open>
 <summary>Expand/Collapse Features</summary>
 
 ### Key Management
 
-When this mod is installed there will be a key "cleanup" performed for the server and any player who joins the game based off the mod configurations. When using the default settings you can expect all global keys to be cleared when you start up the server, resetting your server's key progress. When using private keys a similar principal applies, depending on your blocked or allowed key list, any keys that are not expected will be removed. All enforced keys will be added to the appropriate list on startup regardless of other settings. If you see your keys resetting unexpectedly make sure to check your mod configuration is allowing the keys you want to exist. Any keys added manually will persist until the server is restarted (for private keys when the player logs back in), to ensure these keys remain after a restart you must check your mod configuration!
+What is a key and what is controlled by them? In vanilla Valheim there exists a "global key" list that is a bunch of strings shared by all players. Worldly spawns, raids, dreams, and Haldor's items are all controlled by the presence of specific keys. Each boss, select creatures in the game, as well as Hildir's quests each have keys associated with their completion. The main feature of this mod is the addition of a private key system that makes this progress all individual.
 
-#### Global Key Management
+#### Private Keys
 
-What is a key and what is controlled by them? In vanilla Valheim there exists a "global key" list that is a bunch of strings shared by all players. Worldly spawns, raids, dreams, and Haldor's items are all controlled by the presence of specific keys. By default this mod will prevent/block global keys from being added to the global list which will prevent game behaviors that rely on the presence of these keys. This lets you control the game progression by choosing when these keys can be added to the game.
+When enabled, private keys will be added to any player within a 100 meter range of the hosting player when the action occurs. For example, when a boss dies any player close enough to the chunk-hosting player should also get the private key, but a player online on the other side of the map will not get it.
 
-#### Private Key Management
+The player that is hosting a loaded "chunk" will control the worldly spawns. For example, a player A with no keys joins player B with all the boss keys and starts seeing Fuling night spawns, but if player A is alone they should not get higher level spawns. If player A loads and hosts an area and is later joined by player B, the area should not spawn the higher level monsters that become unlocked with keys.
 
-This mod also adds a private player key system in which data is saved to the character file. You can use this private key system to tailor game functionality to individuals rather than the vanilla default server-wide global keys. Gameplay will be altered when using private keys: The player that is hosting a loaded "chunk" will control the worldly spawns. For example, a player A with no keys joins player B with all the boss keys and starts seeing Fuling night spawns, but if player A is alone they should not get higher level spawns. If player A loads and hosts an area and is later joined by player B, the area should not spawn the higher level monsters that become unlocked with keys.
+After the Hildir update a new game setting (world modifier) was added to vanilla for player-based raids. When using the private key system the player based raid setting will be applied automatically at startup. The old logic for private raids has been removed and is no longer supported at this time.
 
-Private keys will be added to any player within a 100 meter range of the hosting player when the action occurs. For example, when a boss dies any player close enough to the chunk-hosting player should also get the private key, but a player online on the other side of the map will not get it.
+Hildir keys for unlocking store content are applied when the chests are turned in. Make sure all participating players are present when the chest is turned in to get credit. (Hildir wants to thank you personally!)
 
-After the Hildir update a new game setting was added to vanilla for player-based raids. When using private keys this mod will enable this setting for you automatically.
+#### Important Tips
+
+* It is recommended to set up this mod on a new or unused world, otherwise ensure you have backups to restore if something goes wrong.
+* By default this mod will prevent/block global keys from being added to the global list, and will enable private keys where all players keys will be tracked individually.
+* When this mod is installed there will be a key "cleanup" performed for the server and any player who joins the game based off the mod configurations. When using the default settings all global keys are cleared on startup, resetting your server's key progress.
+* Any keys added with commands will always persist until the server is restarted (for private keys when the player logs back in). If you see your keys resetting unexpectedly on restart it may be due to the mod configurations not allowing for them to exist.
+* Private Key data is saved to the character file when enabled, making it compatible with Server Characters.
+* Vanilla World Modifiers should not be affected by this mod.
 
 #### Key Configuration Options
 
-* BlockedActionMessage: The message used in-game for certain actions when certain keys are blocked for players.
-* BlockAllGlobalKeys: Prevent/block public all keys from being added to the global list, set to false to use vanilla behavior
-* AllowedGlobalKeys: Allow only these keys being added to the global list when BlockAllGlobalKeys is true
-* BlockedGlobalKeys: Stop only these keys being added to the global list when BlockAllGlobalKeys is false
-* EnforcedGlobalKeys: Always add these keys to the global list on startup (regardless of other settings)
-* UsePrivateKeys: Use private player keys, rather than global keys for game key checking
-* BlockedPrivateKeys: Stop only these keys being added to the player's key list when UsePrivateKeys is true (use this or AllowedPrivateKeys)
-* AllowedPrivateKeys: Allow only these keys being added to the player's key list when UsePrivateKeys is true (use this or BlockedPrivateKeys, if the BlockedPrivateKeys has any values it will use that setting)
-* EnforcedPrivateKeys: Always add these keys to the player's private list on startup (regardless of other settings)
+| Configuration <br>_______________| Description <br>_____________|
+|--- |--- |
+| BlockAllGlobalKeys | Prevent/block public all keys from being added to the global list, set to false to use vanilla behavior. |
+| AllowedGlobalKeys | Allow only these keys being added to the global list when BlockAllGlobalKeys is true. |
+| BlockedGlobalKeys | Stop only these keys being added to the global list when BlockAllGlobalKeys is false. |
+| EnforcedGlobalKeys | Always add these keys to the global list on startup (regardless of other settings)
+| UsePrivateKeys | Use private player keys, rather than global keys for game key checking. |
+| BlockedPrivateKeys | Stop only these keys being added to the player's key list when UsePrivateKeys is true (use this or AllowedPrivateKeys). |
+| AllowedPrivateKeys | Allow only these keys being added to the player's key list when UsePrivateKeys is true (use this or BlockedPrivateKeys, if the BlockedPrivateKeys has any values it will use that setting). |
+| EnforcedPrivateKeys | Always add these keys to the player's private list on startup (regardless of other settings). |
 
-#### Vanilla Public Keys (That this mod will track by default)
+#### Important Vanilla Public Keys
 
 * defeated_eikthyr
 * defeated_gdking
@@ -75,9 +67,23 @@ After the Hildir update a new game setting was added to vanilla for player-based
 
 #### Commands
 
-Due to the changes this mod makes the vanilla "setkey" command will not function as expected in most cases. There is an added command "setglobalkey" that will work in it's place. For private keys there are 4 new commands added that work similar to the vanilla public key commands: setprivatekey, removeprivatekey, resetprivatekeys, listprivatekeys. For example, you can set your local player's key with "setprivatekey defeated_eikthyr", or any online player with "setprivatekey defeated_eikthyr PlayerName".
-
-The server also tracks the player's keys in each game session. This list is cleared on a server restart and data for each player will only be available once the player reconnects. The command is "listserverkeys", if you are hosting the data will be available in the console window. If you have a dedicated server you can send this command to the server from the client and the data will be printed to the bepinex/logoutput.log file.
+Due to the changes this mod makes the vanilla commands will not work as expected. Below is an explanation of how commands function with this mod installed:
+| Command  <br>_____________________________________| Origin <br>__________| Behavior <br>___________________|
+|--- |--- |--- |
+| listkeys | vanilla | If using private keys will list your private keys, otherwise will list global keys. Also displays vanilla "player unique keys". |
+| listprivatekeys | this mod | Lists the private keys for the current character. |
+| listglobalkeys | this mod | Lists the global keys for the world. |
+| setkey Key | vanilla | Sends the key if allowed to all players in range of you when the command is sent. |
+| setkeyplayer Key | vanilla | Adds the key to your current character's vanilla "player unique keys" list. |
+| setprivatekey Key PlayerName | this mod | Adds a private key to the specified online player. If name left blank will apply to your current character. |
+| setglobalkey Key | this mod | Adds a global key for the world. |
+| removekey Key | vanilla | Removes a global key for the world. |
+| removekeyplayer Key | vanilla | Removes the key from your current character's vanilla "player unique keys" list. |
+| removeprivatekey key PlayerName | this mod | Removes a private key to the specified online player. If name left blank will apply to your current character. |
+| resetkeys | vanilla | Removes all global keys for the world and all vanilla "player unique keys" from your current character. |
+| resetprivatekeys PlayerName | this mod | Removes all private keys for the specified online player. If name left blank will apply to your current character. |
+| resetglobalkeys | this mod | Removes all global keys for the world. |
+| listserverkeys | this mod | If hosting a game session will print all recorded player keys to the console window (and bepinex\logoutput.log file). If on a dedicated server will send a command for the server to print it to the server log file for viewing. This data is cleared on every restart and only records players who have reconnected at least once during the session. |
 
 Don't know how to use commands? Dedicated servers do not allow for use of commands, but there are mods that can enable them (like Server devcommands by JereKuusela). All of these commands are considered "cheats" except the "listprivatekeys" command. To use cheats you must enable them with the "devcommands" command, you may have to be an admin for them to work.
 
@@ -89,11 +95,13 @@ Admins can bypass locking settings by enabling the AdminBypass setting.
 
 #### Locking Taming
 
-Taming can be locked by keys when enabled. By default Wolf is locked by the defeated_bonemass key and Lox is locked by the defeated_dragon key. You can override this by using the prefab name of the creature, allowing you to add support for content from other mods. When overriding you must define all the creatures since it will no longer include the defaults. When using private keys make sure the player who can tame the animals is the first to load the area since taming is controlled by the player hosting the chunk. You will still see taming hearts (for now), but if you check the taming status on the animals you will see the percentage no longer increases when blocked.
+Taming can be locked by keys when enabled. By default Wolf is locked by the defeated_bonemass key and Lox is locked by the defeated_dragon key. You can override this by using the prefab name of the creature, allowing you to add support for content from other mods. When overriding you must define all the creatures since it will no longer include the defaults. When using private keys make sure the player who can tame the animals is the first to load the area since taming is controlled by the player hosting the chunk. You will still see taming hearts (for now), but if you check the taming status on the animals you will see the percentage no longer increases when locked.
 
 #### Locking Bosses
 
-Guardian Powers and Boss Alter Summoning can be locked. By default summoning is locked the key given by the previous boss in the natural progression order. You can override this by using the prefab name of the creature the alter summons, allowing you to add support for content from other mods. When overriding you must define all the bosses manually (similar to the taming override).
+Guardian Powers and Boss Alter Summoning can be locked. By default summoning is locked by the key given by the previous boss in the natural progression order. You can override this by using the prefab name of the creature the alter summons, also allowing you to add support for content from other mods. When overriding you must define all the bosses you want included in the locking system.
+
+Additionally, you can bypass the progression order and just enforce in-game days as the only restraint for unlocking boss alters when using UnlockBossSummonsOverTime with the following setting for OverrideLockBossSummonsDefaults: Eikthyr, ,gd_king, , Bonemass, , Dragon, , GoblinKing, , SeekerQueen,
 
 #### Locking Portals
 
@@ -105,25 +113,29 @@ Using equipment, crafting, building, and cooking can all be locked with individu
 
 #### Locking Configuration Options
 
-* LockTaming: If true you can only tame certain creatures if you have the required key.
-* OverrideLockTamingDefaults: Define your own required keys to tame specific creatures or leave blank to use the defaults. Example: Boar, defeated_eikthyr, Wolf, defeated_dragon, Lox, defeated_goblinking
-* LockGuardianPower: If true locks the ability to get or use boss powers based on the required key.
-* LockBossSummons: If true you can only summon bosses based on the required key.
-* OverrideLockBossSummonsDefaults: Define your own required keys to summon bosses or leave blank to use the defaults. Note that if you do not include a boss in this list then the unlock over time settings will not apply to that boss. If you just want to enforce time as the restraint then set each of the boss keys to blank (like for Eikthyr). Example (also the mod defaults): Eikthyr, ,gd_king, defeated_eikthyr, Bonemass, defeated_gdking, Dragon, defeated_bonemass, GoblinKing, defeated_dragon, SeekerQueen, defeated_goblinking
-* UnlockBossSummonsOverTime: If true will additionally check the appropriate time has passed for unlocking the boss alters. This will still enforce the boss progression order unless overridden above.
-* UnlockBossSummonsTime: Time for previous setting, default is 100. Example: Eikthyr wil be available on day 0, the Elder on 100, Bonemass on 200 etc.
-* LockEquipment: If true you can only equip or use boss items or items made from biome metals/materials if you have the required key
-* LockCrafting: If true you can only craft items made from boss items or biome metals/materials if you have the required key
-* LockBuilding: If true you can only build pieces made from boss items or biome metals/materials if you have the required key
-* LockCooking: If true you can only cook items made from biome materials if you have the required key
-* LockPortalsKey: Define your own required key to control player ability to use portals. Leave blank to allow vanilla portal behavior.
+| Configuration <br>_______________| Description <br>_____________|
+|--- |--- |
+| LockTaming | If true you can only tame certain creatures if you have the required key. |
+| OverrideLockTamingDefaults | Define your own required keys to tame specific creatures or leave blank to use the defaults. Example: Boar, defeated_eikthyr, Wolf, defeated_dragon, Lox, defeated_goblinking |
+| LockGuardianPower | If true locks the ability to get or use boss powers based on the required key. |
+| LockBossSummons | If true you can only summon bosses based on the required key. |
+| OverrideLockBossSummonsDefaults | Define your own required keys to summon bosses or leave blank to use the defaults. Example (also the mod defaults): Eikthyr, ,gd_king, defeated_eikthyr, Bonemass, defeated_gdking, Dragon, defeated_bonemass, GoblinKing, defeated_dragon, SeekerQueen, defeated_goblinking |
+| UnlockBossSummonsOverTime | If true will additionally check the appropriate time has passed for unlocking the boss alters. This will still enforce the boss progression order unless overridden above. |
+| UnlockBossSummonsTime | Time for previous setting, default is 100. Example: Eikthyr wil be available on day 0, the Elder on 100, Bonemass on 200 etc. |
+| LockEquipment | If true you can only equip or use boss items or items made from biome metals/materials if you have the required key. |
+| LockCrafting | If true you can only craft items made from boss items or biome metals/materials if you have the required key. |
+| LockBuilding | If true you can only build pieces made from boss items or biome metals/materials if you have the required key. |
+| LockCooking | If true you can only cook items made from biome materials if you have the required key. |
+| LockPortalsKey | Define your own required key to control player ability to use portals. Leave blank to allow vanilla portal behavior. |
 
 ### Trader Configuration Options
 
 There are more key options specifically for Haldor under it's own section called "Trader". Similarly there is a section for Hildir. All vanilla items have their own configuration option if you wish to override the required key to unlock them. If these configurations are left blank it will use the game defaults. If you wish to remove only some item key requirements you can achieve this by setting the item keys to your own custom key like "Trader" and then "enforce" this key in the appropriate configuration mentioned above so all players can access it. Similarly, you can lock items by specifying a custom key that is then never added to the game (or only given to certain players when using private keys).
 
-* UnlockAllHaldorItems: If true bypasses the key check for Haldor's items and unlocks everything
-* UnlockAllHildirItems: If true bypasses the key check for Hildir's items and unlocks everything
+| Configuration <br>_______________| Description <br>_____________|
+|--- |--- |
+| UnlockAllHaldorItems | If true bypasses the key check for Haldor's items and unlocks everything |
+| UnlockAllHildirItems | If true bypasses the key check for Hildir's items and unlocks everything |
 
 ### Skill Manager
 
@@ -133,14 +145,16 @@ Want to just lose accumulation points when you die? This is possible if you set 
 
 #### Configuration Options
 
-* EnableSkillManager must be set to True to enable these features.
-* AllowSkillDrain: Set to False to turn off all skill loss on death.
-* UseAbsoluteSkillDrain: Set to True to use an absolute number (AbsoluteSkillDrain) for skill loss. (Vanilla uses a percentage for skill loss, so you will lose more skill the higher the skill is)
-* CompareAndSelectDrain: Set to true to use the minimum or maximum value between the vanilla skill loss and the absolute skill loss. Set CompareUseMinimumDrain to False to use the maximum of these two values as the skill loss.
-* OverrideMaximumSkillLevel: True to set a server wide skill level ceiling for gaining skill to the value of MaximumSkillLevel. For example, if this value is 50 then you will not gain skill once you reach level 50+ in that skill.
-* OverrideMinimumSkillLevel: True to set a server wide skill level floor for skill loss to the value of MinimumSkillLevel. For example, if this value is 10 then you will not lose skill on death until you reach level 10 in that skill, so your skills will not drop below 10.
-* UseBossKeysForSkillLevel: Set this to true to use a more dynamic skill control dependant on boss completion. Skill minimum will start at 0 and increase by BossKeysSkillPerKey for each boss defeated. Skill maximum will be capped at [ 100 - (number of bosses: 6) * (BossKeysSkillPerKey: 10) = 40 ] with the current game state. For example, if you defeat one boss then your skill minimum for loss will be raised to 10, and your skill maximum will be raised to 50.
-* BossKeysSkillPerKey: Amount used in calculation above. Note: This feature will only work if you DO NOT override the minimum and/or maximum skill levels as described above. Overridden values will take precedence.
+| Configuration <br>_______________| Description <br>_____________|
+|--- |--- |
+| EnableSkillManager | Must be set to True to enable these features. |
+| AllowSkillDrain | Set to False to turn off all skill loss on death. |
+| UseAbsoluteSkillDrain | Set to True to use an absolute number (AbsoluteSkillDrain) for skill loss. (Vanilla uses a percentage for skill loss, so you will lose more skill the higher the skill is) |
+| CompareAndSelectDrain | Set to true to use the minimum or maximum value between the vanilla skill loss and the absolute skill loss. Set CompareUseMinimumDrain to False to use the maximum of these two values as the skill loss. |
+| OverrideMaximumSkillLevel | True to set a server wide skill level ceiling for gaining skill to the value of MaximumSkillLevel. For example, if this value is 50 then you will not gain skill once you reach level 50+ in that skill. |
+| OverrideMinimumSkillLevel | True to set a server wide skill level floor for skill loss to the value of MinimumSkillLevel. For example, if this value is 10 then you will not lose skill on death until you reach level 10 in that skill, so your skills will not drop below 10. |
+| UseBossKeysForSkillLevel | Set this to true to use a more dynamic skill control dependant on boss completion. Skill minimum will start at 0 and increase by BossKeysSkillPerKey for each boss defeated. Skill maximum will be capped at [ 100 - (number of bosses: 6) * (BossKeysSkillPerKey: 10) = 40 ] with the current game state. For example, if you defeat one boss then your skill minimum for loss will be raised to 10, and your skill maximum will be raised to 50. |
+| BossKeysSkillPerKey | Amount used in calculation above. Note: This feature will only work if you DO NOT override the minimum and/or maximum skill levels as described above. Overridden values will take precedence. |
 
 ### World Scaling
 
@@ -161,6 +175,13 @@ This mod will partially work server-side only to control the global key list. If
 If you do not install this mod on the server then any player can change the configurations however they please.
 
 ## Changelog
+
+### 0.2.6
+
+* Improved other mod compatibilities when using private keys by additionally patching for ZoneSystem.GetGlobalKeys method.
+* Added new command listglobalkeys due to previous change altering the vanilla listkeys command.
+* Added new command resetglobalkeys.
+* All keys will now be converted to lowercase internally for handling to mimic vanilla behavior (let me know if this causes issues with other mods using keys)
 
 ### 0.2.5
 
@@ -232,12 +253,6 @@ If you do not install this mod on the server then any player can change the conf
 * Moved the locking configs to a new section (You will have to manually update your config file if using)
 * Moved boss keys for skill level configs to Skills section (You will have to manually update your config file if using)
 * P.S. This should be the last set of major changes before the official release
-
-### 0.0.28
-
-* Update for game patch 0.216.9
-* Fixed skill drain edge cases for skill manager where skills could rarely drop below the skill floor
-* Bug fix for keys saving to incorrect character when switching between them in the same game session
 
 See all patch notes on Github.
 

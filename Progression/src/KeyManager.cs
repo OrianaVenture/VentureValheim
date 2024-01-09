@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using BepInEx;
-using HarmonyLib;
 using UnityEngine;
 
 namespace VentureValheim.Progression
@@ -110,9 +107,9 @@ namespace VentureValheim.Progression
         public const string BOSS_KEY_PLAIN = "defeated_goblinking";
         public const string BOSS_KEY_MISTLAND = "defeated_queen";
 
-        public const string HILDIR_KEY_CRYPT = "Hildir1";
-        public const string HILDIR_KEY_CAVE = "Hildir2";
-        public const string HILDIR_KEY_TOWER = "Hildir3";
+        public const string HILDIR_KEY_CRYPT = "hildir1";
+        public const string HILDIR_KEY_CAVE = "hildir2";
+        public const string HILDIR_KEY_TOWER = "hildir3";
 
         public const int TOTAL_BOSSES = 6;
         public readonly Dictionary<string, int> BossKeyOrderList = new Dictionary<string, int>
@@ -504,9 +501,14 @@ namespace VentureValheim.Progression
             return trades;
         }
 
+        /// <summary>
+        /// Checks if a key is a vanilla world modifier.
+        /// </summary>
+        /// <param name="key">Must be lowercase</param>
+        /// <returns></returns>
         private bool IsWorldModifier(string key)
         {
-            ZoneSystem.GetKeyValue(key.ToLower(), out string value, out GlobalKeys gk);
+            ZoneSystem.GetKeyValue(key, out string value, out GlobalKeys gk);
             if (gk < GlobalKeys.NonServerOption || gk == GlobalKeys.activeBosses)
             {
                 return true;
@@ -885,7 +887,9 @@ namespace VentureValheim.Progression
                 return;
             }
 
+            key = key.ToLower();
             bool added = PrivateKeysList.Add(key);
+
             if (added)
             {
                 ProgressionPlugin.VentureProgressionLogger.LogDebug($"Adding Private Key {key}.");
@@ -947,6 +951,7 @@ namespace VentureValheim.Progression
         /// <param name="key"></param>
         private void RemovePrivateKey(string key)
         {
+            key = key.ToLower();
             bool removed = PrivateKeysList.Remove(key);
             if (removed)
             {
