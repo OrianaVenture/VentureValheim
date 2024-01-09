@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using HarmonyLib;
+﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +25,7 @@ namespace VentureValheim.Progression
                 name = name.ToLower();
                 if (Player.m_localPlayer != null && !Instance.BlockPrivateKey(name))
                 {
-                    List<Player> nearbyPlayers = new List<Player>();
+                    List<Player> nearbyPlayers = new();
                     Player.GetPlayersInRange(Player.m_localPlayer.transform.position, 100, nearbyPlayers);
 
                     if (nearbyPlayers != null && nearbyPlayers.Count == 0)
@@ -51,7 +50,10 @@ namespace VentureValheim.Progression
             }
         }
 
-        // Server side global key cleanup logic, used for servers with vanilla players
+        /// <summary>
+        /// Server side global key cleanup logic, used for servers with vanilla players.
+        /// This rpc should never get sent by private key users when the global key is blocked.
+        /// </summary>
         [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.RPC_SetGlobalKey))]
         public static class Patch_ZoneSystem_RPC_SetGlobalKey
         {
@@ -88,14 +90,14 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// If using private keys, returns true if the key is in the global list when
-        /// the instance is a dedicated server, or true if the local player has the private key.
+        /// If using private keys, returns true if the key is in the global list
+        /// or if the local player has the private key.
         /// If not using private keys uses default behavior.
         /// </summary>
         [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.GetGlobalKey), new Type[] { typeof(string) })]
         public static class Patch_ZoneSystem_GetGlobalKey
         {
-            private static void Postfix(string name, ref bool __result)
+            private static bool Prefix(string name, ref bool __result)
             {
                 name = name.ToLower();
                 if (ProgressionConfiguration.Instance.GetUsePrivateKeys() &&
@@ -103,12 +105,16 @@ namespace VentureValheim.Progression
                     !Instance.IsWorldModifier(name))
                 {
                     __result = Instance.HasPrivateKey(name);
+
+                    return !__result; // If found skip search for global key
                 }
+
+                return true;
             }
         }
 
         /// <summary>
-        /// If using private keys, returns the player private key list.
+        /// If using private keys, returns the player private key list merged with the global list.
         /// If not using private keys or is a dedicated server uses default behavior.
         /// </summary>
         [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.GetGlobalKeys))]
@@ -119,7 +125,27 @@ namespace VentureValheim.Progression
                 if (ProgressionConfiguration.Instance.GetUsePrivateKeys() &&
                     !ZNet.instance.IsDedicated())
                 {
-                    __result = new List<string>(Instance.PrivateKeysList);
+                    var privateKeys = new List<string>(Instance.PrivateKeysList);
+                    __result = ProgressionAPI.MergeLists(__result, privateKeys);
+                }
+            }
+        }
+
+        /// <summary>
+        /// If using private keys, removes the key from the private player keys list
+        /// in addition to the default behavior of removing from the global list.
+        /// </summary>
+        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.RPC_RemoveGlobalKey))]
+        public static class Patch_ZoneSystem_RPC_RemoveGlobalKey
+        {
+            private static void Postfix(string name)
+            {
+                ProgressionPlugin.VentureProgressionLogger.LogDebug($"RPC_RemoveGlobalKey called for: {name}.");
+
+                if (ProgressionConfiguration.Instance.GetUsePrivateKeys() &&
+                    !ZNet.instance.IsDedicated())
+                {
+                    Instance.RemovePrivateKey(name);
                 }
             }
         }
@@ -171,7 +197,7 @@ namespace VentureValheim.Progression
                 Instance.ResetPlayer();
                 Instance.UpdateConfigs();
 
-                HashSet<string> loadedKeys = new HashSet<string>();
+                HashSet<string> loadedKeys = new();
 
                 if (__instance.m_customData.ContainsKey(PLAYER_SAVE_KEY))
                 {
@@ -244,7 +270,7 @@ namespace VentureValheim.Progression
                     Instance.Reset();
                     Instance.UpdateConfigs();
 
-                    var keys = ZoneSystem.instance.GetGlobalKeys();
+                    var keys = ProgressionAPI.GetGlobalKeys().ToList();
                     var blockAll = ProgressionConfiguration.Instance.GetBlockAllGlobalKeys();
 
                     // Remove any blocked global keys from the list
@@ -259,7 +285,7 @@ namespace VentureValheim.Progression
                     // Add enforced global keys regardless of settings
                     foreach (var key in Instance.EnforcedGlobalKeysList)
                     {
-                        ZoneSystem.instance.m_globalKeys.Add(key.ToLower());
+                        ZoneSystem.instance.m_globalKeys.Add(key);
                     }
 
                     if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
@@ -341,78 +367,6 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Enables all of Haldor's items by bypassing key checking.
-        /// </summary>
-        [HarmonyPatch(typeof(Trader), nameof(Trader.GetAvailableItems))]
-        public static class Patch_Trader_GetAvailableItems
-        {
-            [HarmonyPriority(Priority.First)]
-            private static void Postfix(Trader __instance, ref List<Trader.TradeItem> __result)
-            {
-                var name = Utils.GetPrefabName(__instance.gameObject);
-
-                if ((name.Equals("Haldor") && ProgressionConfiguration.Instance.GetUnlockAllHaldorItems()) ||
-                    ((name.Equals("Hildir") && ProgressionConfiguration.Instance.GetUnlockAllHildirItems())))
-                {
-                    __result = new List<Trader.TradeItem>(__instance.m_items);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Fix error thrown when index is 0 and no items exist.
-        /// </summary>
-        [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.SelectItem))]
-        public static class Patch_StoreGui_SelectItem
-        {
-            private static void Prefix(StoreGui __instance, ref int index)
-            {
-                if (__instance.m_itemList.Count == 0)
-                {
-                    index = -1;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Set up custom keys for Trader items.
-        /// </summary>
-        [HarmonyPatch(typeof(Trader), nameof(Trader.Start))]
-        public static class Patch_Trader_Start
-        {
-            [HarmonyPriority(Priority.First)]
-            private static void Postfix(Trader __instance)
-            {
-                var traderName = Utils.GetPrefabName(__instance.gameObject);
-                Dictionary<string, string> items = null;
-
-                if (traderName.Equals("Haldor"))
-                {
-                    items = Instance.GetTraderConfiguration();
-                }
-                else if (traderName.Equals("Hildir"))
-                {
-                    items = Instance.GetHildirConfiguration(__instance.m_items);
-                }
-
-                if (items != null)
-                {
-                    foreach (var item in __instance.m_items)
-                    {
-                        if (item.m_prefab != null)
-                        {
-                            var name = Utils.GetPrefabName(item.m_prefab.gameObject);
-                            if (items.ContainsKey(name))
-                            {
-                                item.m_requiredGlobalKey = items[name];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Adds commands for managing player keys.
         /// </summary>
         [HarmonyPatch(typeof(Terminal), nameof(Terminal.InitTerminal))]
@@ -443,6 +397,18 @@ namespace VentureValheim.Progression
                     else
                     {
                         args.Context.AddString("Syntax: setglobalkey [key]");
+                    }
+                }, isCheat: true, isNetwork: false, onlyServer: true);
+                new Terminal.ConsoleCommand("removeglobalkey", "[name]", delegate (Terminal.ConsoleEventArgs args)
+                {
+                    if (args.Length >= 2)
+                    {
+                        ProgressionAPI.RemoveGlobalKey(args[1]);
+                        args.Context.AddString($"Removing global key {args[1]}.");
+                    }
+                    else
+                    {
+                        args.Context.AddString("Syntax: removeglobalkey [key]");
                     }
                 }, isCheat: true, isNetwork: false, onlyServer: true);
                 new Terminal.ConsoleCommand("listglobalkeys", "", delegate (Terminal.ConsoleEventArgs args)
@@ -560,235 +526,6 @@ namespace VentureValheim.Progression
                         Instance.SendServerListKeys();
                     }
                 }, isCheat: true, isNetwork: false, onlyServer: true);
-            }
-        }
-
-        /// <summary>
-        /// Only increase taming if the player has the private key.
-        /// </summary>
-        [HarmonyPatch(typeof(Tameable), nameof(Tameable.DecreaseRemainingTime))]
-        public static class Patch_Tameable_DecreaseRemainingTime
-        {
-            [HarmonyPriority(Priority.Low)]
-            private static void Prefix(Tameable __instance, ref float time)
-            {
-                if (ProgressionConfiguration.Instance.GetLockTaming())
-                {
-                    if (__instance.m_character == null ||
-                        !Instance.HasTamingKey(Utils.GetPrefabName(__instance.m_character.gameObject)))
-                    {
-                        time = 0f;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Block getting guardian powers without the key.
-        /// </summary>
-        [HarmonyPatch(typeof(ItemStand), nameof(ItemStand.DelayedPowerActivation))]
-        public static class Patch_ItemStand_DelayedPowerActivation
-        {
-            [HarmonyPriority(Priority.Low)]
-            private static bool Prefix(ItemStand __instance)
-            {
-                if (ProgressionConfiguration.Instance.GetLockGuardianPower())
-                {
-                    if (!Instance.HasGuardianKey(__instance.m_guardianPower?.name))
-                    {
-                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                        return false; // Skip giving power
-                    }
-                }
-
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Block activating guardian powers without the key if a Player already has one.
-        /// </summary>
-        [HarmonyPatch(typeof(Player), nameof(Player.ActivateGuardianPower))]
-        public static class Patch_Player_ActivateGuardianPower
-        {
-            [HarmonyPriority(Priority.Low)]
-            private static bool Prefix(Player __instance, ref bool __result, ref bool __runOriginal)
-            {
-                // Check for other mods skipping first
-                if (__runOriginal == false)
-                {
-                    return false;
-                }
-
-                if (!__instance.m_guardianPower.IsNullOrWhiteSpace() && ProgressionConfiguration.Instance.GetLockGuardianPower())
-                {
-                    if (!Instance.HasGuardianKey(__instance.m_guardianPower))
-                    {
-                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                        __result = false; // Not sure why they have a return type on this, watch for game changes
-                        return false; // Skip giving power
-                    }
-                }
-
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Block the boss spawn when the player has not defeated the previous boss
-        /// </summary>
-        [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.SpawnBoss))]
-        public static class Patch_OfferingBowl_SpawnBoss
-        {
-            [HarmonyPriority(Priority.Low)]
-            private static bool Prefix(OfferingBowl __instance, ref bool __result)
-            {
-                if (ProgressionConfiguration.Instance.GetLockBossSummons() && __instance.m_bossPrefab != null)
-                {
-                    if (!Instance.HasSummoningKey(Utils.GetPrefabName(__instance.m_bossPrefab.gameObject)))
-                    {
-                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                        __result = false;
-                        return false; // Skip summoning
-                    }
-                }
-
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Block equipping items without the proper keys.
-        /// </summary>
-        [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.EquipItem))]
-        public static class Patch_Humanoid_EquipItem
-        {
-            [HarmonyPriority(Priority.Low)]
-            private static bool Prefix(Humanoid __instance, ref bool __result, ItemDrop.ItemData item)
-            {
-                if (__instance != Player.m_localPlayer)
-                {
-                    return true;
-                }
-
-                if (ProgressionConfiguration.Instance.GetLockEquipment())
-                {
-                    if (Instance.IsActionBlocked(item, item.m_quality, true, true, false))
-                    {
-                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                        __result = false;
-                        return false; // Skip equipping item
-                    }
-                }
-
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Block opening doors without the proper keys.
-        /// </summary>
-        [HarmonyPatch(typeof(Door), nameof(Door.HaveKey))]
-        public static class Patch_Door_HaveKey
-        {
-            [HarmonyPriority(Priority.Low)]
-            private static void Postfix(Door __instance, ref bool __result)
-            {
-                if (__result && ProgressionConfiguration.Instance.GetLockEquipment() && __instance.m_keyItem != null &&
-                    !Instance.HasItemKey(Utils.GetPrefabName(__instance.m_keyItem.gameObject), true, false, false))
-                {
-                    Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                    __result = false;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Block crafting items without the proper keys.
-        /// </summary>
-        [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.DoCrafting))]
-        public static class Patch_InventoryGui_DoCrafting
-        {
-            [HarmonyPriority(Priority.Low)]
-            private static bool Prefix(InventoryGui __instance)
-            {
-                var lockCrafting = ProgressionConfiguration.Instance.GetLockCrafting();
-                var lockCooking = ProgressionConfiguration.Instance.GetLockCooking();
-
-                int quality = ProgressionAPI.GetQualityLevel(__instance.m_craftUpgradeItem);
-
-                if ((lockCrafting || lockCooking) && Instance.IsActionBlocked(__instance.m_craftRecipe, quality, lockCrafting, lockCrafting, lockCooking))
-                {
-                    Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                    return false; // Skip crafting or cooking
-                }
-
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Block placing items without the proper keys.
-        /// </summary>
-        [HarmonyPatch(typeof(Player), nameof(Player.PlacePiece))]
-        public static class Patch_Player_PlacePiece
-        {
-            [HarmonyPriority(Priority.Low)]
-            private static bool Prefix(ref bool __result, Piece piece)
-            {
-                if (ProgressionConfiguration.Instance.GetLockBuilding() && piece?.m_resources != null)
-                {
-                    for (int lcv = 0; lcv < piece.m_resources.Length; lcv++)
-                    {
-                        if (piece.m_resources[lcv]?.m_resItem != null &&
-                            !Instance.HasItemKey(Utils.GetPrefabName(piece.m_resources[lcv].m_resItem.gameObject), true, true, false))
-                        {
-                            Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                            __result = false;
-                            return false; // Skip placing
-                        }
-                    }
-                }
-
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Block cooking items without the proper keys.
-        /// </summary>
-        [HarmonyPatch(typeof(CookingStation), nameof(CookingStation.OnUseItem))]
-        public static class Patch_CookingStation_OnUseItem
-        {
-            [HarmonyPriority(Priority.Low)]
-            private static bool Prefix(ItemDrop.ItemData item, ref bool __result)
-            {
-                if (ProgressionConfiguration.Instance.GetLockCooking() && Instance.IsActionBlocked(item, item.m_quality, false, false, true))
-                {
-                    Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                    __result = false;
-                    return false; // Skip cooking
-                }
-
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Block portal usage without the proper keys.
-        /// </summary>
-        [HarmonyPatch(typeof(TeleportWorld), nameof(TeleportWorld.Teleport))]
-        public static class Patch_TeleportWorld_Teleport
-        {
-            private static bool Prefix(Player player)
-            {
-                if (player == Player.m_localPlayer && !Instance.HasKey(ProgressionConfiguration.Instance.GetLockPortalsKey()))
-                {
-                    Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                    return false; // Skip portaling
-                }
-
-                return true;
             }
         }
     }

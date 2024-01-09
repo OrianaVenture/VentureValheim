@@ -37,14 +37,7 @@ namespace VentureValheim.ProgressionTests
         private const string string2 = "killedTroll,killedBear,killed_Jesus";
         private const string string3 = " killedTroll , killedBear   , killed_Jesus ";
 
-        private TestKeyManager Setup()
-        {
-            var mockManager = new Mock<IKeyManager>();
-
-            return new TestKeyManager(mockManager.Object);
-        }
-
-        private void SetupConfiguration(int bossSummonsTime)
+        private static void SetupConfiguration(int bossSummonsTime)
         {
             var mockManager = new Mock<IProgressionConfiguration>();
             mockManager.Setup(x => x.GetUnlockBossSummonsTime()).Returns(bossSummonsTime);
@@ -52,7 +45,7 @@ namespace VentureValheim.ProgressionTests
             new ProgressionConfiguration(mockManager.Object);
         }
 
-        private TestKeyManager Setup(string a, string b, string c, string d)
+        private static TestKeyManager Setup(string a, string b, string c, string d)
         {
             var mockManager = new Mock<IKeyManager>();
             mockManager.Setup(x => x.BlockedGlobalKeys).Returns(a);
@@ -83,6 +76,7 @@ namespace VentureValheim.ProgressionTests
 
             Assert.True(keyManager.BlockGlobalKey(true, "random_string"));
             Assert.True(keyManager.BlockGlobalKey(true, "killedtroll"));
+            //Assert.False(keyManager.BlockGlobalKey(true, "season_winter")); // Seasonality
         }
 
         [Theory]
@@ -95,6 +89,7 @@ namespace VentureValheim.ProgressionTests
 
             Assert.True(keyManager.BlockGlobalKey(true, "random_string"));
             Assert.False(keyManager.BlockGlobalKey(true, "killedtroll"));
+            //Assert.False(keyManager.BlockGlobalKey(true, "season_winter")); // Seasonality
         }
 
         [Theory]
@@ -108,6 +103,7 @@ namespace VentureValheim.ProgressionTests
 
             Assert.False(keyManager.BlockGlobalKey(false, "random_string"));
             Assert.False(keyManager.BlockGlobalKey(false, "killedtroll"));
+            //Assert.False(keyManager.BlockGlobalKey(false, "season_winter")); // Seasonality
         }
 
         [Theory]
@@ -120,6 +116,7 @@ namespace VentureValheim.ProgressionTests
 
             Assert.False(keyManager.BlockGlobalKey(false, "random_string"));
             Assert.True(keyManager.BlockGlobalKey(false, "killedtroll"));
+            //Assert.False(keyManager.BlockGlobalKey(false, "season_winter")); // Seasonality
         }
 
         [Fact]
@@ -199,6 +196,7 @@ namespace VentureValheim.ProgressionTests
 
             Assert.True(keyManager.PrivateKeyIsBlockedTest("random_string"));
             Assert.False(keyManager.PrivateKeyIsBlockedTest("killedtroll"));
+            Assert.True(keyManager.PrivateKeyIsBlockedTest("season_winter")); // Seasonality
         }
 
         [Theory]
@@ -214,6 +212,7 @@ namespace VentureValheim.ProgressionTests
 
             Assert.False(keyManager.PrivateKeyIsBlockedTest("random_string"));
             Assert.True(keyManager.PrivateKeyIsBlockedTest("killedtroll"));
+            Assert.True(keyManager.PrivateKeyIsBlockedTest("season_winter")); // Seasonality
         }
 
         [Fact]
@@ -307,7 +306,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData("CustomKey3", false)]
         public void GlobalKeyServerOptionTest(string key, bool expected)
         {
-            ZoneSystem.GetKeyValue(key.ToLower(), out string value, out GlobalKeys gk);
+            ZoneSystem.GetKeyValue(key.ToLower(), out _, out GlobalKeys gk);
             Assert.Equal(expected, gk < GlobalKeys.NonServerOption);
         }
     }

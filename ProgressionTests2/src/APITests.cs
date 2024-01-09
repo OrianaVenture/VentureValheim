@@ -1,19 +1,10 @@
-﻿using System.Collections.Generic;
-using VentureValheim.Progression;
+﻿using VentureValheim.Progression;
 using Xunit;
 
 namespace VentureValheim.ProgressionTests
 {
     public class APITests
     {
-        public class TestProgressionAPI : ProgressionAPI, IProgressionAPI
-        {
-            public TestProgressionAPI(IProgressionAPI api) : base()
-            {
-
-            }
-        }
-
         [Fact]
         public void StringToSet_All()
         {
@@ -21,18 +12,20 @@ namespace VentureValheim.ProgressionTests
             string string2 = "killedTroll,killedBear,killed_Jesus";
             string string3 = " killedTroll , killedBear   , killed_Jesus ";
 
-            var set1 = new HashSet<string>();
-            set1.Add("killedtroll");
-            var set2 = new HashSet<string>();
-            set2.Add("killedtroll");
-            set2.Add("killedbear");
-            set2.Add("killed_jesus");
+            var set1 = new HashSet<string>
+            {
+                "killedtroll"
+            };
+            var set2 = new HashSet<string>
+            {
+                "killedtroll",
+                "killedbear",
+                "killed_jesus"
+            };
 
             Assert.Single(set1);
             Assert.Equal(set1, ProgressionAPI.StringToSet(string1));
-            Assert.Equal(3, set2.Count);
             Assert.Equal(set2, ProgressionAPI.StringToSet(string2));
-            Assert.Equal(3, set2.Count);
             Assert.Equal(set2, ProgressionAPI.StringToSet(string3));
         }
 
@@ -44,16 +37,57 @@ namespace VentureValheim.ProgressionTests
             string string3 = " Boar, defeated_eikthyr  ,  Wolf, defeated_dragon,   Lox, defeated_goblinking ";
 
             var dict1 = new Dictionary<string, string>();
-            var dict2 = new Dictionary<string, string>();
-            dict2.Add("Boar", "defeated_eikthyr");
-            dict2.Add("Wolf", "defeated_dragon");
-            dict2.Add("Lox", "defeated_goblinking");
+            var dict2 = new Dictionary<string, string>
+            {
+                { "Boar", "defeated_eikthyr" },
+                { "Wolf", "defeated_dragon" },
+                { "Lox", "defeated_goblinking" }
+            };
 
             Assert.Equal(dict1, ProgressionAPI.StringToDictionary(string1));
-            Assert.Equal(3, dict2.Count);
             Assert.Equal(dict2, ProgressionAPI.StringToDictionary(string2));
-            Assert.Equal(3, dict2.Count);
             Assert.Equal(dict2, ProgressionAPI.StringToDictionary(string3));
+        }
+
+        [Fact]
+        public void MergeLists_All()
+        {
+            var list1 = new List<string>
+            {
+                "key1",
+                "key1",
+                "key1",
+                "key2",
+                "key3",
+                "key4",
+                "key5",
+                "key6"
+            };
+            var list2 = new List<string>
+            {
+                "key1",
+                "key2",
+                "key7",
+                "key8",
+                "key9",
+                "key10"
+            };
+            var merged = new List<string>
+            {
+                "key1",
+                "key2",
+                "key3",
+                "key4",
+                "key5",
+                "key6",
+                "key7",
+                "key8",
+                "key9",
+                "key10"
+            };
+
+            var result = ProgressionAPI.MergeLists(list1, list2);
+            Assert.Equal(merged, result);
         }
     }
 }

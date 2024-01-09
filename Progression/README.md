@@ -70,14 +70,15 @@ Hildir keys for unlocking store content are applied when the chests are turned i
 Due to the changes this mod makes the vanilla commands will not work as expected. Below is an explanation of how commands function with this mod installed:
 | Command  <br>_____________________________________| Origin <br>__________| Behavior <br>___________________|
 |--- |--- |--- |
-| listkeys | vanilla | If using private keys will list your private keys, otherwise will list global keys. Also displays vanilla "player unique keys". |
+| listkeys | vanilla | Will list all global and private keys for the current character in one list. Also displays vanilla "player unique keys". |
 | listprivatekeys | this mod | Lists the private keys for the current character. |
 | listglobalkeys | this mod | Lists the global keys for the world. |
-| setkey Key | vanilla | Sends the key if allowed to all players in range of you when the command is sent. |
+| setkey Key | vanilla | Adds the key if allowed to the global list and to the private key list of all players in range of you when the command is sent. |
 | setkeyplayer Key | vanilla | Adds the key to your current character's vanilla "player unique keys" list. |
 | setprivatekey Key PlayerName | this mod | Adds a private key to the specified online player. If name left blank will apply to your current character. |
 | setglobalkey Key | this mod | Adds a global key for the world. |
-| removekey Key | vanilla | Removes a global key for the world. |
+| removekey Key | vanilla | Removes a global key for the world and from all online players' private key list when using private keys. |
+| removeglobalkey Key | this mod | Removes a global key for the world. |
 | removekeyplayer Key | vanilla | Removes the key from your current character's vanilla "player unique keys" list. |
 | removeprivatekey key PlayerName | this mod | Removes a private key to the specified online player. If name left blank will apply to your current character. |
 | resetkeys | vanilla | Removes all global keys for the world and all vanilla "player unique keys" from your current character. |
@@ -174,7 +175,22 @@ This mod will partially work server-side only to control the global key list. If
 
 If you do not install this mod on the server then any player can change the configurations however they please.
 
+## Other Mod Support
+
+This mod may behave unexpectedly when used with other mods that rely on global keys to function. If you see any mod incompatibilities please report the issue so it can be resolved.
+
+### Seasonality
+
+This mod automatically recognizes season keys as global and does not require further user configuration.
+
 ## Changelog
+
+### 0.2.7
+
+* Improved other mod compatibilities by additionally patching for ZoneSystem.RPC_RemoveGlobalKey method.
+* Added new command removeglobalkey due to previous change altering the vanilla removekey command.
+* Refactored patches so both global keys and private keys lists are handled appropriately when using private keys to respect global key configurations. Changes some vanilla commands' behavior.
+* Added built in support for the Seasonality mod.
 
 ### 0.2.6
 

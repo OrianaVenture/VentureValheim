@@ -75,6 +75,17 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
+        /// Merges two lists together on unique entries.
+        /// </summary>
+        /// <param name="list1"></param>
+        /// <param name="list2"></param>
+        /// <returns></returns>
+        public static List<string> MergeLists(List<string> list1, List<string> list2)
+        {
+            return list1.Union(list2).ToList();
+        }
+
+        /// <summary>
         /// Method to determine if a Global Key exists to bypass patches.
         /// </summary>
         /// <param name="key"></param>
@@ -110,6 +121,21 @@ namespace VentureValheim.Progression
                 ZoneSystem.instance.m_globalKeys.Add(key);
                 ZoneSystem.instance.SendGlobalKeys(ZRoutedRpc.Everybody);
             }
+        }
+
+        /// <summary>
+        /// Method to remove a global key to bypass patches.
+        /// </summary>
+        /// <param name="key"></param>
+        public static void RemoveGlobalKey(string key)
+        {
+            if (key.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
+            key = key.ToLower();
+            ZoneSystem.instance.m_globalKeys.Remove(key);
         }
 
         /// <summary>
