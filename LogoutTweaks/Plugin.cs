@@ -9,7 +9,7 @@ namespace VentureValheim.LogoutTweaks
     public class LogoutTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "LogoutTweaks";
-        private const string ModVersion = "0.4.1";
+        private const string ModVersion = "0.5.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 
@@ -19,7 +19,7 @@ namespace VentureValheim.LogoutTweaks
 
         public void Awake()
         {
-            LogoutTweaksLogger.LogInfo("Initializing LogoutTweaks.");
+            LogoutTweaksLogger.LogInfo("The cat fell in the toilet, BRB!");
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);

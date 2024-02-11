@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine.SceneManagement;
+using static VentureValheim.LogoutTweaks.StatusEffectManager;
 
 namespace VentureValheim.LogoutTweaks
 {
@@ -37,19 +38,10 @@ namespace VentureValheim.LogoutTweaks
 
                     if (data != null)
                     {
-                        // Status Effects
                         for (int lcv = 0; lcv < data.Length; lcv++)
                         {
-                            var effectData = data[lcv].Split(':');
-                            if (effectData.Length == 3)
-                            {
-                                if (int.TryParse(effectData[0], out int name) &&
-                                    float.TryParse(effectData[1], out float ttl) &&
-                                    float.TryParse(effectData[2], out float time))
-                                {
-                                    StatusEffects.Add(new StatusEffectData(name, ttl, time));
-                                }
-                            }
+                            var effect = new StatusEffectData(data[lcv]);
+                            StatusEffects.Add(effect);
                         }
                     }
                 }
@@ -64,25 +56,6 @@ namespace VentureValheim.LogoutTweaks
                 }
 
                 return saveString;
-            }
-        }
-
-        private readonly struct StatusEffectData
-        {
-            public int Name { get; }
-            public float Ttl { get; }
-            public float Time { get; }
-
-            public StatusEffectData(int name, float ttl, float time)
-            {
-                Name = name;
-                Ttl = ttl;
-                Time = time;
-            }
-
-            public override string ToString()
-            {
-                return $"{Name}:{Ttl}:{Time}";
             }
         }
 
@@ -165,12 +138,11 @@ namespace VentureValheim.LogoutTweaks
                     {
                         for (int lcv = 0; lcv < effects.Count; lcv++)
                         {
-                            int name = effects[lcv].NameHash();
-                            float ttl = effects[lcv].m_ttl;
-                            float time = effects[lcv].m_time;
-
-                            StatusEffectData effect = new StatusEffectData(name, ttl, time);
-                            data.Add(effect);
+                            if (SupportedStatusEffect(effects[lcv].m_nameHash))
+                            {
+                                StatusEffectData effect = new StatusEffectData(effects[lcv]);
+                                data.Add(effect);
+                            }
                         }
                     }
 
@@ -209,27 +181,17 @@ namespace VentureValheim.LogoutTweaks
                     var effects = logoutData.StatusEffects;
                     for (int lcv = 0; lcv < effects.Count; lcv++)
                     {
-                        int name = effects[lcv].Name;
-                        float ttl = effects[lcv].Ttl;
-                        float time = effects[lcv].Time;
-
                         try
                         {
-                            __instance.m_seman.AddStatusEffect(name);
-                            StatusEffect statusEffect = __instance.m_seman.GetStatusEffect(name);
+                            StatusEffect statusEffect = BuildStatusEffect(effects[lcv]);
                             if (statusEffect != null)
                             {
-                                statusEffect.m_ttl = ttl;
-                                statusEffect.m_time = time;
-                            }
-                            else
-                            {
-                                LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"Status Effect {name} could not be restored.");
+                                __instance.m_seman.AddStatusEffect(statusEffect);
                             }
                         }
                         catch (Exception e)
                         {
-                            LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"Status Effect {name} could not be restored.");
+                            LogoutTweaksPlugin.LogoutTweaksLogger.LogWarning($"Status Effect {effects[lcv].Name} could not be restored.");
                             LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug(e);
                         }
                     }
