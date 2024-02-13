@@ -33,6 +33,10 @@ This mod needs to be on all clients to work properly. Config Syncing is included
 
 ## Changelog
 
+### 0.3.1
+
+* Code cleanup to remove null-propagating operators. No feature changes.
+
 ### 0.3.0
 
 * Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work

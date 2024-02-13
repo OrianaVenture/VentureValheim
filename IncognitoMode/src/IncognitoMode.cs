@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using BepInEx;
 using HarmonyLib;
+using UnityEngine;
 
 namespace VentureValheim.IncognitoMode
 {
@@ -42,11 +43,6 @@ namespace VentureValheim.IncognitoMode
             }
         }
 
-        private void SetHidden(ref Player player, bool hidden)
-        {
-            player?.m_nview?.GetZDO()?.Set(NAME_HIDDEN, hidden);
-        }
-
         /// <summary>
         /// Check if the display name needs to be hidden.
         /// </summary>
@@ -55,9 +51,13 @@ namespace VentureValheim.IncognitoMode
         {
             private static void Postfix(Player __instance, ref string __result)
             {
-                var hidden = __instance.m_nview?.GetZDO()?.GetBool(NAME_HIDDEN) ?? false;
+                if (__instance.m_nview == null)
+                {
+                    return;
+                }
 
-                if (hidden)
+                var zdo = __instance.m_nview.GetZDO();
+                if (zdo != null && zdo.GetBool(NAME_HIDDEN))
                 {
                     __result = GetDisplayName();
                 }
@@ -72,7 +72,13 @@ namespace VentureValheim.IncognitoMode
         {
             private static void Postfix(Player __instance)
             {
-                if (__instance.m_nview?.GetZDO() != null && __instance.m_nview.IsOwner())
+                if (__instance.m_nview == null || !__instance.m_nview.IsOwner())
+                {
+                    return;
+                }
+
+                var zdo = __instance.m_nview.GetZDO();
+                if (zdo != null)
 			    {
                     Instance.Update();
 
@@ -81,22 +87,21 @@ namespace VentureValheim.IncognitoMode
                     var back = __instance.m_shoulderItem;
                     var utility = __instance.m_utilityItem;
 
-                    if (helmet != null && Instance.ItemPrefabs.Contains(helmet.m_dropPrefab?.name))
+                    if (helmet != null && helmet.m_dropPrefab != null && Instance.ItemPrefabs.Contains(helmet.m_dropPrefab.name))
                     {
                         hidden = true;
                     }
-                    else if (back != null && Instance.ItemPrefabs.Contains(back.m_dropPrefab?.name))
+                    else if (back != null && back.m_dropPrefab != null && Instance.ItemPrefabs.Contains(back.m_dropPrefab.name))
                     {
                         hidden = true;
                     }
-                    else if (utility != null && Instance.ItemPrefabs.Contains(utility.m_dropPrefab?.name))
+                    else if (utility != null && utility.m_dropPrefab != null && Instance.ItemPrefabs.Contains(utility.m_dropPrefab.name))
                     {
                         hidden = true;
                     }
 
-                    Instance.SetHidden(ref __instance, hidden);
+                    zdo.Set(NAME_HIDDEN, hidden);
                 }
-
             }
         }
 
@@ -124,7 +129,16 @@ namespace VentureValheim.IncognitoMode
                         }
                     }
 
-                    var hidden = speaker?.m_nview?.GetZDO()?.GetBool(NAME_HIDDEN) ?? false;
+                    bool hidden = false;
+
+                    if (speaker != null && speaker.m_nview != null)
+                    {
+                        var zdo = speaker.m_nview.GetZDO();
+                        if (zdo != null)
+                        {
+                            hidden = zdo.GetBool(NAME_HIDDEN);
+                        }
+                    }
 
                     if (hidden)
                     {
