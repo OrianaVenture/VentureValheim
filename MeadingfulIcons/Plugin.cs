@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -12,7 +13,7 @@ namespace VentureValheim.MeadingfulIcons
     public class MeadingfulIconsPlugin : BaseUnityPlugin
     {
         private const string ModName = "MeadingfulIcons";
-        private const string ModVersion = "0.1.1";
+        private const string ModVersion = "0.1.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -73,6 +74,7 @@ namespace VentureValheim.MeadingfulIcons
         private void SetupWatcher()
         {
             FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
+            // Due to limitations of technology this can trigger twice in a row
             watcher.Changed += ReadConfigValues;
             watcher.Created += ReadConfigValues;
             watcher.Renamed += ReadConfigValues;
@@ -81,17 +83,31 @@ namespace VentureValheim.MeadingfulIcons
             watcher.EnableRaisingEvents = true;
         }
 
+        private DateTime _lastReloadTime;
+        private const long RELOAD_DELAY = 10000000; // One second
+
         private void ReadConfigValues(object sender, FileSystemEventArgs e)
         {
-            if (!File.Exists(ConfigFileFullPath)) return;
+            var now = DateTime.Now;
+            var time = now.Ticks - _lastReloadTime.Ticks;
+            if (!File.Exists(ConfigFileFullPath) || time < RELOAD_DELAY) return;
+
             try
             {
-                MeadingfulIconsLogger.LogDebug("Attempting to reload configuration...");
+                MeadingfulIconsLogger.LogInfo("Attempting to reload configuration...");
                 Config.Reload();
             }
             catch
             {
                 MeadingfulIconsLogger.LogError($"There was an issue loading {ConfigFileName}");
+                return;
+            }
+
+            _lastReloadTime = now;
+
+            if (ZNet.instance != null && !ZNet.instance.IsDedicated())
+            {
+                MeadingfulIcons.ApplyMeadingfulChanges();
             }
         }
     }

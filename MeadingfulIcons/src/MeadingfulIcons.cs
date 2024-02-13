@@ -20,7 +20,7 @@ namespace VentureValheim.MeadingfulIcons
             get => _instance;
         }
 
-        private static bool _initialized = false;
+        private static AssetBundle _iconBundle = null;
 
         private static readonly HashSet<string> _meadList = new HashSet<string>()
         {
@@ -36,6 +36,8 @@ namespace VentureValheim.MeadingfulIcons
             "BarleyWineBase"
         };
 
+        private static bool _objectDBReady = false;
+
         /// <summary>
         /// Attempts to get the ItemDrop by the given name's hashcode, if not found searches by string.
         /// </summary>
@@ -48,20 +50,21 @@ namespace VentureValheim.MeadingfulIcons
 
             if (!name.IsNullOrWhiteSpace())
             {
-                try
-                {
-                    // Try hash code
-                    item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode())?.GetComponent<ItemDrop>();
-                }
-                catch
+                // Try hash code
+                var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
+                if (prefab == null)
                 {
                     // Failed, try slow search
-                    item = ObjectDB.instance.GetItemPrefab(name)?.GetComponent<ItemDrop>();
+                    prefab = ObjectDB.instance.GetItemPrefab(name);
                 }
 
-                if (item != null)
+                if (prefab != null)
                 {
-                    return true;
+                    item = prefab.GetComponent<ItemDrop>();
+                    if (item != null)
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -146,76 +149,101 @@ namespace VentureValheim.MeadingfulIcons
             return newSprite;
         }
 
+        /// <summary>
+        /// Creates and applies new mead base icons if applicable. Sets the stack size of all mead bases.
+        /// </summary>
+        public static void ApplyMeadingfulChanges()
+        {
+            if (!_objectDBReady)
+            {
+                return;
+            }
+
+            if (MeadingfulIconsPlugin.GetReplaceIcons() && _iconBundle == null)
+            {
+                try
+                {
+                    _iconBundle = AssetUtils.LoadAssetBundleFromResources("meadingful_icons", Assembly.GetExecutingAssembly());
+                }
+                catch (Exception e)
+                {
+                    MeadingfulIconsPlugin.MeadingfulIconsLogger.LogError("Exception Caught! This mod might not behave as expected.");
+                    MeadingfulIconsPlugin.MeadingfulIconsLogger.LogInfo(e);
+                }
+            }
+
+            Texture2D baseSpriteTexture = null;
+
+            if (GetItemDrop("MeadBaseTasty", out var tasty))
+            {
+                if (MeadingfulIconsPlugin.GetReplaceIcons() && _iconBundle != null && tasty.m_itemData.m_shared.m_icons.Length > 0)
+                {
+                    Sprite baseSprite = tasty.m_itemData.m_shared.m_icons[0];
+                    if (baseSprite.texture.isReadable)
+                    {
+                        baseSpriteTexture = baseSprite.texture;
+                    }
+                    else
+                    {
+                        baseSpriteTexture = DuplicateTexture(baseSprite);
+                    }
+                }
+
+                tasty.m_itemData.m_shared.m_maxStackSize = MeadingfulIconsPlugin.GetStackSize();
+            }
+
+            foreach (var mead in _meadList)
+            {
+                if (GetItemDrop(mead, out var item))
+                {
+                    if (MeadingfulIconsPlugin.GetReplaceIcons() && _iconBundle != null && baseSpriteTexture != null)
+                    {
+                        Sprite overlay = null;
+                        try
+                        {
+                            overlay = _iconBundle.LoadAsset<Sprite>($"VV_{mead}");
+                        }
+                        catch (Exception e)
+                        {
+                            MeadingfulIconsPlugin.MeadingfulIconsLogger.LogError("Exception Caught! This mod might not behave as expected.");
+                            MeadingfulIconsPlugin.MeadingfulIconsLogger.LogInfo(e);
+                        }
+
+                        if (overlay != null && overlay.texture.isReadable)
+                        {
+                            var sprite = MergeTextures($"VV_{mead}", baseSpriteTexture, overlay.texture);
+                            item.m_itemData.m_shared.m_icons = new Sprite[] { sprite };
+                        }
+                        else
+                        {
+                            MeadingfulIconsPlugin.MeadingfulIconsLogger.LogWarning($"Could not load {mead} icon! Skipping.");
+                        }
+                    }
+
+                    item.m_itemData.m_shared.m_maxStackSize = MeadingfulIconsPlugin.GetStackSize();
+                }
+                else
+                {
+                    MeadingfulIconsPlugin.MeadingfulIconsLogger.LogWarning($"Could not find {mead}! Skipping.");
+                }
+            }
+
+            MeadingfulIconsPlugin.MeadingfulIconsLogger.LogInfo("Done applying mead configurations.");
+        }
+
         [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.Awake))]
         public static class Patch_ObjectDB_Awake
         {
             private static void Postfix()
             {
-                if (!_initialized && SceneManager.GetActiveScene().name.Equals("main"))
+                if (SceneManager.GetActiveScene().name.Equals("main"))
                 {
-                    try
-                    {
-                        AssetBundle iconBundle = null;
-                        if (MeadingfulIconsPlugin.GetReplaceIcons())
-                        {
-                            iconBundle = AssetUtils.LoadAssetBundleFromResources("meadingful_icons", Assembly.GetExecutingAssembly());
-                        }
-
-                        Sprite baseSprite = null;
-                        Texture2D baseSpriteTexture = null;
-
-                        if (GetItemDrop("MeadBaseTasty", out var tasty))
-                        {
-                            if (iconBundle != null && tasty.m_itemData.m_shared.m_icons.Length > 0)
-                            {
-                                baseSprite = tasty.m_itemData.m_shared.m_icons[0];
-                                if (baseSprite.texture.isReadable)
-                                {
-                                    baseSpriteTexture = baseSprite.texture;
-                                }
-                                else
-                                {
-                                    baseSpriteTexture = DuplicateTexture(baseSprite);
-                                }
-                            }
-                            tasty.m_itemData.m_shared.m_maxStackSize = MeadingfulIconsPlugin.GetStackSize();
-                        }
-
-                        foreach (var mead in _meadList)
-                        {
-                            if (GetItemDrop(mead, out var item))
-                            {
-                                if (iconBundle != null && baseSpriteTexture != null)
-                                {
-                                    var overlay = iconBundle.LoadAsset<Sprite>($"VV_{mead}");
-                                    if (overlay != null && overlay.texture.isReadable)
-                                    {
-                                        var sprite = MergeTextures($"VV_{mead}", baseSpriteTexture, overlay.texture);
-                                        item.m_itemData.m_shared.m_icons = new Sprite[] { sprite };
-                                    }
-                                    else
-                                    {
-                                        MeadingfulIconsPlugin.MeadingfulIconsLogger.LogWarning($"Could not load {mead} icon! Skipping.");
-                                    }
-                                }
-
-                                item.m_itemData.m_shared.m_maxStackSize = MeadingfulIconsPlugin.GetStackSize();
-                            }
-                            else
-                            {
-                                MeadingfulIconsPlugin.MeadingfulIconsLogger.LogWarning($"Could not find {mead}! Skipping.");
-                            }
-                        }
-
-                        MeadingfulIconsPlugin.MeadingfulIconsLogger.LogInfo("Done applying mead configurations.");
-                    }
-                    catch (Exception e)
-                    {
-                        MeadingfulIconsPlugin.MeadingfulIconsLogger.LogError("Exception Caught! This mod might not behave as expected.");
-                        MeadingfulIconsPlugin.MeadingfulIconsLogger.LogInfo(e);
-                    }
-
-                    _initialized = true;
+                    _objectDBReady = true;
+                    ApplyMeadingfulChanges();
+                }
+                else
+                {
+                    _objectDBReady = false;
                 }
             }
         }
