@@ -128,6 +128,30 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
+        /// Block using ammo without the proper keys.
+        /// </summary>
+        [HarmonyPatch(typeof(Inventory), nameof(Inventory.GetAmmoItem))]
+        public static class Patch_Inventory_GetAmmoItem
+        {
+            private static void Postfix(Inventory __instance, ref ItemDrop.ItemData __result)
+            {
+                if (__instance != Player.m_localPlayer.GetInventory() || __result == null)
+                {
+                    return;
+                }
+
+                if (ProgressionConfiguration.Instance.GetLockEquipment())
+                {
+                    if (Instance.IsActionBlocked(__result, __result.m_quality, true, true, false))
+                    {
+                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                        __result = null;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Block opening doors without the proper keys.
         /// </summary>
         [HarmonyPatch(typeof(Door), nameof(Door.HaveKey))]

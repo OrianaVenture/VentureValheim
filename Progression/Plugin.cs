@@ -22,7 +22,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.2.7";
+        private const string ModVersion = "0.2.8";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -93,6 +93,9 @@ namespace VentureValheim.Progression
         public static ConfigEntry<string> CE_CaveItemsKey = null!;
         public static ConfigEntry<string> CE_TowerItemsKey = null!;
 
+        // Raids Configuration
+        public static ConfigEntry<bool> CE_UsePrivateRaids = null!;
+
         private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
         private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
 
@@ -119,6 +122,7 @@ namespace VentureValheim.Progression
             const string skills = "Skills";
             const string trader = "Trader";
             const string hildir = "Hildir";
+            const string raids = "Raids";
 
             // Keys
             AddConfig("BlockAllGlobalKeys", keys,
@@ -277,6 +281,10 @@ namespace VentureValheim.Progression
                 "Custom key for unlocking the Tower Dungeon items. Leave blank to use default (string).",
                 true, "", ref CE_TowerItemsKey);
 
+            // Raids
+            AddConfig("UsePrivateRaids", raids, "True to use this mod's raids feature when using private keys (bool).",
+                true, true, ref CE_UsePrivateRaids);
+
             #endregion
 
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -375,6 +383,9 @@ namespace VentureValheim.Progression
         public string GetCryptItemsKey();
         public string GetCaveItemsKey();
         public string GetTowerItemsKey();
+
+        // Raids Configuration
+        public bool GetUsePrivateRaids();
     }
 
     public class ProgressionConfiguration : IProgressionConfiguration
@@ -521,5 +532,8 @@ namespace VentureValheim.Progression
         public string GetCryptItemsKey() => ProgressionPlugin.CE_CryptItemsKey.Value;
         public string GetCaveItemsKey() => ProgressionPlugin.CE_CaveItemsKey.Value;
         public string GetTowerItemsKey() => ProgressionPlugin.CE_TowerItemsKey.Value;
+
+        // Raids
+        public bool GetUsePrivateRaids() => ProgressionPlugin.CE_UsePrivateRaids.Value;
     }
 }

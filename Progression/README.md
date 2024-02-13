@@ -10,9 +10,6 @@ Control skill levels, trader items, and manage world and individual player keys!
 
 The main feature of this mod is to have an easy way to control the rate at which the world and individual player advances. Below are some explanations of features and how to configure them. See more details in the config file. Generate the config file by launching the game once with this mod installed. The information included in the file will not always match the information provided in this readme.
 
-<details open>
-<summary>Expand/Collapse Features</summary>
-
 ### Key Management
 
 What is a key and what is controlled by them? In vanilla Valheim there exists a "global key" list that is a bunch of strings shared by all players. Worldly spawns, raids, dreams, and Haldor's items are all controlled by the presence of specific keys. Each boss, select creatures in the game, as well as Hildir's quests each have keys associated with their completion. The main feature of this mod is the addition of a private key system that makes this progress all individual.
@@ -23,9 +20,15 @@ When enabled, private keys will be added to any player within a 100 meter range 
 
 The player that is hosting a loaded "chunk" will control the worldly spawns. For example, a player A with no keys joins player B with all the boss keys and starts seeing Fuling night spawns, but if player A is alone they should not get higher level spawns. If player A loads and hosts an area and is later joined by player B, the area should not spawn the higher level monsters that become unlocked with keys.
 
-After the Hildir update a new game setting (world modifier) was added to vanilla for player-based raids. When using the private key system the player based raid setting will be applied automatically at startup. The old logic for private raids has been removed and is no longer supported at this time.
-
 Hildir keys for unlocking store content are applied when the chests are turned in. Make sure all participating players are present when the chest is turned in to get credit. (Hildir wants to thank you personally!)
+
+#### Private Raids (Events)
+
+When using private keys it will alter how raids work in your world. After the Hildir update a new game setting (world modifier) was added to vanilla for player-based raids. When using the private key system the player based raid setting will be applied automatically for you at startup. This is required for the private raids feature to work.
+
+When using this feature with other mods it is important to note this mod checks the "global key" requirements on the raid to determine if a raid is valid. It is the same logic checks as if using vanilla global keys, just done for each player.
+
+If you see conficts with other mods you can turn off this mod's private raids feature by setting UsePrivateRaids = false. When set to false the vanilla player based raids logic will be used.
 
 #### Important Tips
 
@@ -161,8 +164,6 @@ Want to just lose accumulation points when you die? This is possible if you set 
 
 This was a previous feature of this mod that has been pulled out into it's own module. To use scaling please download and configure the new mod. Directions on how to port over existing yaml files included with new mod.
 
-</details>
-
 ## Installation
 
 This mod needs to be on both the client and server for all features to work. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations will not always take effect until the player relogs into the world/server.
@@ -185,92 +186,7 @@ This mod automatically recognizes season keys as global and does not require fur
 
 ## Changelog
 
-### 0.2.7
-
-* Improved other mod compatibilities by additionally patching for ZoneSystem.RPC_RemoveGlobalKey method.
-* Added new command removeglobalkey due to previous change altering the vanilla removekey command.
-* Refactored patches so both global keys and private keys lists are handled appropriately when using private keys to respect global key configurations. Changes some vanilla commands' behavior.
-* Added built in support for the Seasonality mod.
-
-### 0.2.6
-
-* Improved other mod compatibilities when using private keys by additionally patching for ZoneSystem.GetGlobalKeys method.
-* Added new command listglobalkeys due to previous change altering the vanilla listkeys command.
-* Added new command resetglobalkeys.
-* All keys will now be converted to lowercase internally for handling to mimic vanilla behavior (let me know if this causes issues with other mods using keys)
-
-### 0.2.5
-
-* Fixed issues with skill levels being calculated incorrectly when UseBossKeysForSkillLevel was true.
-* Added new configuration LockPortalsKey to control player ability to use portals. Defaults to off.
-* Added check to make sure activeBosses key is treated like world modifiers.
-
-### 0.2.4
-
-* Fixed an issue where item upgrades were not checked for locking. Will now correctly identify item level and will lock items based on current summation of crafting ingredients for items.
-
-### 0.2.3
-
-* Removed the Qualifying keys feature added in 0.1.1, mod will now correctly identify world modifiers without further configuration
-* Orphaned config QualifyingKeys will remain in your config files but is not used
-* If using other mods that add keys between the updates (0.1.1 - 0.2.2) they may now be in your global key list (might not cause issues, but be aware)
-
-### 0.2.2
-
-* Fixed issue with PlayerEvents world modifier not being applied correctly (was disabling raids when using private keys)
-
-### 0.2.1
-
-* Update for game patch 0.217.22, bepinex version 5.4.22.0
-
-### 0.2.0
-
-* Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work
-* Added new config for admins to bypass locking settings
-* Added new config to toggle blocked action fire effect
-* Added missing items to locking system: lox pelt, blue jute, sharpening stone, thistle, entrails
-  * Note: entrails set to defeating Eikthyr (not Elder) due to meadows draugr villages
-* Fixed issue with cauldron not locking cooking
-
-### 0.1.4
-
-* Added new configurations for Hildir trade items
-* Bug fix for instances where hiding all trader items throws an error
-
-### 0.1.3
-
-* Created save recovery patch to fix duplicate world modifiers entry
-* GlobalKeyAdd use false for canSaveToServerOptionKeys parameter to avoid duplicate entry
-
-### 0.1.2
-
-* Added check to ensure player events key is not added multiple times after restart (part of corruption issue)
-
-### 0.1.1
-
-* Hard check added to ensure keys are not world modifiers, fixes world save corruption issue (super apologies for this)
-* QualifyingKeys config added to allow support for other mods due to hard check
-* Private key cleanup will now remove all keys that are non-qualifying, make sure to configure this new setting
-
-### 0.1.0
-
-* Update for game patch version 0.217.14 (Please read Hildir update notes at top)
-* First official release, bug fixing to come for Hildir as reported
-* UsePrivateKeys config now defaults to true
-* Removed private key implementation for raids, now sets and uses the vanilla world modifier for player based raids
-
-### 0.0.29
-
-* Removed world scaling feature from this mod (get the new mod if previously using)
-* Deprecated the key file port logic (Files deprecated in version 0.0.19, if you have used a newer version of this mod your characters are already upgraded)
-* Added logic to support global key management server-side only
-* Added config toggle to display the blocked action message and effect
-* Added config settings for automatic boss summon unlocking over time
-* Moved the locking configs to a new section (You will have to manually update your config file if using)
-* Moved boss keys for skill level configs to Skills section (You will have to manually update your config file if using)
-* P.S. This should be the last set of major changes before the official release
-
-See all patch notes on Github.
+Moved to new file, it will appear as a new tab on the thunderstore page.
 
 ## Contributing
 
