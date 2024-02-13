@@ -9,7 +9,7 @@ namespace VentureValheim.NoPuke
     public class NoPukePlugin : BaseUnityPlugin
     {
         private const string ModName = "NoPuke";
-        private const string ModVersion = "0.2.0";
+        private const string ModVersion = "0.2.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 

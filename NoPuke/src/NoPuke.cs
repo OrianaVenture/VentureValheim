@@ -26,20 +26,21 @@ namespace VentureValheim.NoPuke
 
             if (!name.IsNullOrWhiteSpace())
             {
-                try
-                {
-                    // Try hash code
-                    item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode())?.GetComponent<ItemDrop>();
-                }
-                catch
+                // Try hash code
+                var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
+                if (prefab == null)
                 {
                     // Failed, try slow search
-                    item = ObjectDB.instance.GetItemPrefab(name)?.GetComponent<ItemDrop>();
+                    prefab = ObjectDB.instance.GetItemPrefab(name);
                 }
 
-                if (item != null)
+                if (prefab != null)
                 {
-                    return true;
+                    item = prefab.GetComponent<ItemDrop>();
+                    if (item != null)
+                    {
+                        return true;
+                    }
                 }
             }
 

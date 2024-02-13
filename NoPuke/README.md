@@ -12,6 +12,10 @@ This mod is client side only and has no configuration options. Does not need to 
 
 ## Changelog
 
+### 0.2.1
+
+* Code cleanup to remove null-propagating operators. No feature changes.
+
 ### 0.2.0
 
 * Now also disables the Bonemass puking effects during the aoe attack.
