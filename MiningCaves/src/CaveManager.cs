@@ -16,10 +16,6 @@ namespace VentureValheim.MiningCaves
 
         public static void AddMiningCaves()
         {
-            ClearPrefabCache(typeof(Material));
-            ClearPrefabCache(typeof(GameObject));
-            ClearPrefabCache(typeof(Mesh));
-
             // Disable the terrain modifiers located on the copper node frac
             var frac = PrefabManager.Instance.GetPrefab("rock4_copper_frac");
             if (frac != null)
@@ -66,40 +62,6 @@ namespace VentureValheim.MiningCaves
             ZoneManager.Instance.AddCustomLocation(silverCaveLoc);
 
             ZoneManager.OnVanillaLocationsAvailable -= AddMiningCaves;
-        }
-
-        /// <summary>
-        /// Clears the Jotunn PrefabManager Cache of the specified type to fix some mocks not resolving.
-        /// </summary>
-        /// <param name="t"></param>
-        private static void ClearPrefabCache(Type t)
-        {
-            if (dictionaryCache == null)
-            {
-                var cacheField = AccessTools.Field(typeof(PrefabManager.Cache), "dictionaryCache") as FieldInfo;
-                if (cacheField != null)
-                {
-                    var dict = cacheField.GetValue(null) as Dictionary<Type, Dictionary<string, UnityEngine.Object>>;
-                    if (dict != null)
-                    {
-                        dictionaryCache = dict;
-                    }
-                    else
-                    {
-                        MiningCavesPlugin.MiningCavesLogger.LogDebug($"Couldn't get value of PrefabManager.Cache.dictionaryCache");
-                    }
-                }
-                else
-                {
-                    MiningCavesPlugin.MiningCavesLogger.LogDebug($"Couldn't find memberinfo for PrefabManager.Cache.dictionaryCache");
-                }
-            }
-
-            if (dictionaryCache != null)
-            {
-                MiningCavesPlugin.MiningCavesLogger.LogDebug($"Clearing cache for type {t}.");
-                dictionaryCache.Remove(t);
-            }
         }
     }
 }

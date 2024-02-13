@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -6,6 +7,8 @@ using BepInEx.Logging;
 using HarmonyLib;
 using Jotunn.Managers;
 using Jotunn.Utils;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace VentureValheim.MiningCaves
 {
@@ -15,7 +18,7 @@ namespace VentureValheim.MiningCaves
     public class MiningCavesPlugin : BaseUnityPlugin
     {
         private const string ModName = "MiningCaves";
-        private const string ModVersion = "0.1.2";
+        private const string ModVersion = "0.1.3";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 
@@ -23,6 +26,8 @@ namespace VentureValheim.MiningCaves
         public static readonly ManualLogSource MiningCavesLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
         private static string ConfigFileName = ModGUID + ".cfg";
         private static string ConfigFileFullPath = BepInEx.Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
+
+        public static GameObject Root;
 
         #region ConfigurationEntries
         public static ConfigEntry<bool> CE_AdminBypass = null!;
@@ -74,6 +79,11 @@ namespace VentureValheim.MiningCaves
 
             ZoneManager.OnVanillaLocationsAvailable += CaveManager.AddMiningCaves;
 
+            // Create a dummy root object to reference
+            Root = new GameObject("MiningCavesRoot");
+            Root.SetActive(false);
+            DontDestroyOnLoad(Root);
+
             MiningCavesLogger.LogInfo("So you're mining stuff to craft with and crafting stuff to mine with?");
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
@@ -96,17 +106,30 @@ namespace VentureValheim.MiningCaves
             watcher.EnableRaisingEvents = true;
         }
 
+        private DateTime _lastReloadTime;
+        private const long RELOAD_DELAY = 10000000; // One second
+
         private void ReadConfigValues(object sender, FileSystemEventArgs e)
         {
-            if (!File.Exists(ConfigFileFullPath)) return;
+            var now = DateTime.Now;
+            var time = now.Ticks - _lastReloadTime.Ticks;
+            if (!File.Exists(ConfigFileFullPath) || time < RELOAD_DELAY) return;
+
             try
             {
-                MiningCavesLogger.LogDebug("Attempting to reload configuration...");
+                MiningCavesLogger.LogInfo("Attempting to reload configuration...");
                 Config.Reload();
             }
             catch
             {
                 MiningCavesLogger.LogError($"There was an issue loading {ConfigFileName}");
+            }
+
+            _lastReloadTime = now;
+
+            if (ZNet.instance != null && !ZNet.instance.IsDedicated())
+            {
+                TerrainManager.ApplyTerrainLocking();
             }
         }
     }
