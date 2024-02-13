@@ -47,7 +47,12 @@ namespace VentureValheim.LocationReset
                                 {
                                     // Count Leviathans in zone
                                     var levi = ZNetScene.instance.FindInstance(obj);
-                                    var leviathan = levi?.transform.root.GetComponent<Leviathan>();
+                                    if (levi == null)
+                                    {
+                                        continue;
+                                    }
+
+                                    var leviathan = levi.transform.root.GetComponent<Leviathan>();
                                     if (leviathan != null && leviathan.CheckDelete(out bool deleted))
                                     {
                                         if (!deleted)

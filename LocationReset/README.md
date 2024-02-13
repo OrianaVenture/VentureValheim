@@ -59,28 +59,25 @@ This feature may impact performance more so than resetting dungeons and Location
 
 Due to loading times and the very random nature of the world spawning system there may be cases where this mod behaves strangely.
 
-* Two locations very close together can delete parts of the other during regeneration.
-* Resetting ground locations can potentially remove pickables around a location that are not respawned like stones, branches, or berry bushes.
-* If you move very fast (or admin fly) through an area you may see locations change as they regenerate, especially noticeable in the plains. If you move too fast through an area while triggering a reset you can cause item duplication.
-* Some items are not respawned like black forest barrels, boulders, and mistlands giant mineables. I could not find an easy way to identify these items without also destroying trees and rocks.
+* Two locations spawned on top of each other will delete parts of the other during regeneration.
+* Resets can potentially remove some things around the ground of the location that are not respawned like berry bushes, logs, and large rocks.
 * Item duplication should not happen, but is possible if timing conditions are right. If you can consistency reproduce duplication issues please report the problem.
+* If you move very fast (or admin fly) through an area you may see locations change as they regenerate, especially noticeable in the plains. If you move too fast through an area while triggering a reset you can cause item duplication.
 * When a new zone or location is loaded there is an expected small lag spike. This happens in vanilla already, but might also be noticeable when this mod is performing a reset.
+* Dungeons with radial camps (like Fuling camps) will be randomized every reset due to the generation algorithm.
 
 ### Other Mod Support
 
-The following locations from other mods are supported:
+If set up correctly by the mod author this mod should successfully regenerate all custom locations and dunegons. There are cases where this mod may behave strangely. Please report any issues you may encounter when using custom locations.
 
-* Venture: VV_CopperTinCave, VV_SilverCave (these have their own configs)
-* Monsterlabz: SpiderCave01, AshlandsCave_01, AshlandsCave_02, Mystical_Well0
-* By Horem: Loc_MistlandsCave_DoD
-* By Therzie: CaveDeepNorth_TW
+The following locations from other mods are excluded from resetting to prevent issues:
+
+* Monsterlabz: Mystical_Well0
 * Wayshrine by Azumatt: Wayshrine, Wayshrine_Ashlands, Wayshrine_Frost, Wayshrine_Plains, Wayshrine_Skull, Wayshrine_Skull_2
 
 ### Possible Future Improvements
 
-* Finding a way to reset items listed in limitations
 * Resetting terrain changes (especially for tar pits)
-* Support for other mods (by request)
 
 ## Installation
 
@@ -88,87 +85,7 @@ This mod needs to be on the client, it will work even if other players do not ha
 
 ## Changelog
 
-### 0.7.0
-
-* Added support for Mining Caves
-* Added support for all Wayshrines and Mystical_Well0, these will never reset to prevent issues
-* Added new console command "resetlocations" with optional range parameter
-* Small bug fix where a respawn would apply the wrong rotation to some objects (Quaternion math is special and I'm apparently dyslexic)
-
-### 0.6.1
-
-* Added support for CaveDeepNorth_TW from Therzie's Warfare mod
-
-### 0.6.0
-
-* Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work
-
-### 0.5.1
-
-* Fixed configs not selecting the correct reset times and just using default
-* Added advanced configs for new Hildir's Request dungeons
-
-### 0.5.0
-
-* Update for game patch version 0.217.14 (Hildir's Request)
-* Internal code refactor to simplify resetting, now auto-detects dungeons and all reset tracking moved to LocationProxy object
-  * Improved compatibility for custom dungeons from other mods (does not apply for non-dungeon sky locations)
-  * You will lose reset times on all dungeons when upgrading, they will be treated as if the mod was newly installed
-* Bug fix for frost caves and mistlands dungeons regenerating with different seeds
-* Reworked resetting logic of leviathans to only happen if the player is the "chunk owner" (similar update happened in 0.3.1)
-* Added ItemDrop to recognized type for resets, this will now delete and respawn things you can throw on the ground
-* Extended the range of triggering resets to 100 meters for all locations and dungeons (sky locations previously 30)
-
-### 0.4.0
-
-* Update for game patch 0.216.9
-* Bug fix for multiple leviathans spawning in the same place in multiplayer (needs extra testing)
-* Bug fix for ground locations not detecting player built pieces correctly (incorrect radius check)
-
-### 0.3.1
-
-* Reworked resetting logic of dungeons and locations to only happen if the player is the "chunk owner". Should fix a bug where reset times were not being recorded correctly and caused multiple resets to happen in a short amount of time
-* Added a redundant error check to ensure a reset does not happen unless the reset time is set properly
-
-### 0.3.0
-
-* Small optimization to the reset timing for dungeons and locations, now checks the area is ready before performing a reset - should help reduce small duplication errors
-* Major addition of Leviathan Resetting with new configs! (defaults to on! be aware when you upgrade the mod)
-
-### 0.2.3
-
-* Changed how zone centers of locations are determined to improve accuracy of location deletion
-* Removed the ModEnabled config since it doesn't really do anything important
-
-### 0.2.2
-
-* Fixed issue with multiplayer sessions triggering multiple resets due to reset day not being recorded correctly, plus more internal error checking
-* Changed how zone sizes of locations are calculated to improve accuracy of location deletion
-* Added resetting for doors that require keys to open (sunken crypts and citadel, should support custom content)
-* Added missing wear and tear damage to resetting dungeons
-
-### 0.2.1
-
-* Added mod support for Monsterlabz and Horem's locations.
-
-### 0.2.0
-
-* Added support for resetting all kinds of ground locations including villages and fuling camps
-* New config option to toggle resetting ground locations (defaults to on! be aware when you upgrade the mod)
-* New config options for specifying reset times for different dungeons
-
-### 0.1.2
-
-* Patch for object deletion to hopefully solve a multiplayer deletion issue.
-
-### 0.1.1
-
-* Added a new config option SkipPlayerGroundPieceCheck
-* Please note I forgot to bump the version number for this release.
-
-### 0.1.0
-
-* First release
+Moved to new file, it will appear as a new tab on the thunderstore page.
 
 ## Contributing
 

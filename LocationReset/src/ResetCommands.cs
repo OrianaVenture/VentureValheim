@@ -20,7 +20,12 @@ namespace VentureValheim.LocationReset
 
                 if (location != null && LocationReset.InBounds(point, location.transform.position, range))
                 {
-                    int hash = location.m_nview?.GetZDO()?.GetInt(ZDOVars.s_location) ?? 0;
+                    int hash = 0;
+                    if (location.m_nview != null && location.m_nview.GetZDO() != null)
+                    {
+                        hash = location.m_nview.GetZDO().GetInt(ZDOVars.s_location);
+                    }
+
                     LocationReset.Instance.TryReset(location, hash, true);
                 }
             }

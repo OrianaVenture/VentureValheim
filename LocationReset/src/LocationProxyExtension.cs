@@ -8,7 +8,7 @@ namespace VentureValheim.LocationReset
     {
         public static bool SetLastResetNow(this LocationProxy loc)
         {
-            if (loc.m_nview?.GetZDO() == null || !loc.m_nview.IsOwner())
+            if (loc.m_nview == null || loc.m_nview.GetZDO() == null || !loc.m_nview.IsOwner())
             {
                 return false;
             }
@@ -19,7 +19,12 @@ namespace VentureValheim.LocationReset
 
         public static int GetLastReset(this LocationProxy loc)
         {
-            return loc.m_nview?.GetZDO()?.GetInt(LocationReset.LAST_RESET, -1) ?? -1;
+            if (loc.m_nview == null || loc.m_nview.GetZDO() == null)
+            {
+                return -1;
+            }
+
+            return loc.m_nview.GetZDO().GetInt(LocationReset.LAST_RESET, -1);
         }
 
         /// <summary>
@@ -74,7 +79,11 @@ namespace VentureValheim.LocationReset
             var loc = gameObject.GetComponent<LocationProxy>();
             if (loc != null)
             {
-                int hash = loc.m_nview?.GetZDO()?.GetInt(ZDOVars.s_location) ?? 0;
+                int hash = 0;
+                if (loc.m_nview != null && loc.m_nview.GetZDO() != null)
+                {
+                    hash = loc.m_nview.GetZDO().GetInt(ZDOVars.s_location, 0);
+                }
 
                 if (hash != 0 && !LocationReset.IgnoreLocationHashes.Contains(hash))
                 {

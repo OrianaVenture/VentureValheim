@@ -12,14 +12,19 @@ namespace VentureValheim.LocationReset
 
         public static int GetLastSubmerged(this Leviathan leviathan)
         {
-            return leviathan?.m_nview?.GetZDO()?.GetInt(LEVIATHAN_TIME, -1) ?? -1;
+            if (leviathan.m_nview != null && leviathan.m_nview.GetZDO() != null)
+            {
+                return leviathan.m_nview.GetZDO().GetInt(LEVIATHAN_TIME, -1);
+            }
+
+            return -1;
         }
 
         public static void SetLastSubmerged(this Leviathan leviathan, int day)
         {
-            if (leviathan.m_nview != null && leviathan.m_nview.IsOwner())
+            if (leviathan.m_nview != null && leviathan.m_nview.GetZDO() != null && leviathan.m_nview.IsOwner())
             {
-                leviathan.m_nview.GetZDO()?.Set(LEVIATHAN_TIME, day);
+                leviathan.m_nview.GetZDO().Set(LEVIATHAN_TIME, day);
             }
         }
 
@@ -38,9 +43,9 @@ namespace VentureValheim.LocationReset
                     leviathan.m_body.MovePosition(position);
                 }
             }
-            else
+            else if(leviathan.m_nview != null)
             {
-                leviathan.m_nview?.Destroy();
+                leviathan.m_nview.Destroy();
             }
         }
 
@@ -59,7 +64,7 @@ namespace VentureValheim.LocationReset
 
                 if (time != -1 && (LocationReset.GetGameDay() - time) >= LocationResetPlugin.GetLeviathanResetTime())
                 {
-                    var zdo = leviathan.m_nview?.GetZDO();
+                    var zdo = leviathan.m_nview.GetZDO();
                     if (zdo != null)
                     {
                         ZDOMan.instance.DestroyZDO(zdo);
@@ -114,7 +119,7 @@ namespace VentureValheim.LocationReset
                     if (__instance != null && __instance.m_left)
                     {
                         var day = LocationReset.GetGameDay();
-                        var time = __instance.m_nview?.GetZDO()?.GetInt(LEVIATHAN_TIME, -1) ?? -1;
+                        var time = __instance.GetLastSubmerged();
                         if (time == -1 || day - time >= LocationResetPlugin.GetLeviathanResetTime())
                         {
                             __instance.SetLastSubmerged(day);
