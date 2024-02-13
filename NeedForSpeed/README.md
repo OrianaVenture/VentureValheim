@@ -18,6 +18,10 @@ This mod needs to be on the client to work. Config Syncing is included with Jotu
 
 ## Changelog
 
+### 0.2.1
+
+* Removed mod enabled config, to disable the mod just remove it.
+
 ### 0.2.0
 
 * Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work

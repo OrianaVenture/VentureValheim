@@ -23,7 +23,7 @@ namespace VentureValheim.NeedForSpeed
         }
 
         private const string ModName = "NeedForSpeed";
-        private const string ModVersion = "0.2.0";
+        private const string ModVersion = "0.2.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -35,7 +35,6 @@ namespace VentureValheim.NeedForSpeed
 
         #region ConfigurationEntries
 
-        internal static ConfigEntry<bool> CE_ModEnabled = null!;
         internal static ConfigEntry<float> CE_JogSpeedMultiplier = null!;
         internal static ConfigEntry<float> CE_RunSpeedMultiplier = null!;
 
@@ -65,17 +64,12 @@ namespace VentureValheim.NeedForSpeed
 
             const string general = "General";
 
-            AddConfig("Enabled", general,"Enable module (boolean).",
-                true, true, ref CE_ModEnabled);
             AddConfig("JogSpeedMultiplier", general, "Jog Speed Multiplier, 1.3 is 30% faster (float).",
                 true, 1.3f, ref CE_JogSpeedMultiplier);
             AddConfig("RunSpeedMultiplier", general, "Run Speed Multiplier, 1.3 is 30% faster (float).",
                 true, 1.3f, ref CE_RunSpeedMultiplier);
 
             #endregion
-
-            if (!CE_ModEnabled.Value)
-                return;
 
             NeedForSpeedLogger.LogInfo("Somebody got the zoomies? Get ready to go fast!");
 
