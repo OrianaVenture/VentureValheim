@@ -45,6 +45,11 @@ namespace VentureValheim.FloatingItems
             "linenthread"
         };
 
+        private static HashSet<string> FloatingAddedPrefabs = new HashSet<string>();
+        private static HashSet<string> FloatingDisabledPrefabs = new HashSet<string>();
+
+        private static bool _objectDBReady = false;
+
         /// <summary>
         /// Read and apply configurations.
         /// </summary>
@@ -76,6 +81,31 @@ namespace VentureValheim.FloatingItems
         }
 
         /// <summary>
+        /// Returns true if the item qualifies as a meat item type.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private static bool IsMeat(string name)
+        {
+            return name.Contains(MeatPrefab) ||
+                name.Contains("necktail");
+        }
+
+        /// <summary>
+        /// Returns true if the item qualifies as a hide item type.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private static bool IsHide(string name)
+        {
+            return name.Contains(LeatherPrefab) ||
+                name.Contains(JutePrefab) ||
+                name.Contains(HidePrefab) ||
+                name.Contains(PeltPrefab) ||
+                name.Equals("wolfhairbundle");
+        }
+
+        /// <summary>
         /// Returns true if the item has a recipe or is a another qualifying player item.
         /// </summary>
         /// <param name="item"></param>
@@ -100,63 +130,107 @@ namespace VentureValheim.FloatingItems
         }
 
         /// <summary>
+        /// Returns true if configurations indicate an item should float.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        private static bool ShouldFloat(string name, GameObject item)
+        {
+            return Instance.FloatingPrefabs.Contains(name) ||
+                    (FloatingItemsPlugin.GetFloatTrophies() && name.Contains(TrophyPrefab)) ||
+                    (FloatingItemsPlugin.GetFloatMeat() && IsMeat(name)) ||
+                    (FloatingItemsPlugin.GetFloatHides() && IsHide(name)) ||
+                    (FloatingItemsPlugin.GetFloatGearAndCraftable() && IsPlayerGear(item));
+        }
+
+        /// <summary>
         /// Applies or removes floating effect to all configured items.
         /// </summary>
-        private static void EnableFloatingItems()
+        public static void EnableFloatingItems()
         {
+            if (!_objectDBReady)
+            {
+                return;
+            }
+
             Update();
 
-            foreach (var item in ObjectDB.instance.m_items)
+            for (int lcv = 0; lcv < ObjectDB.instance.m_items.Count; lcv++)
             {
+                var item = ObjectDB.instance.m_items[lcv];
                 var name = item.name.ToLower();
 
-                if (item.gameObject.GetComponent<Floating>() != null)
+                if (Instance.SinkingPrefabs.Contains(name))
                 {
-                    if (Instance.SinkingPrefabs.Contains(name))
-                    {
-                        RemoveFloatingComponent(item);
-                    }
-                    continue;
+                    DisableFloatingComponent(item);
+                }
+                else if (ShouldFloat(name, item))
+                {
+                    ApplyFloatingComponent(item);
+                }
+                else
+                {
+                    // Restore original state
+                    CleanFloatingItem(name, ref item);
+                }
+            }
+
+            FloatingItemsPlugin.FloatingItemsLogger.LogInfo("Done applying buoyancy.");
+        }
+
+        private static void CleanFloatingItem(string name, ref GameObject item)
+        {
+            if (FloatingAddedPrefabs.Contains(name))
+            {
+                var floating = item.gameObject.GetComponent<Floating>();
+                if (floating != null)
+                {
+                    GameObject.Destroy(floating);
                 }
 
-                if (!Instance.SinkingPrefabs.Contains(name))
+                FloatingAddedPrefabs.Remove(name);
+            }
+            else if (FloatingDisabledPrefabs.Contains(name))
+            {
+                var floating = item.gameObject.GetComponent<Floating>();
+                if (floating != null)
                 {
-                    if (Instance.FloatingPrefabs.Contains(name))
-                    {
-                        ApplyFloatingComponent(item);
-                    }
-                    else if (FloatingItemsPlugin.GetFloatTrophies() && name.Contains(TrophyPrefab))
-                    {
-                        ApplyFloatingComponent(item);
-                    }
-                    else if (FloatingItemsPlugin.GetFloatMeat() && name.Contains(MeatPrefab))
-                    {
-                        ApplyFloatingComponent(item);
-                    }
-                    else if (FloatingItemsPlugin.GetFloatHides() &&
-                        (name.Contains(LeatherPrefab) || name.Contains(JutePrefab) || name.Contains(HidePrefab) || 
-                        name.Contains(PeltPrefab) || name.Equals("wolfhairbundle")))
-                    {
-                        ApplyFloatingComponent(item);
-                    }
-                    else if (FloatingItemsPlugin.GetFloatGearAndCraftable() && IsPlayerGear(item))
-                    {
-                        ApplyFloatingComponent(item);
-                    }
+                    floating.enabled = true;
                 }
+
+                FloatingDisabledPrefabs.Remove(name);
             }
         }
 
+        /// <summary>
+        /// Add the Floating component to an item if it does not already have one.
+        /// </summary>
+        /// <param name="item"></param>
         private static void ApplyFloatingComponent(GameObject item)
         {
+            if (item.gameObject.GetComponent<Floating>() != null)
+            {
+                return;
+            }
+
             var floating = item.gameObject.AddComponent<Floating>();
             floating.m_waterLevelOffset = 0.7f;
+            FloatingAddedPrefabs.Add(item.gameObject.name.ToLower());
         }
 
-        private static void RemoveFloatingComponent(GameObject item)
+        /// <summary>
+        /// Disables the Floating component for an item if it has one.
+        /// </summary>
+        /// <param name="item"></param>
+        private static void DisableFloatingComponent(GameObject item)
         {
             var floating = item.gameObject.GetComponent<Floating>();
-            GameObject.Destroy(floating);
+            if (floating != null)
+            {
+                floating.enabled = false;
+                FloatingDisabledPrefabs.Add(item.gameObject.name.ToLower());
+            }
         }
 
         /// <summary>
@@ -170,8 +244,12 @@ namespace VentureValheim.FloatingItems
             {
                 if (SceneManager.GetActiveScene().name.Equals("main"))
                 {
+                    _objectDBReady = true;
                     EnableFloatingItems();
-                    FloatingItemsPlugin.FloatingItemsLogger.LogInfo("Done applying buoyancy.");
+                }
+                else
+                {
+                    _objectDBReady = false;
                 }
             }
         }
@@ -179,8 +257,9 @@ namespace VentureValheim.FloatingItems
         /// <summary>
         /// Helper method to identify floating items.
         /// </summary>
-        private static void ListFloatingItems()
+        /*private static void ListFloatingItems()
         {
+            int count = 0;
             foreach (var obj in ObjectDB.instance.m_items)
             {
                 if (obj == null) continue;
@@ -188,9 +267,12 @@ namespace VentureValheim.FloatingItems
                 var component = obj.GetComponent<Floating>();
                 if (component != null)
                 {
-                    FloatingItemsPlugin.FloatingItemsLogger.LogDebug($"Found floating component on {obj.name}.");
+                    count++;
+                    //FloatingItemsPlugin.FloatingItemsLogger.LogDebug($"Found floating component on {obj.name}.");
                 }
             }
-        }
+
+            FloatingItemsPlugin.FloatingItemsLogger.LogDebug($"Found {count} floating items.");
+        }*/
     }
 }

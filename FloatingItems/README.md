@@ -21,9 +21,15 @@ This mod does not make all items float. This version is intended for people who 
 
 ## Installation
 
-This mod needs to be on all clients to work properly. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations will not take effect until the player relogs into the world/server.
+This mod needs to be on all clients to work properly. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations should take immediate effect but items already on the ground will not update until reloaded or picked up.
 
 ## Changelog
+
+### 0.2.1
+
+* Fixed issue where patches may have applied before the initial server configuration syncing event. This made some server configurations not apply correctly.
+* Added ability to update and apply configuration changes live.
+* Added NeckTail to the meat category.
 
 ### 0.2.0
 

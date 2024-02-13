@@ -1,10 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using Jotunn.Utils;
 
 namespace VentureValheim.FloatingItems
 {
@@ -13,7 +13,7 @@ namespace VentureValheim.FloatingItems
     public class FloatingItemsPlugin : BaseUnityPlugin
     {
         private const string ModName = "VentureFloatingItems";
-        private const string ModVersion = "0.2.0";
+        private const string ModVersion = "0.2.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -45,7 +45,7 @@ namespace VentureValheim.FloatingItems
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
         {
             string extendedDescription = GetExtendedDescription(description, synced);
-            configEntry = Config.Bind(section, key, value, 
+            configEntry = Config.Bind(section, key, value,
                 new ConfigDescription(extendedDescription, null, synced ? AdminConfig : ClientConfig));
         }
 
@@ -89,7 +89,9 @@ namespace VentureValheim.FloatingItems
 
         private void SetupWatcher()
         {
+            _lastReloadTime = DateTime.Now;
             FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
+            // Due to limitations of technology this can trigger twice in a row
             watcher.Changed += ReadConfigValues;
             watcher.Created += ReadConfigValues;
             watcher.Renamed += ReadConfigValues;
@@ -98,17 +100,31 @@ namespace VentureValheim.FloatingItems
             watcher.EnableRaisingEvents = true;
         }
 
+        private DateTime _lastReloadTime;
+        private const long RELOAD_DELAY = 10000000; // One second
+
         private void ReadConfigValues(object sender, FileSystemEventArgs e)
         {
-            if (!File.Exists(ConfigFileFullPath)) return;
+            var now = DateTime.Now;
+            var time = now.Ticks - _lastReloadTime.Ticks;
+            if (!File.Exists(ConfigFileFullPath) || time < RELOAD_DELAY) return;
+
             try
             {
-                FloatingItemsLogger.LogDebug("Attempting to reload configuration...");
+                FloatingItemsLogger.LogInfo("Attempting to reload configuration...");
                 Config.Reload();
             }
             catch
             {
                 FloatingItemsLogger.LogError($"There was an issue loading {ConfigFileName}");
+                return;
+            }
+
+            _lastReloadTime = now;
+
+            if (ZNet.instance != null && !ZNet.instance.IsDedicated())
+            {
+                FloatingItems.EnableFloatingItems();
             }
         }
     }
