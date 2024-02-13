@@ -9,7 +9,7 @@ namespace VentureValheim.WarmTorches
     public class WarmTorchesPlugin : BaseUnityPlugin
     {
         private const string ModName = "WarmTorches";
-        private const string ModVersion = "0.1.0";
+        private const string ModVersion = "0.1.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 
@@ -33,19 +33,23 @@ namespace VentureValheim.WarmTorches
         {
             private static void Postfix(ref bool __result)
             {
-                if (__result)
+                if (!__result)
                 {
-                    var player = Player.m_localPlayer;
-                    if (player != null)
-                    {
-                        var rightItem = player.m_rightItem?.m_shared?.m_itemType ?? null;
-                        var leftItem = player.m_leftItem?.m_shared?.m_itemType ?? null;
+                    return;
+                }
 
-                        if ((rightItem != null && rightItem == ItemDrop.ItemData.ItemType.Torch) ||
-                            (leftItem != null && leftItem == ItemDrop.ItemData.ItemType.Torch))
-                        {
-                            __result = false;
-                        }
+                var player = Player.m_localPlayer;
+                if (player != null)
+                {
+                    if (player.m_rightItem != null && player.m_rightItem.m_shared != null &&
+                        player.m_rightItem.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Torch)
+                    {
+                        __result = false;
+                    }
+                    else if (player.m_leftItem != null && player.m_leftItem.m_shared != null &&
+                        player.m_leftItem.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Torch)
+                    {
+                        __result = false;
                     }
                 }
             }
