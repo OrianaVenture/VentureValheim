@@ -200,5 +200,22 @@ namespace VentureValheim.MultiplayerTweaks
                 return true;
             }
         }
+
+        /// <summary>
+        /// Changes the display day for the new day message and other mods calling this method.
+        /// </summary>
+        [HarmonyPatch(typeof(EnvMan), nameof(EnvMan.GetCurrentDay))]
+        public static class Patch_EnvMan_GetCurrentDay
+        {
+            private static void Postfix(ref int __result)
+            {
+                var offset = MultiplayerTweaksPlugin.GetGameDayOffset();
+                __result -= offset;
+                if (__result < 0)
+                {
+                    __result = 0;
+                }
+            }
+        }
     }
 }

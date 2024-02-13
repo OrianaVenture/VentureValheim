@@ -13,20 +13,21 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.9.0";
+        private const string ModVersion = "0.10.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
         private static string ConfigFileFullPath = BepInEx.Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
-
+        
         private readonly Harmony HarmonyInstance = new(ModGUID);
-
+        
         public static readonly ManualLogSource MultiplayerTweaksLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         #region ConfigurationEntries
 
         // General
         internal static ConfigEntry<bool> CE_AdminBypass = null!;
+        internal static ConfigEntry<int> CE_GameDayOffset = null!;
         internal static ConfigEntry<bool> CE_OverridePlayerPVP = null!;
         internal static ConfigEntry<bool> CE_ForcePlayerPVPOn = null!;
         internal static ConfigEntry<bool> CE_TeleportOnAnyDeath = null!;
@@ -34,6 +35,7 @@ namespace VentureValheim.MultiplayerTweaks
         internal static ConfigEntry<bool> CE_SkillLossOnAnyDeath = null!;
         internal static ConfigEntry<bool> CE_SkillLossOnPVPDeath = null!;
         public static bool GetAdminBypass() => CE_AdminBypass.Value;
+        public static int GetGameDayOffset() => CE_GameDayOffset.Value;
         public static bool GetOverridePlayerPVP()
         {
             if (GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
@@ -152,6 +154,8 @@ namespace VentureValheim.MultiplayerTweaks
 
             AddConfig("AdminBypass", general, "True to allow admins to bypass some setting restrictions (boolean).",
                 true, false, ref CE_AdminBypass);
+            AddConfig("GameDayOffset", general, "Number to offset the game day display (int).",
+                true, 0, ref CE_GameDayOffset);
             AddConfig("OverridePlayerPVP", general, "Override Player pvp behavior (boolean).",
                 true, false, ref CE_OverridePlayerPVP);
             AddConfig("ForcePlayerPVPOn", general, "True to set pvp always on when OverridePlayerPVP is True (boolean).",
