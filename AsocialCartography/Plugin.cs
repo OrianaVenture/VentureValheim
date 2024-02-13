@@ -12,7 +12,7 @@ namespace VentureValheim.AsocialCartography
     public class AsocialCartographyPlugin : BaseUnityPlugin
     {
         private const string ModName = "AsocialCartography";
-        private const string ModVersion = "0.1.0";
+        private const string ModVersion = "0.2.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -26,8 +26,12 @@ namespace VentureValheim.AsocialCartography
 
         private static ConfigEntry<bool> CE_AddPins = null!;
         private static ConfigEntry<bool> CE_ReceivePins = null!;
+        private static ConfigEntry<bool> CE_IgnoreBossPins = null!;
+        private static ConfigEntry<bool> CE_IgnoreHildirPins = null!;
 
         public static bool GetAddPins() => CE_AddPins.Value;
+        public static bool GetIgnoreBossPins() => CE_IgnoreBossPins.Value;
+        public static bool GetIgnoreHildirPins() => CE_IgnoreHildirPins.Value;
         public static bool GetReceivePins() => CE_ReceivePins.Value;
 
         private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
@@ -53,6 +57,10 @@ namespace VentureValheim.AsocialCartography
                 false, false, ref CE_AddPins);
             AddConfig("ReceivePins", general, "False to disable taking player-placed map pins when reading a map table (boolean).",
                 false, true, ref CE_ReceivePins);
+            AddConfig("IgnoreBossPins", general, "False to include boss map pins in the above configs (boolean).",
+                false, true, ref CE_IgnoreBossPins);
+            AddConfig("IgnoreHildirPins", general, "False to include hildir map pins in the above configs (boolean).",
+                false, true, ref CE_IgnoreHildirPins);
 
             #endregion
 

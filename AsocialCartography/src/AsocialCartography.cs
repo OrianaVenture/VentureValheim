@@ -20,6 +20,20 @@ namespace VentureValheim.AsocialCartography
                 return false;
             }
 
+            if (!AsocialCartographyPlugin.GetIgnoreBossPins() &&
+                pin == Minimap.PinType.Boss)
+            {
+                return false;
+            }
+
+            if (!AsocialCartographyPlugin.GetIgnoreHildirPins() && 
+                (pin == Minimap.PinType.Hildir1 ||
+                 pin == Minimap.PinType.Hildir2 ||
+                 pin == Minimap.PinType.Hildir3))
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -139,7 +153,7 @@ namespace VentureValheim.AsocialCartography
                     {
                         if (codes[lcv].operand?.Equals(method) ?? false)
                         {
-                            var methodCall = AccessTools.Method(typeof(AsocialCartography), nameof(AsocialCartography.AddPinReplacement));
+                            var methodCall = AccessTools.Method(typeof(AsocialCartography), nameof(AddPinReplacement));
                             codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
                             break;
                         }
