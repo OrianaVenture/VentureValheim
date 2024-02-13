@@ -20,6 +20,10 @@ This mod is client side and has no configuration options.
 
 ## Changelog
 
+### 0.2.0
+
+* Added icon to identify new piece entries.
+
 ### 0.1.0
 
 * First release
