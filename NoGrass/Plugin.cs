@@ -11,7 +11,7 @@ namespace VentureValheim.NoGrass
     public class NoGrassPlugin : BaseUnityPlugin
     {
         private const string ModName = "NoGrass";
-        private const string ModVersion = "0.1.1";
+        private const string ModVersion = "0.1.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 
@@ -32,6 +32,7 @@ namespace VentureValheim.NoGrass
             private static void Prefix(Fishlabs.Valheim.GraphicsSettings __instance)
             {
                 __instance.m_vegetationSlider.minValue = 0f;
+                __instance.m_vegetationSlider.value = PlatformPrefs.GetInt("ClutterQuality");
             }
         }
 
@@ -45,12 +46,14 @@ namespace VentureValheim.NoGrass
             private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
             {
                 var codes = new List<CodeInstruction>(instructions);
-                for (var lcv = 1; lcv < codes.Count; lcv++)
+                for (var lcv = 0; lcv < codes.Count - 4; lcv++)
                 {
-                    if (codes[lcv].opcode == OpCodes.Sub)
+                    if (codes[lcv].opcode == OpCodes.Ldfld &&
+                        codes[lcv].operand.ToString() == "UnityEngine.UI.Slider m_vegetationSlider" &&
+                        codes[lcv + 4].opcode == OpCodes.Sub)
                     {
-                        codes[lcv - 1].opcode = OpCodes.Nop; //ldc.i4.1
-                        codes[lcv].opcode = OpCodes.Nop; //sub
+                        codes[lcv + 3].opcode = OpCodes.Nop; //ldc.i4.1
+                        codes[lcv + 4].opcode = OpCodes.Nop; //sub
                         break;
                     }
                 }
