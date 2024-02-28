@@ -20,6 +20,10 @@ This mod is client side and has no configuration options.
 
 ## Changelog
 
+### 0.2.1
+
+* Pieces twice as large will now have increased costs (x4) to reflect increased size.
+
 ### 0.2.0
 
 * Added icon to identify new piece entries.

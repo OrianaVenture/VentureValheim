@@ -86,6 +86,14 @@ namespace VentureValheim.PathsideAssistance
                     terrainComp.m_settings.m_levelRadius *= 2;
                     terrainComp.m_settings.m_smoothRadius *= 2;
                     terrainComp.m_settings.m_paintRadius *= 2;
+
+                    if (pieceComp.m_resources != null)
+                    {
+                        for (int lcv = 0; lcv < pieceComp.m_resources.Length; lcv++)
+                        {
+                            pieceComp.m_resources[lcv].m_amount *= 4;
+                        }
+                    }
                 }
 
                 return copy;
