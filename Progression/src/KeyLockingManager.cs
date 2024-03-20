@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using BepInEx;
 
 namespace VentureValheim.Progression
@@ -210,19 +211,28 @@ namespace VentureValheim.Progression
 
         /// <summary>
         /// Returns whether the Player contains the necessary key for accepting a boss power.
+        /// Supports single boss power name (e.g. <c>"GP_Eikthyr"</c>) and comma-separated string of boss power names
+        /// (e.g. <c>"GP_Eikthyr,GP_TheElder"</c>).
         /// </summary>
         /// <param name="guardianPower"></param>
         /// <returns></returns>
-        private bool HasGuardianKey(string guardianPower)
+        protected bool HasGuardianKey(string guardianPower)
         {
             if (guardianPower.IsNullOrWhiteSpace())
             {
                 return false;
             }
 
-            if (GuardianKeysList.ContainsKey(guardianPower))
+            // In most cases, guardianPower will be a single power, e.g. "GP_Eikthyr", in which case we check if the key
+            // associated to that power is unlocked. For modding compatibility, we support guardianPower being used for
+            // multiple powers at onec via a comma-separated string, e.g. "GP_Eikthyr,GP_TheElder", in which case we
+            // check if all of the keys associated with all powers are unlocked.
+            var guardianPowers = guardianPower.Split(',');
+            var allPowersHaveKnownKeys = guardianPowers.All(GuardianKeysList.ContainsKey);
+            if (allPowersHaveKnownKeys)
             {
-                return HasKey(GuardianKeysList[guardianPower]);
+                var allKeysAreUnlocked = guardianPowers.All(gp => HasKey(GuardianKeysList[gp]));
+                return allKeysAreUnlocked;
             }
 
             return false; // If there are other mods that add powers will need to revisit this
