@@ -8,9 +8,13 @@ namespace VentureValheim.ProgressionTests
     {
         public class TestKeyManager : KeyManager, IKeyManager
         {
+            private readonly bool hasGlobalKeyReturnValue;
+
             public TestKeyManager(IKeyManager manager, bool hasGlobalKeyReturnValue = true) : base()
             {
                 _instance = this;
+                this.hasGlobalKeyReturnValue = hasGlobalKeyReturnValue;
+
                 BlockedGlobalKeys = manager.BlockedGlobalKeys;
                 AllowedGlobalKeys = manager.AllowedGlobalKeys;
                 BlockedGlobalKeysList = manager.BlockedGlobalKeysList;
@@ -27,10 +31,7 @@ namespace VentureValheim.ProgressionTests
             public void UpdatePrivateKeyConfigurationTest(string a, string b) => UpdatePrivateKeyConfiguration(a, b);
             public int CountPrivateBossKeysTest() => CountPrivateBossKeys();
             public bool PrivateKeyIsBlockedTest(string key) => PrivateKeyIsBlocked(key);
-            protected override bool HasGlobalKey(string key)
-            {
-                return true;
-            }
+            protected override bool HasGlobalKey(string key) => hasGlobalKeyReturnValue;
             public bool SummoningTimeReachedTest(string key, int gameDay) => SummoningTimeReached(key, gameDay);
         }
 
