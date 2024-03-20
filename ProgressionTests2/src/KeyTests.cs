@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Xunit;
 using VentureValheim.Progression;
 
@@ -8,8 +8,9 @@ namespace VentureValheim.ProgressionTests
     {
         public class TestKeyManager : KeyManager, IKeyManager
         {
-            public TestKeyManager(IKeyManager manager) : base()
+            public TestKeyManager(IKeyManager manager, bool hasGlobalKeyReturnValue = true) : base()
             {
+                _instance = this;
                 BlockedGlobalKeys = manager.BlockedGlobalKeys;
                 AllowedGlobalKeys = manager.AllowedGlobalKeys;
                 BlockedGlobalKeysList = manager.BlockedGlobalKeysList;

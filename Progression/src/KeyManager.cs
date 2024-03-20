@@ -34,7 +34,7 @@ namespace VentureValheim.Progression
             ResetPlayer();
         }
 
-        protected static readonly IKeyManager _instance = new KeyManager();
+        protected static IKeyManager _instance = new KeyManager();
 
         public static KeyManager Instance
         {
