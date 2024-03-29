@@ -25,11 +25,8 @@ namespace VentureValheim.ProgressionTests
             public void UpdateGlobalKeyConfigurationTest(string a, string b) => UpdateGlobalKeyConfiguration(a, b);
             public void UpdatePrivateKeyConfigurationTest(string a, string b) => UpdatePrivateKeyConfiguration(a, b);
             public int CountPrivateBossKeysTest() => CountPrivateBossKeys();
+            public bool HasGuardianKeyTest(string guardianPower) => HasGuardianKey(guardianPower);
             public bool PrivateKeyIsBlockedTest(string key) => PrivateKeyIsBlocked(key);
-            protected override bool HasGlobalKey(string key)
-            {
-                return true;
-            }
             public bool SummoningTimeReachedTest(string key, int gameDay) => SummoningTimeReached(key, gameDay);
         }
 
@@ -184,6 +181,30 @@ namespace VentureValheim.ProgressionTests
             var keyManager = new TestKeyManager(mockManager.Object);
 
             Assert.Equal(expected, keyManager.CountPrivateBossKeysTest());
+        }
+
+        [Theory]
+        [InlineData("GP_TheElder", "", false)]
+        [InlineData("GP_TheElder", "defeated_eikthyr", false)]
+        [InlineData("GP_TheElder", "defeated_gdking", true)]
+        [InlineData("GP_TheElder", "defeated_eikthyr,defeated_gdking", true)]
+        [InlineData("GP_Eikthyr,GP_Bonemass", "", false)]
+        [InlineData("GP_Eikthyr,GP_Bonemass", "defeated_eikthyr,defeated_gdking", false)]
+        [InlineData("GP_Eikthyr,GP_Bonemass", "defeated_eikthyr,defeated_gdking,defeated_bonemass", true)]
+        [InlineData("GP_Eikthyr,GP_TheElder,GP_Bonemass", "defeated_eikthyr,defeated_gdking", false)]
+        [InlineData("GP_Eikthyr,GP_TheElder,GP_Bonemass", "defeated_eikthyr,defeated_gdking,defeated_bonemass", true)]
+        public void HasGuardianKey_All(string guardianPower, string keys, bool expected)
+        {
+            var mockManager = new Mock<IKeyManager>();
+            var set = ProgressionAPI.StringToSet(keys);
+            mockManager.SetupGet(x => x.PrivateKeysList).Returns(set);
+            var keyManager = new TestKeyManager(mockManager.Object);
+
+            var mockProgressionConfiguration = new Mock<IProgressionConfiguration>();
+            mockProgressionConfiguration.Setup(x => x.GetUsePrivateKeys()).Returns(true);
+            new ProgressionConfiguration(mockProgressionConfiguration.Object);
+
+            Assert.Equal(expected, keyManager.HasGuardianKeyTest(guardianPower));
         }
 
         [Theory]

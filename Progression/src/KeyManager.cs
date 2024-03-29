@@ -22,6 +22,7 @@ namespace VentureValheim.Progression
         public int GetPrivateBossKeysCount();
         public bool BlockGlobalKey(bool blockAll, string globalKey);
         public bool HasPrivateKey(string key);
+        public bool HasGlobalKey(string key);
     }
 
     public partial class KeyManager : IKeyManager
@@ -194,7 +195,7 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         public bool HasKey(string key)
         {
-            return (ProgressionConfiguration.Instance.GetUsePrivateKeys() && Instance.HasPrivateKey(key)) || Instance.HasGlobalKey(key);
+            return (ProgressionConfiguration.Instance.GetUsePrivateKeys() && HasPrivateKey(key)) || HasGlobalKey(key);
         }
 
         /// <summary>
@@ -202,7 +203,7 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        protected virtual bool HasGlobalKey(string key)
+        public bool HasGlobalKey(string key)
         {
             if (key.IsNullOrWhiteSpace())
             {

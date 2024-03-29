@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using BepInEx;
 
 namespace VentureValheim.Progression
@@ -213,16 +214,20 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="guardianPower"></param>
         /// <returns></returns>
-        private bool HasGuardianKey(string guardianPower)
+        protected bool HasGuardianKey(string guardianPower)
         {
             if (guardianPower.IsNullOrWhiteSpace())
             {
                 return false;
             }
 
-            if (GuardianKeysList.ContainsKey(guardianPower))
+            // Mod compatibility with Passive Powers where string can be "GP_Eikthyr,GP_TheElder"
+            var guardianPowers = guardianPower.Split(',');
+            var allPowersHaveKnownKeys = guardianPowers.All(GuardianKeysList.ContainsKey);
+            if (allPowersHaveKnownKeys)
             {
-                return HasKey(GuardianKeysList[guardianPower]);
+                var allKeysAreUnlocked = guardianPowers.All(gp => HasKey(GuardianKeysList[gp]));
+                return allKeysAreUnlocked;
             }
 
             return false; // If there are other mods that add powers will need to revisit this
