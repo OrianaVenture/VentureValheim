@@ -92,7 +92,12 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         public static bool GetGlobalKey(string key)
         {
-            return ZoneSystem.instance.m_globalKeys.Contains(key);
+            if (ZoneSystem.instance != null && ZoneSystem.instance.m_globalKeys != null)
+            {
+                return ZoneSystem.instance.m_globalKeys.Contains(key);
+            }
+
+            return false;
         }
 
         /// <summary>

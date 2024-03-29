@@ -1,3 +1,7 @@
+## 0.2.9
+
+* Added compatibility for power locking with the Passive Powers mod. Should now work when multiple powers are selected given player and/or world must have unlocked all keys for selected powers.
+
 ## 0.2.8
 
 * Restored private key implementation for raids from the pre-Hildir update.

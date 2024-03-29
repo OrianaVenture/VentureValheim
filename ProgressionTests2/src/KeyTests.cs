@@ -8,13 +8,8 @@ namespace VentureValheim.ProgressionTests
     {
         public class TestKeyManager : KeyManager, IKeyManager
         {
-            private readonly bool hasGlobalKeyReturnValue;
-
-            public TestKeyManager(IKeyManager manager, bool hasGlobalKeyReturnValue = true) : base()
+            public TestKeyManager(IKeyManager manager) : base()
             {
-                _instance = this;
-                this.hasGlobalKeyReturnValue = hasGlobalKeyReturnValue;
-
                 BlockedGlobalKeys = manager.BlockedGlobalKeys;
                 AllowedGlobalKeys = manager.AllowedGlobalKeys;
                 BlockedGlobalKeysList = manager.BlockedGlobalKeysList;
@@ -32,7 +27,6 @@ namespace VentureValheim.ProgressionTests
             public int CountPrivateBossKeysTest() => CountPrivateBossKeys();
             public bool HasGuardianKeyTest(string guardianPower) => HasGuardianKey(guardianPower);
             public bool PrivateKeyIsBlockedTest(string key) => PrivateKeyIsBlocked(key);
-            protected override bool HasGlobalKey(string key) => hasGlobalKeyReturnValue;
             public bool SummoningTimeReachedTest(string key, int gameDay) => SummoningTimeReached(key, gameDay);
         }
 
@@ -192,17 +186,19 @@ namespace VentureValheim.ProgressionTests
         [Theory]
         [InlineData("GP_TheElder", "", false)]
         [InlineData("GP_TheElder", "defeated_eikthyr", false)]
+        [InlineData("GP_TheElder", "defeated_gdking", true)]
         [InlineData("GP_TheElder", "defeated_eikthyr,defeated_gdking", true)]
+        [InlineData("GP_Eikthyr,GP_Bonemass", "", false)]
         [InlineData("GP_Eikthyr,GP_Bonemass", "defeated_eikthyr,defeated_gdking", false)]
         [InlineData("GP_Eikthyr,GP_Bonemass", "defeated_eikthyr,defeated_gdking,defeated_bonemass", true)]
         [InlineData("GP_Eikthyr,GP_TheElder,GP_Bonemass", "defeated_eikthyr,defeated_gdking", false)]
         [InlineData("GP_Eikthyr,GP_TheElder,GP_Bonemass", "defeated_eikthyr,defeated_gdking,defeated_bonemass", true)]
-        public void HasGuardianKeyTest(string guardianPower, string keys, bool expected)
+        public void HasGuardianKey_All(string guardianPower, string keys, bool expected)
         {
-            var mockKeyManager = new Mock<IKeyManager>();
+            var mockManager = new Mock<IKeyManager>();
             var set = ProgressionAPI.StringToSet(keys);
-            mockKeyManager.SetupGet(x => x.PrivateKeysList).Returns(set);
-            var keyManager = new TestKeyManager(mockKeyManager.Object, hasGlobalKeyReturnValue: false);
+            mockManager.SetupGet(x => x.PrivateKeysList).Returns(set);
+            var keyManager = new TestKeyManager(mockManager.Object);
 
             var mockProgressionConfiguration = new Mock<IProgressionConfiguration>();
             mockProgressionConfiguration.Setup(x => x.GetUsePrivateKeys()).Returns(true);
