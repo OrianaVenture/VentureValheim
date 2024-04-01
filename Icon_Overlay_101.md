@@ -7,31 +7,32 @@ In this guide I will show you how to add an overlay to existing icon sprites in 
 Grab the original icon when it is available on ObjectDB.Awake and assign to a variable. Here is a basic patch example to do so using the MeadBaseTasty prefab. I wrote a helper method that will find the item drop with a redundant backup search in case custom mod items are not added to the hashed item list at the time the code runs.
 
 ```csharp
-public static bool GetItemDrop(string name, out ItemDrop item)
-{
-    item = null;
+ public static bool GetItemDrop(string name, out ItemDrop item)
+ {
+     item = null;
 
-    if (!name.IsNullOrWhiteSpace())
-    {
-        try
-        {
-            // Try hash code
-            item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode())?.GetComponent<ItemDrop>();
-        }
-        catch
-        {
-            // Failed, try slow search
-            item = ObjectDB.instance.GetItemPrefab(name)?.GetComponent<ItemDrop>();
-        }
+     if (!name.IsNullOrWhiteSpace())
+     {
+         // Try hash code
+         var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
+         if (prefab == null)
+         {
+             // Failed, try slow search
+             prefab = ObjectDB.instance.GetItemPrefab(name);
+         }
 
-        if (item != null)
-        {
-            return true;
-        }
-    }
+         if (prefab != null)
+         {
+             item = prefab.GetComponent<ItemDrop>();
+             if (item != null)
+             {
+                 return true;
+             }
+         }
+     }
 
-    return false;
-}
+     return false;
+ }
 
 [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.Awake))]
 public static class Patch_ObjectDB_Awake
