@@ -1,3 +1,7 @@
+## 0.8.1
+
+* Added compatibility for the "Dungeon Splitter" mod, will not reset sky locations when using it.
+
 ## 0.8.0
 
 * Improved resetting logic for sky locations:

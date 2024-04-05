@@ -9,6 +9,7 @@ using Jotunn.Utils;
 namespace VentureValheim.LocationReset
 {
     [BepInDependency(Jotunn.Main.ModGuid)]
+    [BepInDependency(DungeonSplitterName, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class LocationResetPlugin : BaseUnityPlugin
     {
@@ -22,7 +23,7 @@ namespace VentureValheim.LocationReset
         }
 
         private const string ModName = "LocationReset";
-        private const string ModVersion = "0.8.0";
+        private const string ModVersion = "0.8.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -31,6 +32,9 @@ namespace VentureValheim.LocationReset
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
         public static readonly ManualLogSource LocationResetLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
+
+        private const string DungeonSplitterName = "dungeon_splitter";
+        public static bool DungeonSplitterInstalled = false;
 
         #region ConfigurationEntries
 
@@ -222,6 +226,13 @@ namespace VentureValheim.LocationReset
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
             SetupWatcher();
+
+            // Check for Dungeon Splitter
+            DungeonSplitterInstalled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(DungeonSplitterName);
+            if (DungeonSplitterInstalled)
+            {
+                LocationResetLogger.LogInfo("Detected Dungeon Splitter, this mod will NOT reset sky locations!");
+            }
         }
 
         private void OnDestroy()

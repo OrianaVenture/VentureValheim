@@ -391,6 +391,13 @@ namespace VentureValheim.LocationReset
             }
 
             LocationPosition position = new LocationPosition(hash, loc, zone);
+
+            if (LocationResetPlugin.DungeonSplitterInstalled && position.IsSkyLocation)
+            {
+                LocationResetPlugin.LocationResetLogger.LogDebug($"Cannot reset sky locations when using Dungeon Splitter.");
+                return;
+            }
+
             if (position.DungeonGenerator != null)
             {
                 if (position.DungeonGenerator.m_nview == null || !position.DungeonGenerator.m_nview.IsOwner())
