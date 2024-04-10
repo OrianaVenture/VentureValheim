@@ -68,7 +68,7 @@ Due to loading times and the very random nature of the world spawning system the
 
 ### Other Mod Support
 
-If set up correctly by the mod author this mod should successfully regenerate all custom locations and dunegons. There are cases where this mod may behave strangely. Please report any issues you may encounter when using custom locations.
+If set up correctly by the mod author this mod should successfully regenerate all custom locations and dungeons. There are cases where this mod may behave strangely. Please report any issues you may encounter when using custom locations.
 
 The following locations from other mods are excluded from resetting to prevent issues:
 

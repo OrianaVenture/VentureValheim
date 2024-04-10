@@ -1,3 +1,7 @@
+## 0.8.2
+
+* Update for game patch 0.217.46
+
 ## 0.8.1
 
 * Added compatibility for the "Dungeon Splitter" mod, will not reset sky locations when using it.

@@ -20,8 +20,6 @@ namespace VentureValheim.LocationReset
         public const float LOCATION_MINIMUM = 4000f;
         public const string LAST_RESET = "VV_LastReset";
 
-        public static HashSet<int> SkyLocationHashes;
-
         public static readonly HashSet<int> IgnoreLocationHashes = new HashSet<int>
         {
             "Mystical_Well0".GetStableHashCode(), // Monsterlabz
@@ -42,10 +40,13 @@ namespace VentureValheim.LocationReset
             public float SkyDistance;
             public Vector3 GroundPosition;
             public float GroundDistance;
+            public Vector3 GeneratorPosition;
 
-            public LocationPosition(int hash, LocationProxy loc, ZoneSystem.ZoneLocation zone)
+            public LocationPosition(LocationProxy loc, ZoneSystem.ZoneLocation zone, Location location)
             {
-                IsSkyLocation = SkyLocationHashes.Contains(hash);
+                var dg = location.m_generator;
+                IsSkyLocation = location.m_hasInterior ||
+                    (dg != null && dg.transform.position.y > LOCATION_MINIMUM);
                 IsDungeon = false;
                 GroundPosition = loc.transform.position;
                 SkyPosition = loc.transform.position;
@@ -53,12 +54,22 @@ namespace VentureValheim.LocationReset
                 SkyDistance = zone.m_interiorRadius;
 
                 float maxDistance = Mathf.Max(GroundDistance, SkyDistance);
-                DungeonGenerator = GetDungeonGeneratorInBounds(GroundPosition + zone.m_generatorPosition, maxDistance);
+                GeneratorPosition = location.m_generator != null ?
+                    location.m_generator.transform.localPosition : Vector3.zero;
+                DungeonGenerator = GetDungeonGeneratorInBounds(GroundPosition + GeneratorPosition, maxDistance);
 
                 if (DungeonGenerator != null)
                 {
                     IsDungeon = true;
-                    SkyDistance = Instance.GetDungeonRadius(DungeonGenerator);
+                    if (IsSkyLocation)
+                    {
+                        SkyDistance = Instance.GetDungeonRadius(DungeonGenerator);
+                    }
+                    else
+                    {
+                        // Add buffer room to ground dungeons
+                        GroundDistance += 5;
+                    }
                 }
             }
         }
@@ -386,11 +397,28 @@ namespace VentureValheim.LocationReset
             ZoneSystem.ZoneLocation zone = ZoneSystem.instance.GetLocation(hash);
             if (zone == null)
             {
+                LocationResetPlugin.LocationResetLogger.LogDebug($"There was an issue getting the zone location, abort.");
+                return;
+            }
+
+            // Load and Release not needed?
+            //zone.m_prefab.Load();
+            Location location = zone.m_prefab.Asset.GetComponent<Location>();
+
+            TryResetAfterLoadPrefab(loc, zone, location, hash, seed, force);
+
+            //zone.m_prefab.Release();
+        }
+
+        private void TryResetAfterLoadPrefab(LocationProxy loc, ZoneSystem.ZoneLocation zone, Location location, int hash, int seed, bool force)
+        {
+            if (location == null)
+            {
                 LocationResetPlugin.LocationResetLogger.LogDebug($"There was an issue getting the location, abort.");
                 return;
             }
 
-            LocationPosition position = new LocationPosition(hash, loc, zone);
+            LocationPosition position = new LocationPosition(loc, zone, location);
 
             if (LocationResetPlugin.DungeonSplitterInstalled && position.IsSkyLocation)
             {
@@ -435,7 +463,7 @@ namespace VentureValheim.LocationReset
                 return;
             }
 
-            Reset(loc, zone, seed, position, playerActivity);
+            Reset(loc, zone, location, seed, position, playerActivity);
             LocationResetPlugin.LocationResetLogger.LogInfo($"Done regenerating location {zone.m_prefabName} at: {loc.transform.position}");
         }
 
@@ -447,40 +475,52 @@ namespace VentureValheim.LocationReset
         /// <param name="seed"></param>
         /// <param name="position"></param>
         /// <param name="activity"></param>
-        public void Reset(LocationProxy loc, ZoneSystem.ZoneLocation zone, int seed, LocationPosition position, PlayerActivity activity)
+        private void Reset(LocationProxy loc, ZoneSystem.ZoneLocation zone, Location location,
+            int seed, LocationPosition position, PlayerActivity activity)
         {
-            // Destroy location
             DeleteLocation(position, activity);
 
-            Regenerate(loc, zone, seed, position, activity);
+            //ResetTerrain(position);
+
+            Regenerate(loc, zone, location, seed, position, activity);
+        }
+
+        private void ResetTerrain(LocationPosition position)
+        {
+            // TODO find a way to reset the ground or to remove terrain modifications from applying
+            // Tar pits give infinite resets with no difficulty
+            // Fuling camps dig deep pits after many resets
         }
 
         /// <summary>
         /// Rerolls and generates the Location objects.
         /// </summary>
         /// <param name="loc">LocationProxy needing a reset</param>
-        /// <param name="zone">ZoneLocation of the LocationProxy</param>
+        /// <param name="zone">ZoneLocation of the LocationProxy</param>/// <param name="location">Location of the ZoneLocation</param>
         /// <param name="seed"></param>
         /// <param name="position"></param>
-        public void Regenerate(LocationProxy loc, ZoneSystem.ZoneLocation zone, int seed, LocationPosition position, PlayerActivity activity)
+        private void Regenerate(LocationProxy loc, ZoneSystem.ZoneLocation zone, Location location,
+            int seed, LocationPosition position, PlayerActivity activity)
         {
-            // TODO find a way to reset the ground or to remove terrain modifications from applying
-            // Tar pits give infinite resets with no difficulty
-            // Fuling camps dig deep pits after many resets
+            // Prepare
+            ZNetView[] zNetViews = Utils.GetEnabledComponentsInChildren<ZNetView>(zone.m_prefab.Asset);
+            RandomSpawn[] randomSpawns = Utils.GetEnabledComponentsInChildren<RandomSpawn>(zone.m_prefab.Asset);
+            for (int lcv = 0; lcv < randomSpawns.Length; lcv++)
+            {
+                randomSpawns[lcv].Prepare();
+            }
 
-            if (zone.m_location != null && zone.m_location.m_applyRandomDamage)
-            {
-                WearNTear.m_randomInitialDamage = true;
-            }
-            else
-            {
-                WearNTear.m_randomInitialDamage = false;
-            }
+            Vector3 originalPosition = zone.m_prefab.Asset.transform.position;
+            Quaternion originalRotation = zone.m_prefab.Asset.transform.rotation;
+            zone.m_prefab.Asset.transform.position = Vector3.zero;
+            zone.m_prefab.Asset.transform.rotation = Quaternion.identity;
+            
+            WearNTear.m_randomInitialDamage = (location != null && location.m_applyRandomDamage) ? true : false;
 
             // Regenerate original dungeon if exists
             if (position.DungeonGenerator != null)
             {
-                position.DungeonGenerator.m_originalPosition = zone.m_generatorPosition;
+                position.DungeonGenerator.m_originalPosition = position.GeneratorPosition;
 
                 // Note: this will always cause a randomized radial camp due to vanilla algorithm.
                 // Seed is always the same and UnityEngine.Random.InitState is called beforehand
@@ -489,20 +529,16 @@ namespace VentureValheim.LocationReset
             }
 
             // Regenerate rest of location
-            foreach (ZNetView obj in zone.m_netViews)
-            {
-                obj.gameObject.SetActive(value: true);
-            }
-
             UnityEngine.Random.InitState(seed);
-            foreach (RandomSpawn randomSpawn in zone.m_randomSpawns)
+            foreach (RandomSpawn randomSpawn in randomSpawns)
             {
                 randomSpawn.Randomize();
             }
 
             int count = 0;
+            int countIgnored = 0;
 
-            foreach (ZNetView obj in zone.m_netViews)
+            foreach (ZNetView obj in zNetViews)
             {
                 if (obj.gameObject.activeSelf)
                 {
@@ -512,11 +548,13 @@ namespace VentureValheim.LocationReset
                         // Ground object
                         if (activity.GroundActivity || !QualifyingObject(obj.gameObject))
                         {
+                            countIgnored++;
                             continue;
                         }
                     }
                     else if (activity.SkyActivity || obj.GetComponent<DungeonGenerator>())
                     {
+                        countIgnored++;
                         continue;
                     }
 
@@ -524,12 +562,31 @@ namespace VentureValheim.LocationReset
                     Quaternion objRotation = loc.transform.rotation * obj.gameObject.transform.rotation;
 
                     GameObject gameObject = UnityEngine.Object.Instantiate(obj.gameObject, objPosition, objRotation);
+                    gameObject.GetComponent<ZNetView>().HoldReferenceTo(zone.m_prefab);
                     gameObject.SetActive(value: true);
                     count++;
                 }
+                else
+                {
+                    countIgnored++;
+                }
             }
 
-            LocationResetPlugin.LocationResetLogger.LogDebug($"Spawned {count} objects.");
+            LocationResetPlugin.LocationResetLogger.LogDebug($"Spawned {count} objects, ignored {countIgnored}.");
+
+            // Cleanup
+            for (int lcv = 0; lcv < randomSpawns.Length; lcv++)
+            {
+                randomSpawns[lcv].Reset();
+            }
+
+            for (int lcv = 0; lcv < zNetViews.Length; lcv++)
+            {
+                zNetViews[lcv].gameObject.SetActive(value: true);
+            }
+
+            zone.m_prefab.Asset.transform.position = originalPosition;
+            zone.m_prefab.Asset.transform.rotation = originalRotation;
 
             WearNTear.m_randomInitialDamage = false;
             SnapToGround.SnappAll();
@@ -550,32 +607,6 @@ namespace VentureValheim.LocationReset
                     if (__instance.gameObject.GetComponent<LocationProxyReset>() == null)
                     {
                         __instance.gameObject.AddComponent<LocationProxyReset>();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Finds all locations with a sky component and records them for the resetting algorithm.
-        /// </summary>
-        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.SetupLocations))]
-        public static class Patch_ZoneSystem_SetupLocations
-        {
-            [HarmonyPriority(Priority.Last)]
-            private static void Postfix()
-            {
-                LocationResetPlugin.LocationResetLogger.LogDebug(
-                    $"Sorting locations. If your location has a sky component and does not appear please report the issue.");
-
-                SkyLocationHashes = new HashSet<int>();
-                foreach (var location in ZoneSystem.instance.m_locationsByHash)
-                {
-                    var dg = location.Value.m_location.m_generator;
-                    if (location.Value.m_location.m_hasInterior ||
-                        (dg != null && dg.transform.position.y > LOCATION_MINIMUM))
-                    {
-                        SkyLocationHashes.Add(location.Key);
-                        LocationResetPlugin.LocationResetLogger.LogDebug($"Sky Location Found: {location.Value.m_prefabName} with hash: {location.Key}");
                     }
                 }
             }
