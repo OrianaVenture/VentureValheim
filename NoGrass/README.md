@@ -16,6 +16,10 @@ This mod is client side and has no configuration options.
 
 ## Changelog
 
+### 0.1.3
+
+* Update for game patch 0.217.46
+
 ### 0.1.2
 
 * Fixes vegetation quality from resetting to default value when opening the settings menu.

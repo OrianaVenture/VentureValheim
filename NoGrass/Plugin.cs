@@ -11,7 +11,7 @@ namespace VentureValheim.NoGrass
     public class NoGrassPlugin : BaseUnityPlugin
     {
         private const string ModName = "NoGrass";
-        private const string ModVersion = "0.1.2";
+        private const string ModVersion = "0.1.3";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 
@@ -26,10 +26,10 @@ namespace VentureValheim.NoGrass
         /// <summary>
         /// Increase slider options to include 0.
         /// </summary>
-        [HarmonyPatch(typeof(Fishlabs.Valheim.GraphicsSettings), nameof(Fishlabs.Valheim.GraphicsSettings.Awake))]
+        [HarmonyPatch(typeof(Valheim.SettingsGui.GraphicsSettings), nameof(Valheim.SettingsGui.GraphicsSettings.Awake))]
         public static class Patch_GraphicsSettings_Awake
         {
-            private static void Prefix(Fishlabs.Valheim.GraphicsSettings __instance)
+            private static void Prefix(Valheim.SettingsGui.GraphicsSettings __instance)
             {
                 __instance.m_vegetationSlider.minValue = 0f;
                 __instance.m_vegetationSlider.value = PlatformPrefs.GetInt("ClutterQuality");
@@ -38,9 +38,8 @@ namespace VentureValheim.NoGrass
 
         /// <summary>
         /// Remove the subtraction from the vegetation setting to fix localization.
-        /// If there are any other instances of subtraction added within this method this may fail.
         /// </summary>
-        [HarmonyPatch(typeof(Fishlabs.Valheim.GraphicsSettings), nameof(Fishlabs.Valheim.GraphicsSettings.OnQualityChanged))]
+        [HarmonyPatch(typeof(Valheim.SettingsGui.GraphicsSettings), nameof(Valheim.SettingsGui.GraphicsSettings.OnQualityChanged))]
         public static class Patch_GraphicsSettings_OnQualityChanged
         {
             private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
