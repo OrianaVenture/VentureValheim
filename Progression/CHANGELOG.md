@@ -1,3 +1,7 @@
+## 0.2.10
+
+* Update for game patch 0.217.46
+
 ## 0.2.9
 
 * Added compatibility for power locking with the Passive Powers mod. Should now work when multiple powers are selected given player and/or world must have unlocked all keys for selected powers.

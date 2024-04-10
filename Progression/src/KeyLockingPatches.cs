@@ -79,18 +79,17 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Block the boss spawn when the player has not defeated the previous boss
         /// </summary>
-        [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.SpawnBoss))]
-        public static class Patch_OfferingBowl_SpawnBoss
+        [HarmonyPatch(typeof(OfferingBowl), nameof(OfferingBowl.InitiateSpawnBoss))]
+        public static class Patch_OfferingBowl_InitiateSpawnBoss
         {
             [HarmonyPriority(Priority.Low)]
-            private static bool Prefix(OfferingBowl __instance, ref bool __result)
+            private static bool Prefix(OfferingBowl __instance)
             {
                 if (ProgressionConfiguration.Instance.GetLockBossSummons() && __instance.m_bossPrefab != null)
                 {
                     if (!Instance.HasSummoningKey(Utils.GetPrefabName(__instance.m_bossPrefab.gameObject)))
                     {
                         Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                        __result = false;
                         return false; // Skip summoning
                     }
                 }

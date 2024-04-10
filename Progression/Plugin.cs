@@ -22,7 +22,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.2.9";
+        private const string ModVersion = "0.2.10";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
