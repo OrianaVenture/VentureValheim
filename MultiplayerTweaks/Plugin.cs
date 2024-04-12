@@ -13,7 +13,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.10.0";
+        private const string ModVersion = "0.11.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -34,6 +34,7 @@ namespace VentureValheim.MultiplayerTweaks
         internal static ConfigEntry<bool> CE_TeleportOnPVPDeath = null!;
         internal static ConfigEntry<bool> CE_SkillLossOnAnyDeath = null!;
         internal static ConfigEntry<bool> CE_SkillLossOnPVPDeath = null!;
+        internal static ConfigEntry<bool> CE_HidePlatformTag = null!;
         public static bool GetAdminBypass() => CE_AdminBypass.Value;
         public static int GetGameDayOffset() => CE_GameDayOffset.Value;
         public static bool GetOverridePlayerPVP()
@@ -50,6 +51,7 @@ namespace VentureValheim.MultiplayerTweaks
         public static bool GetTeleportOnPVPDeath() => CE_TeleportOnPVPDeath.Value;
         public static bool GetSkillLossOnAnyDeath() => CE_SkillLossOnAnyDeath.Value;
         public static bool GetSkillLossOnPVPDeath() => CE_SkillLossOnPVPDeath.Value;
+        public static bool GetHidePlatformTag() => CE_HidePlatformTag.Value;
 
         // Arrival
         internal static ConfigEntry<string> CE_PlayerDefaultSpawnPoint = null!;
@@ -168,6 +170,8 @@ namespace VentureValheim.MultiplayerTweaks
                 true, true, ref CE_SkillLossOnAnyDeath);
             AddConfig("SkillLossOnPVPDeath", general, "False to prevent skill loss on a PVP death (boolean).",
                 true, true, ref CE_SkillLossOnPVPDeath);
+            AddConfig("HidePlatformTag", general, "When true hides steam/xbox platform tags from pings and chat messages (boolean).",
+                true, false, ref CE_HidePlatformTag);
 
             AddConfig("PlayerDefaultSpawnPoint", arrival, "Coordinates for the default player spawn point (x,y,z) no parentheses, leave empty to use game default (comma-separated floats).",
                 true, "", ref CE_PlayerDefaultSpawnPoint);

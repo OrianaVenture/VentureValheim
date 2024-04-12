@@ -1,3 +1,7 @@
+## 0.11.0
+
+* Added new config for hiding steam/xbox platform tags from shouts and chat messages.
+
 ## 0.10.0
 
 * Added new config to offset the display day for new day banner message and potentially other mods.

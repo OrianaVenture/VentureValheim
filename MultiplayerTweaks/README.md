@@ -21,6 +21,7 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 * Automatic death grace window on player respawn
 * Boss message banners only send to players within range
 * Ability to offset the game day
+* Ability to hide steam/xbox platform tags from shouts and chat messages
 
 Admins have the ability to bypass some of these settings when the AdminBypass config is enabled.
 
