@@ -8,7 +8,6 @@ using HarmonyLib;
 using Jotunn.Managers;
 using Jotunn.Utils;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace VentureValheim.MiningCaves
 {
@@ -18,7 +17,7 @@ namespace VentureValheim.MiningCaves
     public class MiningCavesPlugin : BaseUnityPlugin
     {
         private const string ModName = "MiningCaves";
-        private const string ModVersion = "0.1.3";
+        private const string ModVersion = "0.1.4";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 

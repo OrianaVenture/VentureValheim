@@ -62,6 +62,10 @@ If the mod is removed from the server after locations have been generated the ca
 
 ## Changelog
 
+### 0.1.4
+
+* Preliminary update for Jotunn version 2.19.2+
+
 ### 0.1.3
 
 * Fixed issue where patches may have applied before the initial server configuration syncing event. This made some server configurations not apply correctly.

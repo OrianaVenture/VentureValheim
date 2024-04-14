@@ -12,8 +12,6 @@ namespace VentureValheim.MiningCaves
 {
     public class CaveManager
     {
-        private static Dictionary<Type, Dictionary<string, UnityEngine.Object>> dictionaryCache = null;
-
         public static void AddMiningCaves()
         {
             // Disable the terrain modifiers located on the copper node frac
