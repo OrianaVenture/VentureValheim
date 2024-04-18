@@ -78,10 +78,12 @@ namespace VentureValheim.Template
         {
             Config.Save();
         }
-
+        
         private void SetupWatcher()
         {
+            _lastReloadTime = DateTime.Now;
             FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
+            // Due to limitations of technology this can trigger twice in a row
             watcher.Changed += ReadConfigValues;
             watcher.Created += ReadConfigValues;
             watcher.Renamed += ReadConfigValues;
@@ -90,17 +92,31 @@ namespace VentureValheim.Template
             watcher.EnableRaisingEvents = true;
         }
 
+        private DateTime _lastReloadTime;
+        private const long RELOAD_DELAY = 10000000; // One second
+
         private void ReadConfigValues(object sender, FileSystemEventArgs e)
         {
-            if (!File.Exists(ConfigFileFullPath)) return;
+            var now = DateTime.Now;
+            var time = now.Ticks - _lastReloadTime.Ticks;
+            if (!File.Exists(ConfigFileFullPath) || time < RELOAD_DELAY) return;
+
             try
             {
-                TemplateLogger.LogDebug("Attempting to reload configuration...");
+                TemplateLogger.LogInfo("Attempting to reload configuration...");
                 Config.Reload();
             }
             catch
             {
                 TemplateLogger.LogError($"There was an issue loading {ConfigFileName}");
+                return;
+            }
+
+            _lastReloadTime = now;
+
+            if (ZNet.instance != null && !ZNet.instance.IsDedicated())
+            {
+                // Update configurations
             }
         }
     }
