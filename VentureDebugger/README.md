@@ -12,7 +12,15 @@ I created this project as my "fix all" for some common issues people report when
 
 Currently it fixes:
 
-* Pickable.UpdateRespawn: ArgumentOutOfRangeException: Ticks must be between DateTime.MinValue.Ticks and DateTime.MaxValue.Ticks.
+**Pickable Timer Corruption**
+```
+Pickable.UpdateRespawn: ArgumentOutOfRangeException: Ticks must be between DateTime.MinValue.Ticks and DateTime.MaxValue.Ticks.
+```
+
+**World Modifier Corruption**
+```
+ServerOptionsGUI.TryConvertModifierKeysToCompactKVP: ArgumentException: An item with the same key has already been added.
+```
 
 ## Installation
 
@@ -20,13 +28,17 @@ This mod is client side only and has no configuration options. Does not need to 
 
 ## Changelog
 
+### 0.0.3
+
+* Added corruption fix for world modifiers, previously included in World Advancement & Progression.
+
 ### 0.0.2
 
-* Modified Pickable.UpdateRespawn to fully catch all exceptions and not allow passthrough
+* Modified Pickable.UpdateRespawn to fully catch all exceptions and not allow passthrough.
 
 ### 0.0.1
 
-* Added fix for Pickable.UpdateRespawn ArgumentOutOfRangeException
+* Added fix for Pickable.UpdateRespawn ArgumentOutOfRangeException.
 
 ## Contributing
 

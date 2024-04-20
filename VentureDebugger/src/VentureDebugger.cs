@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 
 namespace VentureValheim.VentureDebugger
@@ -23,6 +25,51 @@ namespace VentureValheim.VentureDebugger
                 }
 
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Fix adding GlobalKeys.PlayerEvents to the list multiple times
+        /// </summary>
+        [HarmonyPatch(typeof(ZPlayFabMatchmaking), "CreateLobby")]
+        public static class Patch_ZPlayFabMatchmaking_CreateLobby
+        {
+            private static void Prefix()
+            {
+                RemoveDuplicates(ref ZPlayFabMatchmaking.m_instance.m_serverData.modifiers);
+            }
+        }
+
+        /// <summary>
+        /// Fix adding GlobalKeys.PlayerEvents to the list multiple times (server patch)
+        /// </summary>
+        [HarmonyPatch(typeof(ZSteamMatchmaking), "RegisterServer")]
+        public static class Patch_ZSteamMatchmaking_RegisterServer
+        {
+            private static void Prefix(ref List<string> modifiers)
+            {
+                RemoveDuplicates(ref modifiers);
+            }
+        }
+
+        private static void RemoveDuplicates(ref List<string> keys)
+        {
+            if (keys != null)
+            {
+                var fixedKeys = new HashSet<string>();
+                foreach (string key in keys)
+                {
+                    if (!fixedKeys.Contains(key))
+                    {
+                        fixedKeys.Add(key);
+                    }
+                    else
+                    {
+                        VentureDebuggerPlugin.VentureDebuggerLogger.LogWarning($"Found duplicate world modifier key {key}, fixing.");
+                    }
+                }
+
+                keys = fixedKeys.ToList();
             }
         }
     }
