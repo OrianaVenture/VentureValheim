@@ -1,49 +1,10 @@
 using System.Collections.Generic;
 using BepInEx;
-using UnityEngine;
 
 namespace VentureValheim.Progression
 {
     public partial class KeyManager
     {
-        private KeyManagerUpdater _keyManagerUpdater;
-
-        /// <summary>
-        /// Updates class data if cached values have expired.
-        /// </summary>
-        public class KeyManagerUpdater : MonoBehaviour
-        {
-            private static float _lastUpdateTime = Time.time - 10f;
-            private static readonly float _updateInterval = 10f;
-
-            public void Start()
-            {
-                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Starting Key Manager Updater.");
-            }
-
-            public void Update()
-            {
-                var time = Time.time;
-                var delta = time - _lastUpdateTime;
-
-                if (delta >= _updateInterval)
-                {
-                    Instance.UpdateConfigs();
-
-                    // Only update skill configurations if enabled
-                    if (ProgressionConfiguration.Instance.GetEnableSkillManager())
-                    {
-                        _cachedPublicBossKeys = Instance.CountPublicBossKeys();
-                        _cachedPrivateBossKeys = Instance.CountPrivateBossKeys();
-
-                        SkillsManager.Instance.UpdateCache();
-                    }
-
-                    _lastUpdateTime = time;
-                }
-            }
-        }
-
         public string BlockedGlobalKeys { get; protected set; }
         public string AllowedGlobalKeys { get; protected set; }
         public string EnforcedGlobalKeys { get; protected set; }
@@ -64,7 +25,21 @@ namespace VentureValheim.Progression
         // Cache for Hildir's items
         public Dictionary<string, string> HildirOriginalItemsList { get; protected set; }
 
-        protected void Reset()
+        public void UpdateConfigurations()
+        {
+            UpdateConfigs();
+
+            // Only update skill configurations if enabled
+            if (ProgressionConfiguration.Instance.GetEnableSkillManager())
+            {
+                _cachedPublicBossKeys = CountPublicBossKeys();
+                _cachedPrivateBossKeys = CountPrivateBossKeys();
+
+                SkillsManager.Instance.UpdateCache();
+            }
+        }
+
+        protected void ResetConfigurations()
         {
             BlockedGlobalKeys = "";
             AllowedGlobalKeys = "";
@@ -85,10 +60,13 @@ namespace VentureValheim.Progression
             SummoningKeys = null;
         }
 
+        protected void ResetServer()
+        {
+            ServerPrivateKeysList = new Dictionary<long, HashSet<string>>();
+        }
+
         protected void ResetPlayer()
         {
-            Reset();
-
             PrivateKeysList = new HashSet<string>();
 
             _cachedPublicBossKeys = -1;
@@ -133,7 +111,7 @@ namespace VentureValheim.Progression
             return count;
         }
 
-        public void UpdateConfigs()
+        private void UpdateConfigs()
         {
             UpdateGlobalKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedGlobalKeys(), ProgressionConfiguration.Instance.GetAllowedGlobalKeys());
             UpdatePrivateKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedPrivateKeys(), ProgressionConfiguration.Instance.GetAllowedPrivateKeys());
@@ -149,13 +127,13 @@ namespace VentureValheim.Progression
         /// <param name="allowedGlobalKeys"></param>
         protected void UpdateGlobalKeyConfiguration(string blockedGlobalKeys, string allowedGlobalKeys)
         {
-            if (!BlockedGlobalKeys.Equals(blockedGlobalKeys))
+            if (BlockedGlobalKeys == null || !BlockedGlobalKeys.Equals(blockedGlobalKeys))
             {
                 BlockedGlobalKeys = blockedGlobalKeys;
                 BlockedGlobalKeysList = ProgressionAPI.StringToSet(blockedGlobalKeys);
             }
 
-            if (!AllowedGlobalKeys.Equals(allowedGlobalKeys))
+            if (AllowedGlobalKeys == null || !AllowedGlobalKeys.Equals(allowedGlobalKeys))
             {
                 AllowedGlobalKeys = allowedGlobalKeys;
                 AllowedGlobalKeysList = ProgressionAPI.StringToSet(allowedGlobalKeys);
@@ -169,13 +147,13 @@ namespace VentureValheim.Progression
         /// <param name="allowedPrivateKeys"></param>
         protected void UpdatePrivateKeyConfiguration(string blockedPrivateKeys, string allowedPrivateKeys)
         {
-            if (!BlockedPrivateKeys.Equals(blockedPrivateKeys))
+            if (BlockedPrivateKeys == null || !BlockedPrivateKeys.Equals(blockedPrivateKeys))
             {
                 BlockedPrivateKeys = blockedPrivateKeys;
                 BlockedPrivateKeysList = ProgressionAPI.StringToSet(blockedPrivateKeys);
             }
 
-            if (!AllowedPrivateKeys.Equals(allowedPrivateKeys))
+            if (AllowedPrivateKeys == null || !AllowedPrivateKeys.Equals(allowedPrivateKeys))
             {
                 AllowedPrivateKeys = allowedPrivateKeys;
                 AllowedPrivateKeysList = ProgressionAPI.StringToSet(allowedPrivateKeys);
@@ -189,13 +167,13 @@ namespace VentureValheim.Progression
         /// <param name="allowedPrivateKeys"></param>
         protected void UpdateEnforcedKeyConfiguration(string enforcedGlobalKeys, string enforcedPrivateKeys)
         {
-            if (!EnforcedGlobalKeys.Equals(enforcedGlobalKeys))
+            if (EnforcedGlobalKeys == null || !EnforcedGlobalKeys.Equals(enforcedGlobalKeys))
             {
                 EnforcedGlobalKeys = enforcedGlobalKeys;
                 EnforcedGlobalKeysList = ProgressionAPI.StringToSet(enforcedGlobalKeys);
             }
 
-            if (!EnforcedPrivateKeys.Equals(enforcedPrivateKeys))
+            if (EnforcedPrivateKeys == null || !EnforcedPrivateKeys.Equals(enforcedPrivateKeys))
             {
                 EnforcedPrivateKeys = enforcedPrivateKeys;
                 EnforcedPrivateKeysList = ProgressionAPI.StringToSet(enforcedPrivateKeys);

@@ -1,3 +1,10 @@
+## 0.2.11
+
+* Refactored configuration live updates to only happen when needed.
+* Refactored server key tracking to use player IDs rather than names. This will allow players to have the same name on a server.
+* Removed cleanup patch for incorrectly configured world modifiers (if you manually break your world modifiers you can fix them with Venture Debugger).
+* Set commands to onlyServer false.
+
 ## 0.2.10
 
 * Update for game patch 0.217.46

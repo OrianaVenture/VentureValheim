@@ -30,8 +30,7 @@ namespace VentureValheim.Progression
         static KeyManager() { }
         protected KeyManager()
         {
-            ServerPrivateKeysList = new Dictionary<string, HashSet<string>>();
-
+            ResetServer();
             ResetPlayer();
         }
 
@@ -43,7 +42,7 @@ namespace VentureValheim.Progression
         }
 
         public HashSet<string> PrivateKeysList { get; protected set; }
-        public Dictionary<string, HashSet<string>> ServerPrivateKeysList { get; protected set; }
+        public Dictionary<long, HashSet<string>> ServerPrivateKeysList { get; protected set; }
 
         public const string RPCNAME_ServerListKeys = "VV_ServerListKeys";
         public const string RPCNAME_ServerSetPrivateKeys = "VV_ServerSetPrivateKeys";
@@ -164,26 +163,6 @@ namespace VentureValheim.Progression
             }
 
             return PrivateKeysList.Contains(key);
-        }
-
-        /// <summary>
-        /// Returns whether the Player has unlocked the given key, or false if no keys are recorded.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="name">Player name</param>
-        /// <returns></returns>
-        public bool ServerHasPrivateKey(string key, string name)
-        {
-            if (ServerPrivateKeysList.ContainsKey(name))
-            {
-                var set = ServerPrivateKeysList[name];
-                if (set != null)
-                {
-                    return set.Contains(key);
-                }
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -408,7 +387,7 @@ namespace VentureValheim.Progression
         private void SendPrivateKeysToServer(HashSet<string> keys)
         {
             string setString = string.Join<string>(",", keys);
-            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerSetPrivateKeys, setString, ProgressionAPI.GetLocalPlayerName());
+            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerSetPrivateKeys, setString, ProgressionAPI.GetLocalPlayerID());
         }
 
         /// <summary>
@@ -416,15 +395,13 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="keys">Comma-seperated string of keys</param>
-        /// <param name="name">Player name</param>
-        private void RPC_ServerSetPrivateKeys(long sender, string keys, string name)
+        /// <param name="playerID">Player ID</param>
+        private void RPC_ServerSetPrivateKeys(long sender, string keys, long playerID)
         {
-            if (!name.IsNullOrWhiteSpace())
-            {
-                var set = ProgressionAPI.StringToSet(keys);
-                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: {set.Count} keys found for peer {sender}: \"{name}\".");
-                SetServerKeys(name, set);
-            }
+            var set = ProgressionAPI.StringToSet(keys);
+            ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: " +
+                $"{set.Count} keys found for peer {sender}: \"{ProgressionAPI.GetPlayerName(playerID)}\".");
+            SetServerKeys(playerID, set);
         }
 
         /// <summary>
@@ -433,7 +410,7 @@ namespace VentureValheim.Progression
         /// <param name="key"></param>
         private void SendPrivateKeyToServer(string key)
         {
-            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerSetPrivateKey, key, ProgressionAPI.GetLocalPlayerName());
+            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerSetPrivateKey, key, ProgressionAPI.GetLocalPlayerID());
         }
 
         /// <summary>
@@ -441,13 +418,12 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="key"></param>
-        private void RPC_ServerSetPrivateKey(long sender, string key, string name)
+        /// <param name="playerID">Player ID</param>
+        private void RPC_ServerSetPrivateKey(long sender, string key, long playerID)
         {
-            if (!name.IsNullOrWhiteSpace())
-            {
-                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: Adding key {key} for peer {sender}: \"{name}\".");
-                SetServerKey(name, key);
-            }
+            ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: " +
+                $"Adding key {key} for peer {sender}: \"{ProgressionAPI.GetPlayerName(playerID)}\".");
+            SetServerKey(playerID, key);
         }
 
         /// <summary>
@@ -456,7 +432,7 @@ namespace VentureValheim.Progression
         /// <param name="key"></param>
         private void SendRemovePrivateKeyFromServer(string key)
         {
-            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerRemovePrivateKey, key, ProgressionAPI.GetLocalPlayerName());
+            ZRoutedRpc.instance.InvokeRoutedRPC(RPCNAME_ServerRemovePrivateKey, key, ProgressionAPI.GetLocalPlayerID());
         }
 
         /// <summary>
@@ -464,13 +440,12 @@ namespace VentureValheim.Progression
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="key"></param>
-        private void RPC_ServerRemovePrivateKey(long sender, string key, string name)
+        /// <param name="playerID">Player ID</param>
+        private void RPC_ServerRemovePrivateKey(long sender, string key, long playerID)
         {
-            if (!name.IsNullOrWhiteSpace())
-            {
-                ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: Removing key {key} for peer {sender}: \"{name}\".");
-                RemoveServerKey(name, key);
-            }
+            ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: " +
+                $"Removing key {key} for peer {sender}: \"{ProgressionAPI.GetPlayerName(playerID)}\".");
+            RemoveServerKey(playerID, key);
         }
 
         /// <summary>
@@ -495,37 +470,38 @@ namespace VentureValheim.Progression
                     keys += $"{key}, ";
                 }
 
-                ProgressionPlugin.VentureProgressionLogger.LogInfo($"Player {player.Key} has {player.Value.Count} recorded keys: {keys}");
+                ProgressionPlugin.VentureProgressionLogger.LogInfo($"Player {ProgressionAPI.GetPlayerName(player.Key)} has " +
+                    $"{player.Value.Count} recorded keys: {keys}");
             }
         }
 
         /// <summary>
         /// Records the private key set for a player in the server dataset.
         /// </summary>
-        /// <param name="name">Player name</param>
+        /// <param name="playerID">Player ID</param>
         /// <param name="keys"></param>
-        private void SetServerKeys(string name, HashSet<string> keys)
+        private void SetServerKeys(long playerID, HashSet<string> keys)
         {
-            if (ServerPrivateKeysList.ContainsKey(name))
+            if (ServerPrivateKeysList.ContainsKey(playerID))
             {
-                ServerPrivateKeysList[name] = keys;
+                ServerPrivateKeysList[playerID] = keys;
             }
             else
             {
-                ServerPrivateKeysList.Add(name, keys);
+                ServerPrivateKeysList.Add(playerID, keys);
             }
         }
 
         /// <summary>
         /// Adds the private key for a player to the server dataset.
         /// </summary>
-        /// <param name="name">Player name</param>
+        /// <param name="playerID">Player ID</param>
         /// <param name="key"></param>
-        private void SetServerKey(string name, string key)
+        private void SetServerKey(long playerID, string key)
         {
-            if (ServerPrivateKeysList.ContainsKey(name))
+            if (ServerPrivateKeysList.ContainsKey(playerID))
             {
-                ServerPrivateKeysList[name].Add(key);
+                ServerPrivateKeysList[playerID].Add(key);
             }
             else
             {
@@ -533,20 +509,20 @@ namespace VentureValheim.Progression
                 {
                     key
                 };
-                ServerPrivateKeysList.Add(name, set);
+                ServerPrivateKeysList.Add(playerID, set);
             }
         }
 
         /// <summary>
         /// Removes the private key for a player from the server dataset
         /// </summary>
-        /// <param name="name">Player name</param>
+        /// <param name="playerID">Player ID</param>
         /// <param name="key"></param>
-        private void RemoveServerKey(string name, string key)
+        private void RemoveServerKey(long playerID, string key)
         {
-            if (ServerPrivateKeysList.ContainsKey(name))
+            if (ServerPrivateKeysList.ContainsKey(playerID))
             {
-                ServerPrivateKeysList[name].Remove(key);
+                ServerPrivateKeysList[playerID].Remove(key);
             }
         }
 

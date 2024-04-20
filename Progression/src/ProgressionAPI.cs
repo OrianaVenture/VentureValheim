@@ -167,6 +167,33 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
+        /// Attempts to find the player name with the given id.
+        /// </summary>
+        /// <param name="playerID"></param>
+        /// <returns></returns>
+        public static string GetPlayerName(long playerID)
+        {
+            if (GetLocalPlayerID() == playerID)
+            {
+                // In singleplayer the player list may not be populated
+                return GetLocalPlayerName();
+            }
+
+            var players = ZNet.instance.GetPlayerList();
+
+            for (int lcv = 0; lcv < players.Count; lcv++)
+            {
+                var player = players[lcv].m_characterID.UserID;
+                if (player == playerID)
+                {
+                    return players[lcv].m_name;
+                }
+            }
+
+            return playerID.ToString();
+        }
+
+        /// <summary>
         /// Returns the player name of the client player if exists.
         /// </summary>
         /// <returns></returns>
@@ -179,6 +206,21 @@ namespace VentureValheim.Progression
             }
 
             return "";
+        }
+
+        /// <summary>
+        /// Returns the player ID of the client player if exists.
+        /// </summary>
+        /// <returns></returns>
+        public static long GetLocalPlayerID()
+        {
+            var profile = Game.instance.GetPlayerProfile();
+            if (profile != null)
+            {
+                return profile.m_playerID;
+            }
+
+            return 0L;
         }
 
         /// <summary>

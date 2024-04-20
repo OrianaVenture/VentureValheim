@@ -5,12 +5,12 @@ namespace VentureValheim.Progression
 {
     public partial class KeyManager
     {
-        private static HashSet<string> GetPossiblePlayerEvents(string player)
+        private static HashSet<string> GetPossiblePlayerEvents(long playerID)
         {
             HashSet<string> playerKeys;
-            if (Instance.ServerPrivateKeysList.ContainsKey(player))
+            if (Instance.ServerPrivateKeysList.ContainsKey(playerID))
             {
-                playerKeys = Instance.ServerPrivateKeysList[player];
+                playerKeys = Instance.ServerPrivateKeysList[playerID];
             }
             else
             {
@@ -59,7 +59,7 @@ namespace VentureValheim.Progression
         {
             var eventData = default(RandEventSystem.PlayerEventData);
             eventData.position = peer.m_refPos;
-            eventData.possibleEvents = GetPossiblePlayerEvents(peer.m_playerName);
+            eventData.possibleEvents = GetPossiblePlayerEvents(peer.m_characterID.UserID);
             eventData.baseValue = 0;
             if (peer.m_serverSyncedPlayerData.TryGetValue("baseValue", out var basevalue))
             {

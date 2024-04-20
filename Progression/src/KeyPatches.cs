@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace VentureValheim.Progression
 {
@@ -195,7 +194,7 @@ namespace VentureValheim.Progression
                 ProgressionPlugin.VentureProgressionLogger.LogInfo("Starting Player Key Management. Cleaning up private keys!");
 
                 Instance.ResetPlayer();
-                Instance.UpdateConfigs();
+                Instance.UpdateConfigurations();
 
                 HashSet<string> loadedKeys = new();
 
@@ -236,26 +235,6 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Add the config updater watcher to the player.
-        /// </summary>
-        [HarmonyPatch(typeof(Player), nameof(Player.SetLocalPlayer))]
-        public static class Patch_Player_SetLocalPlayer
-        {
-            private static void Postfix(Player __instance)
-            {
-                if (!ProgressionAPI.IsInTheMainScene())
-                {
-                    return;
-                }
-
-                if (__instance.GetComponent<KeyManagerUpdater> == null)
-                {
-                    __instance.gameObject.AddComponent<KeyManagerUpdater>();
-                }
-            }
-        }
-
-        /// <summary>
         /// Register RPCs and perform a server key cleanup when starting up.
         /// </summary>
         [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.Load))]
@@ -263,106 +242,57 @@ namespace VentureValheim.Progression
         {
             private static void Postfix()
             {
-                if (ZNet.instance.IsServer())
+                if (!ZNet.instance.IsServer())
                 {
-                    ProgressionPlugin.VentureProgressionLogger.LogInfo("Starting Server Key Management. Cleaning up public keys!");
-
-                    Instance.Reset();
-                    Instance.UpdateConfigs();
-
-                    var keys = ProgressionAPI.GetGlobalKeys().ToList();
-                    var blockAll = ProgressionConfiguration.Instance.GetBlockAllGlobalKeys();
-
-                    // Remove any blocked global keys from the list
-                    for (int lcv = 0; lcv < keys.Count; lcv++)
-                    {
-                        if (Instance.BlockGlobalKey(blockAll, keys[lcv]))
-                        {
-                            ZoneSystem.instance.m_globalKeys.Remove(keys[lcv]);
-                        }
-                    }
-
-                    // Add enforced global keys regardless of settings
-                    foreach (var key in Instance.EnforcedGlobalKeysList)
-                    {
-                        ZoneSystem.instance.m_globalKeys.Add(key);
-                    }
-
-                    if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
-                    {
-                        // Add player based raids setting
-                        ZoneSystem.instance.m_globalKeysEnums.Add(GlobalKeys.PlayerEvents);
-                    }
-
-                    // Register Server RPCs
-                    try
-                    {
-                        ZRoutedRpc.instance.Register(RPCNAME_ServerListKeys, new Action<long>(Instance.RPC_ServerListKeys));
-                        ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKeys, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKeys));
-                        ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKey, new Action<long, string, string>(Instance.RPC_ServerSetPrivateKey));
-                        ZRoutedRpc.instance.Register(RPCNAME_ServerRemovePrivateKey, new Action<long, string, string>(Instance.RPC_ServerRemovePrivateKey));
-
-                        ZRoutedRpc.instance.Register(RPCNAME_SetPrivateKey, new Action<long, string>(Instance.RPC_SetPrivateKey));
-                        ZRoutedRpc.instance.Register(RPCNAME_RemovePrivateKey, new Action<long, string>(Instance.RPC_RemovePrivateKey));
-                        ZRoutedRpc.instance.Register(RPCNAME_ResetPrivateKeys, new Action<long>(Instance.RPC_ResetPrivateKeys));
-                    }
-                    catch
-                    {
-                        ProgressionPlugin.VentureProgressionLogger.LogDebug("Server RPCs have already been registered. Skipping.");
-                    }
-
-
-                    if (Instance._keyManagerUpdater == null)
-                    {
-                        var obj = GameObject.Instantiate(new GameObject());
-                        Instance._keyManagerUpdater = obj.AddComponent<KeyManagerUpdater>();
-                    }
+                    return;
                 }
-            }
-        }
 
-        /// <summary>
-        /// Fix my mistake of adding GlobalKeys.PlayerEvents to the list multiple times
-        /// </summary>
-        [HarmonyPatch(typeof(ZPlayFabMatchmaking), "CreateLobby")]
-        public static class Patch_ZPlayFabMatchmaking_CreateLobby
-        {
-            private static void Prefix()
-            {
-                RemoveDuplicates(ref ZPlayFabMatchmaking.m_instance.m_serverData.modifiers);
-            }
-        }
+                ProgressionPlugin.VentureProgressionLogger.LogInfo("Starting Server Key Management. Cleaning up public keys!");
 
-        /// <summary>
-        /// Fix my mistake of adding GlobalKeys.PlayerEvents to the list multiple times (server patch)
-        /// </summary>
-        [HarmonyPatch(typeof(ZSteamMatchmaking), "RegisterServer")]
-        public static class Patch_ZSteamMatchmaking_RegisterServer
-        {
-            private static void Prefix(ref List<string> modifiers)
-            {
-                RemoveDuplicates(ref modifiers);
-            }
-        }
+                Instance.ResetConfigurations();
+                Instance.ResetServer();
+                Instance.UpdateConfigurations();
 
-        private static void RemoveDuplicates(ref List<string> keys)
-        {
-            if (keys != null)
-            {
-                var fixedKeys = new HashSet<string>();
-                foreach (string key in keys)
+                var keys = ProgressionAPI.GetGlobalKeys().ToList();
+                var blockAll = ProgressionConfiguration.Instance.GetBlockAllGlobalKeys();
+
+                // Remove any blocked global keys from the list
+                for (int lcv = 0; lcv < keys.Count; lcv++)
                 {
-                    if (!fixedKeys.Contains(key))
+                    if (Instance.BlockGlobalKey(blockAll, keys[lcv]))
                     {
-                        fixedKeys.Add(key);
-                    }
-                    else
-                    {
-                        ProgressionPlugin.VentureProgressionLogger.LogWarning($"Found duplicate world modifier key {key}, fixing.");
+                        ZoneSystem.instance.m_globalKeys.Remove(keys[lcv]);
                     }
                 }
 
-                keys = fixedKeys.ToList();
+                // Add enforced global keys regardless of settings
+                foreach (var key in Instance.EnforcedGlobalKeysList)
+                {
+                    ZoneSystem.instance.m_globalKeys.Add(key);
+                }
+
+                if (ProgressionConfiguration.Instance.GetUsePrivateKeys())
+                {
+                    // Add player based raids setting
+                    ZoneSystem.instance.m_globalKeysEnums.Add(GlobalKeys.PlayerEvents);
+                }
+
+                // Register Server RPCs
+                try
+                {
+                    ZRoutedRpc.instance.Register(RPCNAME_ServerListKeys, new Action<long>(Instance.RPC_ServerListKeys));
+                    ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKeys, new Action<long, string, long>(Instance.RPC_ServerSetPrivateKeys));
+                    ZRoutedRpc.instance.Register(RPCNAME_ServerSetPrivateKey, new Action<long, string, long>(Instance.RPC_ServerSetPrivateKey));
+                    ZRoutedRpc.instance.Register(RPCNAME_ServerRemovePrivateKey, new Action<long, string, long>(Instance.RPC_ServerRemovePrivateKey));
+
+                    ZRoutedRpc.instance.Register(RPCNAME_SetPrivateKey, new Action<long, string>(Instance.RPC_SetPrivateKey));
+                    ZRoutedRpc.instance.Register(RPCNAME_RemovePrivateKey, new Action<long, string>(Instance.RPC_RemovePrivateKey));
+                    ZRoutedRpc.instance.Register(RPCNAME_ResetPrivateKeys, new Action<long>(Instance.RPC_ResetPrivateKeys));
+                }
+                catch
+                {
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug("Server RPCs have already been registered. Skipping.");
+                }
             }
         }
 
@@ -398,7 +328,7 @@ namespace VentureValheim.Progression
                     {
                         args.Context.AddString("Syntax: setglobalkey [key]");
                     }
-                }, isCheat: true, isNetwork: false, onlyServer: true);
+                }, isCheat: true, isNetwork: false, onlyServer: false);
                 new Terminal.ConsoleCommand("removeglobalkey", "[name]", delegate (Terminal.ConsoleEventArgs args)
                 {
                     if (args.Length >= 2)
@@ -410,7 +340,7 @@ namespace VentureValheim.Progression
                     {
                         args.Context.AddString("Syntax: removeglobalkey [key]");
                     }
-                }, isCheat: true, isNetwork: false, onlyServer: true);
+                }, isCheat: true, isNetwork: false, onlyServer: false);
                 new Terminal.ConsoleCommand("listglobalkeys", "", delegate (Terminal.ConsoleEventArgs args)
                 {
                     var keys = ProgressionAPI.GetGlobalKeys();
@@ -419,11 +349,11 @@ namespace VentureValheim.Progression
                     {
                         args.Context.AddString(key);
                     }
-                }, isCheat: true, isNetwork: false, onlyServer: true);
+                }, isCheat: true, isNetwork: false, onlyServer: false);
                 new Terminal.ConsoleCommand("resetglobalkeys", "", delegate (Terminal.ConsoleEventArgs args)
                 {
                     ZoneSystem.instance.ResetGlobalKeys();
-                }, isCheat: true, isNetwork: false, onlyServer: true);
+                }, isCheat: true, isNetwork: false, onlyServer: false);
                 new Terminal.ConsoleCommand("setprivatekey", "[name] [optional: player name]", delegate (Terminal.ConsoleEventArgs args)
                 {
                     if (args.Length >= 3)
@@ -445,7 +375,7 @@ namespace VentureValheim.Progression
                     {
                         args.Context.AddString("Syntax: setprivatekey [key]");
                     }
-                }, isCheat: true, isNetwork: false, onlyServer: true);
+                }, isCheat: true, isNetwork: false, onlyServer: false);
                 new Terminal.ConsoleCommand("removeprivatekey", "[name] [optional: player name]", delegate (Terminal.ConsoleEventArgs args)
                 {
                     if (args.Length >= 3)
@@ -467,7 +397,7 @@ namespace VentureValheim.Progression
                     {
                         args.Context.AddString("Syntax: removeprivatekey [key] [optional: player name]");
                     }
-                }, isCheat: true, isNetwork: false, onlyServer: true);
+                }, isCheat: true, isNetwork: false, onlyServer: false);
                 new Terminal.ConsoleCommand("resetprivatekeys", "[optional: player name]", delegate (Terminal.ConsoleEventArgs args)
                 {
                     if (args.Length >= 2)
@@ -490,7 +420,7 @@ namespace VentureValheim.Progression
                     {
                         args.Context.AddString("Syntax: resetprivatekeys [optional: player name]");
                     }
-                }, isCheat: true, isNetwork: false, onlyServer: true);
+                }, isCheat: true, isNetwork: false, onlyServer: false);
                 new Terminal.ConsoleCommand("listprivatekeys", "", delegate (Terminal.ConsoleEventArgs args)
                 {
                     args.Context.AddString($"Total Keys {Instance.PrivateKeysList.Count}");
@@ -525,7 +455,7 @@ namespace VentureValheim.Progression
                         args.Context.AddString($"You are not the server, no data available client side. Printing key information to server logoutput.log file.");
                         Instance.SendServerListKeys();
                     }
-                }, isCheat: true, isNetwork: false, onlyServer: true);
+                }, isCheat: true, isNetwork: false, onlyServer: false);
             }
         }
     }

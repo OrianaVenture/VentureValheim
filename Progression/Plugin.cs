@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -22,7 +23,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.2.10";
+        private const string ModVersion = "0.2.11";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -299,7 +300,9 @@ namespace VentureValheim.Progression
 
         private void SetupWatcher()
         {
+            _lastReloadTime = DateTime.Now;
             FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
+            // Due to limitations of technology this can trigger twice in a row
             watcher.Changed += ReadConfigValues;
             watcher.Created += ReadConfigValues;
             watcher.Renamed += ReadConfigValues;
@@ -308,18 +311,29 @@ namespace VentureValheim.Progression
             watcher.EnableRaisingEvents = true;
         }
 
+        private DateTime _lastReloadTime;
+        private const long RELOAD_DELAY = 10000000; // One second
+
         private void ReadConfigValues(object sender, FileSystemEventArgs e)
         {
-            if (!File.Exists(ConfigFileFullPath)) return;
+            var now = DateTime.Now;
+            var time = now.Ticks - _lastReloadTime.Ticks;
+            if (!File.Exists(ConfigFileFullPath) || time < RELOAD_DELAY) return;
+
             try
             {
-                VentureProgressionLogger.LogDebug("Attempting to reload configuration...");
+                VentureProgressionLogger.LogInfo("Attempting to reload configuration...");
                 Config.Reload();
             }
             catch
             {
                 VentureProgressionLogger.LogError($"There was an issue loading {ConfigFileName}");
+                return;
             }
+
+            _lastReloadTime = now;
+
+            KeyManager.Instance.UpdateConfigurations();
         }
     }
 
