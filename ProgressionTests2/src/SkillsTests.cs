@@ -148,13 +148,14 @@ namespace VentureValheim.ProgressionTests
         }
 
         [Theory]
-        [InlineData(0, 40f)]
-        [InlineData(1, 50f)]
-        [InlineData(2, 60f)]
-        [InlineData(3, 70f)]
-        [InlineData(4, 80f)]
-        [InlineData(5, 90f)]
-        [InlineData(6, 100f)]
+        [InlineData(0, 30f)]
+        [InlineData(1, 40f)]
+        [InlineData(2, 50f)]
+        [InlineData(3, 60f)]
+        [InlineData(4, 70f)]
+        [InlineData(5, 80f)]
+        [InlineData(6, 90f)]
+        [InlineData(7, 100f)]
         public void GetBossSkillCeiling_All(int bosses, float expected)
         {
             Setup();
@@ -169,6 +170,7 @@ namespace VentureValheim.ProgressionTests
         [InlineData(4, 40f)]
         [InlineData(5, 50f)]
         [InlineData(6, 60f)]
+        [InlineData(7, 70f)]
         public void GetBossSkillFloor_All(int bosses, float expected)
         {
             Setup();
@@ -179,13 +181,14 @@ namespace VentureValheim.ProgressionTests
         [InlineData(false, false, false, false, 100, 0)]
         [InlineData(false, false, true, false, 89, 0)]
         [InlineData(false, false, false, true, 100, 11)]
-        [InlineData(true, false, false, false, 60, 20)]
+        [InlineData(true, false, false, false, 50, 20)]
         [InlineData(true, false, true, false, 89, 20)]
-        [InlineData(true, false, false, true, 60, 11)]
-        [InlineData(true, true, false, false, 50, 10)]
+        [InlineData(true, false, false, true, 50, 11)]
+        [InlineData(true, true, false, false, 40, 10)]
         [InlineData(true, true, true, false, 89, 10)]
-        [InlineData(true, true, false, true, 50, 11)]
-        public void Update_All(bool useBossKeys, bool usePrivateKeys, bool overrideMax, bool overrideMin, float expectedMax, float expectedMin)
+        [InlineData(true, true, false, true, 40, 11)]
+        public void Update_All(bool useBossKeys, bool usePrivateKeys, bool overrideMax, bool overrideMin, 
+            float expectedMax, float expectedMin)
         {
             Setup(useBossKeys, usePrivateKeys, overrideMax, overrideMin);
             Assert.Equal(1, skillsManager.GetPrivateBossKeysCountTest());

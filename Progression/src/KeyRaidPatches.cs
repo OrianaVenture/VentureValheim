@@ -84,7 +84,7 @@ namespace VentureValheim.Progression
         [HarmonyPatch(typeof(RandEventSystem), nameof(RandEventSystem.RefreshPlayerEventData))]
         public static class Patch_RandEventSystem_RefreshPlayerEventData
         {
-            private static bool Prefix(ref List<RandEventSystem.PlayerEventData> __result)
+            private static bool Prefix()
             {
                 if (!ProgressionConfiguration.Instance.GetUsePrivateRaids() ||
                     !ProgressionConfiguration.Instance.GetUsePrivateKeys())
@@ -92,22 +92,21 @@ namespace VentureValheim.Progression
                     return true;
                 }
 
-                RandEventSystem.playerEventDatas.Clear();
+                RandEventSystem.s_playerEventDatas.Clear();
 
-                if (!ZNet.instance.IsDedicated())
+                if (!ZNet.instance.IsDedicated() && Player.m_localPlayer != null)
                 {
-                    RandEventSystem.playerEventDatas.Add(GetHostPlayerEventData());
+                    RandEventSystem.s_playerEventDatas.Add(GetHostPlayerEventData());
                 }
 
                 foreach (ZNetPeer peer in ZNet.instance.GetPeers())
                 {
                     if (peer.IsReady())
                     {
-                        RandEventSystem.playerEventDatas.Add(GetPlayerEventData(peer));
+                        RandEventSystem.s_playerEventDatas.Add(GetPlayerEventData(peer));
                     }
                 }
 
-                __result = RandEventSystem.playerEventDatas;
                 return false; // Skip 
             }
         }

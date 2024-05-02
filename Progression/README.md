@@ -10,6 +10,8 @@ Control skill levels, trader items, and manage world and individual player keys!
 
 The main feature of this mod is to have an easy way to control the rate at which the world and individual player advances. Below are some explanations of features and how to configure them. See more details in the config file. Generate the config file by launching the game once with this mod installed. The information included in the file will not always match the information provided in this readme.
 
+**ASHLANDS UPDATE:** If you are upgrading the mod for the ashlands update and use default configurations there will be no action you will need to take. If you have customized the configurations you will need to add in support for the new ashlands boss. The new boss prefab is "Fader" and defeating it adds the "defeated_fader" key. The new tamable creature is "Asksvin" and by default taming is locked by the "defeated_queen" key.
+
 ### Key Management
 
 What is a key and what is controlled by them? In vanilla Valheim there exists a "global key" list that is a bunch of strings shared by all players. Worldly spawns, raids, dreams, and Haldor's items are all controlled by the presence of specific keys. Each boss, select creatures in the game, as well as Hildir's quests each have keys associated with their completion. The main feature of this mod is the addition of a private key system that makes this progress all individual.
@@ -28,7 +30,7 @@ When using private keys it will alter how raids work in your world. After the Hi
 
 When using this feature with other mods it is important to note this mod checks the "global key" requirements on the raid to determine if a raid is valid. It is the same logic checks as if using vanilla global keys, just done for each player.
 
-If you see conficts with other mods you can turn off this mod's private raids feature by setting UsePrivateRaids = false. When set to false the vanilla player based raids logic will be used.
+If you see conflicts with other mods you can turn off this mod's private raids feature by setting UsePrivateRaids = false. When set to false the vanilla player based raids logic will be used.
 
 #### Important Tips
 
@@ -46,7 +48,7 @@ If you see conficts with other mods you can turn off this mod's private raids fe
 | BlockAllGlobalKeys | Prevent/block public all keys from being added to the global list, set to false to use vanilla behavior. |
 | AllowedGlobalKeys | Allow only these keys being added to the global list when BlockAllGlobalKeys is true. |
 | BlockedGlobalKeys | Stop only these keys being added to the global list when BlockAllGlobalKeys is false. |
-| EnforcedGlobalKeys | Always add these keys to the global list on startup (regardless of other settings)
+| EnforcedGlobalKeys | Always add these keys to the global list on startup (regardless of other settings) |
 | UsePrivateKeys | Use private player keys, rather than global keys for game key checking. |
 | BlockedPrivateKeys | Stop only these keys being added to the player's key list when UsePrivateKeys is true (use this or AllowedPrivateKeys). |
 | AllowedPrivateKeys | Allow only these keys being added to the player's key list when UsePrivateKeys is true (use this or BlockedPrivateKeys, if the BlockedPrivateKeys has any values it will use that setting). |
@@ -60,7 +62,7 @@ If you see conficts with other mods you can turn off this mod's private raids fe
 * defeated_dragon
 * defeated_goblinking
 * defeated_queen
-* defeated_hive
+* defeated_fader
 * KilledTroll
 * killed_surtling
 * KilledBat
@@ -99,13 +101,15 @@ Admins can bypass locking settings by enabling the AdminBypass setting.
 
 #### Locking Taming
 
-Taming can be locked by keys when enabled. By default Wolf is locked by the defeated_bonemass key and Lox is locked by the defeated_dragon key. You can override this by using the prefab name of the creature, allowing you to add support for content from other mods. When overriding you must define all the creatures since it will no longer include the defaults. When using private keys make sure the player who can tame the animals is the first to load the area since taming is controlled by the player hosting the chunk. You will still see taming hearts (for now), but if you check the taming status on the animals you will see the percentage no longer increases when locked.
+Taming can be locked by keys when enabled. By default Wolf is locked by the defeated_bonemass key, Lox by defeated_dragon, and Asksvin by defeated_queen. You can override this by using the prefab name of the creature, allowing you to add support for content from other mods. When overriding you must define all the creatures since it will no longer include the defaults. When using private keys make sure the player who can tame the animals is the first to load the area since taming is controlled by the player hosting the chunk. You will still see taming hearts (for now), but if you check the taming status on the animals you will see the percentage no longer increases when locked.
 
 #### Locking Bosses
 
 Guardian Powers and Boss Alter Summoning can be locked. By default summoning is locked by the key given by the previous boss in the natural progression order. You can override this by using the prefab name of the creature the alter summons, also allowing you to add support for content from other mods. When overriding you must define all the bosses you want included in the locking system.
 
-Additionally, you can bypass the progression order and just enforce in-game days as the only restraint for unlocking boss alters when using UnlockBossSummonsOverTime with the following setting for OverrideLockBossSummonsDefaults: Eikthyr, ,gd_king, , Bonemass, , Dragon, , GoblinKing, , SeekerQueen,
+Additionally, you can bypass the progression order and just enforce in-game days as the only restraint for unlocking boss alters when using UnlockBossSummonsOverTime with the following setting for OverrideLockBossSummonsDefaults: Eikthyr, , gd_king, , Bonemass, , Dragon, , GoblinKing, , SeekerQueen, , Fader, ,
+
+If you want manual control over when bosses become available to summon you will need to manually update the OverrideLockBossSummonsDefaults setting each time you want to unlock a new boss. Using any key that a player cannot obtain will block them from summoning it. You can also use this strategy to only give certain player access to boss alters. Example of locking all boss alters: Eikthyr, Locked, gd_king, Locked, Bonemass, Locked, Dragon, Locked, GoblinKing, Locked, SeekerQueen, Locked, Fader, Locked
 
 #### Locking Portals
 
@@ -120,10 +124,10 @@ Using equipment, crafting, building, and cooking can all be locked with individu
 | Configuration <br>_______________| Description <br>_____________|
 |--- |--- |
 | LockTaming | If true you can only tame certain creatures if you have the required key. |
-| OverrideLockTamingDefaults | Define your own required keys to tame specific creatures or leave blank to use the defaults. Example: Boar, defeated_eikthyr, Wolf, defeated_dragon, Lox, defeated_goblinking |
+| OverrideLockTamingDefaults | Define your own required keys to tame specific creatures or leave blank to use the defaults. Example: Boar, defeated_eikthyr, Wolf, defeated_dragon, Lox, defeated_goblinking, Asksvin, defeated_fader |
 | LockGuardianPower | If true locks the ability to get or use boss powers based on the required key. |
 | LockBossSummons | If true you can only summon bosses based on the required key. |
-| OverrideLockBossSummonsDefaults | Define your own required keys to summon bosses or leave blank to use the defaults. Example (also the mod defaults): Eikthyr, ,gd_king, defeated_eikthyr, Bonemass, defeated_gdking, Dragon, defeated_bonemass, GoblinKing, defeated_dragon, SeekerQueen, defeated_goblinking |
+| OverrideLockBossSummonsDefaults | Define your own required keys to summon bosses or leave blank to use the defaults. Example (also the mod defaults): Eikthyr, ,gd_king, defeated_eikthyr, Bonemass, defeated_gdking, Dragon, defeated_bonemass, GoblinKing, defeated_dragon, SeekerQueen, defeated_goblinking, Fader, defeated_queen |
 | UnlockBossSummonsOverTime | If true will additionally check the appropriate time has passed for unlocking the boss alters. This will still enforce the boss progression order unless overridden above. |
 | UnlockBossSummonsTime | Time for previous setting, default is 100. Example: Eikthyr wil be available on day 0, the Elder on 100, Bonemass on 200 etc. |
 | LockEquipment | If true you can only equip or use boss items or items made from biome metals/materials if you have the required key. |
@@ -138,8 +142,8 @@ There are more key options specifically for Haldor under it's own section called
 
 | Configuration <br>_______________| Description <br>_____________|
 |--- |--- |
-| UnlockAllHaldorItems | If true bypasses the key check for Haldor's items and unlocks everything |
-| UnlockAllHildirItems | If true bypasses the key check for Hildir's items and unlocks everything |
+| UnlockAllHaldorItems | If true bypasses the key check for Haldor's items and unlocks everything. |
+| UnlockAllHildirItems | If true bypasses the key check for Hildir's items and unlocks everything. |
 
 ### Skill Manager
 

@@ -195,7 +195,8 @@ namespace VentureValheim.Progression
                     TamingKeysList = new Dictionary<string, string>
                     {
                         { "Wolf", BOSS_KEY_SWAMP },
-                        { "Lox", BOSS_KEY_MOUNTAIN }
+                        { "Lox", BOSS_KEY_MOUNTAIN },
+                        { "Asksvin", BOSS_KEY_MISTLAND}
                     };
                 }
                 else
@@ -225,6 +226,7 @@ namespace VentureValheim.Progression
                         { "Dragon", BOSS_KEY_SWAMP },
                         { "GoblinKing", BOSS_KEY_MOUNTAIN },
                         { "SeekerQueen", BOSS_KEY_PLAIN },
+                        { "Fader", BOSS_KEY_MISTLAND }
                     };
                 }
                 else

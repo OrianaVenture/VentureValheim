@@ -12,12 +12,13 @@ namespace VentureValheim.Progression
         public const string BOSS_KEY_MOUNTAIN = "defeated_dragon";
         public const string BOSS_KEY_PLAIN = "defeated_goblinking";
         public const string BOSS_KEY_MISTLAND = "defeated_queen";
+        public const string BOSS_KEY_ASHLAND = "defeated_fader";
 
         public const string HILDIR_KEY_CRYPT = "hildir1";
         public const string HILDIR_KEY_CAVE = "hildir2";
         public const string HILDIR_KEY_TOWER = "hildir3";
 
-        public const int TOTAL_BOSSES = 6;
+        public const int TOTAL_BOSSES = 7;
         public readonly Dictionary<string, int> BossKeyOrderList = new Dictionary<string, int>
         {
             { "", 0 },
@@ -26,7 +27,8 @@ namespace VentureValheim.Progression
             { BOSS_KEY_SWAMP, 3 },
             { BOSS_KEY_MOUNTAIN, 4 },
             { BOSS_KEY_PLAIN, 5 },
-            { BOSS_KEY_MISTLAND, 6 }
+            { BOSS_KEY_MISTLAND, 6 },
+            { BOSS_KEY_ASHLAND, 7}
         };
 
         public readonly Dictionary<string, string> GuardianKeysList = new Dictionary<string, string>
@@ -36,7 +38,8 @@ namespace VentureValheim.Progression
             { "GP_Bonemass", BOSS_KEY_SWAMP },
             { "GP_Moder", BOSS_KEY_MOUNTAIN },
             { "GP_Yagluth", BOSS_KEY_PLAIN },
-            { "GP_Queen", BOSS_KEY_MISTLAND }
+            { "GP_Queen", BOSS_KEY_MISTLAND },
+            { "GP_Fader", BOSS_KEY_ASHLAND }
         };
 
         public readonly Dictionary<string, string> BossItemKeysList = new Dictionary<string, string>
@@ -47,7 +50,8 @@ namespace VentureValheim.Progression
             { "DragonTear", BOSS_KEY_MOUNTAIN },
             { "YagluthDrop", BOSS_KEY_PLAIN },
             { "DvergrKey", BOSS_KEY_PLAIN },
-            { "QueenDrop", BOSS_KEY_MISTLAND }
+            { "QueenDrop", BOSS_KEY_MISTLAND },
+            { "FaderDrop", BOSS_KEY_ASHLAND }
         };
 
         public readonly Dictionary<string, string> MaterialKeysList = new Dictionary<string, string>
@@ -88,7 +92,29 @@ namespace VentureValheim.Progression
             { "ScaleHide", BOSS_KEY_PLAIN },
             { "Wisp", BOSS_KEY_PLAIN },
             { "YggdrasilWood", BOSS_KEY_PLAIN },
-            { "JuteBlue", BOSS_KEY_PLAIN }
+            { "JuteBlue", BOSS_KEY_PLAIN },
+            { "DvergrKeyFragment", BOSS_KEY_PLAIN },
+            // Ashlands
+            { "AskBladder", BOSS_KEY_MISTLAND },
+            { "AskHide", BOSS_KEY_MISTLAND },
+            { "Blackwood", BOSS_KEY_MISTLAND },
+            { "BonemawSerpentTooth", BOSS_KEY_MISTLAND },
+            { "CelestialFeather", BOSS_KEY_MISTLAND },
+            { "CharcoalResin", BOSS_KEY_MISTLAND },
+            { "CharredBone", BOSS_KEY_MISTLAND },
+            { "CharredCogwheel", BOSS_KEY_MISTLAND },
+            { "FlametalNew", BOSS_KEY_MISTLAND },
+            { "GemstoneBlue", BOSS_KEY_MISTLAND },
+            { "GemstoneGreen", BOSS_KEY_MISTLAND },
+            { "GemstoneRed", BOSS_KEY_MISTLAND },
+            { "Grausten", BOSS_KEY_MISTLAND },
+            { "MoltenCore", BOSS_KEY_MISTLAND },
+            { "MorgenSinew", BOSS_KEY_MISTLAND },
+            { "MorgenHeart", BOSS_KEY_MISTLAND },
+            { "ProustitePowder", BOSS_KEY_MISTLAND },
+            { "SulfurStone", BOSS_KEY_MISTLAND },
+            { "BellFragment", BOSS_KEY_MISTLAND }
+            // Exclude: Pot_Shard_Green
         };
 
         public readonly Dictionary<string, string> FoodKeysList = new Dictionary<string, string>
@@ -123,7 +149,15 @@ namespace VentureValheim.Progression
             { "RoyalJelly", BOSS_KEY_PLAIN },
             { "HareMeat", BOSS_KEY_PLAIN },
             { "Sap", BOSS_KEY_PLAIN },
-            { "MushroomJotunPuffs", BOSS_KEY_PLAIN }
+            { "MushroomJotunPuffs", BOSS_KEY_PLAIN },
+            // Ashlands
+            { "AsksvinMeat", BOSS_KEY_MISTLAND },
+            { "BoneMawSerpentMeat", BOSS_KEY_MISTLAND },
+            { "Fiddleheadfern", BOSS_KEY_MISTLAND },
+            { "MushroomSmokePuff", BOSS_KEY_MISTLAND },
+            { "Vineberry", BOSS_KEY_MISTLAND },
+            { "VoltureEgg", BOSS_KEY_MISTLAND },
+            { "VoltureMeat", BOSS_KEY_MISTLAND }
         };
 
         private static int _cachedPublicBossKeys = -1;

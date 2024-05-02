@@ -1,3 +1,9 @@
+## 0.2.12
+
+* Update for game version  0.218.12+.
+* Updated to include new items from Ashlands.
+* Skill capping now accounts for the Ashlands boss, this will naturally lower the skill gain ceiling.
+
 ## 0.2.11
 
 * Refactored configuration live updates to only happen when needed.
