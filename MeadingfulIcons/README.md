@@ -21,6 +21,10 @@ This mod needs to be on all clients to work properly. Config Syncing is included
 
 ## Changelog
 
+### 0.1.3
+
+* Updated to include new items from Ashlands.
+
 ### 0.1.2
 
 * Fixed issue where patches may have applied before the initial server configuration syncing event. This made some server configurations not apply correctly.

@@ -27,10 +27,12 @@ namespace VentureValheim.MeadingfulIcons
             "MeadBaseHealthMinor",
             "MeadBaseHealthMedium",
             "MeadBaseHealthMajor",
+            "MeadBaseHealthLingering",
             "MeadBaseStaminaMinor",
             "MeadBaseStaminaMedium",
             "MeadBaseStaminaLingering",
             "MeadBaseEitrMinor",
+            "MeadBaseEitrLingering",
             "MeadBaseFrostResist",
             "MeadBasePoisonResist",
             "BarleyWineBase"

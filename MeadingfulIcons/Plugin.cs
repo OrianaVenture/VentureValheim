@@ -13,7 +13,7 @@ namespace VentureValheim.MeadingfulIcons
     public class MeadingfulIconsPlugin : BaseUnityPlugin
     {
         private const string ModName = "MeadingfulIcons";
-        private const string ModVersion = "0.1.2";
+        private const string ModVersion = "0.1.3";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
