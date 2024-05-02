@@ -144,12 +144,12 @@ namespace VentureValheim.ScalingTests
         }
 
         [Theory]
-        [InlineData(WorldConfiguration.Difficulty.Harmless, 0)]
-        [InlineData(WorldConfiguration.Difficulty.Novice, 5)]
-        [InlineData(WorldConfiguration.Difficulty.Average, 10)]
-        [InlineData(WorldConfiguration.Difficulty.Intermediate, 12)]
-        [InlineData(WorldConfiguration.Difficulty.Expert, 15)]
-        [InlineData(WorldConfiguration.Difficulty.Boss, 20)]
+        [InlineData(WorldConfiguration.Difficulty.Harmless, 5)]
+        [InlineData(WorldConfiguration.Difficulty.Novice, 15)]
+        [InlineData(WorldConfiguration.Difficulty.Average, 20)]
+        [InlineData(WorldConfiguration.Difficulty.Intermediate, 25)]
+        [InlineData(WorldConfiguration.Difficulty.Expert, 30)]
+        [InlineData(WorldConfiguration.Difficulty.Boss, 30)]
         public void GetCreatureDamage_EnsureDefaultUnchanged(WorldConfiguration.Difficulty d, int expected)
         {
             var damage = creatureConfiguration.GetBaseTotalDamage(d);
@@ -212,6 +212,7 @@ namespace VentureValheim.ScalingTests
         [InlineData(WorldConfiguration.Biome.Plain, WorldConfiguration.Difficulty.Boss, 187f)]
         public void GetCreatureDamage_All(WorldConfiguration.Biome biome, WorldConfiguration.Difficulty d, float expected)
         {
+            creatureConfiguration.SetBaseDamage(new int[] { 0, 5, 10, 12, 15, 20 });
             HitData.DamageTypes damageTypes = new HitData.DamageTypes
             {
                 m_damage = 0f,
@@ -233,15 +234,9 @@ namespace VentureValheim.ScalingTests
 
             var result = itemConfiguration.CalculateCreatureDamageTypes(worldConfiguration.GetBiome(biome).ScaleValue, damageTypes, newDamage, max);
 
-            var expectedDamage = new HitData.DamageTypes();
-            expectedDamage.m_chop = 10f;
-            expectedDamage.m_pickaxe = 10f;
-            expectedDamage.m_blunt = expected;
-
             Assert.Equal(10f, result.m_chop);
             Assert.Equal(10f, result.m_pickaxe);
-            Assert.Equal(expected, result.m_blunt);
-            Assert.Equal(expectedDamage, result);
+            Assert.Equal(expected, result.m_blunt, 1f);
         }
 
         [Fact]

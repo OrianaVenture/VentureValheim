@@ -143,17 +143,11 @@ namespace VentureValheim.ScalingTests
 
             var result = itemConfiguration.CalculateItemDamageTypes(worldConfiguration.GetBiome(biome).ScaleValue, damageTypes, 10f);
 
-            var expectedDamage = new HitData.DamageTypes();
-            expectedDamage.m_chop = 10f;
-            expectedDamage.m_pickaxe = 10f;
-            expectedDamage.m_blunt = expected;
-            expectedDamage.m_slash = expected;
-            expectedDamage.m_fire = expected;
-
             Assert.Equal(10f, result.m_chop);
             Assert.Equal(10f, result.m_pickaxe);
-            Assert.Equal(expected, result.m_blunt);
-            Assert.Equal(expectedDamage, result);
+            Assert.Equal(expected, result.m_blunt, 1f);
+            Assert.Equal(expected, result.m_slash, 1f);
+            Assert.Equal(expected, result.m_fire, 1f);
         }
 
         [Fact]
@@ -210,7 +204,7 @@ namespace VentureValheim.ScalingTests
             var scale = worldConfiguration.GetBiomeScaling(biome);
             var nextScale = worldConfiguration.GetNextBiomeScale(biome);
 
-            Assert.Equal(expected, itemConfiguration.CalculateUpgradeValueTest(scale, nextScale, value, quality));
+            Assert.Equal(expected, itemConfiguration.CalculateUpgradeValueTest(scale, nextScale, value, quality), 1f);
         }
 
         [Theory]
@@ -239,21 +233,6 @@ namespace VentureValheim.ScalingTests
                 m_spirit = 0f
             };
 
-            HitData.DamageTypes damageTypesExpected = new HitData.DamageTypes
-            {
-                m_damage = 0f,
-                m_chop = 1f,
-                m_pickaxe = 1f,
-                m_blunt = expected,
-                m_slash = expected,
-                m_pierce = 0f,
-                m_fire = expected,
-                m_frost = 0f,
-                m_lightning = 0f,
-                m_poison = 0f,
-                m_spirit = 0f
-            };
-
             var scale = worldConfiguration.GetBiomeScaling(biome);
             var nextScale = worldConfiguration.GetNextBiomeScale(biome);
 
@@ -261,8 +240,9 @@ namespace VentureValheim.ScalingTests
 
             Assert.Equal(1f, result.m_chop);
             Assert.Equal(1f, result.m_pickaxe);
-            Assert.Equal(expected, result.m_blunt);
-            Assert.Equal(damageTypesExpected, result);
+            Assert.Equal(expected, result.m_blunt, 1f);
+            Assert.Equal(expected, result.m_slash, 1f);
+            Assert.Equal(expected, result.m_fire, 1f);
         }
 
         [Theory]

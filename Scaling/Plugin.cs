@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -22,7 +23,7 @@ namespace VentureValheim.Scaling
         }
 
         private const string ModName = "WorldScaling";
-        private const string ModVersion = "0.2.0";
+        private const string ModVersion = "0.3.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -76,7 +77,7 @@ namespace VentureValheim.Scaling
                 "Auto-scaling type: Vanilla, Linear, Exponential, or Custom (string).",
                 true, "Linear", ref CE_AutoScaleType);
             AddConfig("AutoScaleFactor", general,
-                "Auto-scaling factor, 0.75 = 75% growth per biome \"difficulty order\" (float).",
+                "Auto-scaling factor used for the Auto-scaling type algorithm (float).",
                 true, 0.75f, ref CE_AutoScaleFactor);
             AddConfig("AutoScaleIgnoreOverrides", general,
                 "When true ignores the overrides specified in the yaml files (boolean).",
@@ -110,7 +111,9 @@ namespace VentureValheim.Scaling
 
         private void SetupWatcher()
         {
+            _lastReloadTime = DateTime.Now;
             FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
+            // Due to limitations of technology this can trigger twice in a row
             watcher.Changed += ReadConfigValues;
             watcher.Created += ReadConfigValues;
             watcher.Renamed += ReadConfigValues;
@@ -119,18 +122,29 @@ namespace VentureValheim.Scaling
             watcher.EnableRaisingEvents = true;
         }
 
+        private DateTime _lastReloadTime;
+        private const long RELOAD_DELAY = 10000000; // One second
+
         private void ReadConfigValues(object sender, FileSystemEventArgs e)
         {
-            if (!File.Exists(ConfigFileFullPath)) return;
+            var now = DateTime.Now;
+            var time = now.Ticks - _lastReloadTime.Ticks;
+            if (!File.Exists(ConfigFileFullPath) || time < RELOAD_DELAY) return;
+
             try
             {
-                VentureScalingLogger.LogDebug("Attempting to reload configuration...");
+                VentureScalingLogger.LogInfo("Attempting to reload configuration...");
                 Config.Reload();
             }
             catch
             {
                 VentureScalingLogger.LogError($"There was an issue loading {ConfigFileName}");
+                return;
             }
+
+            _lastReloadTime = now;
+
+            WorldConfiguration.Instance.SetupScaling();
         }
     }
 

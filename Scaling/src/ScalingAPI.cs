@@ -137,26 +137,33 @@ namespace VentureValheim.Scaling
         /// Attempts to get the ItemDrop by the given name's hashcode, if not found searches by string.
         /// </summary>
         /// <param name="name"></param>
-        /// <returns></returns>
-        public static ItemDrop GetItemDrop(string name)
+        /// <param name="item"></param>
+        /// <returns>True on sucessful find</returns>
+        public static bool GetItemDrop(string name, out ItemDrop item)
         {
-            ItemDrop item = null;
+            item = null;
 
             if (!name.IsNullOrWhiteSpace())
             {
-                try
-                {
-                    // Try hash code
-                    item = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode())?.GetComponent<ItemDrop>();
-                }
-                catch
+                // Try hash code
+                var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
+                if (prefab == null)
                 {
                     // Failed, try slow search
-                    item = ObjectDB.instance.GetItemPrefab(name)?.GetComponent<ItemDrop>();
+                    prefab = ObjectDB.instance.GetItemPrefab(name);
+                }
+
+                if (prefab != null)
+                {
+                    item = prefab.GetComponent<ItemDrop>();
+                    if (item != null)
+                    {
+                        return true;
+                    }
                 }
             }
 
-            return item;
+            return false;
         }
 
         /// <summary>
@@ -166,31 +173,31 @@ namespace VentureValheim.Scaling
         /// <returns></returns>
         public static Humanoid GetHumanoid(string name)
         {
-            Humanoid character = null;
-
-            if (!name.IsNullOrWhiteSpace())
+            if (!name.IsNullOrWhiteSpace() && ZNetScene.instance != null)
             {
-                try
+                var hash = name.GetStableHashCode();
+                if (ZNetScene.instance.m_namedPrefabs != null && 
+                    ZNetScene.instance.m_namedPrefabs.ContainsKey(hash))
                 {
                     // Try hash code
-                    var gameObject = ZNetScene.instance.m_namedPrefabs[name.GetStableHashCode()];
-                    character = gameObject.GetComponent<Humanoid>();
+                    var gameObject = ZNetScene.instance.m_namedPrefabs[hash];
+                    return gameObject.GetComponent<Humanoid>();
                 }
-                catch
+                else if (ZNetScene.instance.m_prefabs != null)
                 {
                     // Failed, try slow search
                     var prefabs = ZNetScene.instance.m_prefabs;
                     for (int lcv = 0; lcv < prefabs.Count; lcv++)
                     {
-                        if (prefabs[lcv].name.Equals(name))
+                        if (prefabs[lcv].name.Equals(name, System.StringComparison.OrdinalIgnoreCase))
                         {
-                            character = prefabs[lcv].GetComponent<Humanoid>();
+                            return prefabs[lcv].GetComponent<Humanoid>();
                         }
                     }
                 }
             }
 
-            return character;
+            return null;
         }
 
         /// <summary>

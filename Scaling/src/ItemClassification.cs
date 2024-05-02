@@ -39,7 +39,24 @@ namespace VentureValheim.Scaling
         HelmetRobe = 34,
         ChestRobe = 35,
         LegsRobe = 36,
-        Fist = 37
+        Fist = 37,
+        TurretBolt = 38,
+        GemAxe = 39,
+        GemBow = 40,
+        GemSword = 41,
+        GemKnife = 42,
+        GemMace = 43,
+        GemSledge = 44,
+        GemAtgeir = 45,
+        GemBattleaxe = 46,
+        GemSpear = 47,
+        GemCrossbow = 48,
+        HelmetMedium = 49,
+        ChestMedium = 50,
+        LegsMedium = 51,
+        StaffRapid = 52,
+        StaffSlow = 53,
+        MagicShield = 54
     }
 
     public class ItemClassification
@@ -170,6 +187,7 @@ namespace VentureValheim.Scaling
                 case ItemType.BucklerShield:
                 case ItemType.Shield:
                 case ItemType.TowerShield:
+                case ItemType.MagicShield:
                     return ItemCategory.Shield;
                 case ItemType.Shoulder:
                 case ItemType.PrimativeArmor:
@@ -180,6 +198,9 @@ namespace VentureValheim.Scaling
                 case ItemType.ChestRobe:
                 case ItemType.LegsRobe:
                 case ItemType.Utility:
+                case ItemType.HelmetMedium:
+                case ItemType.ChestMedium:
+                case ItemType.LegsMedium:
                     return ItemCategory.Armor;
                 case ItemType.Primative:
                 case ItemType.Knife:
@@ -197,6 +218,19 @@ namespace VentureValheim.Scaling
                 case ItemType.Bolt:
                 case ItemType.Crossbow:
                 case ItemType.Fist:
+                case ItemType.TurretBolt:
+                case ItemType.GemAxe:
+                case ItemType.GemBow:
+                case ItemType.GemSword:
+                case ItemType.GemKnife:
+                case ItemType.GemMace:
+                case ItemType.GemSledge:
+                case ItemType.GemAtgeir:
+                case ItemType.GemBattleaxe:
+                case ItemType.GemSpear:
+                case ItemType.GemCrossbow:
+                case ItemType.StaffRapid:
+                case ItemType.StaffSlow:
                     return ItemCategory.Weapon;
                 default:
                     return ItemCategory.Undefined;

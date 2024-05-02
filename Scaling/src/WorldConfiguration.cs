@@ -42,8 +42,6 @@ namespace VentureValheim.Scaling
 
         private Dictionary<int, BiomeData> _biomeData = new Dictionary<int, BiomeData>();
 
-        private bool _scalingInitialized = false;
-
         #region Biome, Scaling & Difficulty
 
         public enum Biome
@@ -65,7 +63,8 @@ namespace VentureValheim.Scaling
             Vanilla = 0,
             Linear = 1,
             Exponential = 2,
-            Custom = 3
+            Custom = 3,
+            Logarithmic = 4
         }
 
         public enum Difficulty
@@ -280,11 +279,15 @@ namespace VentureValheim.Scaling
             }
             else if (WorldScale == Scaling.Exponential)
             {
-                return (float)Math.Round(Math.Pow((double)(1f + factor), order), 2);
+                return (float)Math.Pow((double)(1f + factor), order);
+            }
+            else if (WorldScale == Scaling.Logarithmic)
+            {
+                return 1f + (float)Math.Log(order + 1, (double)factor);
             }
             else if (WorldScale == Scaling.Linear || WorldScale == Scaling.Custom)
             {
-                return 1f + (float)Math.Round((double)(factor * order), 2);
+                return 1f + (float)(double)(factor * order);
             }
 
             return -1f;
@@ -427,14 +430,47 @@ namespace VentureValheim.Scaling
             if (type.Equals("exponential"))
             {
                 scale = Scaling.Exponential;
+
+                if (factor <= 0f || factor >= 21f)
+                {
+                    factor = 0.3f;
+                    ScalingPlugin.VentureScalingLogger.LogWarning(
+                        "Factor for exponential scaling cannot be less than 0 " +
+                        "or greater than 21! Setting to 0.3.");
+                }
             }
             else if (type.Equals("linear"))
             {
                 scale = Scaling.Linear;
+
+                if (factor <= 0f)
+                {
+                    factor = 0.75f;
+                    ScalingPlugin.VentureScalingLogger.LogWarning(
+                        "Factor for Linear scaling cannot be less than 0! Setting to 0.75.");
+                }
+            }
+            else if (type.Equals("logarithmic"))
+            {
+                scale = Scaling.Logarithmic;
+
+                if (factor <= 1f)
+                {
+                    factor = 1.5f;
+                    ScalingPlugin.VentureScalingLogger.LogWarning(
+                        "Factor for logarithmic scaling cannot be less than 1! Setting to 1.5.");
+                }
             }
             else if (type.Equals("custom"))
             {
                 scale = Scaling.Custom;
+
+                if (factor <= 0f)
+                {
+                    factor = 0.75f;
+                    ScalingPlugin.VentureScalingLogger.LogWarning(
+                        "Factor for Custom scaling cannot be less than 0! Setting to 0.75.");
+                }
             }
 
             Initialize(scale, factor);
@@ -475,29 +511,18 @@ namespace VentureValheim.Scaling
         }
 
         /// <summary>
-        /// Configure World settings on Player's first spawn.
+        /// Configure World settings on world start.
         /// </summary>
-        [HarmonyPriority(Priority.First)]
-        [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
-        public static class Patch_Player_Awake
+        [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.Awake))]
+        public static class Patch_ObjectDB_Awake
         {
-            private static void Postfix(Player __instance)
+            private static void Postfix()
             {
                 if (ScalingAPI.IsInTheMainScene())
                 {
-                    // Setup scaling on first spawn only
-                    if (!Instance._scalingInitialized && (Player.m_localPlayer == null || __instance == Player.m_localPlayer))
-                    {
-                        ScalingPlugin.VentureScalingLogger.LogInfo("Setting up world configurations...");
-                        Instance.SetupScaling();
-                        Instance._scalingInitialized = true;
-                        ScalingPlugin.VentureScalingLogger.LogInfo("Done setting up world configurations.");
-                    }
-                }
-                else
-                {
-                    // A starting menu is open, reset init in case of multi-server/game session
-                    Instance._scalingInitialized = false;
+                    ScalingPlugin.VentureScalingLogger.LogInfo("Setting up world configurations...");
+                    Instance.SetupScaling();
+                    ScalingPlugin.VentureScalingLogger.LogInfo("Done setting up world configurations.");
                 }
             }
         }

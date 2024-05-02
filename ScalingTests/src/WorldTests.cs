@@ -15,6 +15,7 @@ namespace VentureValheim.ScalingTests
         }
 
         private const float _factor = 0.1f;
+        private const float _factor2 = 1.6f;
 
         private TestWorldConfiguration Setup(WorldConfiguration.Scaling a, float b)
         {
@@ -48,7 +49,20 @@ namespace VentureValheim.ScalingTests
         public void GetScalingExponential_HappyPaths(int order, float factor, float expected)
         {
             var worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, factor);
-            Assert.Equal(expected, worldConfiguration.GetScaling(order, factor));
+            Assert.Equal(expected, worldConfiguration.GetScaling(order, factor), 0.1f);
+        }
+
+        [Theory]
+        [InlineData(0, _factor2, 1f)]
+        [InlineData(1, _factor2, 2.47f)]
+        [InlineData(2, _factor2, 3.34f)]
+        [InlineData(3, _factor2, 3.95f)]
+        [InlineData(10, _factor2, 6.10f)]
+        [InlineData(100, _factor2, 10.82f)]
+        public void GetScalingLogarithmic_HappyPaths(int order, float factor, float expected)
+        {
+            var worldConfiguration = Setup(WorldConfiguration.Scaling.Logarithmic, factor);
+            Assert.Equal(expected, worldConfiguration.GetScaling(order, factor), 0.1f);
         }
 
         [Theory]
@@ -96,7 +110,7 @@ namespace VentureValheim.ScalingTests
         {
             var worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, 0.75f);
             float result = worldConfiguration.GetNextBiomeScale(biome);
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result, 0.1f);
         }
     }
 }

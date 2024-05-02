@@ -10,7 +10,7 @@ Rebalance creatures and items with a configurable auto-scaling system. Ability t
 
 Set the difficulty of each biome and configure all creatures and items by using the automatic scaling system. You may also define your own custom configuration for individual creatures and items (including other modded content). This mod can dynamically create a game balance that is very different from the Vanilla gameplay experience!
 
-It is highly recommend to use a mod that shows the creature health in-game so you and your players can see the differences when scaling creatures. BetterUI_Reforged by thedefside is one of my favorites.
+It is highly recommend to use a mod that shows the creature health in-game so you and your players can see the differences when scaling creatures.
 
 Below are some explanations of features and how to configure them. See more details in the config file. Generate the config file by launching the game once with this mod installed.
 
@@ -21,17 +21,51 @@ Below are some explanations of features and how to configure them. See more deta
 
 The world is scaled according to the "natural" vanilla game progression by default. To see this mod's default classification of vanilla creatures and items you can view the code on Github. The scaling is applied after logging into a local world or server. You will have to have players log out and back in after changing these configurations for them to take effect.
 
+**When adding to an existing world or changing the settings mid-game the creatures already spawned in the world may retain old values. To ensure your settings are working as intended spawn in new creatures to test.
+
 #### Configuration Options
 
-* AutoScaleType: Vanilla, Linear, Exponential, or Custom. If set to Vanilla these auto-scaling features will not be enabled!
+* AutoScaleType: Vanilla, Linear, Exponential, Logarithmic, or Custom. If set to Vanilla these auto-scaling features will not be enabled!
 * AutoScaleFactor: Change the biome scaling factor.
 * AutoScaleIgnoreOverrides: When true ignores the overrides specified in the yaml files. (yaml files explained below)
 
+#### Custom Scaling
+
 If you do not want to rescale the whole game and just want to change just a few things (or a lot of things, you do you) you can use the "Custom" scaling type to ignore the mod defaults and just scale things in your yaml override(s). If any information is missing from your yaml configuration that is needed for scaling the mod will fallback to using the default values for the missing fields. Custom scaling will use the linear scaling methods whenever applicable.
 
-Linear scaling by default is a 75% growth (0.75). This means your 1st biome (Black Forest, Meadows is 0th) will have a scaling factor of 1.75, and 7th will be 6.25 for calculations. This setting will make a pretty even difficulty progression.
+#### Linear Scaling
 
-To use Exponential scaling PLEASE READ THIS PART: Given that there are by default only 8 biome difficulties to scale, the maximum scaling value you can input is roughly 21 without blatantly breaking the code generating the values (If using 12 custom biome difficulties this number is about 6). However, 21 is a much, much bigger number than you could ever want. Recommended values for exponential scaling are in a range of 0.25 - 1. For example, an exponential scaling of 0.75 will set the 1st biome to 1.75x harder, 7th biome to be about 50x harder than the base biome. This setting will make the first few biomes closer together in difficulty than the later biomes.
+This setting will make an even difficulty progression increase. Smaller growth will allow player to skip gear grinding more easily, where greater growth will force players to craft every tier of weapons to move forward effectively.
+
+Linear scaling by default is a 75% growth (**0.75**). This means your 1st biome (Black Forest, Meadows is 0th) will be about 1.75 times harder, and the 7th (Ashlands) will be about 6 times harder than meadows.
+
+#### Exponential Scaling
+
+This setting will make the later biomes progressively much greater in difficulty. Earlier biomes will be closer together in difficulty making it easier to complete Black Forest or Swamp with lower level gear. Can be used to help skip the gear grind at the *beginning* of the game by keeping gear relevant longer.
+
+An exponential scaling of **0.3** will make the 1st biome (Black Forest, Meadows is 0th) about 1.3 times harder, and the 7th (Ashlands) will be 6 times harder than meadows.
+
+#### Logarithmic Scaling
+
+This setting will make the later biomes closer together in difficulty. Earlier biomes will be further apart in difficulty making it harder to complete Black Forest or Swamp with lower level gear. Can be used to help skip the gear grind at the *end* of the game by keeping gear relevant longer.
+
+The formula for logarithmic scaling is: 1 + (log(biome + 1) / log(factor)). The factor for this scaling must be a number greater than 1, as it will become the logarithmic base.
+
+An logarithmic scaling of **1.5** will make the 1st biome (Black Forest, Meadows is 0th) about 2.7 times harder, and the 7th (Ashlands) will be about 6 times harder than meadows.
+
+#### Recommend Settings
+
+| Desired Playstyle                  | Linear  | Exponential | Logarithmic |
+| ---------------------------------- | ------- | ----------- | ----------- |
+| Biomes close in difficulty         | 0.5     | 0.24        | 1.8         |
+|                ...                 | 0.75    | 0.3         | 1.5         |
+|                ...                 | 1.0     | 0.35        | 1.35        |
+| Cautious of higher level biomes    | 2.0     | 0.47        | 1.16        |
+|                ...                 | 3.0     | 0.56        | 1.1         |
+| Killer higher level biomes         | 4.0     | 0.62        | 1.08        |
+|                ...                 | 5.0     | 0.67        | 1.06        |
+
+* Note: This is a work in progress. If you test these different settings and have feedback please send me a message! See contributing at the bottom.
 
 ### Creature Scaling
 
@@ -67,36 +101,47 @@ Another way to view the things this mod is changing you can turn on debugging lo
 
 #### Custom Data Definitions
 
-| Biomes | Difficulty | Item Types |
-| ------ | ---------- | ---------- |
-| Meadow = 0 | Vanilla = 0 | None = 0 |
-| BlackForest = 1 | Harmless = 1 | Shield = 1 |
-| Swamp = 2 | Novice = 2 | Helmet = 2 |
-| Mountain = 3 | Average = 3 | Chest = 3 |
-| Plain = 4 | Intermediate = 4 | Legs = 4 |
-| AshLand = 5 | Expert = 5 | Shoulder = 5 |
-| DeepNorth = 6 | Boss = 6 | Utility = 6 |
-| Ocean = 7 | | Tool = 7 |
-| Mistland = 8 | | PickAxe = 8 |
-| | | Axe = 9 |
-| | | Bow = 10 |
-| | | Ammo = 11 |
-| | | Sword = 20 |
-| | | Knife = 21 |
-| | | Mace = 22 |
-| | | Sledge = 23 |
-| | | Atgeir = 25 |
-| | | Battleaxe = 26 |
-| | | Primative = 27 |
-| | | Spear = 28 |
-| | | TowerShield = 29 |
-| | | BucklerShield = 30 |
-| | | PrimativeArmor = 31 |
-| | | Bolt = 32 |
-| | | Crossbow = 33 |
-| | | HelmetRobe = 34 |
-| | | ChestRobe = 35 |
-| | | LegsRobe = 36 |
+| Biomes          | Difficulty | 
+| --------------- | ---------- |
+| Meadow = 0      | Vanilla = 0 |
+| BlackForest = 1 | Harmless = 1 |
+| Swamp = 2       | Novice = 2 |
+| Mountain = 3    | Average = 3 |
+| Plain = 4       | Intermediate = 4 |
+| AshLand = 5     | Expert = 5 |
+| DeepNorth = 6   | Boss = 6 |
+| Ocean = 7       | |
+| Mistland = 8    | |
+
+| Armor Types         | Shield Types       | Weapon Types      | Misc Types      |
+| ------------------- | ------------------ | ----------------- | --------------- |
+| Helmet = 2          | Shield = 1         | PickAxe = 8       | None = 0        |
+| Chest = 3           | TowerShield = 29   | Axe = 9           | Utility = 6     |
+| Legs = 4            | BucklerShield = 30 | Bow = 10          | Tool = 7        |
+| Shoulder = 5        | MagicShield = 54   | Ammo = 11         | TurretBolt = 38 |
+| PrimativeArmor = 31 |                    | Sword = 20        |  |
+| HelmetRobe = 34     |                    | Knife = 21        |  |
+| ChestRobe = 35      |                    | Mace = 22         |  |
+| LegsRobe = 36       |                    | Sledge = 23       |  |
+| HelmetMedium = 49   |                    | Atgeir = 25       |  |
+| ChestMedium = 51    |                    | Battleaxe = 26    |  |
+| LegsMedium = 52     |                    | Primative = 27    |  |
+|                     |                    | Spear = 28        |  |
+|                     |                    | Bolt = 32         |  |
+|                     |                    | Crossbow = 33     |  |
+|                     |                    | Fist = 37         |  |
+|                     |                    | GemAxe = 39       |  |
+|                     |                    | GemBow = 40       |  |
+|                     |                    | GemSword = 41     |  |
+|                     |                    | GemKnife = 42     |  |
+|                     |                    | GemMace = 43      |  |
+|                     |                    | GemSledge = 44    |  |
+|                     |                    | GemAtgeir = 45    |  |
+|                     |                    | GemBattleaxe = 46 |  |
+|                     |                    | GemSpear = 47     |  |
+|                     |                    | GemCrossbow = 48  |  |
+|                     |                    | StaffRapid = 52   |  |
+|                     |                    | StaffSlow = 53    |  |
 
 </details>
 
@@ -110,16 +155,31 @@ This mod needs to be on all clients to work properly. Config Syncing is included
 
 ## Changelog
 
+### 0.3.0
+
+* Hildir, Ashlands, and Magic Weapon default configuration additions.
+* New item types available.
+* Added Logarithmic scaling support.
+* Tweaked some default base values and classifications:
+  * Increased base damage for creatures.
+  * Greyling, Neck, TentaRoot, Blob, Deathsquito, SeekerBrood reduced one classification level.
+  * SeekerBrute, all Dverger increased one classification level.
+  * Ammo and Bolt increased by 2.
+  * Crossbow reduced by 5.
+* Improved rounding in calculations, items should be less likely to end up with 0 upgrade values.
+
 ### 0.2.0
 
-* Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work
+* Added Jotunn library as new dependency for config syncing, you now must also install Jotunn for this mod to work.
 
 ### 0.1.0
 
-* Pulled out from World Advancement & Progression version 0.0.28
-* Some config renaming, no major feature changes
+* Pulled out from World Advancement & Progression version 0.0.28.
+* Some config renaming, no major feature changes.
 
 ## Contributing
+
+This mod started out as a bit of a thought experiment and is not well polished. There will be a major rework of the mod when the game exits early access and is completed. Until then please experiment, take notes of what you don't like and what you wish could be done better. All feedback will be very valuable for this mod, especially for tweaking the default balancing and assignment of the item and creature strengths.
 
 All issues can be reported on the project Github. To report issues please be as specific as possible and provide the following:
 
