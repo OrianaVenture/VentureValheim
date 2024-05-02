@@ -13,7 +13,7 @@ namespace VentureValheim.FloatingItems
     public class FloatingItemsPlugin : BaseUnityPlugin
     {
         private const string ModName = "VentureFloatingItems";
-        private const string ModVersion = "0.2.1";
+        private const string ModVersion = "0.2.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -63,7 +63,7 @@ namespace VentureValheim.FloatingItems
             const string general = "General";
 
             AddConfig("FloatingItems", general, "Additional prefab names of the items you want to float (comma-separated string).",
-                true, "SerpentScale", ref CE_FloatingItems);
+                true, "SerpentScale, BonemawSerpentTooth", ref CE_FloatingItems);
             AddConfig("SinkingItems", general, "Additional prefab names of the items you want to always sink (comma-separated string).",
                 true, "BronzeNails, IronNails", ref CE_SinkingItems);
             AddConfig("FloatTrophies", general, "Apply floating to all trophies (boolean).",

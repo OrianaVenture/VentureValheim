@@ -26,6 +26,7 @@ namespace VentureValheim.FloatingItems
         private static string JutePrefab = "jute";
         private static string LeatherPrefab = "leather";
         private static string PeltPrefab = "pelt";
+        private static string PiePrefab = "pie";
 
         private HashSet<string> FloatingPrefabs = new HashSet<string>();
         private HashSet<string> SinkingPrefabs = new HashSet<string>();
@@ -36,12 +37,6 @@ namespace VentureValheim.FloatingItems
             "beltstrength",
             "barleywine",
             "barleyflour",
-            "fishandbread",
-            "loxpie",
-            "bread",
-            "honeyglazedchicken",
-            "magicallystuffedshroom",
-            "mistharesupreme",
             "linenthread"
         };
 
@@ -88,7 +83,9 @@ namespace VentureValheim.FloatingItems
         private static bool IsMeat(string name)
         {
             return name.Contains(MeatPrefab) ||
-                name.Contains("necktail");
+                name.Contains("necktail") ||
+                name.Contains("morgenheart") ||
+                name.Contains("morgensinew");
         }
 
         /// <summary>
@@ -113,16 +110,25 @@ namespace VentureValheim.FloatingItems
         private static bool IsPlayerGear(GameObject item)
         {
             var name = item.name.ToLower();
-            if (Instance.ItemsPrefabs.Contains(name) || name.Contains(MeadPrefab) || name.Contains(CookedPrefab))
+            if (Instance.ItemsPrefabs.Contains(name) || 
+                name.Contains(MeadPrefab) || 
+                name.Contains(CookedPrefab) ||
+                name.Contains(PiePrefab))
             {
                 return true;
             }
             else
             {
                 var itemDrop = item.GetComponent<ItemDrop>();
-                if (item != null && ObjectDB.instance.GetRecipe(itemDrop.m_itemData) != null)
+                
+                if (item != null)
                 {
-                    return true;
+                    if (itemDrop.m_itemData.m_shared.m_food > 0f ||
+                        ObjectDB.instance.GetRecipe(itemDrop.m_itemData) != null)
+                    {
+                        return true;
+                    }
+
                 }
             }
 
