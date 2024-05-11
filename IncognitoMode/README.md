@@ -12,11 +12,7 @@ This is a roleplaying mod aimed at making in-game experiences more realistic. Co
 
 Currently, equipped helmet, shoulder, and utility items are supported. Will work with custom items added by other mods given they are of one of these categories.
 
-## Installation
-
-All players will have to have this mod installed for hidden names to work 100% of the time. Any player who does not have this installed will not have their name hidden (even for players with the mod installed).
-
-This mod needs to be on all clients to work properly. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players.
+Want to also hide the gamertag of players? You can use [Multiplayer Tweaks](https://thunderstore.io/c/valheim/p/VentureValheim/Venture_Multiplayer_Tweaks/) which has a setting for this purpose.
 
 ### Vanilla Helmet Prefabs
 
@@ -30,8 +26,21 @@ This mod needs to be on all clients to work properly. Config Syncing is included
 * HelmetPadded
 * HelmetMage
 * HelmetCarapace
+* HelmetFlametal
+* HelmetAshlandsMediumHood
+* HelmetMage_Ashlands
+
+## Installation
+
+All players will have to have this mod installed for hidden names to work 100% of the time. Any player who does not have this installed will not have their name hidden (even for players with the mod installed).
+
+This mod needs to be on all clients to work properly. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players.
 
 ## Changelog
+
+### 0.3.2
+
+* Added Ashlands items to the default configurations.
 
 ### 0.3.1
 
