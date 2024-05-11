@@ -9,7 +9,7 @@ namespace VentureValheim.NoSeasonalRestrictions
     public class NoSeasonalRestrictionsPlugin : BaseUnityPlugin
     {
         private const string ModName = "NoSeasonalRestrictions";
-        private const string ModVersion = "0.1.7";
+        private const string ModVersion = "0.1.8";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 

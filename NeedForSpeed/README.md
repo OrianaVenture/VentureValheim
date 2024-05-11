@@ -18,6 +18,10 @@ This mod needs to be on the client to work. Config Syncing is included with Jotu
 
 ## Changelog
 
+### 0.2.2
+
+* Courtesy update for Ashlands, new logo. No feature changes.
+
 ### 0.2.1
 
 * Removed mod enabled config, to disable the mod just remove it.

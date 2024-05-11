@@ -1,3 +1,7 @@
+## 0.11.1
+
+* Courtesy update for Ashlands, new logo. No feature changes.
+
 ## 0.11.0
 
 * Added new config for hiding steam/xbox platform tags from shouts and chat messages.

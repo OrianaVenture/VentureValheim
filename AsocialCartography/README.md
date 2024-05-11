@@ -30,6 +30,10 @@ This mod is client side only and changes made to the configurations will only af
 
 ## Changelog
 
+### 0.2.1
+
+* Courtesy update for Ashlands, new logo. No feature changes.
+
 ### 0.2.0
 
 * Added new configs to block adding/receiving boss and hildir map pins.

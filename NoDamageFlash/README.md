@@ -16,6 +16,10 @@ This mod is client side and has no configuration options.
 
 ## Changelog
 
+### 0.1.1
+
+* Courtesy update for Ashlands, new logo. No feature changes.
+
 ### 0.1.0
 
 * First release

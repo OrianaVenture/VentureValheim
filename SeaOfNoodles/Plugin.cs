@@ -10,7 +10,7 @@ namespace VentureValheim.SeaOfNoodles
     public class SeaOfNoodlesPlugin : BaseUnityPlugin
     {
         private const string ModName = "SeaOfNoodles";
-        private const string ModVersion = "0.1.0";
+        private const string ModVersion = "0.1.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 

@@ -20,6 +20,10 @@ This mod is client side and has no configuration options.
 
 ## Changelog
 
+### 0.2.2
+
+* Courtesy update for Ashlands, new logo. No feature changes.
+
 ### 0.2.1
 
 * Pieces twice as large will now have increased costs (x4) to reflect increased size.

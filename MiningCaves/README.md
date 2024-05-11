@@ -62,6 +62,10 @@ If the mod is removed from the server after locations have been generated the ca
 
 ## Changelog
 
+### 0.1.5
+
+* Courtesy update for Ashlands, new logo. No feature changes.
+
 ### 0.1.4
 
 * Preliminary update for Jotunn version 2.19.2+
