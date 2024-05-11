@@ -1,3 +1,8 @@
+## 0.5.1
+
+* Fixed mod compatibility issue with SpeedyPaths 1.0.8 by Nextek that caused the "status effects" for that mod to display incorrectly.
+* Added status effect for Ashland boss and new items.
+
 ## 0.5.0
 
 * Reworked mod to only track certain vanilla status effects. Fixes mod compatibility issues.

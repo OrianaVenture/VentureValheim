@@ -195,8 +195,6 @@ namespace VentureValheim.LogoutTweaks
                             LogoutTweaksPlugin.LogoutTweaksLogger.LogDebug(e);
                         }
                     }
-
-                    Hud.instance.UpdateStatusEffects(__instance.m_seman.m_statusEffects);
                 }
 
                 // Wipe data after loading
