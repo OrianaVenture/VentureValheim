@@ -77,10 +77,6 @@ The following locations from other mods are excluded from resetting to prevent i
 
 When using the mod "Dungeon Splitter" by JereKuusela all sky location resetting will be disabled for compatibility reasons. If you still wish to reset sky locations you will have to use Jere's server side mods for that. Resetting leviathans and ground locations will still work as expected.
 
-### Possible Future Improvements
-
-* Resetting terrain changes (especially for tar pits)
-
 ## Installation
 
 This mod needs to be on the client, it will work even if other players do not have it installed but may behave unexpectedly when playing around other players without the mod. For best results have everyone install the mod. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations should take immediate effect.

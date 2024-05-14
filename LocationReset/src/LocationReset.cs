@@ -480,16 +480,12 @@ namespace VentureValheim.LocationReset
         {
             DeleteLocation(position, activity);
 
-            //ResetTerrain(position);
+            if (!activity.GroundActivity)
+            {
+                TerrainReset.ResetTerrain(position.GroundPosition, position.GroundDistance);
+            }
 
             Regenerate(loc, zone, location, seed, position, activity);
-        }
-
-        private void ResetTerrain(LocationPosition position)
-        {
-            // TODO find a way to reset the ground or to remove terrain modifications from applying
-            // Tar pits give infinite resets with no difficulty
-            // Fuling camps dig deep pits after many resets
         }
 
         /// <summary>
@@ -532,7 +528,7 @@ namespace VentureValheim.LocationReset
             UnityEngine.Random.InitState(seed);
             foreach (RandomSpawn randomSpawn in randomSpawns)
             {
-                randomSpawn.Randomize();
+                randomSpawn.Randomize(position.GroundPosition);
             }
 
             int count = 0;

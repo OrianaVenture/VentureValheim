@@ -1,3 +1,8 @@
+## 0.9.0
+
+* Update for Ashlands game version 0.218.15.
+* Locations resets will now also reset any terrain modifications in their radius.
+
 ## 0.8.2
 
 * Update for game patch 0.217.46
