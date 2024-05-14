@@ -73,7 +73,7 @@ namespace VentureValheim.TerrainReset
                 }
             }
 
-            // Reset Heightmaps
+            // Reset Heightmaps & Terrain Paints
             using (List<Heightmap>.Enumerator enumerator = list.GetEnumerator())
             {
                 while (enumerator.MoveNext())
@@ -87,78 +87,57 @@ namespace VentureValheim.TerrainReset
                         terrainComp.m_nview.ClaimOwnership();
                     }
 
-                    Traverse traverse = Traverse.Create(terrainComp);
-
-                    if (!traverse.Field("m_initialized").GetValue<bool>())
-                        continue;
-
-                    enumerator.Current.WorldToVertex(center, out int x, out int y);
-
-                    bool[] m_modifiedHeight = traverse.Field("m_modifiedHeight").GetValue<bool[]>();
-                    float[] m_levelDelta = traverse.Field("m_levelDelta").GetValue<float[]>();
-                    float[] m_smoothDelta = traverse.Field("m_smoothDelta").GetValue<float[]>();
-                    bool[] m_modifiedPaint = traverse.Field("m_modifiedPaint").GetValue<bool[]>();
-                    Color[] m_paintMask = traverse.Field("m_paintMask").GetValue<Color[]>();
-                    
-                    int m_width = traverse.Field("m_width").GetValue<int>();
-
-                    int thisResets = 0;
-                    bool thisReset = false;
-                    int num = m_width + 1;
-                    for (int h = 0; h < num; h++)
+                    if (!terrainComp.m_initialized)
                     {
-                        for (int w = 0; w < num; w++)
-                        {
-                            int idx = h * num + w;
-
-                            if (!m_modifiedHeight[idx] || CoordDistance(x, y, w, h) > radius)
-                            {
-                                continue;
-                            }
-
-                            resets++;
-                            thisResets++;
-                            thisReset = true;
-                            m_modifiedHeight[idx] = false;
-                            m_levelDelta[idx] = 0;
-                            m_smoothDelta[idx] = 0;
-                        }
+                        continue;
                     }
 
-                    num = m_width;
+                    // These should always result in the same x, y. But will leave both for now.
+                    enumerator.Current.WorldToVertex(center, out int VertexX, out int VertexY);
+                    enumerator.Current.WorldToVertexMask(center, out int MaskX, out int MaskY);
+
+                    bool thisReset = false;
+                    int num = terrainComp.m_width + 1;
                     for (int h = 0; h < num; h++)
                     {
                         for (int w = 0; w < num; w++)
                         {
                             int idx = h * num + w;
 
-                            if (!m_modifiedPaint[idx] || CoordDistance(x, y, w, h) > radius)
+                            // Reset heights
+                            float disVetex = CoordDistance(VertexX, VertexY, w, h);
+
+                            if (disVetex <= radius && terrainComp.m_modifiedHeight[idx])
                             {
-                                continue;
+                                resets++;
+                                thisReset = true;
+                                terrainComp.m_modifiedHeight[idx] = false;
+                                terrainComp.m_levelDelta[idx] = 0;
+                                terrainComp.m_smoothDelta[idx] = 0;
                             }
 
-                            thisReset = true;
-                            m_modifiedPaint[idx] = false;
-                            m_paintMask[idx] = Color.clear;
+                            // Reset paint
+                            float disMask = CoordDistance(MaskX, MaskY, w, h);
+
+                            if (disMask <= radius && terrainComp.m_modifiedPaint[idx])
+                            {
+                                thisReset = true;
+                                terrainComp.m_modifiedPaint[idx] = false;
+                                terrainComp.m_paintMask[idx] = Color.clear;
+                            }
                         }
                     }
 
                     if (thisReset)
                     {
-                        traverse.Field("m_modifiedHeight").SetValue(m_modifiedHeight);
-                        traverse.Field("m_levelDelta").SetValue(m_levelDelta);
-                        traverse.Field("m_smoothDelta").SetValue(m_smoothDelta);
-                        traverse.Field("m_modifiedPaint").SetValue(m_modifiedPaint);
-                        traverse.Field("m_paintMask").SetValue(m_paintMask);
-
-                        traverse.Method("Save").GetValue();
+                        terrainComp.Save();
                         enumerator.Current.Poke(true);
                     }
                 }
             }
 
-            // Reset paint
-            if (resets > 0 && ClutterSystem.instance != null)
+            // Reset Grass
+            if (ClutterSystem.instance != null)
             {
                 ClutterSystem.instance.ResetGrass(center, radius);
             }

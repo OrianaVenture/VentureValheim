@@ -4,7 +4,7 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Reset the terrain from tools, a hotkey, or with a console command. Original mod by [Adenthorn](https://github.com/aedenthorn/ValheimMods/tree/master/TerrainReset).
+Reset the terrain from tools, a hotkey, or with a console command. Inspired by Adenthorn's TerrainReset.
 
 ## Features
 
@@ -30,6 +30,10 @@ This mod is client side only and changes made to the configurations will only af
 
 ## Changelog
 
+### 0.1.1
+
+* Update for Ashlands game version 0.218.15.
+
 ### 0.1.0
 
 * First release.
@@ -45,4 +49,4 @@ All feedback, ideas, and requests are welcome! You can message me at my discord 
 
 ## Credits
 
-Thank you Adenthorn for the original code!
+Thank you Adenthorn for the [original code](https://github.com/aedenthorn/ValheimMods/tree/master/TerrainReset)!

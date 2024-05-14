@@ -12,7 +12,7 @@ namespace VentureValheim.TerrainReset
     public class TerrainResetPlugin : BaseUnityPlugin
     {
         private const string ModName = "TerrainReset";
-        private const string ModVersion = "0.1.0";
+        private const string ModVersion = "0.1.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -92,7 +92,7 @@ namespace VentureValheim.TerrainReset
         private void Update()
         {
             if (!GetModEnabled() || TerrainReset.IgnoreKeyPresses() ||
-                !TerrainReset.CheckKeyDown(GetHotKey()) || !Player.m_localPlayer)
+                !TerrainReset.CheckKeyDown(GetHotKey()) )
             {
                 return;
             }
