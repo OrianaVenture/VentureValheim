@@ -6,14 +6,16 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using Jotunn.Managers;
+using Jotunn.Utils;
+using UnityEngine;
 
-namespace VentureValheim.Template
+namespace VentureValheim.VentureQuest
 {
     [BepInDependency(Jotunn.Main.ModGuid)]
     [BepInPlugin(ModGUID, ModName, ModVersion)]
-    public class TemplatePlugin : BaseUnityPlugin
+    public class VentureQuestPlugin : BaseUnityPlugin
     {
-        private const string ModName = "Template";
+        private const string ModName = "VentureQuest";
         private const string ModVersion = "0.1.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
@@ -22,7 +24,10 @@ namespace VentureValheim.Template
 
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
-        public static readonly ManualLogSource TemplateLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
+        public static readonly ManualLogSource VentureQuestLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
+
+        public static GameObject Root;
+        public static AssetBundle Assets;
 
         #region ConfigurationEntries
 
@@ -56,18 +61,17 @@ namespace VentureValheim.Template
 
             #endregion
 
-            TemplateLogger.LogInfo("Initializing Template configurations...");
+            VentureQuestLogger.LogInfo("Initializing VentureQuest configurations...");
 
-            try
-            {
-                Template.Instance.Initialize();
-            }
-            catch (Exception e)
-            {
-                TemplateLogger.LogError("Error configuring Template, aborting...");
-                TemplateLogger.LogError(e);
-                return;
-            }
+            // Create a dummy root object to reference
+            Root = new GameObject("VentureQuestRoot");
+            Root.SetActive(false);
+            DontDestroyOnLoad(Root);
+
+            /*Assets = AssetUtils.LoadAssetBundleFromResources("vv_quest", Assembly.GetExecutingAssembly());
+            var go = Assets.LoadAsset<GameObject>(NPC.NPC_NAME);*/
+
+            PrefabManager.OnPrefabsRegistered += NPCFactory.AddNPCS;
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
@@ -103,12 +107,12 @@ namespace VentureValheim.Template
 
             try
             {
-                TemplateLogger.LogInfo("Attempting to reload configuration...");
+                VentureQuestLogger.LogInfo("Attempting to reload configuration...");
                 Config.Reload();
             }
             catch
             {
-                TemplateLogger.LogError($"There was an issue loading {ConfigFileName}");
+                VentureQuestLogger.LogError($"There was an issue loading {ConfigFileName}");
                 return;
             }
 
