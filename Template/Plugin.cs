@@ -26,7 +26,7 @@ namespace VentureValheim.Template
 
         #region ConfigurationEntries
 
-        public static ConfigEntry<int> CE_ExampleConfig = null!;
+        public static ConfigEntry<bool> CE_ExampleConfig = null!;
 
         private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
         private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };

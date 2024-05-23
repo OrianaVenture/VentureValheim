@@ -1,0 +1,152 @@
+---
+npcs:
+  -
+    id: Ragnar1
+    name: Ragnar The Brave
+    standStill: true
+    type: Information
+    notRequiredKeys: ragnarbrave
+    defaultText: "Did you say you had mead?"
+    interactKey: ragnarbrave
+    interactText: "Here's some gossip about Ragnar The Bold!"
+    model: Player
+    modelIndex: 0
+    hair: Hair1
+    beard: Beard1
+    chest: ArmorLeatherChest
+    legs: ArmorLeatherLegs
+    shoulder: CapeLinen
+    shoulderVariant: 2
+    rightHand: KnifeFlint
+
+  -
+    id: Ragnar2
+    name: Ragnar The Bold
+    standStill: true
+    type: Information
+    notRequiredKeys: ragnarbold
+    requiredKeys: ragnarbrave
+    defaultText: "I love a good mead."
+    interactText: "He said that? Let me tell you a secret about Ragnar The Brave."
+    rewardKey: ragnarbold
+    model: Player
+    modelIndex: 0
+    hair: Hair2
+    beard: Beard2
+    chest: ArmorLeatherChest
+    legs: ArmorLeatherLegs
+    rightHand: SpearFlint
+
+  -
+    id: Wildir1
+    name: Wildir
+    type: Trader
+    defaultText: "I'm all out of stock, kid."
+    model: Player
+    modelIndex: 1
+    hair: Hair4
+    helmet: HelmetMidsummerCrown
+    chest: ArmorDress1
+    legs: ArmorLeatherLegs
+
+  -
+    id: Cain1
+    name: Cain
+    trueDeath: true
+    standStill: true
+    type: SlayTarget
+    defaultText: "Please don't kill me"
+    defeatKey: defeated_cain
+    model: Player
+    modelIndex: 0
+    hair: Hair10
+    legs: ArmorRagsLegs
+
+  -
+    id: Clown
+    name: Creepo The Clown
+    trueDeath: true
+    type: None
+    model: Player
+    modelIndex: 0
+    hair: Hair19
+    chest: ArmorTunic6
+    legs: ArmorRagsLegs
+    skinColorR: 0.9
+    skinColorG: 0.8
+    skinColorB: 0.1
+    hairColorR: 0.2
+    hairColorG: 0.3
+    hairColorB: 0.9
+
+  -
+    id: Skelly
+    name: Dr. Bones
+    model: Skeleton
+
+  -
+    id: Liv
+    name: Liv the Wise
+    type: Reward
+    notRequiredKeys: liv
+    defaultText: "Did you bring {reward} to Vivica?"
+    interactKey: liv
+    rewardText: "Can you give this to Vivica? She's too shy to admit she needs my help."
+    rewardItem: KnifeFlint
+    rewardItemQuality: 2
+    model: Player
+    modelIndex: 1
+    hair: Hair12
+    chest: ArmorDress5
+
+  -
+    id: Vivica
+    name: Vivica
+    type: Reward
+    requiredKeys: liv
+    notRequiredKeys: vivica
+    defaultText: "I'm too busy to talk."
+    interactText: "Liv sent you? I guess I could use some help. I need {giveitem}."
+    giveItem: KnifeFlint
+    giveItemQuality: 2
+    rewardText: "My husband Rahshahs could use some help too, can you find him?"
+    rewardKey: vivica
+    model: Player
+    modelIndex: 1
+    hair: Hair8
+    helmet: HelmetMidsummerCrown
+    chest: ArmorDress3
+
+  -
+    id: MrHamHands
+    name: Rahshahs
+    type: Reward
+    requiredKeys: vivica
+    notRequiredKeys: rahshahs
+    defaultText: "What do you want? Go away."
+    interactText: "Vivica sent you? She didn't pay you!? I need {giveitem}, I will give you {reward} in exchange."
+    giveItem: DeerStew
+    giveItemAmount: 1
+    rewardText: "Thanks, I was hungry! Sorry about my wife, this should be more than enough to cover your help."
+    rewardItem: Coins
+    rewardItemAmount: 10
+    rewardKey: rahshahs
+    model: Player
+    modelIndex: 0
+    legs: ArmorLeatherLegs
+
+  -
+    id: Jarl
+    name: Jarl Halsin
+    type: Reward
+    requiredKeys: liv, vivica, rahshahs
+    notRequiredKeys: thaneofvalheim
+    defaultText: "Good day citizen."
+    interactText: "Help my people and I will give you {reward}."
+    rewardText: "You actually did it, I'm impressed!"
+    rewardItem: SwordIron
+    rewardKey: thaneofvalheim
+    model: Player
+    modelIndex: 0
+    chest: ArmorTunic6
+    legs: ArmorLeatherLegs
