@@ -62,7 +62,7 @@ namespace VentureValheim.VentureQuest
                 {
                     var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                     var playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
-                    var position = playerPosition + 1 * Vector3.forward;
+                    var position = playerPosition + (playerRotation * Vector3.forward);
 
                     if (args.Length > 2)
                     {

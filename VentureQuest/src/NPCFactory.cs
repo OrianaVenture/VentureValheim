@@ -32,10 +32,11 @@ namespace VentureValheim.VentureQuest
             npcComponent.SetRandom();
             npcComponent.m_name = name;
             npcComponent.SetName(name);
-            var text = "Who you talkin' to? I'm busy you know, have all this stuff to do like picking berries and slaying trolls! " +
-                "I don't have time for chit chattin' all day!";
-            npcComponent.SetText(text);
+            var text = "Can you bring me some {item}? It is so dear to me that I will give you {reward}!";
+            //npcComponent.SetText(text);
             npcComponent.SetSpawnPoint(position);
+            //npcComponent.SetUseItem("DeerStew");
+            npcComponent.SetReward(text, "DeerStew", "Coins", 10, "Wow you actually did it. I'm impressed.");
             return npc;
         }
 

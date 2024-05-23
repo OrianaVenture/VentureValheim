@@ -5,11 +5,23 @@ using UnityEngine;
 
 namespace VentureValheim.VentureQuest
 {
-    public class NPC : Humanoid, Interactable
+    public class NPC : Humanoid, Interactable, Hoverable
     {
+        public enum NPCType
+        {
+            None = 0,
+            Information = 1,
+            ItemReward = 2
+        }
+
+        public const string ZDOVar_NPCType = "VV_NPCType";
         public const string ZDOVar_SITTING = "VV_Sitting";
         public const string ZDOVar_TEXT = "VV_NPCText";
         public const string ZDOVar_SPAWNPOINT = "VV_SpawnPoint";
+        public const string ZDOVar_USEITEM = "VV_UseItem";
+        public const string ZDOVar_REWARDITEM = "VV_RewardItem";
+        public const string ZDOVar_REWARDITEMAMOUNT = "VV_RewardItemAmount";
+        public const string ZDOVar_TEXTREWARD = "VV_NPCTextReward";
 
         public bool HasAttach = false;
         public Transform AttachPoint;
@@ -58,10 +70,13 @@ namespace VentureValheim.VentureQuest
                 return;
             }
 
+            base.CustomFixedUpdate(fixedDeltaTime);
+
             if (HasAttach)
             {
                 if (AttachPoint == null)
                 {
+                    // TODO allow players to request npcs get out of chairs
                     AttachStop();
                 }
                 else
@@ -76,8 +91,6 @@ namespace VentureValheim.VentureQuest
                     m_maxAirAltitude = base.transform.position.y;
                 }
             }
-
-            base.CustomFixedUpdate(fixedDeltaTime);
         }
 
         public override void OnDeath()
@@ -147,19 +160,81 @@ namespace VentureValheim.VentureQuest
 
         public bool Interact(Humanoid user, bool hold, bool alt)
         {
-            Talk();
+            var text = SetupText(m_nview.GetZDO().GetString(ZDOVar_TEXT));
+            Talk(text);
 
             return false;
         }
 
         public bool UseItem(Humanoid user, ItemDrop.ItemData item)
         {
+            // TODO: support needing to increase an item counter to get reward "I need x more!" response
+            // The reward can set a global key
+            // Lock quest completion by global key
+            // Need to add more requirmenets to talk responses
+
+            VentureQuestPlugin.VentureQuestLogger.LogInfo($"Use Item!!");
+            var useItem = m_nview.GetZDO().GetString(ZDOVar_USEITEM);
+            if (item != null && item.m_dropPrefab.name.Equals(useItem))
+            {
+                var player = Player.m_localPlayer;
+                if (player != null && player.GetInventory().ContainsItem(item))
+                {
+                    player.UnequipItem(item);
+                    player.GetInventory().RemoveOneItem(item);
+
+                    string rewardItemName = m_nview.GetZDO().GetString(ZDOVar_REWARDITEM);
+                    int rewardItemAmount = m_nview.GetZDO().GetInt(ZDOVar_REWARDITEMAMOUNT);
+
+                    var reward = ObjectDB.instance.GetItemPrefab(rewardItemName);
+
+                    if (reward != null)
+                    {
+                        var go = GameObject.Instantiate(reward,
+                            transform.position + (transform.rotation * Vector3.forward),
+                            transform.rotation);
+
+                        var itemdrop = go.GetComponent<ItemDrop>();
+                        itemdrop.SetStack(rewardItemAmount);
+
+                        var text = SetupText(m_nview.GetZDO().GetString(ZDOVar_TEXTREWARD));
+
+                        Talk(text);
+                    }
+
+                    // TODO check for repeating quest or set npc quest item to null
+
+                    return true;
+                }
+            }
+
             return false;
         }
 
-        private void Talk()
+        public override string GetHoverText()
         {
-            var text = m_nview.GetZDO().GetString(ZDOVar_TEXT);
+            return Localization.instance.Localize(
+                "[<color=yellow><b>$KEY_Use</b></color>] Talk\n" +
+                "[<color=yellow><b>1-8</b></color>] Give");;
+        }
+
+        public override string GetHoverName()
+        {
+            return m_name;
+        }
+
+        private string SetupText(string text)
+        {
+            string useItem = m_nview.GetZDO().GetString(ZDOVar_USEITEM);
+            string rewardItemName = m_nview.GetZDO().GetString(ZDOVar_REWARDITEM);
+            int rewardItemAmount = m_nview.GetZDO().GetInt(ZDOVar_REWARDITEMAMOUNT);
+
+            text = text.Replace("{item}", useItem).Replace("{reward}", $"{rewardItemAmount} {rewardItemName}");
+            return text;
+        }
+
+        private void Talk(string text)
+        {
             if (Player.m_localPlayer != null && !text.IsNullOrWhiteSpace())
             {
                 Chat.instance.SetNpcText(base.gameObject, Vector3.up * 2f, 10f, 30f, "", text, true);
@@ -173,12 +248,28 @@ namespace VentureValheim.VentureQuest
 
         public void SetText(string text)
         {
+            m_nview.GetZDO().Set(ZDOVar_NPCType, (int)NPCType.Information);
             m_nview.GetZDO().Set(ZDOVar_TEXT, text);
         }
 
         public void SetSpawnPoint(Vector3 position)
         {
             m_nview.GetZDO().Set(ZDOVar_SPAWNPOINT, position);
+        }
+
+        public void SetUseItem(string item)
+        {
+            m_nview.GetZDO().Set(ZDOVar_USEITEM, item);
+        }
+
+        public void SetReward(string introText, string item, string reward, int amount, string rewardText)
+        {
+            m_nview.GetZDO().Set(ZDOVar_NPCType, (int)NPCType.ItemReward);
+            m_nview.GetZDO().Set(ZDOVar_USEITEM, item);
+            m_nview.GetZDO().Set(ZDOVar_TEXT, introText);
+            m_nview.GetZDO().Set(ZDOVar_REWARDITEM, reward);
+            m_nview.GetZDO().Set(ZDOVar_REWARDITEMAMOUNT, amount);
+            m_nview.GetZDO().Set(ZDOVar_TEXTREWARD, rewardText);
         }
 
         public Chair GetClosestChair()
@@ -447,6 +538,11 @@ namespace VentureValheim.VentureQuest
                 $"legItem: {m_visEquipment.m_legItem}, " +
                 $"shoulderItemVariant: {m_visEquipment.m_shoulderItemVariant}, " +
                 $"shoulderItem: {m_visEquipment.m_shoulderItem}, ");
+        }
+
+        public override bool IsAttached()
+        {
+            return HasAttach || base.IsAttached();
         }
 
         public void AttachStart(Chair chair)
