@@ -1,13 +1,80 @@
-using System;
-using HarmonyLib;
+using System.Collections;
 using UnityEngine;
 
 namespace VentureValheim.VentureQuest;
 
-public class NPCRagdoll
+public class NPCRagdoll : Ragdoll, Interactable, Hoverable
 {
-    // TODO
-    // Make sure ragdolls never delete
+    public new void Awake()
+    {
+        m_nview = GetComponent<ZNetView>();
+        m_bodies = GetComponentsInChildren<Rigidbody>();
 
-    
+        Invoke("RemoveInitVel", 2f);
+        if ((bool)m_mainModel)
+        {
+            float hue = m_nview.GetZDO().GetFloat(ZDOVars.s_hue);
+            float sat = m_nview.GetZDO().GetFloat(ZDOVars.s_saturation);
+            float val = m_nview.GetZDO().GetFloat(ZDOVars.s_value);
+            m_mainModel.material.SetFloat("_Hue", hue);
+            m_mainModel.material.SetFloat("_Saturation", sat);
+            m_mainModel.material.SetFloat("_Value", val);
+        }
+
+        m_ttl = 4f;
+
+        var startCoroutine = SetUp();
+        StartCoroutine(startCoroutine);
+    }
+
+    public IEnumerator SetUp()
+    {
+        //yield return new WaitForSeconds(1);
+        yield return null;
+        yield return null;
+
+        if (!m_nview.GetZDO().GetBool(NPC.ZDOVar_TRUEDEATH))
+        {
+            InvokeRepeating("DestroyNow", m_ttl, 1f);
+        }
+        else
+        {
+            VentureQuestPlugin.VentureQuestLogger.LogInfo("I am truely dead!");
+        }
+    }
+
+    public bool Interact(Humanoid user, bool hold, bool alt)
+    {
+        // TODO, add some effects
+        DestroyNow();
+
+        return false;
+    }
+
+    public bool UseItem(Humanoid user, ItemDrop.ItemData item)
+    {
+        // TODO raise zombies
+        // Spawn dragur
+        // Delete ragdoll
+        return false;
+    }
+
+    public string GetHoverText()
+    {
+        if (m_nview != null && m_nview.GetZDO() != null)
+        {
+            return Localization.instance.Localize(
+                $"{m_nview.GetZDO().GetString(ZDOVars.s_tamedName)}\n" +
+                "[<color=yellow><b>$KEY_Use</b></color>] Bury Body\n" +
+                "[<color=yellow><b>F</b></color>] Pay Respects"); ;
+        }
+
+        return "";
+    }
+
+    public string GetHoverName()
+    {
+        return "";
+    }
+
 }

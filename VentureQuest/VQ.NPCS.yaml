@@ -1,0 +1,69 @@
+---
+npcs:
+  -
+    id: Ragnar1
+    name: Ragnar The Brave
+    type: Information
+    defaultText: "Did you say you had mead?"
+    model: Player
+    modelIndex: 0
+    hair: Hair1
+    beard: Beard1
+    helmet: 
+    chest: ArmorLeatherChest
+    legs: ArmorLeatherLegs
+    shoulder: 
+    utility: 
+    rightHand: KnifeFlint
+
+  -
+    id: Ragnar2
+    name: Ragnar The Bold
+    type: InformationKey
+    defaultText: "I love a good mead."
+    model: Player
+    modelIndex: 0
+    hair: Hair1
+    beard: Beard1
+    helmet: 
+    chest: ArmorLeatherChest
+    legs: ArmorLeatherLegs
+    shoulder: 
+    utility: 
+
+  -
+    id: Hildir1
+    name: Hildir Merchant
+    type: RewardItem
+    defaultText: "I'm all out of stock, kid."
+    useItemText: "Can you bring me some {useitem}? It is so dear to me that I will give you {reward}!"
+    useItem: DeerStew
+    useItemAmount: 1
+    useItemLimit: 5
+    rewardText: "Thanks! I was hungry!"
+    rewardItem: Coins
+    rewardItemAmount: 10
+    model: Player
+    modelIndex: 1
+    hair: Hair4
+    helmet: HelmetMidsummerCrown
+    chest: ArmorDress1
+    legs: ArmorLeatherLegs
+    shoulder: 
+    utility: 
+
+  -
+    id: Cain1
+    name: Cain
+    type: SlayTarget
+    defaultText: "Please don't kill me"
+    globalKey: defeated_cain
+    trueDeath: true
+    model: Player
+    modelIndex: 0
+    hair: Hair10
+    helmet: 
+    chest: 
+    legs: ArmorRagsLegs
+    shoulder: 
+    utility: 

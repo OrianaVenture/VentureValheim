@@ -42,7 +42,7 @@ public class Patches
 
     public static NPC GetClosestNPC(Vector3 position)
     {
-        Collider[] hits = Physics.OverlapBox(position, Vector3.one, Quaternion.identity);
+        Collider[] hits = Physics.OverlapBox(position, Vector3.one * 2, Quaternion.identity);
         NPC closestnpc = null;
 
         foreach (var hit in hits)
@@ -82,9 +82,13 @@ public class Patches
             }
 
             VentureQuestPlugin.VentureQuestLogger.LogInfo("Adding Terminal Commands for npc management.");
-            // TODO: Migrate to a format that can accept long string inputs
 
-            new Terminal.ConsoleCommand("vq_spawnNPC", "[name] [model]", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("vq_reloadconfig", "", delegate (Terminal.ConsoleEventArgs args)
+            {
+                NPCConfiguration.ReloadFile();
+            }, isCheat: false, isNetwork: false, onlyServer: false);
+
+            new Terminal.ConsoleCommand("vq_spawnrandomNPC", "[name] [model]", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
@@ -104,23 +108,15 @@ public class Patches
                 }
             }, isCheat: false, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_setnpc_info", "[text] [(optional) key]", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("vq_spawnsavedNPC", "[id]", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = GetClosestNPC(playerPosition);
-                if (npc == null)
-                {
-                    args.Context.AddString("No npc found.");
-                    return;
-                }
+                var playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
+                var position = playerPosition + (playerRotation * Vector3.forward);
 
-                if (args.Length >= 3)
+                if (args.Length >= 2)
                 {
-                    npc.SetTypeInformation(args[1], args[2]);
-                }
-                else if (args.Length >= 2)
-                {
-                    npc.SetTypeInformation(args[1]);
+                    NPCFactory.SpawnSavedNPC(position, playerRotation, args[1]);
                 }
                 else
                 {
@@ -128,9 +124,7 @@ public class Patches
                 }
             }, isCheat: false, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_setnpc_rewarditem", "[default text] [item text] [item] [amount] " +
-                "[reward text] [reward] [amount] [(optional) requires key] [(optional) rewards key] [(optional) repeat]",
-                delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("vq_setnpc", "[id]", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = GetClosestNPC(playerPosition);
@@ -140,14 +134,9 @@ public class Patches
                     return;
                 }
 
-                if (args.Length >= 11)
+                if (args.Length >= 2)
                 {
-                    npc.SetTypeRewardItem(args[1], args[2], args[3], int.Parse(args[4]), args[5], args[6], int.Parse(args[7]),
-                        args[8], args[9], int.Parse(args[10]));
-                }
-                else if (args.Length >= 8)
-                {
-                    npc.SetTypeRewardItem(args[1], args[2], args[3], int.Parse(args[4]), args[5], args[6], int.Parse(args[7]));
+                    npc.SetFromConfig(NPCConfiguration.GetConfig(args[1]));
                 }
                 else
                 {
@@ -155,8 +144,7 @@ public class Patches
                 }
             }, isCheat: false, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_setnpc_rewardkey", "[default text] [item text] [item] [amount] " +
-                "[reward text] [reward key] [(optional) requires key] [(optional) repeat]", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("vq_setnpc_truedeath", "[boolean]", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = GetClosestNPC(playerPosition);
@@ -166,17 +154,13 @@ public class Patches
                     return;
                 }
 
-                if (args.Length >= 9)
+                if (args.Length >= 2)
                 {
-                    npc.SetTypeRewardKey(args[1], args[2], args[3], int.Parse(args[4]), args[5], args[6], args[7], int.Parse(args[8]));
-                }
-                else if (args.Length >= 5)
-                {
-                    npc.SetTypeRewardKey(args[1], args[2], args[3], int.Parse(args[4]), args[5], args[6]);
+                    npc.SetTrueDeath(bool.Parse(args[1]));
                 }
                 else
                 {
-                    args.Context.AddString("Wrong Syntax!");
+                    npc.SetTrueDeath(true);
                 }
             }, isCheat: false, isNetwork: false, onlyServer: false);
         }

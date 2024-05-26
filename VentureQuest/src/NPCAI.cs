@@ -24,8 +24,8 @@ public class NPCAI : MonsterAI
         m_jumpInterval = 10f;
 
         m_randomCircleInterval = 2f;
-        m_randomMoveInterval = 20f;
-        m_randomMoveRange = 3f;
+        m_randomMoveInterval = 10f;
+        m_randomMoveRange = 5f;
 
         // Fly
         m_randomFly = false;
@@ -65,7 +65,7 @@ public class NPCAI : MonsterAI
         m_interceptTimeMax = 10f;
         m_interceptTimeMin = 0f;
         m_maxChaseDistance = 15f;
-        m_minAttackInterval = 2f;
+        m_minAttackInterval = 1f;
 
         base.Awake();
     }
