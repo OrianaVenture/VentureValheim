@@ -29,17 +29,12 @@ public class NPCRagdoll : Ragdoll, Interactable, Hoverable
 
     public IEnumerator SetUp()
     {
-        //yield return new WaitForSeconds(1);
         yield return null;
         yield return null;
 
         if (!m_nview.GetZDO().GetBool(NPC.ZDOVar_TRUEDEATH))
         {
             InvokeRepeating("DestroyNow", m_ttl, 1f);
-        }
-        else
-        {
-            VentureQuestPlugin.VentureQuestLogger.LogInfo("I am truely dead!");
         }
     }
 
@@ -61,7 +56,7 @@ public class NPCRagdoll : Ragdoll, Interactable, Hoverable
 
     public string GetHoverText()
     {
-        if (m_nview != null && m_nview.GetZDO() != null)
+        if (m_nview != null && m_nview.GetZDO() != null && m_nview.GetZDO().GetBool(NPC.ZDOVar_TRUEDEATH))
         {
             return Localization.instance.Localize(
                 $"{m_nview.GetZDO().GetString(ZDOVars.s_tamedName)}\n" +

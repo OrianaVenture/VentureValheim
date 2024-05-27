@@ -7,64 +7,6 @@ namespace VentureValheim.VentureQuest;
 
 public class Patches
 {
-    /// <summary>
-    /// Attempts to get the ItemDrop by the given name's hashcode, if not found searches by string.
-    /// </summary>
-    /// <param name="name"></param>
-    /// <param name="item"></param>
-    /// <returns>True on sucessful find</returns>
-    public static bool GetItemDrop(string name, out ItemDrop item)
-    {
-        item = null;
-
-        if (!name.IsNullOrWhiteSpace())
-        {
-            // Try hash code
-            var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
-            if (prefab == null)
-            {
-                // Failed, try slow search
-                prefab = ObjectDB.instance.GetItemPrefab(name);
-            }
-
-            if (prefab != null)
-            {
-                item = prefab.GetComponent<ItemDrop>();
-                if (item != null)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public static NPC GetClosestNPC(Vector3 position)
-    {
-        Collider[] hits = Physics.OverlapBox(position, Vector3.one * 2, Quaternion.identity);
-        NPC closestnpc = null;
-
-        foreach (var hit in hits)
-        {
-            var npcs = hit.transform.root.gameObject.GetComponentsInChildren<NPC>();
-            if (npcs != null)
-            {
-                for (int lcv = 0; lcv < npcs.Length; lcv++)
-                {
-                    var npc = npcs[lcv];
-                    if (closestnpc == null || (Vector3.Distance(position, npc.transform.position) <
-                        Vector3.Distance(position, closestnpc.transform.position)))
-                    {
-                        closestnpc = npc;
-                    }
-                }
-            }
-        }
-
-        return closestnpc;
-    }
-
     [HarmonyPatch(typeof(Terminal), nameof(Terminal.InitTerminal))]
     private static class Patch_Terminal_InitTerminal
     {
@@ -127,7 +69,7 @@ public class Patches
             new Terminal.ConsoleCommand("vq_setnpc", "[id]", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = GetClosestNPC(playerPosition);
+                var npc = Utility.GetClosestNPC(playerPosition);
                 if (npc == null)
                 {
                     args.Context.AddString("No npc found.");
@@ -147,7 +89,7 @@ public class Patches
             new Terminal.ConsoleCommand("vq_setnpc_truedeath", "[boolean]", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = GetClosestNPC(playerPosition);
+                var npc = Utility.GetClosestNPC(playerPosition);
                 if (npc == null)
                 {
                     args.Context.AddString("No npc found.");
@@ -162,6 +104,78 @@ public class Patches
                 {
                     npc.SetTrueDeath(true);
                 }
+            }, isCheat: false, isNetwork: false, onlyServer: false);
+
+            new Terminal.ConsoleCommand("vq_setnpc_move", "", delegate (Terminal.ConsoleEventArgs args)
+            {
+                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                var npc = Utility.GetClosestNPC(playerPosition);
+                if (npc == null)
+                {
+                    args.Context.AddString("No npc found.");
+                    return;
+                }
+
+                npc.Attach(false);
+
+            }, isCheat: false, isNetwork: false, onlyServer: false);
+
+            new Terminal.ConsoleCommand("vq_setnpc_still", "", delegate (Terminal.ConsoleEventArgs args)
+            {
+                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                var npc = Utility.GetClosestNPC(playerPosition);
+                if (npc == null)
+                {
+                    args.Context.AddString("No npc found.");
+                    return;
+                }
+
+                npc.Attach(true);
+
+            }, isCheat: false, isNetwork: false, onlyServer: false);
+
+            new Terminal.ConsoleCommand("vq_setnpc_sit", "", delegate (Terminal.ConsoleEventArgs args)
+            {
+                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                var npc = Utility.GetClosestNPC(playerPosition);
+                if (npc == null)
+                {
+                    args.Context.AddString("No npc found.");
+                    return;
+                }
+
+                var chair = Utility.GetClosestChair(playerPosition, Vector3.one * 2);
+
+                npc.Attach(true, chair);
+
+            }, isCheat: false, isNetwork: false, onlyServer: false);
+
+            new Terminal.ConsoleCommand("vq_getnpc_skincolor", "", delegate (Terminal.ConsoleEventArgs args)
+            {
+                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                var npc = Utility.GetClosestNPC(playerPosition);
+                if (npc == null)
+                {
+                    args.Context.AddString("No npc found.");
+                    return;
+                }
+
+                args.Context.AddString(npc.GetSkinColor());
+
+            }, isCheat: false, isNetwork: false, onlyServer: false);
+
+            new Terminal.ConsoleCommand("vq_getnpc_haircolor", "", delegate (Terminal.ConsoleEventArgs args)
+            {
+                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                var npc = Utility.GetClosestNPC(playerPosition);
+                if (npc == null)
+                {
+                    args.Context.AddString("No npc found.");
+                    return;
+                }
+
+                args.Context.AddString(npc.GetHairColor());
+
             }, isCheat: false, isNetwork: false, onlyServer: false);
         }
     }

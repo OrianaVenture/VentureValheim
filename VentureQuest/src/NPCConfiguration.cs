@@ -9,6 +9,7 @@ namespace VentureValheim.VentureQuest;
 
 public class NPCConfiguration
 {
+    private static readonly string FileName = "VQ.NPCS.yaml";
     protected static Dictionary<string, NPCConfig> Configurations;
     
     [Serializable]
@@ -26,19 +27,23 @@ public class NPCConfiguration
         public NPC.NPCType Type { get; set; }
 
         public string DefaultText { get; set; }
-        public string GlobalKey { get; set; }
+        public string RequiredKeys { get; set; }
+        public string NotRequiredKeys { get; set; }
+        public string InteractKey { get; set; }
+        public string DefeatKey { get; set; }
         public bool TrueDeath { get; set; }
+        public bool StandStill { get; set; }
+        // Interact
+        public string InteractText { get; set; }
         // Use Item
-        public string UseItemText { get; set; }
-        public string UseItem { get; set; }
-        public int? UseItemAmount { get; set; }
-        public int? UseItemLimit { get; set; }
-        public string UseItemRequiredKey { get; set; }
+        public string GiveItem { get; set; }
+        public int? GiveItemAmount { get; set; }
         // Reward
         public string RewardText { get; set; }
         public string RewardItem { get; set; }
         public int? RewardItemAmount { get; set; }
-        public string RewardItemKey { get; set; }
+        public string RewardKey { get; set; }
+        public int? RewardLimit { get; set; }
         // Style
         public string Model { get; set; }
         public float? HairColorR { get; set; }
@@ -73,13 +78,18 @@ public class NPCConfiguration
             var cleaned = Configurations[id];
             cleaned.Name ??= "";
             cleaned.DefaultText ??= "";
-            cleaned.GlobalKey ??= "";
-            cleaned.UseItemText ??= "";
-            cleaned.UseItem ??= "";
-            cleaned.UseItemRequiredKey ??= "";
+            cleaned.RequiredKeys ??= "";
+            cleaned.NotRequiredKeys ??= "";
+            cleaned.InteractKey ??= "";
+            cleaned.DefeatKey ??= "";
+            cleaned.InteractText ??= "";
+            cleaned.GiveItem ??= "";
+            cleaned.GiveItemAmount ??= 1;
             cleaned.RewardText ??= "";
             cleaned.RewardItem ??= "";
-            cleaned.RewardItemKey ??= "";
+            cleaned.RewardItemAmount ??= 1;
+            cleaned.RewardKey ??= "";
+            cleaned.RewardLimit ??= -1; // Unlimted
             cleaned.Model ??= "Player";
             cleaned.Hair ??= "";
             cleaned.Beard ??= "";
@@ -113,7 +123,7 @@ public class NPCConfiguration
 
     public static NPCS ReadFile()
     {
-        var filePath = Paths.ConfigPath + Path.DirectorySeparatorChar + "VQ.NPCS.yaml";
+        var filePath = Paths.ConfigPath + Path.DirectorySeparatorChar + FileName;
         try
         {
             using var fileReader = new StreamReader(filePath);
@@ -125,7 +135,7 @@ public class NPCConfiguration
         }
         catch (Exception e)
         {
-            VentureQuestPlugin.VentureQuestLogger.LogError($"Could not read file \"VQ.NPCS.yaml\"");
+            VentureQuestPlugin.VentureQuestLogger.LogError($"Could not read file {FileName}");
             VentureQuestPlugin.VentureQuestLogger.LogWarning(e);
         }
 

@@ -204,6 +204,11 @@ public class NPCFactory
             if (model.Equals("Player"))
             {
                 human.m_defaultItems = new GameObject[] { };
+                human.m_walkSpeed = 2f;
+                human.m_speed = 2f;
+                human.m_runSpeed = 4f;
+                human.m_health = 200f;
+                human.m_faction = Character.Faction.Dverger; // Prevent hobo fight club
             }
         }
 
