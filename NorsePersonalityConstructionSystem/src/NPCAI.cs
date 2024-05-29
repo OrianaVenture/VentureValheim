@@ -1,14 +1,12 @@
-
-namespace VentureValheim.VentureQuest;
+namespace VentureValheim.NPCS;
 
 public class NPCAI : MonsterAI
 {
-    // TODO
     public override void Awake()
     {
-        m_viewRange = 10f;
+        m_viewRange = 15f;
         m_viewAngle = 90f;
-        m_hearRange = 10f;
+        m_hearRange = 15f;
         m_mistVision = false;
 
         m_pathAgentType = Pathfinding.AgentType.Humanoid;
@@ -73,5 +71,15 @@ public class NPCAI : MonsterAI
             // Reset aggravated
             SetAggravated(false, AggravatedReason.Damage);
         }
+    }
+
+    public static void SetupExisting(ref NPCAI monsterAI)
+    {
+        monsterAI.m_viewRange = 15f;
+        monsterAI.m_hearRange = 15f;
+        monsterAI.m_aggravatable = true;
+        monsterAI.m_enableHuntPlayer = false;
+        monsterAI.m_attackPlayerObjects = false;
+        monsterAI.m_privateAreaTriggerTreshold = 50;
     }
 }

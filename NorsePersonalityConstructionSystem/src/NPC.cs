@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using BepInEx;
 using UnityEngine;
 
-namespace VentureValheim.VentureQuest;
+namespace VentureValheim.NPCS;
 
 // TODO localization
 public class NPC : Humanoid, Interactable, Hoverable
@@ -13,13 +13,13 @@ public class NPC : Humanoid, Interactable, Hoverable
     {
         None = 0,
         Information = 1,
-        Reward = 10,
-        Sellsword = 20,
-        SlayTarget = 30,
-        Trader = 40
+        Reward = 2,
+        Sellsword = 3,
+        SlayTarget = 4,
+        Trader = 5
     }
 
-    public bool HasAttach = false; // TODO fix zdo syncing for this
+    public bool HasAttach = false; // TODO fix zdo syncing for this?
     public Transform AttachPoint;
     public string AttachAnimation;
     public GameObject AttachRoot;
@@ -31,6 +31,8 @@ public class NPC : Humanoid, Interactable, Hoverable
     private readonly Color32 _skinColorMax = new Color32(0x4C, 0x4C, 0x4C, 0xFF);
 
     #region ZDO Values
+
+    public string TamedName => m_nview.GetZDO().GetString(ZDOVars.s_tamedName);
 
     public const string ZDOVar_NPCType = "VV_NPCType";
     public int Type => m_nview.GetZDO().GetInt(ZDOVar_NPCType);
@@ -51,6 +53,8 @@ public class NPC : Humanoid, Interactable, Hoverable
     // Use Item
     public const string ZDOVar_GIVEITEM = "VV_GiveItem";
     public string NPCGiveItem => m_nview.GetZDO().GetString(ZDOVar_GIVEITEM);
+    public const string ZDOVar_GIVEITEMQUALITY = "VV_UseItemQuality";
+    public int NPCGiveItemQuality => m_nview.GetZDO().GetInt(ZDOVar_GIVEITEMQUALITY);
     public const string ZDOVar_GIVEITEMAMOUNT = "VV_UseItemAmount";
     public int NPCGiveItemAmount => m_nview.GetZDO().GetInt(ZDOVar_GIVEITEMAMOUNT);
     // Reward
@@ -58,6 +62,8 @@ public class NPC : Humanoid, Interactable, Hoverable
     public string NPCRewardText => m_nview.GetZDO().GetString(ZDOVar_REWARDTEXT);
     public const string ZDOVar_REWARDITEM = "VV_RewardItem";
     public string NPCRewardItem => m_nview.GetZDO().GetString(ZDOVar_REWARDITEM);
+    public const string ZDOVar_REWARDITEMQUALITY = "VV_RewardItemQualtiy";
+    public int NPCRewardItemQuality => m_nview.GetZDO().GetInt(ZDOVar_REWARDITEMQUALITY);
     public const string ZDOVar_REWARDITEMAMOUNT = "VV_RewardItemAmount";
     public int NPCRewardItemAmount => m_nview.GetZDO().GetInt(ZDOVar_REWARDITEMAMOUNT);
     public const string ZDOVar_REWARDLIMIT = "VV_RewardLimit";
@@ -80,6 +86,23 @@ public class NPC : Humanoid, Interactable, Hoverable
     public const string ZDOVar_TRUEDEATH = "VV_TrueDeath";
     public bool TrueDeath => m_nview.GetZDO().GetBool(ZDOVar_TRUEDEATH);
 
+    protected static List<int> ZdoVisEquipment = new List<int>
+    {
+        ZDOVars.s_beardItem,
+        ZDOVars.s_hairItem,
+        ZDOVars.s_helmetItem,
+        ZDOVars.s_chestItem,
+        ZDOVars.s_legItem,
+        ZDOVars.s_shoulderItem,
+        ZDOVars.s_shoulderItemVariant,
+        ZDOVars.s_rightItem,
+        ZDOVars.s_leftItem,
+        ZDOVars.s_leftItemVariant,
+        ZDOVars.s_rightBackItem,
+        ZDOVars.s_leftBackItem,
+        ZDOVars.s_leftBackItemVariant
+    };
+
     #endregion
 
     #region Humanoid and Components
@@ -97,7 +120,7 @@ public class NPC : Humanoid, Interactable, Hoverable
         yield return null;
         yield return null;
 
-        m_name = m_nview.GetZDO().GetString(ZDOVars.s_tamedName);
+        m_name = TamedName;
 
         if (WasSitting)
         {
@@ -107,8 +130,7 @@ public class NPC : Humanoid, Interactable, Hoverable
                 AttachStart(chair);
             }
         }
-
-        if (Attached)
+        else if (Attached)
         {
             AttachStart();
         }
@@ -116,7 +138,10 @@ public class NPC : Humanoid, Interactable, Hoverable
         NPCRequiredKeysSet = Utility.StringToSet(NPCRequiredKeys);
         NPCNotRequiredKeysSet = Utility.StringToSet(NPCNotRequiredKeys);
 
-        m_defeatSetGlobalKey = m_nview.GetZDO().GetString(ZDOVar_DEFEATKEY);
+        m_defeatSetGlobalKey = NPCDefeatKey;
+
+        var tamed = m_nview.GetZDO().GetBool(ZDOVars.s_tamed);
+        //NPCSPlugin.NPCSLogger.LogDebug($"{m_name}: {m_faction}, {m_tamed}, {m_group}. ZDO: {tamed}");
     }
 
     public override void CustomFixedUpdate(float fixedDeltaTime)
@@ -263,11 +288,11 @@ public class NPC : Humanoid, Interactable, Hoverable
             if (item != null && item.m_dropPrefab.name.Equals(NPCGiveItem) && Player.m_localPlayer != null)
             {
                 var player = Player.m_localPlayer;
-                var count = player.GetInventory().CountItems(item.m_shared.m_name);
+                var count = player.GetInventory().CountItems(item.m_shared.m_name, NPCGiveItemQuality);
                 if (count >= NPCGiveItemAmount)
                 {
                     player.UnequipItem(item);
-                    player.GetInventory().RemoveItem(item, NPCGiveItemAmount);
+                    player.GetInventory().RemoveItem(item.m_shared.m_name, NPCGiveItemAmount, NPCGiveItemQuality);
                 }
                 else
                 {
@@ -291,7 +316,7 @@ public class NPC : Humanoid, Interactable, Hoverable
 
     public override string GetHoverText()
     {
-        if (m_baseAI.m_aggravated) //m_nview == null || m_nview.GetZDO() == null || 
+        if (m_baseAI.m_aggravated)
         {
             return "";
         }
@@ -320,7 +345,12 @@ public class NPC : Humanoid, Interactable, Hoverable
 
     public override void SetupVisEquipment(VisEquipment visEq, bool isRagdoll)
     {
-        // Do nothing, the values for these npcs are not populated
+        // TODO find best pattern for saving equipment data.
+        if (!transform.gameObject.name.Equals(NPCSPlugin.MOD_PREFIX + "Player"))
+        {
+            // Do nothing for Player npcs, the values are not populated
+            base.SetupVisEquipment(visEq, isRagdoll);
+        }
     }
 
     public override bool IsAttached()
@@ -354,13 +384,14 @@ public class NPC : Humanoid, Interactable, Hoverable
         HasAttach = true;
         // TODO check this is ok
         GameObject dummy = GameObject.Instantiate(new GameObject(), transform.position, transform.rotation);
+        dummy.name = "attach_dummy";
         AttachPoint = dummy.transform;
         if (m_nview.IsOwner())
         {
             m_nview.GetZDO().Set(ZDOVar_ATTACHED, value: true);
         }
 
-        m_body.mass = 1000; // TODO
+        m_body.mass = 1000f;
 
         m_body.useGravity = false;
         m_body.velocity = Vector3.zero;
@@ -370,7 +401,6 @@ public class NPC : Humanoid, Interactable, Hoverable
 
     public void AttachStart(Chair chair)
     {
-        // TODO add attach to spot while standing, should be the default after spawning an npc, then add command to allow movement
         HasAttach = true;
         AttachPoint = chair.m_attachPoint;
         AttachAnimation = chair.m_attachAnimation;
@@ -385,7 +415,7 @@ public class NPC : Humanoid, Interactable, Hoverable
             m_nview.GetZDO().Set(ZDOVar_SITTING, value: true);
         }
 
-        m_body.mass = 1000; // TODO
+        m_body.mass = 1000f;
 
         Rigidbody componentInParent = AttachPoint.GetComponentInParent<Rigidbody>();
         m_body.useGravity = false;
@@ -437,10 +467,11 @@ public class NPC : Humanoid, Interactable, Hoverable
         AttachAnimation = "";
         AttachPoint = null;
         m_body.useGravity = true;
-        m_body.mass = 10; // TODO, set to original
+        m_body.mass = m_originalMass;
         AttachColliders = null;
         AttachRoot = null;
 
+        ShowHandItems();
         ResetCloth();
     }
 
@@ -450,6 +481,7 @@ public class NPC : Humanoid, Interactable, Hoverable
 
     private void SetKey(string key)
     {
+        // TODO handle player keys
         /*if (!string.IsNullOrEmpty(key))
         {
             Player.m_addUniqueKeyQueue.Add(key);
@@ -462,26 +494,54 @@ public class NPC : Humanoid, Interactable, Hoverable
 
     private string SetupText(string text)
     {
-        string giveItemText = NPCGiveItemAmount > 1 ? $"{NPCGiveItemAmount} {NPCGiveItem}" : $"{NPCGiveItem}";
-        string rewardItemText = $"{NPCRewardItemAmount} {NPCRewardItem}";
+        string giveItem = NPCGiveItem;
+        var requirement = ObjectDB.instance.GetItemPrefab(NPCGiveItem);
+        if (requirement != null)
+        {
+            var itemdrop = requirement.GetComponent<ItemDrop>();
+            giveItem = itemdrop.m_itemData.m_shared.m_name;
+        }
+        string giveItemText = $"{NPCGiveItemAmount} {giveItem}";
+        if (NPCGiveItemQuality > 1)
+        {
+            giveItemText += $" *{NPCGiveItemQuality}";
+        }
+
+        string rewardItem = NPCRewardItem;
+        var reward = ObjectDB.instance.GetItemPrefab(NPCRewardItem);
+        if (reward != null)
+        {
+            var itemdrop = reward.GetComponent<ItemDrop>();
+            rewardItem = itemdrop.m_itemData.m_shared.m_name;
+        }
+
+        string rewardItemText = $"{NPCRewardItemAmount} {rewardItem}";
+        if (NPCRewardItemQuality > 1)
+        {
+            rewardItemText += $" *{NPCRewardItemQuality}";
+        }
 
         text = text.Replace("{giveitem}", giveItemText).Replace("{reward}", rewardItemText);
-        return text;
+        return Localization.instance.Localize(text);
     }
 
     public static void CopyZDO(ref ZDO copy, ZDO original)
     {
         copy.Set(ZDOVars.s_tamedName, original.GetString(ZDOVars.s_tamedName));
         copy.Set(ZDOVar_NPCType, original.GetInt(ZDOVar_NPCType));
+        copy.Set(ZDOVar_SITTING, original.GetBool(ZDOVar_SITTING));
+        copy.Set(ZDOVar_ATTACHED, original.GetBool(ZDOVar_ATTACHED));
         copy.Set(ZDOVar_SPAWNPOINT, original.GetVec3(ZDOVar_SPAWNPOINT, Vector3.zero));
         copy.Set(ZDOVar_DEFAULTTEXT, original.GetString(ZDOVar_DEFAULTTEXT));
         copy.Set(ZDOVar_INTERACTTEXT, original.GetString(ZDOVar_INTERACTTEXT));
 
         copy.Set(ZDOVar_GIVEITEM, original.GetString(ZDOVar_GIVEITEM));
+        copy.Set(ZDOVar_GIVEITEMQUALITY, original.GetString(ZDOVar_GIVEITEMQUALITY));
         copy.Set(ZDOVar_GIVEITEMAMOUNT, original.GetInt(ZDOVar_GIVEITEMAMOUNT));
 
         copy.Set(ZDOVar_REWARDTEXT, original.GetString(ZDOVar_REWARDTEXT));
         copy.Set(ZDOVar_REWARDITEM, original.GetString(ZDOVar_REWARDITEM));
+        copy.Set(ZDOVar_REWARDITEMQUALITY, original.GetString(ZDOVar_REWARDITEMQUALITY));
         copy.Set(ZDOVar_REWARDITEMAMOUNT, original.GetInt(ZDOVar_REWARDITEMAMOUNT));
         copy.Set(ZDOVar_REWARDLIMIT, original.GetInt(ZDOVar_REWARDLIMIT, -1)); // -1 is unlimited
 
@@ -499,13 +559,11 @@ public class NPC : Humanoid, Interactable, Hoverable
         copy.SetModel(original.m_nview.GetZDO().GetInt(ZDOVars.s_modelIndex));
         copy.SetSkinColor(original.m_nview.GetZDO().GetVec3(ZDOVars.s_skinColor, Vector3.zero));
         copy.SetHairColor(original.m_nview.GetZDO().GetVec3(ZDOVars.s_hairColor, Vector3.zero));
-        copy.m_nview.GetZDO().Set(ZDOVars.s_beardItem, original.m_nview.GetZDO().GetInt(ZDOVars.s_beardItem));
-        copy.m_nview.GetZDO().Set(ZDOVars.s_hairItem, original.m_nview.GetZDO().GetInt(ZDOVars.s_hairItem));
-        copy.m_nview.GetZDO().Set(ZDOVars.s_helmetItem, original.m_nview.GetZDO().GetInt(ZDOVars.s_helmetItem));
-        copy.m_nview.GetZDO().Set(ZDOVars.s_chestItem, original.m_nview.GetZDO().GetInt(ZDOVars.s_chestItem));
-        copy.m_nview.GetZDO().Set(ZDOVars.s_legItem, original.m_nview.GetZDO().GetInt(ZDOVars.s_legItem));
-        copy.m_nview.GetZDO().Set(ZDOVars.s_shoulderItem, original.m_nview.GetZDO().GetInt(ZDOVars.s_shoulderItem));
-        copy.m_nview.GetZDO().Set(ZDOVars.s_shoulderItemVariant, original.m_nview.GetZDO().GetInt(ZDOVars.s_shoulderItemVariant));
+
+        foreach (int item in ZdoVisEquipment)
+        {
+            copy.m_nview.GetZDO().Set(item, original.m_nview.GetZDO().GetInt(item));
+        }
     }
 
     private void Talk(string text)
@@ -560,6 +618,7 @@ public class NPC : Humanoid, Interactable, Hoverable
 
                 var itemdrop = go.GetComponent<ItemDrop>();
                 itemdrop.SetStack(NPCRewardItemAmount);
+                itemdrop.SetQuality(NPCRewardItemQuality);
             }
         }
 
@@ -604,7 +663,7 @@ public class NPC : Humanoid, Interactable, Hoverable
 
             if (config.StandStill)
             {
-                VentureQuestPlugin.VentureQuestLogger.LogDebug($"{config.Name} has no random movement.");
+                NPCSPlugin.NPCSLogger.LogDebug($"{config.Name} has no random movement.");
                 AttachStart();
             }
 
@@ -613,10 +672,12 @@ public class NPC : Humanoid, Interactable, Hoverable
             m_nview.GetZDO().Set(ZDOVar_INTERACTTEXT, config.InteractText);
 
             m_nview.GetZDO().Set(ZDOVar_GIVEITEM, config.GiveItem);
+            m_nview.GetZDO().Set(ZDOVar_GIVEITEMQUALITY, config.GiveItemQuality.Value);
             m_nview.GetZDO().Set(ZDOVar_GIVEITEMAMOUNT, config.GiveItemAmount.Value);
 
             m_nview.GetZDO().Set(ZDOVar_REWARDTEXT, config.RewardText);
             m_nview.GetZDO().Set(ZDOVar_REWARDITEM, config.RewardItem);
+            m_nview.GetZDO().Set(ZDOVar_REWARDITEMQUALITY, config.RewardItemQuality.Value);
             m_nview.GetZDO().Set(ZDOVar_REWARDITEMAMOUNT, config.RewardItemAmount.Value);
             m_nview.GetZDO().Set(ZDOVar_REWARDLIMIT, config.RewardLimit.Value);
 
@@ -634,6 +695,8 @@ public class NPC : Humanoid, Interactable, Hoverable
             {
                 SetModel(config.ModelIndex.Value);
             }
+
+            // TODO: check setting random skin/hair color here works for other models
 
             if (config.SkinColorR.HasValue &&
                 config.SkinColorG.HasValue &&
@@ -669,9 +732,9 @@ public class NPC : Humanoid, Interactable, Hoverable
         }
         catch (Exception e)
         {
-            VentureQuestPlugin.VentureQuestLogger.LogError("There was an issue spawing the npc from configurations, " +
+            NPCSPlugin.NPCSLogger.LogError("There was an issue spawing the npc from configurations, " +
                 "did you forget to reload the file?");
-            VentureQuestPlugin.VentureQuestLogger.LogWarning(e);
+            NPCSPlugin.NPCSLogger.LogWarning(e);
         }
     }
 

@@ -8,9 +8,9 @@
     <ProjectGuid>{2A4C40B0-FB71-4081-853D-46B3FB39AE4C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VentureValheim.VentureQuest</RootNamespace>
-    <AssemblyName>VentureValheim.VentureQuest</AssemblyName>
-    <Version>0.1.0</Version>
+    <RootNamespace>VentureValheim.NPCS</RootNamespace>
+    <AssemblyName>VentureValheim.NPCS</AssemblyName>
+    <Version>0.0.1</Version>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>
@@ -21,7 +21,7 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <AssemblyName>VentureValheim.VentureQuest.$(Version)</AssemblyName>
+    <AssemblyName>VentureValheim.NPCS.$(Version)</AssemblyName>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -47,7 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <!--EmbeddedResource Include="vv_quest" /-->
-    <None Include="VQ.NPCS.yaml" />
+    <None Include="VV.NPCS.yaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ILRepack.targets" />

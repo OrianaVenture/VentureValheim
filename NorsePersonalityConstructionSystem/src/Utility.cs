@@ -1,48 +1,12 @@
 ﻿using BepInEx;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
-namespace VentureValheim.VentureQuest;
+namespace VentureValheim.NPCS;
 
 public class Utility
 {
-    /// <summary>
-    /// Attempts to get the ItemDrop by the given name's hashcode, if not found searches by string.
-    /// </summary>
-    /// <param name="name"></param>
-    /// <param name="item"></param>
-    /// <returns>True on sucessful find</returns>
-    public static bool GetItemDrop(string name, out ItemDrop item)
-    {
-        item = null;
-
-        if (!name.IsNullOrWhiteSpace())
-        {
-            // Try hash code
-            var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
-            if (prefab == null)
-            {
-                // Failed, try slow search
-                prefab = ObjectDB.instance.GetItemPrefab(name);
-            }
-
-            if (prefab != null)
-            {
-                item = prefab.GetComponent<ItemDrop>();
-                if (item != null)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     public static HashSet<string> StringToSet(string str)
     {
         var set = new HashSet<string>();
@@ -66,22 +30,35 @@ public class Utility
 
         foreach (var hit in hits)
         {
-            var npcs = hit.transform.root.gameObject.GetComponentsInChildren<NPC>();
-            if (npcs != null)
+            var npc = hit.transform.root.gameObject.GetComponentInChildren<NPC>();
+            if (npc != null)
             {
-                for (int lcv = 0; lcv < npcs.Length; lcv++)
-                {
-                    var npc = npcs[lcv];
-                    if (closestnpc == null || (Vector3.Distance(position, npc.transform.position) <
+                if (closestnpc == null || (Vector3.Distance(position, npc.transform.position) <
                         Vector3.Distance(position, closestnpc.transform.position)))
-                    {
-                        closestnpc = npc;
-                    }
+                {
+                    closestnpc = npc;
                 }
             }
         }
 
         return closestnpc;
+    }
+
+    public static List<NPC> GetAllNPCS(Vector3 position, float range)
+    {
+        Collider[] hits = Physics.OverlapBox(position, Vector3.one * range, Quaternion.identity);
+        List<NPC> npcs = new List<NPC>();
+
+        foreach (var hit in hits)
+        {
+            var npc = hit.transform.root.gameObject.GetComponentInChildren<NPC>();
+            if (npc != null)
+            {
+                npcs.Add(npc);
+            }
+        }
+
+        return npcs;
     }
 
     public static Chair GetClosestChair(Vector3 position, Vector3 scale)

@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace VentureValheim.VentureQuest;
+namespace VentureValheim.NPCS;
 
 public class NPCRagdoll : Ragdoll, Interactable, Hoverable
 {

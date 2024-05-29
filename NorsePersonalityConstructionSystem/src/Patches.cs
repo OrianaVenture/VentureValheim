@@ -1,9 +1,7 @@
-using System;
-using BepInEx;
 using HarmonyLib;
 using UnityEngine;
 
-namespace VentureValheim.VentureQuest;
+namespace VentureValheim.NPCS;
 
 public class Patches
 {
@@ -23,14 +21,14 @@ public class Patches
                 return;
             }
 
-            VentureQuestPlugin.VentureQuestLogger.LogInfo("Adding Terminal Commands for npc management.");
+            NPCSPlugin.NPCSLogger.LogInfo("Adding Terminal Commands for npc management.");
 
-            new Terminal.ConsoleCommand("vq_reloadconfig", "", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_reloadconfig", "", delegate (Terminal.ConsoleEventArgs args)
             {
                 NPCConfiguration.ReloadFile();
-            }, isCheat: false, isNetwork: false, onlyServer: false);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_spawnrandomNPC", "[name] [model]", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_spawnrandom", "[name] [model]", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
@@ -48,9 +46,9 @@ public class Patches
                 {
                     NPCFactory.SpawnNPC(position, playerRotation);
                 }
-            }, isCheat: false, isNetwork: false, onlyServer: false);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_spawnsavedNPC", "[id]", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_spawnsaved", "[id]", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
@@ -64,9 +62,9 @@ public class Patches
                 {
                     args.Context.AddString("Wrong Syntax!");
                 }
-            }, isCheat: false, isNetwork: false, onlyServer: false);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_setnpc", "[id]", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_set", "[id]", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = Utility.GetClosestNPC(playerPosition);
@@ -84,9 +82,9 @@ public class Patches
                 {
                     args.Context.AddString("Wrong Syntax!");
                 }
-            }, isCheat: false, isNetwork: false, onlyServer: false);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_setnpc_truedeath", "[boolean]", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_set_truedeath", "[boolean]", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = Utility.GetClosestNPC(playerPosition);
@@ -104,9 +102,9 @@ public class Patches
                 {
                     npc.SetTrueDeath(true);
                 }
-            }, isCheat: false, isNetwork: false, onlyServer: false);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_setnpc_move", "", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_set_move", "", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = Utility.GetClosestNPC(playerPosition);
@@ -118,9 +116,9 @@ public class Patches
 
                 npc.Attach(false);
 
-            }, isCheat: false, isNetwork: false, onlyServer: false);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_setnpc_still", "", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_set_still", "", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = Utility.GetClosestNPC(playerPosition);
@@ -132,9 +130,9 @@ public class Patches
 
                 npc.Attach(true);
 
-            }, isCheat: false, isNetwork: false, onlyServer: false);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_setnpc_sit", "", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_set_sit", "", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = Utility.GetClosestNPC(playerPosition);
@@ -148,9 +146,31 @@ public class Patches
 
                 npc.Attach(true, chair);
 
-            }, isCheat: false, isNetwork: false, onlyServer: false);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_getnpc_skincolor", "", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_set_calm", "[range]", delegate (Terminal.ConsoleEventArgs args)
+            {
+                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
+
+                if (args.Length >= 2)
+                {
+                    var npcs = Utility.GetAllNPCS(playerPosition, float.Parse(args[1]));
+                    foreach (var npc in npcs)
+                    {
+                        var ai = npc.GetComponent<BaseAI>();
+                        if (ai != null)
+                        {
+                            ai.SetAggravated(false, BaseAI.AggravatedReason.Damage);
+                        }
+                    }
+                }
+                else
+                {
+                    var npcs = Utility.GetAllNPCS(playerPosition, 5f);
+                }
+            }, isCheat: true, isNetwork: false, onlyServer: false);
+
+            new Terminal.ConsoleCommand("npcs_get_skincolor", "", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = Utility.GetClosestNPC(playerPosition);
@@ -160,11 +180,11 @@ public class Patches
                     return;
                 }
 
-                args.Context.AddString(npc.GetSkinColor());
+                args.Context.AddString($"{npc.m_name}: {npc.GetSkinColor()}");
 
-            }, isCheat: false, isNetwork: false, onlyServer: false);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("vq_getnpc_haircolor", "", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_get_haircolor", "", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = Utility.GetClosestNPC(playerPosition);
@@ -174,9 +194,23 @@ public class Patches
                     return;
                 }
 
-                args.Context.AddString(npc.GetHairColor());
+                args.Context.AddString($"{npc.m_name}: {npc.GetHairColor()}");
 
-            }, isCheat: false, isNetwork: false, onlyServer: false);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
+
+            new Terminal.ConsoleCommand("npcs_test", "", delegate (Terminal.ConsoleEventArgs args)
+            {
+                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                var npc = Utility.GetClosestNPC(playerPosition);
+                if (npc == null)
+                {
+                    args.Context.AddString("No npc found.");
+                    return;
+                }
+
+                args.Context.AddString($"{npc.m_name}: tamed {npc.IsTamed()}, enemy {BaseAI.IsEnemy(npc, Player.m_localPlayer)}");
+
+            }, isCheat: true, isNetwork: false, onlyServer: false);
         }
     }
 
@@ -211,7 +245,7 @@ public class Patches
     {
         private static bool Prefix(Chair __instance, bool hold, ref bool __result)
         {
-            if (!hold && ZInput.GetKey(KeyCode.RightAlt))
+            if (!hold && ZInput.GetKey(KeyCode.RightControl))
             {
                 // Add npc to chair
                 var npc = NPCFactory.SpawnNPC(__instance.m_attachPoint.position, __instance.m_attachPoint.rotation, "Sitter");
@@ -219,7 +253,6 @@ public class Patches
                 //npc.transform.position = __instance.m_attachPoint.position;
                 npc.transform.rotation = __instance.m_attachPoint.rotation;
                 var npcComponent = npc.GetComponent<NPC>();
-                npcComponent.SetRandom();
 
                 if (npcComponent != null)
                 {

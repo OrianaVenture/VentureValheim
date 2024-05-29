@@ -5,11 +5,11 @@ using System.IO;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace VentureValheim.VentureQuest;
+namespace VentureValheim.NPCS;
 
 public class NPCConfiguration
 {
-    private static readonly string FileName = "VQ.NPCS.yaml";
+    private static readonly string FileName = "VV.NPCS.yaml";
     protected static Dictionary<string, NPCConfig> Configurations;
     
     [Serializable]
@@ -21,7 +21,6 @@ public class NPCConfiguration
     [Serializable]
     public class NPCConfig
     {
-        // TODO check data types
         public string Id { get; set; }
         public string Name { get; set; }
         public NPC.NPCType Type { get; set; }
@@ -37,10 +36,12 @@ public class NPCConfiguration
         public string InteractText { get; set; }
         // Use Item
         public string GiveItem { get; set; }
+        public int? GiveItemQuality { get; set; }
         public int? GiveItemAmount { get; set; }
         // Reward
         public string RewardText { get; set; }
         public string RewardItem { get; set; }
+        public int? RewardItemQuality { get; set; }
         public int? RewardItemAmount { get; set; }
         public string RewardKey { get; set; }
         public int? RewardLimit { get; set; }
@@ -73,10 +74,12 @@ public class NPCConfiguration
             ReloadFile();
         }
 
+        id = id.ToLower();
+
         if (Configurations.ContainsKey(id))
         {
             var cleaned = Configurations[id];
-            cleaned.Name ??= "";
+            cleaned.Name ??= "Ragnar";
             cleaned.DefaultText ??= "";
             cleaned.RequiredKeys ??= "";
             cleaned.NotRequiredKeys ??= "";
@@ -84,12 +87,14 @@ public class NPCConfiguration
             cleaned.DefeatKey ??= "";
             cleaned.InteractText ??= "";
             cleaned.GiveItem ??= "";
+            cleaned.GiveItemQuality ??= -1;
             cleaned.GiveItemAmount ??= 1;
             cleaned.RewardText ??= "";
             cleaned.RewardItem ??= "";
+            cleaned.RewardItemQuality ??= -1;
             cleaned.RewardItemAmount ??= 1;
             cleaned.RewardKey ??= "";
-            cleaned.RewardLimit ??= -1; // Unlimted
+            cleaned.RewardLimit ??= -1; // Unlimited
             cleaned.Model ??= "Player";
             cleaned.Hair ??= "";
             cleaned.Beard ??= "";
@@ -117,7 +122,7 @@ public class NPCConfiguration
         {
             var config = list.npcs[lcv];
 
-            Configurations.Add(config.Id, config);
+            Configurations.Add(config.Id.ToLower(), config);
         }
     }
 
@@ -135,8 +140,8 @@ public class NPCConfiguration
         }
         catch (Exception e)
         {
-            VentureQuestPlugin.VentureQuestLogger.LogError($"Could not read file {FileName}");
-            VentureQuestPlugin.VentureQuestLogger.LogWarning(e);
+            NPCSPlugin.NPCSLogger.LogError($"Could not read file {FileName}");
+            NPCSPlugin.NPCSLogger.LogWarning(e);
         }
 
         return null;
