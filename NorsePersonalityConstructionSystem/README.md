@@ -18,7 +18,9 @@ This mod is not finished! There are many features that still need to get added. 
 * NPCs come back to life once killed by default.
 * NPCs can be set to permanently die and players can choose when to bury the body.
 
-## World Advancement & Progression
+## World Advancement & Progression Mod
+
+This mod currently uses the Global Key system for all keys. This means that all players will have shared progress unless you use a mod that alters how this works.
 
 This mod will pair nicely with WAP's private key system if you want players to have individual progress for setting questing keys. Otherwise the key system will use global configurations and all progress on the server will advance together.
 
@@ -188,12 +190,15 @@ npcs:
     helmet: HelmetHat1
     chest: ArmorTunic1
     legs: ArmorLeatherLegs
-    shoulder: CapeDeerHide
+    shoulder: CapeLinen
+    shoulderVariant: 2
     utility: BeltStrength
     rightHand: KnifeFlint
     leftHand: Torch
+    leftHandVariant: 1
     RightBack:
     LeftBack:
+    leftBackVariant: 1
 
   -
     id: Clown
@@ -222,6 +227,7 @@ You can spawn a random npc on a chair with RightAlt + E, and on a bed with Right
 | npcs_reloadconfig  |            | Reloads any changes to your yaml file |
 | npcs_spawnrandom   | \[name\] \[Model\] | Spawns a random npc (Player or Skeleton only right now) |
 | npcs_spawnsaved    | \[id\]     | Spawns an npc from the yaml config |
+| npcs_remove        |            | Deletes the closest NPC, use with caution! |
 | npcs_set           | \[id\]     | Updates the closest npc from the yaml config |
 | npcs_set_move      |            | Updates the closest npc to walk around |
 | npcs_set_still     |            | Updates the closest npc to stand still |
@@ -233,6 +239,7 @@ You can spawn a random npc on a chair with RightAlt + E, and on a bed with Right
 
 ## Possible Future Improvements
 
+* Fix NPC ai to be more intelligent, currently they do not target enemies correctly.
 * NPC option to drop items on death.
 * NPC options to perform more kinds of things than just sitting/standing/walking.
 * Randomly generated NPC names.

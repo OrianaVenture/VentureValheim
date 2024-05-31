@@ -215,11 +215,12 @@ public class NPCFactory
             human.m_group = "VV_NPC";
         }
 
-        var tamable = npc.GetComponent<Tameable>();
+        // TODO
+        /*var tamable = npc.GetComponent<Tameable>();
         if (tamable == null)
         {
             npc.AddComponent<NPCTamable>();
-        }
+        }*/
 
         // Set up AI to ensure NPCs respect players
         var baseAI = npc.GetComponent<BaseAI>();

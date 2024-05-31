@@ -211,6 +211,19 @@ public class Patches
                 args.Context.AddString($"{npc.m_name}: tamed {npc.IsTamed()}, enemy {BaseAI.IsEnemy(npc, Player.m_localPlayer)}");
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
+
+            new Terminal.ConsoleCommand("npcs_remove", "", delegate (Terminal.ConsoleEventArgs args)
+            {
+                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                var npc = Utility.GetClosestNPC(playerPosition);
+                if (npc == null)
+                {
+                    args.Context.AddString("No npc found.");
+                    return;
+                }
+
+                ZNetScene.instance.Destroy(npc.gameObject);
+            }, isCheat: true, isNetwork: false, onlyServer: false);
         }
     }
 

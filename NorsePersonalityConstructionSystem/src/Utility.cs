@@ -7,6 +7,39 @@ namespace VentureValheim.NPCS;
 
 public class Utility
 {
+    /// <summary>
+    /// Attempts to get the ItemDrop by the given name's hashcode, if not found searches by string.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="item"></param>
+    /// <returns>True on successful find</returns>
+    public static bool GetItemDrop(string name, out ItemDrop item)
+    {
+        item = null;
+
+        if (!name.IsNullOrWhiteSpace())
+        {
+            // Try hash code
+            var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
+            if (prefab == null)
+            {
+                // Failed, try slow search
+                prefab = ObjectDB.instance.GetItemPrefab(name);
+            }
+
+            if (prefab != null)
+            {
+                item = prefab.GetComponent<ItemDrop>();
+                if (item != null)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public static HashSet<string> StringToSet(string str)
     {
         var set = new HashSet<string>();

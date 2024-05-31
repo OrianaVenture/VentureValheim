@@ -17,7 +17,7 @@ public class NPCAI : MonsterAI
         m_jumpInterval = 0f;
 
         m_randomCircleInterval = 3f;
-        m_randomMoveInterval = 10f;
+        m_randomMoveInterval = 15f;
         m_randomMoveRange = 5f;
 
         // Fly
@@ -42,13 +42,13 @@ public class NPCAI : MonsterAI
         m_fleeInterval = 10f;
 
         // Monster AI
-        m_alertRange = 10f;
+        m_alertRange = 15f;
         m_fleeIfHurtWhenTargetCantBeReached = true;
         m_fleeUnreachableSinceAttacking = 30f;
         m_fleeUnreachableSinceHurt = 20f;
         m_fleeIfNotAlerted = false;
-        m_fleeIfLowHealth = 10f;
-        m_fleeTimeSinceHurt = 20f;
+        m_fleeIfLowHealth = 0f;
+        m_fleeTimeSinceHurt = 10f;
         m_fleeInLava = true;
         m_circulateWhileCharging = true;
         m_enableHuntPlayer = false;
@@ -56,8 +56,11 @@ public class NPCAI : MonsterAI
         m_privateAreaTriggerTreshold = 50;
         m_interceptTimeMax = 2f;
         m_interceptTimeMin = 0f;
-        m_maxChaseDistance = 10f;
+        m_maxChaseDistance = 15f;
         m_minAttackInterval = 0f;
+        m_circleTargetInterval = 2f;
+        m_circleTargetDuration = 2f;
+        m_circleTargetDistance = 2f;
 
         base.Awake();
     }

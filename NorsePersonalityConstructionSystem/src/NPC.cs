@@ -19,6 +19,8 @@ public class NPC : Humanoid, Interactable, Hoverable
         Trader = 5
     }
 
+    private const string DUMMY = "attach_dummy";
+
     public bool HasAttach = false; // TODO fix zdo syncing for this?
     public Transform AttachPoint;
     public string AttachAnimation;
@@ -115,6 +117,16 @@ public class NPC : Humanoid, Interactable, Hoverable
         StartCoroutine(startCoroutine);
     }
 
+    public override void OnDestroy()
+    {
+        if (AttachPoint != null && AttachPoint.name.Contains(DUMMY))
+        {
+            Destroy(AttachPoint.gameObject);
+        }
+
+        base.OnDestroy();
+    }
+
     public IEnumerator SetUp()
     {
         yield return null;
@@ -140,7 +152,7 @@ public class NPC : Humanoid, Interactable, Hoverable
 
         m_defeatSetGlobalKey = NPCDefeatKey;
 
-        var tamed = m_nview.GetZDO().GetBool(ZDOVars.s_tamed);
+        //var tamed = m_nview.GetZDO().GetBool(ZDOVars.s_tamed);
         //NPCSPlugin.NPCSLogger.LogDebug($"{m_name}: {m_faction}, {m_tamed}, {m_group}. ZDO: {tamed}");
     }
 
@@ -382,9 +394,9 @@ public class NPC : Humanoid, Interactable, Hoverable
     public void AttachStart()
     {
         HasAttach = true;
-        // TODO check this is ok
-        GameObject dummy = GameObject.Instantiate(new GameObject(), transform.position, transform.rotation);
-        dummy.name = "attach_dummy";
+        GameObject dummy = new GameObject();
+        dummy.transform.SetPositionAndRotation(transform.position, transform.rotation);
+        dummy.name = DUMMY;
         AttachPoint = dummy.transform;
         if (m_nview.IsOwner())
         {
@@ -463,6 +475,11 @@ public class NPC : Humanoid, Interactable, Hoverable
             }
         }
 
+        if (AttachPoint.name.Contains(DUMMY))
+        {
+            Destroy(AttachPoint.gameObject);
+        }
+
         HasAttach = false;
         AttachAnimation = "";
         AttachPoint = null;
@@ -495,12 +512,11 @@ public class NPC : Humanoid, Interactable, Hoverable
     private string SetupText(string text)
     {
         string giveItem = NPCGiveItem;
-        var requirement = ObjectDB.instance.GetItemPrefab(NPCGiveItem);
-        if (requirement != null)
+        if (Utility.GetItemDrop(giveItem, out var requirement))
         {
-            var itemdrop = requirement.GetComponent<ItemDrop>();
-            giveItem = itemdrop.m_itemData.m_shared.m_name;
+            giveItem = requirement.m_itemData.m_shared.m_name;
         }
+
         string giveItemText = $"{NPCGiveItemAmount} {giveItem}";
         if (NPCGiveItemQuality > 1)
         {
@@ -508,11 +524,9 @@ public class NPC : Humanoid, Interactable, Hoverable
         }
 
         string rewardItem = NPCRewardItem;
-        var reward = ObjectDB.instance.GetItemPrefab(NPCRewardItem);
-        if (reward != null)
+        if (Utility.GetItemDrop(rewardItem, out var reward))
         {
-            var itemdrop = reward.GetComponent<ItemDrop>();
-            rewardItem = itemdrop.m_itemData.m_shared.m_name;
+            rewardItem = reward.m_itemData.m_shared.m_name;
         }
 
         string rewardItemText = $"{NPCRewardItemAmount} {rewardItem}";
@@ -725,9 +739,10 @@ public class NPC : Humanoid, Interactable, Hoverable
             SetHelmet(config.Helmet);
             SetChest(config.Chest);
             SetLegs(config.Legs);
-            SetLeftHand(config.LeftHand);
+            SetShoulder(config.Shoulder, config.ShoulderVariant.Value);
+            SetLeftHand(config.LeftHand, config.LeftHandVariant.Value);
             SetRightHand(config.RightHand);
-            SetBackLeft(config.LeftBack);
+            SetBackLeft(config.LeftBack, config.LeftBackVariant.Value);
             SetBackRight(config.RightBack);
         }
         catch (Exception e)
@@ -904,46 +919,98 @@ public class NPC : Humanoid, Interactable, Hoverable
     protected void SetHelmet(string name)
     {
         m_visEquipment.SetHelmetItem(name);
+        if (Utility.GetItemDrop(name, out var item) && !m_inventory.ContainsItem(item.m_itemData))
+        {
+            m_helmetItem = item.m_itemData;
+            m_inventory.AddItem(item.m_itemData);
+        }
     }
 
     protected void SetChest(string name)
     {
         m_visEquipment.SetChestItem(name);
+        if (Utility.GetItemDrop(name, out var item) && !m_inventory.ContainsItem(item.m_itemData))
+        {
+            m_chestItem = item.m_itemData;
+            m_inventory.AddItem(item.m_itemData);
+        }
     }
 
     protected void SetLegs(string name)
     {
         m_visEquipment.SetLegItem(name);
+        if (Utility.GetItemDrop(name, out var item) && !m_inventory.ContainsItem(item.m_itemData))
+        {
+            m_legItem = item.m_itemData;
+            m_inventory.AddItem(item.m_itemData);
+        }
     }
 
     protected void SetShoulder(string name, int variant = 0)
     {
         m_visEquipment.SetShoulderItem(name, variant);
+        if (Utility.GetItemDrop(name, out var item) && !m_inventory.ContainsItem(item.m_itemData))
+        {
+            var itemdata = item.m_itemData;
+            itemdata.m_variant = variant;
+            m_shoulderItem = itemdata;
+            m_inventory.AddItem(itemdata);
+        }
     }
 
     protected void SetUtility(string name)
     {
         m_visEquipment.SetUtilityItem(name);
+        if (Utility.GetItemDrop(name, out var item) && !m_inventory.ContainsItem(item.m_itemData))
+        {
+            m_utilityItem = item.m_itemData;
+            m_inventory.AddItem(item.m_itemData);
+        }
     }
 
     protected void SetRightHand(string name)
     {
         m_visEquipment.SetRightItem(name);
+        if (Utility.GetItemDrop(name, out var item) && !m_inventory.ContainsItem(item.m_itemData))
+        {
+            m_rightItem = item.m_itemData;
+            m_inventory.AddItem(item.m_itemData);
+        }
     }
 
     protected void SetLeftHand(string name, int variant = 0)
     {
         m_visEquipment.SetLeftItem(name, variant);
+        if (Utility.GetItemDrop(name, out var item) && !m_inventory.ContainsItem(item.m_itemData))
+        {
+            var itemdata = item.m_itemData;
+            itemdata.m_variant = variant;
+            m_leftItem = itemdata;
+            m_inventory.AddItem(itemdata);
+        }
     }
 
     protected void SetBackRight(string name)
     {
+        // TODO test
         m_visEquipment.SetRightBackItem(name);
+        if (Utility.GetItemDrop(name, out var item) && !m_inventory.ContainsItem(item.m_itemData))
+        {
+            m_rightItem = item.m_itemData;
+            m_inventory.AddItem(item.m_itemData);
+        }
     }
 
     protected void SetBackLeft(string name, int variant = 0)
     {
+        // TODO test
         m_visEquipment.SetLeftBackItem(name, variant);
+        if (Utility.GetItemDrop(name, out var item) && !m_inventory.ContainsItem(item.m_itemData))
+        {
+            var itemdata = item.m_itemData;
+            itemdata.m_variant = variant;
+            m_inventory.AddItem(itemdata);
+        }
     }
 
     protected Color GetRandomSkinColor()

@@ -60,11 +60,14 @@ public class NPCConfiguration
         public string Chest { get; set; }
         public string Legs { get; set; }
         public string Shoulder { get; set; }
+        public int? ShoulderVariant { get; set; }
         public string Utility { get; set; }
         public string RightHand { get; set; }
         public string LeftHand { get; set; }
+        public int? LeftHandVariant { get; set; }
         public string RightBack { get; set; }
         public string LeftBack { get; set; }
+        public int? LeftBackVariant { get; set; }
     }
 
     public static NPCConfig GetConfig(string id)
@@ -101,11 +104,14 @@ public class NPCConfiguration
             cleaned.Helmet ??= "";
             cleaned.Chest ??= "";
             cleaned.Shoulder ??= "";
+            cleaned.ShoulderVariant ??= 0;
             cleaned.Utility ??= "";
             cleaned.RightHand ??= "";
             cleaned.LeftHand ??= "";
+            cleaned.LeftHandVariant ??= 0;
             cleaned.RightBack ??= "";
             cleaned.LeftBack ??= "";
+            cleaned.LeftBackVariant ??= 0;
 
             return cleaned;
         }
