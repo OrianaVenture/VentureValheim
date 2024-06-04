@@ -29,6 +29,7 @@ public class NPCConfiguration
         public string RequiredKeys { get; set; }
         public string NotRequiredKeys { get; set; }
         public string InteractKey { get; set; }
+        public NPC.NPCKeyType InteractKeyType { get; set; }
         public string DefeatKey { get; set; }
         public bool TrueDeath { get; set; }
         public bool StandStill { get; set; }
@@ -44,6 +45,7 @@ public class NPCConfiguration
         public int? RewardItemQuality { get; set; }
         public int? RewardItemAmount { get; set; }
         public string RewardKey { get; set; }
+        public NPC.NPCKeyType RewardKeyType { get; set; }
         public int? RewardLimit { get; set; }
         // Style
         public string Model { get; set; }
@@ -65,9 +67,9 @@ public class NPCConfiguration
         public string RightHand { get; set; }
         public string LeftHand { get; set; }
         public int? LeftHandVariant { get; set; }
-        public string RightBack { get; set; }
-        public string LeftBack { get; set; }
-        public int? LeftBackVariant { get; set; }
+        //public string RightBack { get; set; }
+        //public string LeftBack { get; set; }
+        //public int? LeftBackVariant { get; set; }
     }
 
     public static NPCConfig GetConfig(string id)
@@ -94,7 +96,7 @@ public class NPCConfiguration
             cleaned.GiveItemAmount ??= 1;
             cleaned.RewardText ??= "";
             cleaned.RewardItem ??= "";
-            cleaned.RewardItemQuality ??= -1;
+            cleaned.RewardItemQuality ??= 1;
             cleaned.RewardItemAmount ??= 1;
             cleaned.RewardKey ??= "";
             cleaned.RewardLimit ??= -1; // Unlimited
@@ -103,15 +105,16 @@ public class NPCConfiguration
             cleaned.Beard ??= "";
             cleaned.Helmet ??= "";
             cleaned.Chest ??= "";
+            cleaned.Legs ??= "";
             cleaned.Shoulder ??= "";
             cleaned.ShoulderVariant ??= 0;
             cleaned.Utility ??= "";
             cleaned.RightHand ??= "";
             cleaned.LeftHand ??= "";
             cleaned.LeftHandVariant ??= 0;
-            cleaned.RightBack ??= "";
-            cleaned.LeftBack ??= "";
-            cleaned.LeftBackVariant ??= 0;
+            //cleaned.RightBack ??= "";
+            //cleaned.LeftBack ??= "";
+            //cleaned.LeftBackVariant ??= 0;
 
             return cleaned;
         }
@@ -123,6 +126,10 @@ public class NPCConfiguration
     {
         Configurations = new Dictionary<string, NPCConfig>();
         var list = ReadFile();
+        if (list == null)
+        {
+            return;
+        }
 
         for (int lcv = 0; lcv < list.npcs.Count; lcv++)
         {
@@ -147,7 +154,7 @@ public class NPCConfiguration
         catch (Exception e)
         {
             NPCSPlugin.NPCSLogger.LogError($"Could not read file {FileName}");
-            NPCSPlugin.NPCSLogger.LogWarning(e);
+            NPCSPlugin.NPCSLogger.LogWarning(e.Message);
         }
 
         return null;

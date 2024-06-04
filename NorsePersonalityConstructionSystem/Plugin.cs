@@ -14,7 +14,7 @@ namespace VentureValheim.NPCS;
 public class NPCSPlugin : BaseUnityPlugin
 {
     private const string ModName = "NorsePersonalityConstructionSystem";
-    private const string ModVersion = "0.0.1";
+    private const string ModVersion = "0.0.2";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
@@ -36,9 +36,6 @@ public class NPCSPlugin : BaseUnityPlugin
         Root = new GameObject("NPCSRoot");
         Root.SetActive(false);
         DontDestroyOnLoad(Root);
-
-        /*Assets = AssetUtils.LoadAssetBundleFromResources("vv_quest", Assembly.GetExecutingAssembly());
-        var go = Assets.LoadAsset<GameObject>(NPC.NPC_NAME);*/
 
         PrefabManager.OnPrefabsRegistered += NPCFactory.AddNPCS;
 

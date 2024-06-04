@@ -210,9 +210,9 @@ public class NPCFactory
             }
 
             // Prevent hobo fight club
-            human.m_faction = Character.Faction.Players;
+            human.m_faction = Character.Faction.Dverger;
             human.m_tamed = false; // TODO
-            human.m_group = "VV_NPC";
+            human.m_group = NPC.NPCGROUP; // TODO make it so NPCs can fight each other
         }
 
         // TODO

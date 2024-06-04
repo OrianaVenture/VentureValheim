@@ -40,6 +40,18 @@ public class Utility
         return false;
     }
 
+    public static bool GetItemPrefab(int hash, out GameObject item)
+    {
+        item = ObjectDB.instance.GetItemPrefab(hash);
+
+        if (item != null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public static HashSet<string> StringToSet(string str)
     {
         var set = new HashSet<string>();
@@ -117,5 +129,30 @@ public class Utility
         }
 
         return closestChair;
+    }
+
+    public static void SetKey(string key, bool global)
+    {
+        if (!string.IsNullOrEmpty(key))
+        {
+            if (global)
+            {
+                ZoneSystem.instance.SetGlobalKey(key);
+            }
+            else
+            {
+                Player.m_localPlayer.AddUniqueKey(key);
+            }
+        }
+    }
+
+    public static bool HasKey(string key)
+    {
+        if (key.IsNullOrWhiteSpace())
+        {
+            return true;
+        }
+
+        return ZoneSystem.instance.GetGlobalKey(key) || Player.m_localPlayer.HaveUniqueKey(key);
     }
 }

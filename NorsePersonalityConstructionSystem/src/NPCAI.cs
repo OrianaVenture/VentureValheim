@@ -58,7 +58,7 @@ public class NPCAI : MonsterAI
         m_interceptTimeMin = 0f;
         m_maxChaseDistance = 15f;
         m_minAttackInterval = 0f;
-        m_circleTargetInterval = 2f;
+        m_circleTargetInterval = 5f;
         m_circleTargetDuration = 2f;
         m_circleTargetDistance = 2f;
 
