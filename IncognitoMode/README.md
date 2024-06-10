@@ -12,8 +12,6 @@ This is a roleplaying mod aimed at making in-game experiences more realistic. Co
 
 Currently, equipped helmet, shoulder, and utility items are supported. Will work with custom items added by other mods given they are of one of these categories.
 
-Want to also hide the gamertag of players? You can use [Multiplayer Tweaks](https://thunderstore.io/c/valheim/p/VentureValheim/Venture_Multiplayer_Tweaks/) which has a setting for this purpose.
-
 ### Vanilla Helmet Prefabs
 
 * HelmetLeather
@@ -37,6 +35,10 @@ All players will have to have this mod installed for hidden names to work 100% o
 This mod needs to be on all clients to work properly. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players.
 
 ## Changelog
+
+### 0.4.0
+
+* Added config option to also hide the platform tag when a name is hidden, defaults to off.
 
 ### 0.3.2
 
