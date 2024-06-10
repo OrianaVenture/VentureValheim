@@ -12,7 +12,7 @@ This is a roleplaying mod aimed at making in-game experiences more realistic. Co
 
 Currently, equipped helmet, shoulder, and utility items are supported. Will work with custom items added by other mods given they are of one of these categories.
 
-Want to also hide the gamertag of players? You can use [Multiplayer Tweaks](https://thunderstore.io/c/valheim/p/VentureValheim/Venture_Multiplayer_Tweaks/) which has a setting for this purpose.
+Want to only hide the gamertag of players, but not the character name? You can use [Multiplayer Tweaks](https://thunderstore.io/c/valheim/p/VentureValheim/Venture_Multiplayer_Tweaks/) which has a setting for this purpose.
 
 ### Vanilla Helmet Prefabs
 

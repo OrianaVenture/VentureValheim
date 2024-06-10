@@ -106,13 +106,12 @@ namespace VentureValheim.IncognitoMode
         }
 
         /// <summary>
-        /// Change the chat display name, patch higher so the change happens before other mods.
+        /// Change the display name (e.g. chat, pings, shouts).
         /// </summary>
-        [HarmonyPriority(Priority.HigherThanNormal)]
-        [HarmonyPatch(typeof(Chat), nameof(Chat.OnNewChatMessage))]
-        public static class Patch_Chat_OnNewChatMessage
+        [HarmonyPatch(typeof(UserInfo), nameof(UserInfo.GetDisplayName))]
+        public static class Patch_UserInfo_GetDisplayName
         {
-            private static void Prefix(ref UserInfo user)
+            private static void Prefix(UserInfo __instance, ref string __result, ref bool __runOriginal)
             {
                 if (IncognitoModePlugin.GetHideNameInChat())
                 {
@@ -122,7 +121,7 @@ namespace VentureValheim.IncognitoMode
                     for (int lcv = 0; lcv < players.Count; lcv++)
                     {
                         var player = players[lcv].GetPlayerName();
-                        if (player.Equals(user.Name))
+                        if (player.Equals(__instance.Name))
                         {
                             speaker = players[lcv];
                             break;
@@ -142,7 +141,8 @@ namespace VentureValheim.IncognitoMode
 
                     if (hidden)
                     {
-                        user.Name = GetDisplayName();
+                        __result = GetDisplayName();
+                        __runOriginal = false;
                     }
                 }
             }
