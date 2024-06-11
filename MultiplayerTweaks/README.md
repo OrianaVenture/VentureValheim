@@ -27,7 +27,7 @@ Admins have the ability to bypass some of these settings when the AdminBypass co
 
 ### Player Default Spawn Point
 
-Set the PlayerDefaultSpawnPoint by entering an x,y,z pair (for example: 20.5, 10, -80.7), or leave this config blank to use the default start location. To get your player's current position in game you can use the vanilla "pos" command, which will return your position in an x,y,z format. This is the location the game will use when spawning new players, or respawning dead players with no bed point.
+Set the PlayerDefaultSpawnPoint by entering an x,y,z pair (for example: 20.5, 10, -80.7), or leave this config blank to use the default start location. To get your player's current position in game you can use the vanilla "pos" command, which will return your position (double check what format this vanilla command returns, it has changed a few times). This is the location the game will use when spawning new players, or respawning dead players with no bed point.
 
 ### Hugin Tutorials
 
@@ -43,9 +43,13 @@ This mod gives you the ability to customize the arrival message, or turn it off 
 
 When a boss is summoned, alerted, and/or killed there is a server-wide message banner sent to alert players. This can get very annoying in multiplayer games. This mod changes these messages to only send to players within 100 meters of the boss (or other applicable creature) when the message is normally triggered.
 
-### Haldor/Hildir Map Pins
+### Location Map Pins
 
-This mod gives you the ability to block the trader map pins from showing on the map. This feature is flexible and can be disabled or enabled at any time. If disabled (EnableHaldorMapPin = false) the pin will not show for all players when the Haldor trader is discovered. Useful for keeping the location of Haldor a secret until you choose to reveal it! Similar config for Hildir and Start Temple pins included. Admins are able to bypass these settings.
+This mod gives you the ability to block the temple and trader map pins from showing on the map. This feature is flexible and can be disabled or enabled at any time. If you disable the temple map pin you must also specify a default spawn point since the game usually uses this map pin to find a spawn point for players.
+
+For example, when using ``EnableHaldorMapPin = false`` the pin will not show for all players when the Haldor trader is discovered. Useful for keeping the location of Haldor a secret until you choose to reveal it!
+
+Admins are able to bypass these settings.
 
 ### Player Map Pin Position
 
@@ -78,6 +82,8 @@ There are two configs for controlling the teleporting on death vanilla feature t
 * TeleportOnPVPDeath: Only PVP deaths. Useful for roleplaying situations.
 
 Be warned, if players die in a tight situation they may get stuck in a death loop and will get very angry at your for turning these settings on. There is a short immunity window to help mitigate death loops set to 15 seconds after respawn. This should give players some time to try to escape repeated deaths (or at least get farther away from the scene). If the player receives damage that drains their health to 0 during this grace period they will not die until the grace period ends. This grace period is always active regardless of mod settings.
+
+If players really need to escape their situation they can use the ``surrender`` command. It works like the die command, but allows bypassing the grave respawn feature.
 
 ### Day Offset
 

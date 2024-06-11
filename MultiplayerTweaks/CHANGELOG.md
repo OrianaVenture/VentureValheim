@@ -1,3 +1,9 @@
+## 0.11.2
+
+* Fixed display day for death pins when changing the display day.
+* Added failsafe for misconfigurations: if a default spawn point is not set you cannot hide the temple map pin.
+* Added command "surrender" to bypass the respawn point settings from this mod.
+
 ## 0.11.1
 
 * Courtesy update for Ashlands, new logo. No feature changes.
