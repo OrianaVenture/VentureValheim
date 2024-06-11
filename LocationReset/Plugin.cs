@@ -22,7 +22,7 @@ namespace VentureValheim.LocationReset
         }
 
         private const string ModName = "LocationReset";
-        private const string ModVersion = "0.9.0";
+        private const string ModVersion = "0.9.1";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -54,6 +54,12 @@ namespace VentureValheim.LocationReset
         private static ConfigEntry<int> CE_HildirBurialResetTime = null!;
         private static ConfigEntry<int> CE_HildirCaveResetTime = null!;
         private static ConfigEntry<int> CE_HildirTowerResetTime = null!;
+
+        private static ConfigEntry<int> CE_CharredFortress = null!;
+        private static ConfigEntry<int> CE_LeviathanLava = null!;
+        private static ConfigEntry<int> CE_MorgenHole = null!;
+        private static ConfigEntry<int> CE_PlaceofMystery = null!;
+
         private static ConfigEntry<int> CE_CopperTinCaveResetTime = null!;
         private static ConfigEntry<int> CE_SilverCaveResetTime = null!;
 
@@ -75,8 +81,18 @@ namespace VentureValheim.LocationReset
         private static readonly int Hash_HildirBurial = "Hildir_crypt".GetStableHashCode();
         private static readonly int Hash_HildirCave = "Hildir_cave".GetStableHashCode();
         private static readonly int Hash_HildirTower = "Hildir_plainsfortress".GetStableHashCode();
-        private static readonly int Hash_SilverCave = "VV_SilverCave".GetStableHashCode();
+
+        private static readonly int Hash_CharredFortress = "CharredFortress".GetStableHashCode();
+        private static readonly int Hash_LeviathanLava = "LeviathanLava".GetStableHashCode();
+        private static readonly int Hash_MorgenHole1 = "MorgenHole1".GetStableHashCode();
+        private static readonly int Hash_MorgenHole2 = "MorgenHole2".GetStableHashCode();
+        private static readonly int Hash_MorgenHole3 = "MorgenHole3".GetStableHashCode();
+        private static readonly int Hash_PlaceofMystery1 = "PlaceofMystery1".GetStableHashCode();
+        private static readonly int Hash_PlaceofMystery2 = "PlaceofMystery2".GetStableHashCode();
+        private static readonly int Hash_PlaceofMystery3 = "PlaceofMystery3".GetStableHashCode();
+
         private static readonly int Hash_CopperTinCave = "VV_CopperTinCave".GetStableHashCode();
+        private static readonly int Hash_SilverCave = "VV_SilverCave".GetStableHashCode();
 
         public static int GetResetTime(int hash)
         {
@@ -137,6 +153,22 @@ namespace VentureValheim.LocationReset
                 else if (hash == Hash_SilverCave)
                 {
                     return CE_SilverCaveResetTime.Value;
+                }
+                else if (hash == Hash_CharredFortress)
+                {
+                    return CE_CharredFortress.Value;
+                }
+                else if (hash == Hash_LeviathanLava)
+                {
+                    return CE_LeviathanLava.Value;
+                }
+                else if (hash == Hash_MorgenHole1 || hash == Hash_MorgenHole2 || hash == Hash_MorgenHole3)
+                {
+                    return CE_MorgenHole.Value;
+                }
+                else if (hash == Hash_PlaceofMystery1 || hash == Hash_PlaceofMystery2 || hash == Hash_PlaceofMystery3)
+                {
+                    return CE_PlaceofMystery.Value;
                 }
             }
 
@@ -208,6 +240,16 @@ namespace VentureValheim.LocationReset
                 true, 30, ref CE_HildirCaveResetTime);
             AddConfig("HildirTowerResetTime", advanced, "Number of in-game days for resetting hildir's plain towers (int).",
                 true, 30, ref CE_HildirTowerResetTime);
+
+            AddConfig("CharredFortressResetTime", advanced, "Number of in-game days for resetting the charred fortress (int).",
+                true, 30, ref CE_CharredFortress);
+            AddConfig("LeviathanLavaResetTime", advanced, "Number of in-game days for resetting flametal leviathans (int).",
+                true, 30, ref CE_LeviathanLava);
+            AddConfig("MorgenHoleResetTime", advanced, "Number of in-game days for resetting the different morgen holes (int).",
+                true, 30, ref CE_MorgenHole);
+            AddConfig("PlaceofMysteryResetTime", advanced, "Number of in-game days for resetting the different places of mystery (int).",
+                true, 30, ref CE_PlaceofMystery);
+
             AddConfig("CopperTinCaveResetTime", advanced, "Number of in-game days for resetting copper & tin mining caves (int).",
                 true, 30, ref CE_CopperTinCaveResetTime);
             AddConfig("SilverCaveResetTime", advanced, "Number of in-game days for resetting silver mining caves (int).",

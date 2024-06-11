@@ -1,3 +1,8 @@
+## 0.9.1
+
+* Blacklisted random flying birds from being reset - they tend to gather in large numbers and I think are plotting something.
+* Added additional configurations for setting reset times of Ashlands locations: CharredFortress, LeviathanLava, MorgenHole, PlaceofMystery
+
 ## 0.9.0
 
 * Update for Ashlands game version 0.218.15.

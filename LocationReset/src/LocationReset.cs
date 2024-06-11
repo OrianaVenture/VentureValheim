@@ -261,6 +261,11 @@ namespace VentureValheim.LocationReset
         /// <returns></returns>
         private static bool QualifyingObject(GameObject obj)
         {
+            if (obj.GetComponent<RandomFlyingBird>() != null)
+            {
+                return false;
+            }
+
             return obj.GetComponent<Destructible>() ||
                 obj.GetComponent<MineRock>() ||
                 obj.GetComponent<MineRock5>() ||
