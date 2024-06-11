@@ -160,6 +160,16 @@ namespace VentureValheim.Progression
             { "VoltureMeat", BOSS_KEY_MISTLAND }
         };
 
+        /// <summary>
+        /// Special exception list for items that can be used even if they can't be crafted yet because of missing keys
+        /// for their recipe's materials.
+        /// </summary>
+        public readonly Dictionary<string, string> ItemActionExceptionKeysList = new Dictionary<string, string>
+        {
+            // Swamp
+            { "ArrowPoison", BOSS_KEY_BLACKFOREST }, // found in Sunken Crypts, even though recipe requires Obsidian
+        };
+
         private static int _cachedPublicBossKeys = 0;
         private static int _cachedPrivateBossKeys = 0;
 
@@ -304,10 +314,14 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         private bool IsActionBlocked(ItemDrop.ItemData item, int quality, bool checkBossItems, bool checkMaterials, bool checkFood)
         {
-            if (item?.m_dropPrefab == null || !Instance.HasItemKey(Utils.GetPrefabName(item.m_dropPrefab), checkBossItems, checkMaterials, checkFood))
-            {
-                return true;
-            }
+            if (item?.m_dropPrefab is not { } prefab) return true;
+            var itemName = Utils.GetPrefabName(prefab);
+
+            var isAllowedExceptionItem = ItemActionExceptionKeysList.ContainsKey(itemName) && HasKey(ItemActionExceptionKeysList[itemName]);
+            if (isAllowedExceptionItem) return false;
+
+            var isAllowedItem = Instance.HasItemKey(itemName, checkBossItems, checkMaterials, checkFood);
+            if (!isAllowedItem) return true;
 
             var recipe = ObjectDB.instance.GetRecipe(item);
             return IsActionBlocked(recipe, quality, checkBossItems, checkMaterials, checkFood);
