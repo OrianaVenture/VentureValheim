@@ -1,3 +1,7 @@
+## 0.5.2
+
+* Fixed bug that would cause status effects received during gameplay to have the wrong values due to modifying the original rather than a copy.
+
 ## 0.5.1
 
 * Fixed mod compatibility issue with SpeedyPaths 1.0.8 by Nextek that caused the "status effects" for that mod to display incorrectly.

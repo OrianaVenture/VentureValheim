@@ -46,12 +46,14 @@ namespace VentureValheim.LogoutTweaks
 
         public static StatusEffect BuildStatusEffect(StatusEffectData data)
         {
-            var se = ObjectDB.instance.GetStatusEffect(data.Name);
+            var original = ObjectDB.instance.GetStatusEffect(data.Name);
 
-            if (se == null)
+            if (original == null)
             {
                 return null;
             }
+
+            var se = original.Clone();
 
             if (BasicStatusEffects.Contains(data.Name))
             {

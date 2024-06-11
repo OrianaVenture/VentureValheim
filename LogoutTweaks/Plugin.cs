@@ -9,7 +9,7 @@ namespace VentureValheim.LogoutTweaks
     public class LogoutTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "LogoutTweaks";
-        private const string ModVersion = "0.5.1";
+        private const string ModVersion = "0.5.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 
