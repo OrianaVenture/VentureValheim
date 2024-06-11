@@ -87,7 +87,8 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         protected float GetBossSkillCeiling(int bossesDefeated)
         {
-            return NormalizeSkillLevel(SKILL_MAXIMUM - (ProgressionConfiguration.Instance.GetBossKeysSkillPerKey() * (KeyManager.TOTAL_BOSSES - bossesDefeated)));
+            return NormalizeSkillLevel(SKILL_MAXIMUM - (ProgressionConfiguration.Instance.GetBossKeysSkillPerKey() *
+                (KeyManager.TOTAL_BOSSES - bossesDefeated)));
         }
 
         /// <summary>

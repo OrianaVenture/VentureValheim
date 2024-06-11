@@ -23,7 +23,7 @@ namespace VentureValheim.Progression
         private static HashSet<string> GetPossiblePlayerEvents(HashSet<string> playerKeys)
         {
             var events = new HashSet<string>();
-
+            
             foreach (RandomEvent randEvent in RandEventSystem.instance.m_events)
             {
                 if (IsValidEvent(randEvent, playerKeys))
@@ -44,6 +44,7 @@ namespace VentureValheim.Progression
                     return false;
                 }
             }
+
             foreach (string notRequiredGlobalKey in randEvent.m_notRequiredGlobalKeys)
             {
                 if (playerKeys.Contains(notRequiredGlobalKey))
@@ -92,6 +93,7 @@ namespace VentureValheim.Progression
                     return true;
                 }
 
+                RandEventSystem.s_randomEventNeedsRefresh = false;
                 RandEventSystem.s_playerEventDatas.Clear();
 
                 if (!ZNet.instance.IsDedicated() && Player.m_localPlayer != null)

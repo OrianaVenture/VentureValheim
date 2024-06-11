@@ -25,11 +25,14 @@ namespace VentureValheim.Progression
         // Cache for Hildir's items
         public Dictionary<string, string> HildirOriginalItemsList { get; protected set; }
 
-        public void UpdateConfigurations()
+        public void UpdateAllConfigurations()
         {
-            UpdateConfigs();
+            UpdateConfigurations();
+            UpdateSkillConfigurations();
+        }
 
-            // Only update skill configurations if enabled
+        public void UpdateSkillConfigurations()
+        {
             if (ProgressionConfiguration.Instance.GetEnableSkillManager())
             {
                 _cachedPublicBossKeys = CountPublicBossKeys();
@@ -69,8 +72,8 @@ namespace VentureValheim.Progression
         {
             PrivateKeysList = new HashSet<string>();
 
-            _cachedPublicBossKeys = -1;
-            _cachedPrivateBossKeys = -1;
+            _cachedPublicBossKeys = 0;
+            _cachedPrivateBossKeys = 0;
         }
 
         /// <summary>
@@ -111,7 +114,7 @@ namespace VentureValheim.Progression
             return count;
         }
 
-        private void UpdateConfigs()
+        private void UpdateConfigurations()
         {
             UpdateGlobalKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedGlobalKeys(), ProgressionConfiguration.Instance.GetAllowedGlobalKeys());
             UpdatePrivateKeyConfiguration(ProgressionConfiguration.Instance.GetBlockedPrivateKeys(), ProgressionConfiguration.Instance.GetAllowedPrivateKeys());

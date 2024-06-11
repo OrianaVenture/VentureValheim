@@ -213,6 +213,7 @@ namespace VentureValheim.Progression
             {
                 ProgressionPlugin.VentureProgressionLogger.LogDebug($"Adding Private Key {key}.");
                 SendPrivateKeyToServer(key);
+                Instance.UpdateSkillConfigurations();
             }
         }
 
@@ -276,6 +277,7 @@ namespace VentureValheim.Progression
             {
                 ProgressionPlugin.VentureProgressionLogger.LogDebug($"Removing Private Key {key}.");
                 SendRemovePrivateKeyFromServer(key);
+                Instance.UpdateSkillConfigurations();
             }
         }
 
@@ -335,6 +337,7 @@ namespace VentureValheim.Progression
 
             PrivateKeysList = new HashSet<string>();
             SendPrivateKeysToServer(PrivateKeysList);
+            Instance.UpdateSkillConfigurations();
         }
 
         /// <summary>

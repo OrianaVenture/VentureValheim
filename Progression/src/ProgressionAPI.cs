@@ -140,7 +140,10 @@ namespace VentureValheim.Progression
             }
 
             key = key.ToLower();
-            ZoneSystem.instance.m_globalKeys.Remove(key);
+            if (ZoneSystem.instance.m_globalKeys.Remove(key))
+            {
+                ZoneSystem.instance.SendGlobalKeys(ZRoutedRpc.Everybody);
+            }
         }
 
         /// <summary>
@@ -214,13 +217,7 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         public static long GetLocalPlayerID()
         {
-            var profile = Game.instance.GetPlayerProfile();
-            if (profile != null)
-            {
-                return profile.m_playerID;
-            }
-
-            return 0L;
+            return ZNet.instance.m_characterID.UserID;
         }
 
         /// <summary>

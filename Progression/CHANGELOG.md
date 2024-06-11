@@ -1,3 +1,8 @@
+## 0.2.13
+
+* Bug fixes to allow skill cache to update when keys change. Should fix issues with skill capping not working as expected.
+* Bug fix for raids feature only being "rallies the creatures", was not using the correct ID so no keys were being detected for players.
+
 ## 0.2.12
 
 * Update for game version  0.218.12+.

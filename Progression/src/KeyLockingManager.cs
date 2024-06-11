@@ -160,8 +160,8 @@ namespace VentureValheim.Progression
             { "VoltureMeat", BOSS_KEY_MISTLAND }
         };
 
-        private static int _cachedPublicBossKeys = -1;
-        private static int _cachedPrivateBossKeys = -1;
+        private static int _cachedPublicBossKeys = 0;
+        private static int _cachedPrivateBossKeys = 0;
 
         public int GetPublicBossKeysCount()
         {
@@ -341,7 +341,8 @@ namespace VentureValheim.Progression
                     {
                         if (recipe.m_resources[lcv1].GetAmount(lcv2) > 0)
                         {
-                            if (!Instance.HasItemKey(Utils.GetPrefabName(recipe.m_resources[lcv1].m_resItem.gameObject), checkBossItems, checkMaterials, checkFood))
+                            if (!Instance.HasItemKey(Utils.GetPrefabName(recipe.m_resources[lcv1].m_resItem.gameObject),
+                                checkBossItems, checkMaterials, checkFood))
                             {
                                 return true;
                             }

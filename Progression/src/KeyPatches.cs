@@ -19,11 +19,13 @@ namespace VentureValheim.Progression
                 return Instance.SkipAddKeyMethod(name.ToLower());
             }
 
-            private static void Postfix(string name)
+            private static void Postfix(string name, bool __runOriginal)
             {
+                bool update = __runOriginal;
                 name = name.ToLower();
                 if (Player.m_localPlayer != null && !Instance.BlockPrivateKey(name))
                 {
+                    update = true;
                     List<Player> nearbyPlayers = new();
                     Player.GetPlayersInRange(Player.m_localPlayer.transform.position, 100, nearbyPlayers);
 
@@ -46,6 +48,11 @@ namespace VentureValheim.Progression
                 {
                     ProgressionPlugin.VentureProgressionLogger.LogDebug($"Skipping adding private key: {name}.");
                 }
+
+                if (update)
+                {
+                    Instance.UpdateSkillConfigurations();
+                }
             }
         }
 
@@ -67,6 +74,18 @@ namespace VentureValheim.Progression
                 }
 
                 return runOriginal;
+            }
+        }
+
+        /// <summary>
+        /// When keys change update skill configurations.
+        /// </summary>
+        [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.RPC_GlobalKeys))]
+        public static class Patch_ZoneSystem_RPC_GlobalKeys
+        {
+            private static void Postfix()
+            {
+                Instance.UpdateSkillConfigurations();
             }
         }
 
@@ -231,6 +250,7 @@ namespace VentureValheim.Progression
 
                 // Sync data on connect
                 Instance.SendPrivateKeysToServer(Instance.PrivateKeysList);
+                Instance.UpdateSkillConfigurations();
             }
         }
 
