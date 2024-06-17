@@ -78,7 +78,7 @@ namespace VentureValheim.IncognitoMode
 
                 var zdo = __instance.m_nview.GetZDO();
                 if (zdo != null)
-			    {
+                {
                     Instance.Update();
 
                     bool hidden = false;
