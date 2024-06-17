@@ -36,6 +36,10 @@ This mod needs to be on all clients to work properly. Config Syncing is included
 
 ## Changelog
 
+### Unreleased
+
+* Added config option to also hide the player list from the escape menu, defaults to off.
+
 ### 0.4.0
 
 * Added config option to also hide the platform tag when a name is hidden, defaults to off.

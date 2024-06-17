@@ -150,5 +150,18 @@ namespace VentureValheim.IncognitoMode
                 }
             }
         }
+
+        /// <summary>
+        /// Hide Player List from the Escape menu, if disabled by config.
+        /// </summary>
+        [HarmonyPatch(typeof(Menu), nameof(Menu.Show))]
+        public static class Patch_Menu_Show
+        {
+            private static void Postfix()
+            {
+                var playerListVisibility = !IncognitoModePlugin.GetHidePlayerList();
+                Menu.instance?.menuCurrentPlayersListButton?.gameObject.SetActive(playerListVisibility);
+            }
+        }
     }
 }

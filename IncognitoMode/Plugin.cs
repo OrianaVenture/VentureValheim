@@ -29,11 +29,13 @@ namespace VentureValheim.IncognitoMode
         internal static ConfigEntry<string> CE_HiddenDisplayName = null!;
         internal static ConfigEntry<bool> CE_HideNameInChat = null!;
         internal static ConfigEntry<bool> CE_HidePlatformTag = null!;
+        internal static ConfigEntry<bool> CE_HidePlayerList = null!;
 
         public static string GetHiddenByItems() => CE_HiddenByItems.Value;
         public static string GetHiddenDisplayName() => CE_HiddenDisplayName.Value;
         public static bool GetHideNameInChat() => CE_HideNameInChat.Value;
         public static bool GetHidePlatformTag() => CE_HidePlatformTag.Value;
+        public static bool GetHidePlayerList() => CE_HidePlayerList.Value;
 
         private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
         private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
@@ -66,6 +68,8 @@ namespace VentureValheim.IncognitoMode
                 true, true, ref CE_HideNameInChat);
             AddConfig("HidePlatformTag", general, "When hidden also hides steam/xbox platform tags (boolean).",
                 true, false, ref CE_HidePlatformTag);
+            AddConfig("HidePlayerList", general, "Hides Player List from the Escape menu (boolean).",
+                true, false, ref CE_HidePlayerList);
 
             #endregion
 
