@@ -10,7 +10,7 @@ namespace VentureValheim.SeaOfNoodles
     public class SeaOfNoodlesPlugin : BaseUnityPlugin
     {
         private const string ModName = "SeaOfNoodles";
-        private const string ModVersion = "0.1.1";
+        private const string ModVersion = "0.2.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 
@@ -49,8 +49,8 @@ namespace VentureValheim.SeaOfNoodles
                         {
                             SeaOfNoodlesLogger.LogDebug($"Rolling a Noodle to perfection.");
                             entry.m_spawnInterval = 500f; // original 1000
-                            entry.m_spawnChance = 25f; // original 5
-                            entry.m_spawnDistance = 25f; // original 50
+                            entry.m_spawnChance = 10f; // original 5
+                            entry.m_spawnDistance = 40f; // original 50
                             entry.m_spawnAtDay = true;
                         }
                     }
