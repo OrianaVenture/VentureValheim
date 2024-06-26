@@ -16,7 +16,6 @@ public class Utility
     public static bool GetItemDrop(string name, out ItemDrop item)
     {
         item = null;
-
         if (!name.IsNullOrWhiteSpace())
         {
             // Try hash code
@@ -68,35 +67,40 @@ public class Utility
         return set;
     }
 
-    public static NPC GetClosestNPC(Vector3 position)
+    public static INPC GetClosestNPC(Vector3 position)
     {
         Collider[] hits = Physics.OverlapBox(position, Vector3.one * 2, Quaternion.identity);
-        NPC closestnpc = null;
+        GameObject closestnpc = null;
 
         foreach (var hit in hits)
         {
-            var npc = hit.transform.root.gameObject.GetComponentInChildren<NPC>();
-            if (npc != null)
+            var go = hit.transform.root.gameObject;
+            if (go != null && go.GetComponentInChildren<INPC>() != null)
             {
-                if (closestnpc == null || (Vector3.Distance(position, npc.transform.position) <
+                if (closestnpc == null || (Vector3.Distance(position, go.transform.position) <
                         Vector3.Distance(position, closestnpc.transform.position)))
                 {
-                    closestnpc = npc;
+                    closestnpc = go;
                 }
             }
         }
 
-        return closestnpc;
+        if (closestnpc != null)
+        {
+            return closestnpc.GetComponentInChildren<INPC>();
+        }
+
+        return null;
     }
 
-    public static List<NPC> GetAllNPCS(Vector3 position, float range)
+    public static List<NPCHumanoid> GetAllNPCS(Vector3 position, float range)
     {
         Collider[] hits = Physics.OverlapBox(position, Vector3.one * range, Quaternion.identity);
-        List<NPC> npcs = new List<NPC>();
+        List<NPCHumanoid> npcs = new List<NPCHumanoid>();
 
         foreach (var hit in hits)
         {
-            var npc = hit.transform.root.gameObject.GetComponentInChildren<NPC>();
+            var npc = hit.transform.root.gameObject.GetComponentInChildren<NPCHumanoid>();
             if (npc != null)
             {
                 npcs.Add(npc);
@@ -152,6 +156,8 @@ public class Utility
         {
             return true;
         }
+
+        key = key.ToLower();
 
         return ZoneSystem.instance.GetGlobalKey(key) || Player.m_localPlayer.HaveUniqueKey(key);
     }

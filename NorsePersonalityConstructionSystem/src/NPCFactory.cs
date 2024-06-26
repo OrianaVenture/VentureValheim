@@ -12,7 +12,9 @@ public class NPCFactory
         typeof(PlayerController),
         typeof(Talker),
         typeof(Skills),
-        typeof(CharacterDrop)
+        typeof(CharacterDrop),
+        typeof(NpcTalk),
+        typeof(Tameable)
     };
 
     public static GameObject SpawnNPC(Vector3 position, Quaternion rotation, string name = "Ragnar", string model = "Player")
@@ -27,13 +29,18 @@ public class NPCFactory
 
         var npc = GameObject.Instantiate(prefab, position, rotation);
 
-        var npcComponent = npc.GetComponent<NPC>();
-        if (model.Equals("Player"))
+        var npcComponent = npc.GetComponent<INPC>();
+        if (npcComponent != null)
         {
-            npcComponent.SetRandom();
+            if (model.Equals("Player"))
+            {
+                npcComponent.SetRandom();
+            }
+
+            npcComponent.SetName(name);
+            npcComponent.SetSpawnPoint(position);
         }
-        npcComponent.SetName(name);
-        npcComponent.SetSpawnPoint(position);
+        
         return npc;
     }
 
@@ -55,27 +62,54 @@ public class NPCFactory
 
         var npc = GameObject.Instantiate(prefab, position, rotation);
 
-        var npcComponent = npc.GetComponent<NPC>();
-        npcComponent.SetFromConfig(config);
-        npcComponent.SetSpawnPoint(position);
+        var npcComponent = npc.GetComponent<INPC>();
+        if (npcComponent != null)
+        {
+            npcComponent.SetFromConfig(config, true);
+            npcComponent.SetSpawnPoint(position);
+        }
+
         return npc;
     }
 
     public static GameObject RespawnNPC(GameObject original)
     {
-        var prefabName = Utils.GetPrefabName(original.name);
-        var prefab = ZNetScene.instance.GetPrefab(prefabName.GetStableHashCode());
-        var npcOriginal = original.GetComponent<NPC>();
+        ZNetView originalZNetView = original.GetComponent<ZNetView>();
+        if (originalZNetView == null)
+        {
+            return null;
+        }
 
-        var respawn = npcOriginal.m_nview.GetZDO().GetVec3(NPC.ZDOVar_SPAWNPOINT, Vector3.zero);
+        var respawn = NPCUtils.GetSpawnPoint(originalZNetView);
         if (respawn != Vector3.zero)
         {
-            var gameobject = NPC.Instantiate(prefab, respawn, Quaternion.identity);
-            var npcNew = gameobject.GetComponent<NPC>();
-            var zdo = npcNew.m_nview.GetZDO();
+            var prefabName = Utils.GetPrefabName(original.name);
+            var prefab = ZNetScene.instance.GetPrefab(prefabName.GetStableHashCode());
 
-            NPC.CopyZDO(ref zdo, npcOriginal.m_nview.GetZDO());
-            NPC.CopyVisEquipment(ref npcNew.m_visEquipment, npcOriginal.m_visEquipment);
+            if (prefab == null)
+            {
+                NPCSPlugin.NPCSLogger.LogDebug("Issue finding prefab!");
+                return null;
+            }
+
+            var gameobject = GameObject.Instantiate(prefab, respawn, Quaternion.identity);
+            ZNetView newZNetView = gameobject.GetComponent<ZNetView>();
+
+            if (newZNetView == null)
+            {
+                NPCSPlugin.NPCSLogger.LogDebug("Issue instantiating prefab!");
+                return null;
+            }
+
+            NPCUtils.CopyZDO(ref newZNetView, originalZNetView);
+
+            VisEquipment originalVisEquipment = original.GetComponent<VisEquipment>();
+            VisEquipment newVisEquipment = gameobject.GetComponent<VisEquipment>();
+
+            if (originalVisEquipment != null && newVisEquipment != null)
+            {
+                NPCUtils.CopyVisEquipment(ref newVisEquipment, originalVisEquipment);
+            }
 
             return gameobject;
         }
@@ -90,9 +124,24 @@ public class NPCFactory
     public static void AddNPCS()
     {
         CreateNPC("Player");
+        CreateNPC("Asksvin");
+        CreateNPC("Boar");
+        CreateNPC("Charred_Melee");
+        CreateNPC("Deer");
+        CreateNPC("Draugr");
+        CreateNPC("Dverger");
+        CreateNPC("Fenring");
+        CreateNPC("Fenring_Cultist");
+        CreateNPC("Ghost");
+        CreateNPC("Goblin");
+        CreateNPC("GoblinShaman");
+        CreateNPC("Greydwarf");
+        CreateNPC("Greyling");
+        CreateNPC("Lox");
+        CreateNPC("Neck");
         CreateNPC("Skeleton");
-
-        //PrefabManager.OnPrefabsRegistered -= AddNPCS;
+        CreateNPC("Troll");
+        CreateNPC("Wolf");
     }
 
     public static GameObject CreateNPC(string model)
@@ -127,92 +176,54 @@ public class NPCFactory
         }
 
         // Edit existing components
-        Humanoid prefabHumanoid = prefab.GetComponent<Humanoid>();
-        Humanoid humanoid = npc.GetComponent<Humanoid>();
+        Humanoid originalHumanoid = prefab.GetComponent<Humanoid>();
+        Humanoid newHumanoid = npc.GetComponent<Humanoid>();
 
-        if (prefabHumanoid != null)
+        if (originalHumanoid != null)
         {
             // Copy humanoid component into new NPC component
-            UnityEngine.Object.DestroyImmediate(humanoid);
-            var human = npc.AddComponent<NPC>();
+            UnityEngine.Object.DestroyImmediate(newHumanoid);
+            var npcHumanoid = npc.AddComponent<NPCHumanoid>();
 
-            var fields = typeof(Humanoid).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            foreach (FieldInfo field in fields)
-            {
-                try
-                {
-                    var value = field.GetValue(prefabHumanoid);
-                    field.SetValue(human, value);
-                }
-                catch { }
-            }
-
-            // Setup Ragdoll for Player NPCs
-            foreach (var effect in human.m_deathEffects.m_effectPrefabs)
-            {
-                if (effect.m_prefab.name.Equals("Player_ragdoll"))
-                {
-                    var ragdollActive = effect.m_prefab.activeSelf;
-                    effect.m_prefab.SetActive(false);
-
-                    GameObject npcRagdoll = GameObject.Instantiate(effect.m_prefab, NPCSPlugin.Root.transform, false);
-                    npcRagdoll.name = NPCSPlugin.MOD_PREFIX + effect.m_prefab.name;
-                    var ragdollFields = typeof(Ragdoll).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
-                    var originalRagdollComponent = effect.m_prefab.GetComponent<Ragdoll>();
-                    var ragdollComponent = npcRagdoll.GetComponent<Ragdoll>();
-                    UnityEngine.Object.DestroyImmediate(ragdollComponent);
-                    var npcRagdollComponent = npcRagdoll.AddComponent<NPCRagdoll>();
-
-                    foreach (FieldInfo ragdollField in ragdollFields)
-                    {
-                        try
-                        {
-                            var value = ragdollField.GetValue(originalRagdollComponent);
-                            ragdollField.SetValue(npcRagdollComponent, value);
-                        }
-                        catch { }
-                    }
-
-                    var znetviewRagdoll = npcRagdoll.GetComponent<ZNetView>();
-                    znetviewRagdoll.m_persistent = true;
-                    znetviewRagdoll.m_type = ZDO.ObjectType.Default;
-
-                    // Set up intractable by changing layers
-                    npcRagdoll.layer = 0;
-
-                    var bodies = npcRagdoll.GetComponentsInChildren<Rigidbody>();
-                    foreach (var body in bodies)
-                    {
-                        body.gameObject.layer = 0;
-                    }
-
-                    // Restore active
-                    npcRagdoll.SetActive(ragdollActive);
-                    effect.m_prefab = npcRagdoll;
-
-                    // Register prefab
-                    ZNetScene.instance.m_prefabs.Add(npcRagdoll);
-                    ZNetScene.instance.m_namedPrefabs.Add(npcRagdoll.name.GetStableHashCode(), npcRagdoll);
-
-                    break;
-                }
-            }
+            SetupHumanoidNPC(ref npcHumanoid, originalHumanoid);
 
             // TODO: handle default equipment for all types of npcs
             if (model.Equals("Player"))
             {
-                human.m_defaultItems = new GameObject[] { };
-                human.m_walkSpeed = 2f;
-                human.m_speed = 2f;
-                human.m_runSpeed = 4f;
-                human.m_health = 200f;
+                npcHumanoid.m_defaultItems = new GameObject[] { };
+                npcHumanoid.m_walkSpeed = 2f;
+                npcHumanoid.m_speed = 2f;
+                npcHumanoid.m_runSpeed = 4f;
+                npcHumanoid.m_health = 200f;
             }
 
+            // Make sure to set this to the new object component, otherwise attacks are broken
+            npcHumanoid.m_eye = Utils.FindChild(npcHumanoid.gameObject.transform, "EyePos");
+
             // Prevent hobo fight club
-            human.m_faction = Character.Faction.Dverger;
-            human.m_tamed = false; // TODO
-            human.m_group = NPC.NPCGROUP; // TODO make it so NPCs can fight each other
+            npcHumanoid.m_faction = Character.Faction.Dverger;
+            npcHumanoid.m_tamed = false; // TODO
+            npcHumanoid.m_group = NPCUtils.NPCGROUP; // TODO make it so NPCs can fight each other
+        }
+        else
+        {
+            // Setup for animals
+            Character originalCharacter = prefab.GetComponent<Character>();
+            Character newCharacter = npc.GetComponent<Character>();
+
+            if (originalCharacter != null)
+            {
+                // Copy humanoid component into new NPC component
+                UnityEngine.Object.DestroyImmediate(newCharacter);
+                var npcCharacter = npc.AddComponent<NPCCharacter>();
+
+                SetupCharacterNPC(ref npcCharacter, originalCharacter);
+
+                // Prevent hobo fight club
+                npcCharacter.m_faction = Character.Faction.Dverger;
+                npcCharacter.m_tamed = false; // TODO
+                npcCharacter.m_group = NPCUtils.NPCGROUP; // TODO make it so NPCs can fight each other
+            }
         }
 
         // TODO
@@ -230,22 +241,19 @@ public class NPCFactory
         }
         else if (baseAI is MonsterAI)
         {
-            var monsterAI = prefab.GetComponent<MonsterAI>();
+            var originalAI = prefab.GetComponent<MonsterAI>();
             UnityEngine.Object.DestroyImmediate(baseAI);
-            var npcai = npc.AddComponent<NPCAI>();
+            var npcAI = npc.AddComponent<NPCAI>();
 
-            var fields = typeof(MonsterAI).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            foreach (FieldInfo field in fields)
-            {
-                try
-                {
-                    var value = field.GetValue(monsterAI);
-                    field.SetValue(npcai, value);
-                }
-                catch { }
-            }
+            SetupMonsterAI(ref npcAI, originalAI);
+        }
+        else if (baseAI is AnimalAI)
+        {
+            var originalAI = prefab.GetComponent<AnimalAI>();
+            UnityEngine.Object.DestroyImmediate(baseAI);
+            var npcAI = npc.AddComponent<NPCAnimalAI>();
 
-            NPCAI.SetupExisting(ref npcai);
+            SetupAnimalAI(ref npcAI, originalAI);
         }
 
         var znetview = npc.GetComponent<ZNetView>();
@@ -263,12 +271,132 @@ public class NPCFactory
         npc.SetActive(true);
 
         // Register prefab
-        //PrefabManager.Instance.AddPrefab(npc);
         ZNetScene.instance.m_prefabs.Add(npc);
         ZNetScene.instance.m_namedPrefabs.Add(npc.name.GetStableHashCode(), npc);
 
         NPCSPlugin.NPCSLogger.LogDebug($"Added prefab for {npc.name}");
 
         return npc;
+    }
+
+    private static void SetupHumanoidNPC(ref NPCHumanoid npcHumanoid, Humanoid original)
+    {
+        var fields = typeof(Humanoid).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        foreach (FieldInfo field in fields)
+        {
+            try
+            {
+                var value = field.GetValue(original);
+                field.SetValue(npcHumanoid, value);
+            }
+            catch { }
+        }
+
+        // Setup Ragdoll for Player NPCs
+        var effectList = npcHumanoid.m_deathEffects.m_effectPrefabs;
+        for (int lcv = 0; lcv < effectList.Length; lcv++)
+        {
+            // TODO ragdolls for everything
+            var effect = effectList[lcv];
+            if (effect.m_prefab.name.Equals("Player_ragdoll"))
+            {
+                SetupRagdoll(ref effect);
+                break;
+            }
+        }
+    }
+
+    private static void SetupCharacterNPC(ref NPCCharacter npcCharacter, Character original)
+    {
+        var fields = typeof(Character).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        foreach (FieldInfo field in fields)
+        {
+            try
+            {
+                var value = field.GetValue(original);
+                field.SetValue(npcCharacter, value);
+            }
+            catch { }
+        }
+
+        // TODO ragdolls for everything
+    }
+
+    private static void SetupRagdoll(ref EffectList.EffectData effect)
+    {
+        var ragdollActive = effect.m_prefab.activeSelf;
+        effect.m_prefab.SetActive(false);
+
+        GameObject npcRagdoll = GameObject.Instantiate(effect.m_prefab, NPCSPlugin.Root.transform, false);
+        npcRagdoll.name = NPCSPlugin.MOD_PREFIX + effect.m_prefab.name;
+        var ragdollFields = typeof(Ragdoll).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+        var originalRagdollComponent = effect.m_prefab.GetComponent<Ragdoll>();
+        var ragdollComponent = npcRagdoll.GetComponent<Ragdoll>();
+        UnityEngine.Object.DestroyImmediate(ragdollComponent);
+        var npcRagdollComponent = npcRagdoll.AddComponent<NPCRagdoll>();
+
+        foreach (FieldInfo ragdollField in ragdollFields)
+        {
+            try
+            {
+                var value = ragdollField.GetValue(originalRagdollComponent);
+                ragdollField.SetValue(npcRagdollComponent, value);
+            }
+            catch { }
+        }
+
+        var znetviewRagdoll = npcRagdoll.GetComponent<ZNetView>();
+        znetviewRagdoll.m_persistent = true;
+        znetviewRagdoll.m_type = ZDO.ObjectType.Default;
+
+        // Set up intractable by changing layers
+        npcRagdoll.layer = 0;
+
+        var bodies = npcRagdoll.GetComponentsInChildren<Rigidbody>();
+        foreach (var body in bodies)
+        {
+            body.gameObject.layer = 0;
+        }
+
+        // Restore active
+        npcRagdoll.SetActive(ragdollActive);
+        effect.m_prefab = npcRagdoll;
+
+        // Register prefab
+        ZNetScene.instance.m_prefabs.Add(npcRagdoll);
+        ZNetScene.instance.m_namedPrefabs.Add(npcRagdoll.name.GetStableHashCode(), npcRagdoll);
+    }
+
+    private static void SetupMonsterAI(ref NPCAI npcAI, MonsterAI original)
+    {
+        var fields = typeof(MonsterAI).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        foreach (FieldInfo field in fields)
+        {
+            try
+            {
+                var value = field.GetValue(original);
+                field.SetValue(npcAI, value);
+            }
+            catch { }
+        }
+
+        NPCAI.SetupExisting(ref npcAI);
+    }
+
+    private static void SetupAnimalAI(ref NPCAnimalAI npcAI, AnimalAI original)
+    {
+        var fields = typeof(BaseAI).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        foreach (FieldInfo field in fields)
+        {
+            try
+            {
+                var value = field.GetValue(original);
+                field.SetValue(npcAI, value);
+            }
+            catch { }
+        }
+
+        NPCAnimalAI.SetupExisting(ref npcAI);
     }
 }

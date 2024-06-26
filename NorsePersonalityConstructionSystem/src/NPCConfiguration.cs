@@ -23,16 +23,17 @@ public class NPCConfiguration
     {
         public string Id { get; set; }
         public string Name { get; set; }
-        public NPC.NPCType Type { get; set; }
+        public NPCUtils.NPCType Type { get; set; }
 
         public string DefaultText { get; set; }
         public string RequiredKeys { get; set; }
         public string NotRequiredKeys { get; set; }
         public string InteractKey { get; set; }
-        public NPC.NPCKeyType InteractKeyType { get; set; }
+        public NPCUtils.NPCKeyType InteractKeyType { get; set; }
         public string DefeatKey { get; set; }
         public bool TrueDeath { get; set; }
         public bool StandStill { get; set; }
+        public bool GiveDefaultItems { get; set; }
         // Interact
         public string InteractText { get; set; }
         // Use Item
@@ -45,7 +46,7 @@ public class NPCConfiguration
         public int? RewardItemQuality { get; set; }
         public int? RewardItemAmount { get; set; }
         public string RewardKey { get; set; }
-        public NPC.NPCKeyType RewardKeyType { get; set; }
+        public NPCUtils.NPCKeyType RewardKeyType { get; set; }
         public int? RewardLimit { get; set; }
         // Style
         public string Model { get; set; }

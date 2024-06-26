@@ -81,7 +81,7 @@ public class Patches
 
                 if (args.Length >= 2)
                 {
-                    npc.SetFromConfig(NPCConfiguration.GetConfig(args[1]));
+                    npc.SetFromConfig(NPCConfiguration.GetConfig(args[1]), false);
                 }
                 else
                 {
@@ -194,27 +194,26 @@ public class Patches
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = Utility.GetClosestNPC(playerPosition);
-                if (npc == null)
+                if (npc == null || npc is not NPCHumanoid)
                 {
                     args.Context.AddString("No npc found.");
                     return;
                 }
 
-                args.Context.AddString($"{npc.m_name}: {npc.GetSkinColor()}");
-
+                args.Context.AddString($"{(npc as NPCHumanoid).m_name}: {(npc as NPCHumanoid).GetSkinColor()}");
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
             new Terminal.ConsoleCommand("npcs_get_haircolor", "", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 var npc = Utility.GetClosestNPC(playerPosition);
-                if (npc == null)
+                if (npc == null || npc is not NPCHumanoid)
                 {
                     args.Context.AddString("No npc found.");
                     return;
                 }
 
-                args.Context.AddString($"{npc.m_name}: {npc.GetHairColor()}");
+                args.Context.AddString($"{(npc as NPCHumanoid).m_name}: {(npc as NPCHumanoid).GetHairColor()}");
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
@@ -228,7 +227,17 @@ public class Patches
                     return;
                 }
 
-                ZNetScene.instance.Destroy(npc.gameObject);
+                if (npc is NPCHumanoid)
+                {
+                    (npc as NPCHumanoid).m_nview.ClaimOwnership();
+                    ZNetScene.instance.Destroy((npc as NPCHumanoid).gameObject);
+                }
+                else if (npc is NPCCharacter)
+                {
+                    (npc as NPCCharacter).m_nview.ClaimOwnership();
+                    ZNetScene.instance.Destroy((npc as NPCCharacter).gameObject);
+                }
+
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
             new Terminal.ConsoleCommand("npcs_randomize", "", delegate (Terminal.ConsoleEventArgs args)
@@ -254,16 +263,25 @@ public class Patches
                     return;
                 }
 
-                args.Context.AddString($"{npc.m_name}: " +
-                    $"{npc.m_hairItem}, " +
-                    $"{npc.m_beardItem}, " +
-                    $"{npc.m_helmetItem?.m_dropPrefab?.name}, " +
-                    $"{npc.m_chestItem?.m_dropPrefab?.name}, " +
-                    $"{npc.m_legItem?.m_dropPrefab?.name}, " +
-                    $"{npc.m_shoulderItem?.m_dropPrefab?.name}, " +
-                    $"{npc.m_utilityItem?.m_dropPrefab?.name}, " +
-                    $"{npc.m_rightItem?.m_dropPrefab?.name}, " +
-                    $"{npc.m_leftItem?.m_dropPrefab?.name}");
+                if (npc is NPCHumanoid)
+                {
+                    var npcHuman = (NPCHumanoid)npc;
+                    args.Context.AddString($"{npcHuman.m_name}: " +
+                    $"{npcHuman.m_hairItem}, " +
+                    $"{npcHuman.m_beardItem}, " +
+                    $"{npcHuman.m_helmetItem?.m_dropPrefab?.name}, " +
+                    $"{npcHuman.m_chestItem?.m_dropPrefab?.name}, " +
+                    $"{npcHuman.m_legItem?.m_dropPrefab?.name}, " +
+                    $"{npcHuman.m_shoulderItem?.m_dropPrefab?.name}, " +
+                    $"{npcHuman.m_utilityItem?.m_dropPrefab?.name}, " +
+                    $"{npcHuman.m_rightItem?.m_dropPrefab?.name}, " +
+                    $"{npcHuman.m_leftItem?.m_dropPrefab?.name}");
+                }
+                else if (npc is NPCCharacter)
+                {
+                    var npcHuman = (NPCHumanoid)npc;
+                    args.Context.AddString($"{npcHuman.m_name}");
+                }
             }, isCheat: true, isNetwork: false, onlyServer: false);
         }
     }
@@ -279,7 +297,7 @@ public class Patches
             if (ZInput.GetKey(KeyCode.RightControl))
             {
                 var gameobject = NPCFactory.SpawnNPC(__instance.transform.position, __instance.transform.rotation);
-                var npc = gameobject.GetComponent<NPC>();
+                var npc = gameobject.GetComponent<NPCHumanoid>();
 
                 if (npc != null)
                 {
@@ -304,7 +322,7 @@ public class Patches
                 // Add npc to chair
                 var npc = NPCFactory.SpawnNPC(__instance.m_attachPoint.position, __instance.m_attachPoint.rotation, "Sitter");
 
-                var npcComponent = npc.GetComponent<NPC>();
+                var npcComponent = npc.GetComponent<NPCHumanoid>();
 
                 if (npcComponent != null)
                 {

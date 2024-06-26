@@ -14,7 +14,7 @@ namespace VentureValheim.NPCS;
 public class NPCSPlugin : BaseUnityPlugin
 {
     private const string ModName = "NorsePersonalityConstructionSystem";
-    private const string ModVersion = "0.0.2";
+    private const string ModVersion = "0.0.3";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 

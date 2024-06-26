@@ -85,6 +85,14 @@ npcs:
     model: Skeleton
 
   -
+    id: Boar
+    name: An Exquisite Specimen
+    model: Boar
+    GiveDefaultItems: true
+    type: Information
+    interactText: "Feed me human!"
+
+  -
     id: Liv
     name: Liv the Wise
     type: Reward

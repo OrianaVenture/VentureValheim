@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VentureValheim.NPCS</RootNamespace>
     <AssemblyName>VentureValheim.NPCS</AssemblyName>
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>
@@ -47,7 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <!--EmbeddedResource Include="vv_quest" /-->
-    <None Include="VV.NPCS.yaml" />
+    <None Include="Example.VV.NPCS.yaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ILRepack.targets" />

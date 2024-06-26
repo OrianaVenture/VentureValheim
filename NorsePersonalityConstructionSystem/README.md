@@ -12,7 +12,7 @@ This mod is not finished! There are many features that still need to get added. 
   * Information: Give the player information or a quest.
   * Reward: Give a reward to players for speaking with them or giving them an item.
   * Sellsword: Hireable and will fight for the player. (Not finished)
-  * SlayTarget: Defeat this npc for rewards. (Not finished)
+  * SlayTarget: Defeat this NPC for rewards. (Not finished)
   * Trader: Runs a store similar to Haldor/Hildir. (Not finished)
 * NPCs can have random movement and actions such as sitting in chairs. (Not finished)
 * NPCs come back to life once killed by default.
@@ -36,15 +36,15 @@ Currently there are four ways to spawn NPCs: Using **RightCtrl + E** on either a
 
 All NPCs act like players by respawning automatically upon death at their original spawn point. If you want an NPC to truly die you must set them up with either the "true death" command or in your yaml config for the NPC. During a true death NPC ragdolls do not disappear until a player removes them.
 
-By default all NPCs will move around randomly, you can use the console commands to make them stop moving, or edit the yaml config to have them stand still once spawned.
+By default all NPCs will move around randomly, you can use the console command to make them stop moving, or edit the yaml config to have them stand still once spawned.
 
 See all available commands in the Commands section below.
 
 ## Using the YAML file
 
-There is a file that comes with the mod called **VV.NPCS.yaml** in the config folder with examples. This file is where you can define your custom NPCs to be able to spawn them in game. You can also update existing NPCs from these configurations without needing to remove them from the game. When you update an existing NPC it will get overwritten and lose all data previously tied to it.
+There is a file that comes with the mod called **Example.VV.NPCS.yaml** in the config folder with examples. This file must be manually renamed to **VV.NPCS.yaml** to load in the mod, this prevents mod updates from overriding your configurations. This file is where you can define your custom NPCs to be able to spawn them in game. You can also update existing NPCs from these configurations without needing to remove them from the game. When you update an existing NPC it will get overwritten and lose all data previously tied to it.
 
-This file does not automatically live update if you change it while the game is running, but there is a command ``npcs_reloadconfig`` to force reload it. If there is information missing from your npc configurations it will be set to the default value and should not throw errors. If you see errors check you have used the correct data type for the config and do not have any spelling mistakes. The error should tell you which line is causing the problem.
+This file does not automatically live update if you change it while the game is running, but there is a command ``npcs_reloadconfig`` to force reload it. If there is information missing from your NPC configurations it will be set to the default value and should not throw errors. If you see errors check you have used the correct data type for the config and do not have any spelling mistakes. The error should tell you which line is causing the problem.
 
 The yaml file is local and will not sync to others. This file is not required on the server nor is it needed for the mod to function. It is purely for setup if you want to customize NPCs.
 
@@ -58,7 +58,7 @@ Acceptable types include: None, Information, Reward, Sellsword, SlayTarget, Trad
 
 These NPCs simply say something when interacted with. 
 
-* ``interactText`` information will only display when the npc meets both their ``requiredKeys`` and ``notRquiredKeys`` criteria. These will check for the key presence in both the Player and Global key lists.
+* ``interactText`` information will only display when the NPC meets both their ``requiredKeys`` and ``notRequiredKeys`` criteria. These will check for the key presence in both the Player and Global key lists.
 * ``interactKey`` is awarded to the player(s) speaking with them. ``interactKeyType`` field can be set to "Player" or "Global" depending on how this key should be awarded.
 * ``defaultText`` will be said whenever key requirements for the ``interactText`` are not met.
 
@@ -75,7 +75,7 @@ npcs:
     name: Ragnar The Brave
     standStill: true
     type: Information
-    notRquiredKeys: ragnarbrave
+    notRequiredKeys: ragnarbrave
     defaultText: "Did you say you had mead?"
     interactKey: ragnarbrave
     interactKeyType: Global
@@ -100,7 +100,7 @@ These NPCs have all the functionality of an information NPC plus the ability to 
 * ``rewardKey`` with ``rewardKeyType`` (Player or Global) is given when the player successfully completes the quest. 
 * ``rewardLimit`` or ``notRequiredKeys`` are two different methods to control how often a quest is completable:
   * ``rewardLimit``: when set to 10 this will allow the quest the be completed 10 total times; when reaching 0 it will lock the quest. By default ``rewardLimit`` is set to -1, which allows for unlimited completion.
-  * ``notRequiresKeys``: when set to the same key as the reward key will lock the quest the first time it is completed.
+  * ``notRequiredKeys``: when set to the same key as the reward key will lock the quest the first time it is completed.
 
 The difference between the ``interactKey`` and ``rewardKey`` is important to note here since ``interactKey`` will always be given to the player when the Reward NPC is spoken to, where the reward key will only be given when reward conditions are met.
 
@@ -110,7 +110,7 @@ There are two "keywords" you can use when setting up your NPC text: **{giveitem}
 
 Here's an example of four NPCs that require you speak to them and complete their quests in order. Liv will give out a reward of a 2 star Flint Knife, which Vivica will accept and give the Rahshahs quest to bring him Deer Stew in exchange for Coins. The Jarl then rewards you for helping them all with an Iron Sword.
 
-Liv is set up in a way that only the first 5 players there will get the Knife and the rewardText. Other players when talking to this npc will still be able to receive the "liv" key but will not be given the reward and will only see the defaultText once the limit is reached. Again, note the difference between rewardKey and interactKey. Since Liv does not have any requiredKeys nor require a giveItem to give a reward you will never see the InteractText used, so it is not specified here.
+Liv is set up in a way that only the first 5 players there will get the Knife and the rewardText. Other players when talking to this NPC will still be able to receive the "liv" key but will not be given the reward and will only see the defaultText once the limit is reached. Again, note the difference between rewardKey and interactKey. Since Liv does not have any requiredKeys nor require a giveItem to give a reward you will never see the InteractText used, so it is not specified here.
 
 Vivica is set up such that you must speak first to liv before you can see her interactText. When giving her the requested item she will say the rewardText. After this quest is completed Vivica will return to saying her defaultText. Since the ``interactKeyType`` is not specified it will default to "Player". So every player will be able get the reward key.
 
@@ -190,7 +190,9 @@ Not Finished.
 
 ## NPC Style
 
-There are fields for setting the NPC appearance using item prefab names. Anything not specified will be left blank or randomized. Skin and Hair color require all r,g,b values to be defined to override; they are float values between 0 and 1. Overriding colors can allow you to make some very strange characters. When left blank these colors will be randomized to any possible vanilla customization value. There are commands to get these values from existing npcs, so you can spawn a group of randomly generated ones to find possible vanilla values rather quickly.
+There are fields for setting the NPC appearance using item prefab names. Anything not specified will be left blank or randomized. Skin and Hair color require all r,g,b values to be defined to override; they are float values between 0 and 1. Overriding colors can allow you to make some very strange characters. When left blank these colors will be randomized to any possible vanilla customization value. There are commands to get these values from existing NPCs, so you can spawn a group of randomly generated ones to find possible vanilla values rather quickly.
+
+When spawning an npc from the yaml file it will automatically clear all usual default items that exists on the original prefab. This can cause them sometimes to not have attacks. To allow npcs to keep their original items and attacks you can use the ``GiveDefaultItems`` set to true. (This feature will get more attention and better support in the future).
 
 ```yaml
 npcs:
@@ -227,42 +229,77 @@ npcs:
     hairColorG: 0.3
     hairColorB: 0.9
 
+  -
+    id: Boar
+    name: An Exquisite Specimen
+    model: Boar
+    giveDefaultItems: true
+    type: Information
+    interactText: "Feed me human!"
+
 ```
+
+### Supported Models
+
+This mod currently only supports the following vanilla models. If a model is not specified the type Player is assumed:
+
+* Player
+* Asksvin
+* Boar
+* Charred_Melee
+* Deer
+* Draugr
+* Dverger
+* Fenring
+* Fenring_Cultist
+* Ghost
+* Goblin
+* GoblinShaman
+* Greydwarf
+* Greyling
+* Lox
+* Neck
+* Skeleton
+* Troll
+* Wolf
 
 ## Commands
 
-You can spawn a random npc on a chair or bed with **RightCtrl + E** (Subject to change in the future).
+You can spawn a random NPC on a chair or bed with **RightCtrl + E** (Subject to change in the future).
 
 | Command            | Arguments  | Description |
 | ------------------ | ---------- | ----------- |
 | npcs_reloadconfig  |            | Reloads any changes to your yaml file |
-| npcs_spawnrandom   | \[name\] \[Model\] | Spawns a random npc (Player or Skeleton only right now) |
-| npcs_spawnsaved    | \[id\]     | Spawns an npc from the yaml config |
+| npcs_spawnrandom   | \[name\] \[Model\] | Spawns a random NPC (only for supported models) |
+| npcs_spawnsaved    | \[id\]     | Spawns an NPC from the yaml config |
 | npcs_remove        |            | Deletes the closest NPC, use with caution! |
-| npcs_info          |            | Lists the closest npc's items | 
-| npcs_randomize     |            | Randomizes the closest npc |
-| npcs_set           | \[id\]     | Updates the closest npc from the yaml config |
-| npcs_set_move      |            | Updates the closest npc to walk around |
-| npcs_set_still     |            | Updates the closest npc to stand still |
-| npcs_set_sit       |            | Updates the closest npc to sit in the closest chair |
-| npcs_set_calm      | \[radius\] | Updates the closest npc to sit in the closest chair |
-| npcs_set_truedeath |            | Updates the closest npc to not respawn upon next death |
-| npcs_set_faceme    |            | Makes the closest npc turn toward you |
-| npcs_get_skincolor |            | Returns the skin color of the closest npc |
-| npcs_get_haircolor |            | Returns the hair color of the closest npc |
+| npcs_info          |            | Lists the closest NPC's items | 
+| npcs_randomize     |            | Randomizes the closest NPC |
+| npcs_set           | \[id\]     | Updates the closest NPC from the yaml config |
+| npcs_set_move      |            | Updates the closest NPC to walk around |
+| npcs_set_still     |            | Updates the closest NPC to stand still |
+| npcs_set_sit       |            | Updates the closest NPC to sit in the closest chair |
+| npcs_set_calm      | \[radius\] | Calms all hostile NPCs in the specified radius |
+| npcs_set_truedeath |            | Updates the closest NPC to not respawn upon next death |
+| npcs_set_faceme    |            | Makes the closest NPC turn toward you |
+| npcs_get_skincolor |            | Returns the skin color of the closest NPC |
+| npcs_get_haircolor |            | Returns the hair color of the closest NPC |
 
 ## Possible Future Improvements
 
 * NPC option to drop items on death.
 * NPC options to perform more kinds of things than just sitting/standing/walking.
 * Randomly generated NPC names.
-* More NPC model options than just Player/Skeleton.
+* More NPC model options.
 * Graves with signs so you can properly mourn your fallen NPCs.
 * Cooldown timer on completing quests.
 * Player quest tracker in the UI.
 * Easier ways to list/save/change/copy NPC information.
 * Necromancy options for fallen NPCs.
 * Translation options.
+* More complex data:
+  * Questlines: ability to have multiple dialog options and quest paths on one NPC.
+  * Items/Attacks: ability to assign multiple weapons and attacks ot one NPC.
 
 ## Installation
 
@@ -272,18 +309,7 @@ If the mod is removed from the server after NPCs have been generated they will d
 
 ## Changelog
 
-### 0.0.2
-
-* New commands npcs_set_faceme, npcs_info, npcs_randomize.
-* Rewards are now thrown forward by NPCs, and they perform an animation if possible.
-* Fixed utility items from configs not setting.
-* Fixed NPC AI to not suck, they attack stuff now.
-* Removed configurations for back items, will revisit this later.
-* NPCs show name above text when speaking now.
-
-### 0.0.1
-
-* First Release.
+Moved to new file, it will appear as a new tab on the thunderstore page.
 
 ## Contributing
 
