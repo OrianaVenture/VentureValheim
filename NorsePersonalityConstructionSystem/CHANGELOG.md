@@ -1,3 +1,7 @@
+## 0.0.4
+
+* Hotfix for example yaml file being incorrect for Boar. No code changes.
+
 ## 0.0.3
 
 * Support for more models, see readme for the list.

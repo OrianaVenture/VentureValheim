@@ -88,7 +88,7 @@ npcs:
     id: Boar
     name: An Exquisite Specimen
     model: Boar
-    GiveDefaultItems: true
+    giveDefaultItems: true
     type: Information
     interactText: "Feed me human!"
 
