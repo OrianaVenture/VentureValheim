@@ -17,7 +17,7 @@ namespace VentureValheim.MiningCaves
     public class MiningCavesPlugin : BaseUnityPlugin
     {
         private const string ModName = "MiningCaves";
-        private const string ModVersion = "0.1.5";
+        private const string ModVersion = "0.2.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
 
@@ -32,6 +32,7 @@ namespace VentureValheim.MiningCaves
         public static ConfigEntry<bool> CE_AdminBypass = null!;
         public static ConfigEntry<bool> CE_LockTerrain = null!;
         public static ConfigEntry<string> CE_LockTerrainIgnoreItems = null!;
+        public static ConfigEntry<bool> CE_RemoveSilverWishbonePing = null!;
 
         public static bool GetLockTerrain()
         {
@@ -44,6 +45,7 @@ namespace VentureValheim.MiningCaves
         }
 
         public static string GetLockTerrainIgnoreItems() => CE_LockTerrainIgnoreItems.Value;
+        public static bool GetRemoveSilverWishbonePing() => CE_RemoveSilverWishbonePing.Value;
 
         private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
         private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
@@ -75,6 +77,9 @@ namespace VentureValheim.MiningCaves
             AddConfig("LockTerrainIgnoreItems", general,
                 "Prefab names of items to ignore for the terrain locking feature (comma-separated)",
                 true, "", ref CE_LockTerrainIgnoreItems);
+            AddConfig("RemoveSilverWishbonePing", general,
+                "True to always remove the wishbone ping from silver veins (boolean)",
+                true, false, ref CE_RemoveSilverWishbonePing);
 
             ZoneManager.OnVanillaLocationsAvailable += CaveManager.AddMiningCaves;
 

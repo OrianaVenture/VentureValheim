@@ -192,11 +192,20 @@ namespace VentureValheim.MiningCaves
 
             RestoreOriginalValues();
 
-            if (!MiningCavesPlugin.GetLockTerrain())
+            if (MiningCavesPlugin.GetLockTerrain())
             {
-                return;
+                RemoveToolTerrainChanges();
             }
 
+            if (MiningCavesPlugin.GetRemoveSilverWishbonePing() ||
+                (MiningCavesPlugin.GetLockTerrain() && MiningCavesPlugin.GetLockTerrainIgnoreItems().IsNullOrWhiteSpace()))
+            {
+                RemoveWishbonePing();
+            }
+        }
+
+        private static void RemoveToolTerrainChanges()
+        {
             var ignoreItems = StringToSet(MiningCavesPlugin.GetLockTerrainIgnoreItems());
 
             foreach (GameObject item in ObjectDB.instance.m_items)
@@ -222,6 +231,28 @@ namespace VentureValheim.MiningCaves
             }
 
             MiningCavesPlugin.MiningCavesLogger.LogInfo("Done removing terrain operations from tools.");
+        }
+
+        private static void RemoveWishbonePing()
+        {
+            GameObject silver = ZNetScene.instance.GetPrefab("silvervein");
+            if (silver != null)
+            {
+                var beacon = silver.GetComponentInChildren<Beacon>();
+                if (beacon != null)
+                {
+                    GameObject.Destroy(beacon);
+                    MiningCavesPlugin.MiningCavesLogger.LogInfo("Done removing silver wishbone ping.");
+                }
+                else
+                {
+                    MiningCavesPlugin.MiningCavesLogger.LogDebug("Issue finding silvervein beacon, could not remove.");
+                }
+            }
+            else
+            {
+                MiningCavesPlugin.MiningCavesLogger.LogDebug("Issue finding silvervein. Could not remove beacon.");
+            }
         }
 
         /// <summary>
