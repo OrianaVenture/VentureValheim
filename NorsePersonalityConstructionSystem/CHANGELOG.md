@@ -1,3 +1,10 @@
+## 0.0.5
+
+* Fixed a compatibility bug with RRRCore npcs due to not cleaning up the vanilla ragdoll after manipulating it.
+* Finished implementing ragdolls for all NPCs.
+* Added removal effects to Player NPC ragdoll (the magic poof).
+* Increased NPC discovery range for commands from 2 to 3, should make it easier to use them.
+
 ## 0.0.4
 
 * Hotfix for example yaml file being incorrect for Boar. No code changes.

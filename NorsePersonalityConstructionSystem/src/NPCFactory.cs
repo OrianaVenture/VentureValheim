@@ -162,9 +162,7 @@ public class NPCFactory
         var prefabActive = prefab.activeSelf;
         prefab.SetActive(false);
 
-        GameObject npc = GameObject.Instantiate(prefab, NPCSPlugin.Root.transform, false);
-        npc.name = NPCSPlugin.MOD_PREFIX + model;
-        npc.transform.SetParent(NPCSPlugin.Root.transform, false);
+        GameObject npc = NPCUtils.CreateGameObject(prefab, model);
 
         foreach (var remove in RemoveComponents)
         {
@@ -268,13 +266,10 @@ public class NPCFactory
 
         // Restore active
         prefab.SetActive(prefabActive);
-        npc.SetActive(true);
+        npc.SetActive(prefabActive);
 
         // Register prefab
-        ZNetScene.instance.m_prefabs.Add(npc);
-        ZNetScene.instance.m_namedPrefabs.Add(npc.name.GetStableHashCode(), npc);
-
-        NPCSPlugin.NPCSLogger.LogDebug($"Added prefab for {npc.name}");
+        NPCUtils.RegisterGameObject(npc);
 
         return npc;
     }
@@ -292,15 +287,14 @@ public class NPCFactory
             catch { }
         }
 
-        // Setup Ragdoll for Player NPCs
+        // Setup Ragdolls
         var effectList = npcHumanoid.m_deathEffects.m_effectPrefabs;
         for (int lcv = 0; lcv < effectList.Length; lcv++)
         {
-            // TODO ragdolls for everything
             var effect = effectList[lcv];
-            if (effect.m_prefab.name.Equals("Player_ragdoll"))
+            if (effect.m_prefab.GetComponent<Ragdoll>())
             {
-                SetupRagdoll(ref effect);
+                effect.m_prefab = SetupRagdoll(effect.m_prefab);
                 break;
             }
         }
@@ -319,19 +313,28 @@ public class NPCFactory
             catch { }
         }
 
-        // TODO ragdolls for everything
+        // Setup Ragdolls
+        var effectList = npcCharacter.m_deathEffects.m_effectPrefabs;
+        for (int lcv = 0; lcv < effectList.Length; lcv++)
+        {
+            var effect = effectList[lcv];
+            if (effect.m_prefab.GetComponent<Ragdoll>())
+            {
+                effect.m_prefab = SetupRagdoll(effect.m_prefab);
+                break;
+            }
+        }
     }
 
-    private static void SetupRagdoll(ref EffectList.EffectData effect)
+    private static GameObject SetupRagdoll(GameObject original)
     {
-        var ragdollActive = effect.m_prefab.activeSelf;
-        effect.m_prefab.SetActive(false);
+        var ragdollActive = original.activeSelf;
+        original.SetActive(false);
 
-        GameObject npcRagdoll = GameObject.Instantiate(effect.m_prefab, NPCSPlugin.Root.transform, false);
-        npcRagdoll.name = NPCSPlugin.MOD_PREFIX + effect.m_prefab.name;
+        GameObject npcRagdoll = NPCUtils.CreateGameObject(original, original.name);
         var ragdollFields = typeof(Ragdoll).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-        var originalRagdollComponent = effect.m_prefab.GetComponent<Ragdoll>();
+        var originalRagdollComponent = original.GetComponent<Ragdoll>();
         var ragdollComponent = npcRagdoll.GetComponent<Ragdoll>();
         UnityEngine.Object.DestroyImmediate(ragdollComponent);
         var npcRagdollComponent = npcRagdoll.AddComponent<NPCRagdoll>();
@@ -344,6 +347,16 @@ public class NPCFactory
                 ragdollField.SetValue(npcRagdollComponent, value);
             }
             catch { }
+        }
+
+        // TODO test npcRagdollComponent.m_removeEffect == null ||
+        if (npcRagdollComponent.m_removeEffect.m_effectPrefabs.Length == 0)
+        {
+            var effect = ZNetScene.instance.GetPrefab("vfx_corpse_destruction_small".GetStableHashCode());
+            var newData = new EffectList.EffectData();
+            newData.m_prefab = effect;
+            npcRagdollComponent.m_removeEffect.m_effectPrefabs = new EffectList.EffectData[1];
+            npcRagdollComponent.m_removeEffect.m_effectPrefabs[0] = newData;
         }
 
         var znetviewRagdoll = npcRagdoll.GetComponent<ZNetView>();
@@ -360,12 +373,13 @@ public class NPCFactory
         }
 
         // Restore active
+        original.SetActive(ragdollActive);
         npcRagdoll.SetActive(ragdollActive);
-        effect.m_prefab = npcRagdoll;
 
         // Register prefab
-        ZNetScene.instance.m_prefabs.Add(npcRagdoll);
-        ZNetScene.instance.m_namedPrefabs.Add(npcRagdoll.name.GetStableHashCode(), npcRagdoll);
+        NPCUtils.RegisterGameObject(npcRagdoll);
+
+        return npcRagdoll;
     }
 
     private static void SetupMonsterAI(ref NPCAI npcAI, MonsterAI original)

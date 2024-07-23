@@ -198,6 +198,8 @@ public class NPCUtils
 
     public static void CopyZDO(ref ZNetView copy, ZNetView original)
     {
+        // TODO: copy.GetZDO().SetRotation(original.GetZDO().GetRotation());
+
         // TODO, investigate seed not working to spawn exact same creature
         copy.GetZDO().Set(ZDOVars.s_seed, original.GetZDO().GetInt(ZDOVars.s_seed));
         SetInitialized(ref copy, GetInitialized(original));
@@ -497,6 +499,22 @@ public class NPCUtils
         }
 
         return text;
+    }
+
+    public static GameObject CreateGameObject(GameObject original, string name)
+    {
+        GameObject go = GameObject.Instantiate(original, NPCSPlugin.Root.transform, false);
+        go.name = NPCSPlugin.MOD_PREFIX + name;
+        go.transform.SetParent(NPCSPlugin.Root.transform, false);
+
+        return go;
+    }
+
+    public static void RegisterGameObject(GameObject obj)
+    {
+        ZNetScene.instance.m_prefabs.Add(obj);
+        ZNetScene.instance.m_namedPrefabs.Add(obj.name.GetStableHashCode(), obj);
+        NPCSPlugin.NPCSLogger.LogDebug($"Adding object to prefabs {obj.name}");
     }
 
     #endregion

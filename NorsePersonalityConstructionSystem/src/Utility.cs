@@ -69,7 +69,7 @@ public class Utility
 
     public static INPC GetClosestNPC(Vector3 position)
     {
-        Collider[] hits = Physics.OverlapBox(position, Vector3.one * 2, Quaternion.identity);
+        Collider[] hits = Physics.OverlapBox(position, Vector3.one * 3, Quaternion.identity);
         GameObject closestnpc = null;
 
         foreach (var hit in hits)
