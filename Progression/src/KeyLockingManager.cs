@@ -329,9 +329,10 @@ namespace VentureValheim.Progression
             {
                 for (int lcv1 = 0; lcv1 < recipe.m_resources.Length; lcv1++)
                 {
+                    // Only consider valid resources
                     if (recipe.m_resources[lcv1].m_resItem == null)
                     {
-                        return false;
+                        continue;
                     }
 
                     // Loop through current quality level and all previous.
