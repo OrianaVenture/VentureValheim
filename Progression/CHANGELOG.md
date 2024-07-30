@@ -1,3 +1,7 @@
+## Unrelease
+
+* Allow Poison Arrows found in Sunken Crypts in the Swamp to be used even though they cannot be crafted yet.
+
 ## 0.2.13
 
 * Bug fixes to allow skill cache to update when keys change. Should fix issues with skill capping not working as expected.
