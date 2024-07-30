@@ -341,8 +341,15 @@ namespace VentureValheim.Progression
                     {
                         if (recipe.m_resources[lcv1].GetAmount(lcv2) > 0)
                         {
-                            if (!Instance.HasItemKey(Utils.GetPrefabName(recipe.m_resources[lcv1].m_resItem.gameObject),
-                                checkBossItems, checkMaterials, checkFood))
+                            var isAllowed = Instance.HasItemKey(Utils.GetPrefabName(recipe.m_resources[lcv1].m_resItem.gameObject),
+                                checkBossItems, checkMaterials, checkFood);
+                            // If recipe only requires one ingredient, allow usage as soon as one ingredient is allowed
+                            if (recipe.m_requireOnlyOneIngredient && isAllowed)
+                            {
+                                return false;
+                            }
+                            // Otherwise block usage as soon as one ingredient is not allowed
+                            else if (!isAllowed)
                             {
                                 return true;
                             }
