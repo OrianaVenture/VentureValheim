@@ -1,3 +1,8 @@
+## Unrelease
+
+* Fix blocking mechanism for crafting recipes requiring only one ingredient.
+* Fix blocking mechanism for crafting recipes in case of missing ingredient prefab.
+
 ## 0.2.13
 
 * Bug fixes to allow skill cache to update when keys change. Should fix issues with skill capping not working as expected.
