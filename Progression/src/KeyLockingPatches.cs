@@ -177,12 +177,20 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(InventoryGui __instance)
             {
-                var lockCrafting = ProgressionConfiguration.Instance.GetLockCrafting();
-                var lockCooking = ProgressionConfiguration.Instance.GetLockCooking();
+                bool cookingStation = false;
+                if (__instance.m_craftRecipe?.m_craftingStation != null)
+                {
+                    string station = Utils.GetPrefabName(__instance.m_craftRecipe.m_craftingStation.gameObject);
+                    cookingStation = station.Equals("piece_cauldron");
+                }
+
+                var lockCrafting = ProgressionConfiguration.Instance.GetLockCrafting() && !cookingStation;
+                var lockCooking = ProgressionConfiguration.Instance.GetLockCooking() && cookingStation;
 
                 int quality = ProgressionAPI.GetQualityLevel(__instance.m_craftUpgradeItem);
 
-                if ((lockCrafting || lockCooking) && Instance.IsActionBlocked(__instance.m_craftRecipe, quality, lockCrafting, lockCrafting, lockCooking))
+                if ((lockCrafting || lockCooking) && Instance.IsActionBlocked(
+                    __instance.m_craftRecipe, quality, lockCrafting, lockCrafting, lockCooking))
                 {
                     Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                     return false; // Skip crafting or cooking
@@ -228,7 +236,8 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(ItemDrop.ItemData item, ref bool __result)
             {
-                if (ProgressionConfiguration.Instance.GetLockCooking() && Instance.IsActionBlocked(item, item.m_quality, false, false, true))
+                if (ProgressionConfiguration.Instance.GetLockCooking() &&
+                    Instance.IsActionBlocked(item, item.m_quality, false, false, true))
                 {
                     Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                     __result = false;

@@ -1,3 +1,9 @@
+## 0.2.14
+
+* Compatibility support added for properly unlocking items that have only one required ingredient for crafting (Thank you nbusseneau for the report).
+* Bug fix for locking cooking and crafting not being mutually exclusive (now checks if station is a cauldron). Fixes frost arrows could not be crafted when crafting was unlocked but cooking was locked.
+* Added missing Bilebag, Ooze, and Sap to crafting locking system.
+
 ## 0.2.13
 
 * Bug fixes to allow skill cache to update when keys change. Should fix issues with skill capping not working as expected.

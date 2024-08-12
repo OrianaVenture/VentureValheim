@@ -109,7 +109,7 @@ namespace VentureValheim.Progression
                     }
                 }
 
-                return false; // Skip 
+                return false; // Skip
             }
         }
 
