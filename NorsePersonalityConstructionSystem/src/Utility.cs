@@ -1,12 +1,27 @@
 ﻿using BepInEx;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace VentureValheim.NPCS;
 
 public class Utility
 {
+    public static void CopyFields<T1, T2>(T1 original, ref T2 clone) where T2 : T1
+    {
+        var fields = typeof(T1).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        foreach (FieldInfo field in fields)
+        {
+            try
+            {
+                var value = field.GetValue(original);
+                field.SetValue(clone, value);
+            }
+            catch { }
+        }
+    }
+
     /// <summary>
     /// Attempts to get the ItemDrop by the given name's hashcode, if not found searches by string.
     /// </summary>

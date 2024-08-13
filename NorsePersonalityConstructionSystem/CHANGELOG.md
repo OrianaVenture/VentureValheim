@@ -1,3 +1,7 @@
+## 0.0.6
+
+* Fixed a bug where NPC ragdolls were assigned to their vanilla counterparts. 
+
 ## 0.0.5
 
 * Fixed a compatibility bug with RRRCore npcs due to not cleaning up the vanilla ragdoll after manipulating it.
