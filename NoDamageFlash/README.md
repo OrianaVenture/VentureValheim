@@ -10,11 +10,23 @@ Removes the red flash that happens when you take damage.
 
 Until it becomes a base game feature this mod will exist to remove the red hud flash when your character takes damage. Also recommended to turn on the vanilla "reduce flashing lights" accessibility setting which reduces lightning flashing effects.
 
+### Configurations
+
+This mod has one simple master control switch "RemoveAllFlash" enabled by default. To fine tune the behavior of this mod set this config to false then you can use the following:
+
+* RemoveDamageFlash: When true removes the flash when receiving damage.
+* RemovePukeFlash: When true removes the flash when the player is puking.
+* RemoveUseHealthFlash: When true removes the flash caused by using blood magic weapons.
+
 ## Installation
 
-This mod is client side and has no configuration options.
+This mod is client side only and changes made to the configurations will only affect your client. Live updates to the configs will take immediate effect.
 
 ## Changelog
+
+### 0.2.0
+
+* Added configuration options.
 
 ### 0.1.1
 
