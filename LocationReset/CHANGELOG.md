@@ -1,3 +1,7 @@
+## 0.10.0
+
+* Added new configuration IgnoreList to specify locations to not reset.
+
 ## 0.9.1
 
 * Blacklisted random flying birds from being reset - they tend to gather in large numbers and I think are plotting something.

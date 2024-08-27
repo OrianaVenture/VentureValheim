@@ -85,7 +85,8 @@ namespace VentureValheim.LocationReset
                     hash = loc.m_nview.GetZDO().GetInt(ZDOVars.s_location, 0);
                 }
 
-                if (hash != 0 && !LocationReset.IgnoreLocationHashes.Contains(hash))
+                if (hash != 0 && !LocationReset.IgnoreLocationHashes.Contains(hash) &&
+                    !LocationReset.Instance.CustomIgnoreLocationHashes.Contains(hash))
                 {
                     int tries = 0;
 
@@ -112,6 +113,10 @@ namespace VentureValheim.LocationReset
 
                         yield return new WaitForSeconds(1);
                     }
+                }
+                else
+                {
+                    LocationResetPlugin.LocationResetLogger.LogDebug($"Location with hash {hash} is ignored. Skipping.");
                 }
             }
 

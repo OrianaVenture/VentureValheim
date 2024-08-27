@@ -40,7 +40,7 @@ If you are using another mod that adds custom locations or dungeons you may see 
 
 ### Skip Player Ground Piece Check
 
-If you want "sky locations" to reset even if players have built/died around the entrance set the SkipPlayerGroundPieceCheck config to true. This will change the logic to check only for activity inside the sky location. This check will always occur for ground locations, you cannot disable it for them. The check for player activity is dependant on the size of the location, bigger dungeons will have a wider range for the activity check. If you suspect the mod is not working as intended it might be due to this player activity check, test the reset on a new area where no player has built to ensure the mod is working as intended.
+If you want "sky locations" to reset even if players have built/died around the entrance set the ``SkipPlayerGroundPieceCheck`` config to true. This will change the logic to check only for activity inside the sky location. This check will always occur for ground locations, you cannot disable it for them. The check for player activity is dependant on the size of the location, bigger dungeons will have a wider range for the activity check. If you suspect the mod is not working as intended it might be due to this player activity check, test the reset on a new area where no player has built to ensure the mod is working as intended.
 
 <details close>
 <summary>Expand/Collapse Hildir Note (Spoilers!)</summary>
@@ -48,6 +48,10 @@ If you want "sky locations" to reset even if players have built/died around the 
 You may notice that Sealed Towers (Hildir plains dungeon) are not resetting. Since you must build to enter the tower it is very likely the mod is detecting your player placed pieces and is refusing to reset. Your placed pieces must be about 16 meters away from the tower itself, or about 8 wooden walls length. If you do not see a log line like "Done regenerating location Hildir_plainsfortress ..." then it did not reset. Turn on bepinex debug logs to see more detailed information.
 
 </details>
+
+### Skip Resetting Certain Locations
+
+There is a config called ``IgnoreList`` in the configuration file in which you can specify locations NOT to reset separated by commas, for example: ``StartTemple, Eikthyrnir, WoodHouse6``. To see a list of all location names you can see them on the [Jotunn Modding Wiki](https://valheim-modding.github.io/Jotunn/data/zones/location-list.html).
 
 ### Leviathans
 

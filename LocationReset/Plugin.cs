@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -22,7 +23,7 @@ namespace VentureValheim.LocationReset
         }
 
         private const string ModName = "LocationReset";
-        private const string ModVersion = "0.9.1";
+        private const string ModVersion = "0.10.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -39,6 +40,7 @@ namespace VentureValheim.LocationReset
 
         private static ConfigEntry<int> CE_ResetTime = null!;
         private static ConfigEntry<bool> CE_SkipPlayerGroundPieceCheck = null!;
+        private static ConfigEntry<string> CE_IgnoreList = null!;
 
         private static ConfigEntry<bool> CE_ResetGroundLocations = null!;
         private static ConfigEntry<bool> CE_OverrideResetTimes = null!;
@@ -211,6 +213,8 @@ namespace VentureValheim.LocationReset
             AddConfig("SkipPlayerGroundPieceCheck", general, "When True will reset locations even if player placed pieces " +
                 "and tombstones are on the ground outside the entrance to sky locations (boolean).",
                 true, false, ref CE_SkipPlayerGroundPieceCheck);
+            AddConfig("IgnoreList", general, "List of locations to ignore and not reset (comma-separated string).",
+                true, "", ref CE_IgnoreList);
 
             AddConfig("ResetGroundLocations", advanced, "True to reset all misc locations found on the ground (not including meadow farms/villages or fuling camps) (boolean).",
                 true, true, ref CE_ResetGroundLocations);
@@ -274,6 +278,12 @@ namespace VentureValheim.LocationReset
             {
                 LocationResetLogger.LogInfo("Detected Dungeon Splitter, this mod will NOT reset sky locations!");
             }
+
+            Jotunn.Managers.SynchronizationManager.OnConfigurationSynchronized += (obj, attr) =>
+            {
+                LocationResetLogger.LogDebug("Refreshing configuration, setting custom ignore list.");
+                LocationReset.SetCustomIgnoreLocationHashes(CE_IgnoreList.Value);
+            };
         }
 
         private void OnDestroy()
@@ -299,10 +309,23 @@ namespace VentureValheim.LocationReset
             {
                 LocationResetLogger.LogDebug("Attempting to reload configuration...");
                 Config.Reload();
+                LocationReset.SetCustomIgnoreLocationHashes(CE_IgnoreList.Value);
             }
             catch
             {
                 LocationResetLogger.LogError($"There was an issue loading {ConfigFileName}");
+            }
+        }
+
+        /// <summary>
+        /// First time config setup.
+        /// </summary>
+        [HarmonyPatch(typeof(ZNet), nameof(ZNet.Start))]
+        public static class Patch_ZNet_Start
+        {
+            private static void Postfix()
+            {
+                LocationReset.SetCustomIgnoreLocationHashes(CE_IgnoreList.Value);
             }
         }
     }

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using BepInEx;
+using System.Linq;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -30,6 +32,8 @@ namespace VentureValheim.LocationReset
             "Wayshrine_Skull".GetStableHashCode(), // Azumatt
             "Wayshrine_Skull_2".GetStableHashCode() // Azumatt
         };
+
+        public HashSet<int> CustomIgnoreLocationHashes = new HashSet<int>();
 
         public struct LocationPosition
         {
@@ -290,6 +294,24 @@ namespace VentureValheim.LocationReset
             return !(obj.GetComponent<DungeonGenerator>() ||
                 obj.GetComponent<LocationProxy>() ||
                 obj.GetComponent<Player>());
+        }
+
+        /// <summary>
+        /// Setup custom ignored locations from the config.
+        /// </summary>
+        /// <param name="config"></param>
+        public static void SetCustomIgnoreLocationHashes(string config)
+        {
+            Instance.CustomIgnoreLocationHashes = new HashSet<int>();
+
+            if (!config.IsNullOrWhiteSpace())
+            {
+                List<string> keys = config.Split(',').ToList();
+                for (var lcv = 0; lcv < keys.Count; lcv++)
+                {
+                    Instance.CustomIgnoreLocationHashes.Add(keys[lcv].GetStableHashCode());
+                }
+            }
         }
 
         #endregion
