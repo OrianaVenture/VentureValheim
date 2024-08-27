@@ -1,3 +1,7 @@
+## 0.11.3
+
+* Update for game version 0.218.21.
+
 ## 0.11.2
 
 * Fixed display day for death pins when changing the display day.

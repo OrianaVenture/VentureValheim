@@ -22,7 +22,7 @@ public static class ResetCommands
                 return;
             }
 
-            MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogInfo("Adding Terminal Commands for location management.");
+            MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogInfo("Adding Terminal Commands.");
 
             new Terminal.ConsoleCommand("surrender", "", delegate (Terminal.ConsoleEventArgs args)
             {

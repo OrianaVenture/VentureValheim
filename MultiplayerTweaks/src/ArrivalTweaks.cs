@@ -76,21 +76,24 @@ public class ArrivalTweaks
         }
     }
 
-    [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
-    public static class Patch_Player_OnSpawned
+    /// <summary>
+    /// Disables the Valkrie on first spawn.
+    /// </summary>
+    [HarmonyPatch(typeof(Game), nameof(Game.Start))]
+    public static class Patch_Game_Start
     {
-        /// <summary>
-        /// Disables the Valkrie on first spawn.
-        /// </summary>
-        [HarmonyPriority(Priority.Last)]
-        private static void Prefix(Player __instance)
+        private static void Postfix(Game __instance)
         {
             if (!MultiplayerTweaksPlugin.GetEnableValkrie())
             {
-                __instance.m_firstSpawn = false;
+                __instance.m_queuedIntro = false;
             }
         }
+    }
 
+    [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
+    public static class Patch_Player_OnSpawned
+    {
         /// <summary>
         /// Set the Player position as public or private if overridden.
         /// </summary>
