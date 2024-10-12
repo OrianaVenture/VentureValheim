@@ -13,7 +13,7 @@ namespace VentureValheim.FloatingItems
     public class FloatingItemsPlugin : BaseUnityPlugin
     {
         private const string ModName = "VentureFloatingItems";
-        private const string ModVersion = "0.2.2";
+        private const string ModVersion = "0.3.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -25,19 +25,23 @@ namespace VentureValheim.FloatingItems
 
         #region ConfigurationEntries
 
+        internal static ConfigEntry<bool> CE_FloatEverything = null!;
         internal static ConfigEntry<string> CE_FloatingItems = null!;
         internal static ConfigEntry<string> CE_SinkingItems = null!;
         internal static ConfigEntry<bool> CE_FloatTrophies = null!;
         internal static ConfigEntry<bool> CE_FloatMeat = null!;
         internal static ConfigEntry<bool> CE_FloatHides = null!;
         internal static ConfigEntry<bool> CE_FloatGearAndCraftable = null!;
+        internal static ConfigEntry<bool> CE_FloatTreasure = null!;
 
+        public static bool GetFloatEverything() => CE_FloatEverything.Value;
         public static string GetFloatingItems() => CE_FloatingItems.Value;
         public static string GetSinkingItems() => CE_SinkingItems.Value;
         public static bool GetFloatTrophies() => CE_FloatTrophies.Value;
         public static bool GetFloatMeat() => CE_FloatMeat.Value;
         public static bool GetFloatHides() => CE_FloatHides.Value;
         public static bool GetFloatGearAndCraftable() => CE_FloatGearAndCraftable.Value;
+        public static bool GetFloatTreasure() => CE_FloatTreasure.Value;
 
         private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
         private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
@@ -62,6 +66,8 @@ namespace VentureValheim.FloatingItems
 
             const string general = "General";
 
+            AddConfig("FloatEverything", general, "Apply floating to everything!! (boolean).",
+                true, false, ref CE_FloatEverything);
             AddConfig("FloatingItems", general, "Additional prefab names of the items you want to float (comma-separated string).",
                 true, "SerpentScale, BonemawSerpentTooth", ref CE_FloatingItems);
             AddConfig("SinkingItems", general, "Additional prefab names of the items you want to always sink (comma-separated string).",
@@ -74,6 +80,8 @@ namespace VentureValheim.FloatingItems
                 true, true, ref CE_FloatHides);
             AddConfig("FloatGearAndCraftable", general, "Apply floating to all craftable items and other gear (boolean).",
                 true, true, ref CE_FloatGearAndCraftable);
+            AddConfig("FloatTreasure", general, "Apply floating to all treasure (coins, amber, ruby, etc) (boolean).",
+                true, true, ref CE_FloatTreasure);
 
             #endregion
 

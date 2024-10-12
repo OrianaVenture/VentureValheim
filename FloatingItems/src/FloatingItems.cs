@@ -40,6 +40,15 @@ namespace VentureValheim.FloatingItems
             "linenthread"
         };
 
+        private HashSet<string> TreasurePrefabs = new HashSet<string>
+        {
+            "amber",
+            "amberpearl",
+            "coins",
+            "ruby",
+            "silvernecklace"
+        };
+
         private static HashSet<string> FloatingAddedPrefabs = new HashSet<string>();
         private static HashSet<string> FloatingDisabledPrefabs = new HashSet<string>();
 
@@ -103,6 +112,16 @@ namespace VentureValheim.FloatingItems
         }
 
         /// <summary>
+        /// Returns true if the item qualifies as a treasure item type.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private static bool IsTreasure(string name)
+        {
+            return Instance.TreasurePrefabs.Contains(name);
+        }
+
+        /// <summary>
         /// Returns true if the item has a recipe or is a another qualifying player item.
         /// </summary>
         /// <param name="item"></param>
@@ -143,11 +162,13 @@ namespace VentureValheim.FloatingItems
         /// <returns></returns>
         private static bool ShouldFloat(string name, GameObject item)
         {
-            return Instance.FloatingPrefabs.Contains(name) ||
+            return FloatingItemsPlugin.GetFloatEverything() ||
+                    Instance.FloatingPrefabs.Contains(name) ||
                     (FloatingItemsPlugin.GetFloatTrophies() && name.Contains(TrophyPrefab)) ||
                     (FloatingItemsPlugin.GetFloatMeat() && IsMeat(name)) ||
                     (FloatingItemsPlugin.GetFloatHides() && IsHide(name)) ||
-                    (FloatingItemsPlugin.GetFloatGearAndCraftable() && IsPlayerGear(item));
+                    (FloatingItemsPlugin.GetFloatGearAndCraftable() && IsPlayerGear(item)) ||
+                    (FloatingItemsPlugin.GetFloatTreasure() && IsTreasure(name));
         }
 
         /// <summary>
