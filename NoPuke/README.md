@@ -12,6 +12,10 @@ This mod is client side only and has no configuration options. Does not need to 
 
 ## Changelog
 
+### 0.2.3
+
+* Fixed puke not disabling in multiplayer when another player puked.
+
 ### 0.2.2
 
 * Courtesy update for Ashlands, new logo. No feature changes.

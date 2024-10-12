@@ -1,5 +1,6 @@
 using BepInEx;
 using HarmonyLib;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace VentureValheim.NoPuke
@@ -54,14 +55,51 @@ namespace VentureValheim.NoPuke
             {
                 if (SceneManager.GetActiveScene().name.Equals("main"))
                 {
-                    var se = ObjectDB.instance.GetStatusEffect("Puke".GetStableHashCode());
-                    if (se != null)
+                    var pukeFX = ZNetScene.instance.GetPrefab("fx_Puke".GetStableHashCode());
+                    if (pukeFX != null)
                     {
-                        se.m_startEffects = new EffectList();
+                        var particles = pukeFX.GetComponentsInChildren<ParticleSystem>();
+                        foreach (var particle in particles)
+                        {
+                            var main = particle.main;
+                            main.duration = 0;
+                            main.startDelay = 0;
+                            main.startLifetime = 0;
+                        }
                     }
                     else
                     {
-                        NoPukePlugin.NoPukeLogger.LogWarning("Could not disable puke animations and effects.");
+                        NoPukePlugin.NoPukeLogger.LogWarning("Could not disable puke animations and effects for fx_Puke.");
+                    }
+
+                    var femPukeFX = ZNetScene.instance.GetPrefab("sfx_Puke_female".GetStableHashCode());
+                    if (femPukeFX != null)
+                    {
+                        var sfx = femPukeFX.GetComponent<ZSFX>();
+                        if (sfx != null)
+                        {
+                            sfx.m_maxVol = 0f;
+                            sfx.m_minVol = 0f;
+                        }
+                    }
+                    else
+                    {
+                        NoPukePlugin.NoPukeLogger.LogWarning("Could not disable puke animations and effects for sfx_Puke_female.");
+                    }
+
+                    var malePukeFX = ZNetScene.instance.GetPrefab("sfx_Puke_male".GetStableHashCode());
+                    if (malePukeFX != null)
+                    {
+                        var sfx = malePukeFX.GetComponent<ZSFX>();
+                        if (sfx != null)
+                        {
+                            sfx.m_maxVol = 0f;
+                            sfx.m_minVol = 0f;
+                        }
+                    }
+                    else
+                    {
+                        NoPukePlugin.NoPukeLogger.LogWarning("Could not disable puke animations and effects for sfx_Puke_male.");
                     }
 
                     if (GetItemDrop("bonemass_attack_aoe", out var bonemass))
