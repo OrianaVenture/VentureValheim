@@ -18,6 +18,10 @@ This mod needs to be on the client to work. Config Syncing is included with Jotu
 
 ## Changelog
 
+### 0.2.3
+
+* Code Refactor, should be more performant when you have a high number of creatures in an area.
+
 ### 0.2.2
 
 * Courtesy update for Ashlands, new logo. No feature changes.
