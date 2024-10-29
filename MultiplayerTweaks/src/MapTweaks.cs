@@ -22,7 +22,8 @@ public class MapTweaks
             if (!fixSpawn &&
                 MultiplayerTweaksPlugin.GetEnableTempleMapPin() &&
                 MultiplayerTweaksPlugin.GetEnableHaldorMapPin() &&
-                MultiplayerTweaksPlugin.GetEnableHildirMapPin())
+                MultiplayerTweaksPlugin.GetEnableHildirMapPin() &&
+                MultiplayerTweaksPlugin.GetEnableBogWitchMapPin())
             {
                 return;
             }
@@ -46,6 +47,12 @@ public class MapTweaks
                         break;
                     case "Hildir_camp":
                         if (!MultiplayerTweaksPlugin.GetEnableHildirMapPin())
+                        {
+                            list.Add(item.Key);
+                        }
+                        break;
+                    case "BogWitch_Camp":
+                        if (!MultiplayerTweaksPlugin.GetEnableBogWitchMapPin())
                         {
                             list.Add(item.Key);
                         }

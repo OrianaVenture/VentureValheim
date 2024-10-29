@@ -1,3 +1,8 @@
+## 0.11.4
+
+* Update for game version 0.219.13.
+* Added configuration to hide the Bog Witch map pin.
+
 ## 0.11.3
 
 * Update for game version 0.218.21.

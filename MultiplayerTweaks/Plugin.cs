@@ -13,7 +13,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.11.3";
+        private const string ModVersion = "0.11.4";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -69,6 +69,7 @@ namespace VentureValheim.MultiplayerTweaks
         internal static ConfigEntry<bool> CE_EnableTempleMapPin = null!;
         internal static ConfigEntry<bool> CE_EnableHaldorMapPin = null!;
         internal static ConfigEntry<bool> CE_EnableHildirMapPin = null!;
+        internal static ConfigEntry<bool> CE_EnableBogWitchMapPin = null!;
         internal static ConfigEntry<bool> CE_OverridePlayerMapPins = null!;
         internal static ConfigEntry<bool> CE_ForcePlayerMapPinsOn = null!;
         internal static ConfigEntry<bool> CE_AllowMapPings = null!;
@@ -99,6 +100,15 @@ namespace VentureValheim.MultiplayerTweaks
             }
 
             return CE_EnableHildirMapPin.Value;
+        }
+        public static bool GetEnableBogWitchMapPin()
+        {
+            if (GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+            {
+                return true;
+            }
+
+            return CE_EnableBogWitchMapPin.Value;
         }
         public static bool GetOverridePlayerMapPins()
         {
@@ -190,6 +200,8 @@ namespace VentureValheim.MultiplayerTweaks
                 true, true, ref CE_EnableHaldorMapPin);
             AddConfig("EnableHildirMapPin", map, "False to hide Hildir map pin on Minimap (boolean).",
                 true, true, ref CE_EnableHildirMapPin);
+            AddConfig("EnableBogWitchMapPin", map, "False to hide Bog Witch map pin on Minimap (boolean).",
+                true, true, ref CE_EnableBogWitchMapPin);
             AddConfig("OverridePlayerMapPositions", map, "Override Player map pin position behavior for Minimap (boolean).",
                 true, false, ref CE_OverridePlayerMapPins);
             AddConfig("ForcePlayerMapPositionOn", map, "True to always show Player position on Minimap when OverridePlayerMapPositions is True (boolean).",

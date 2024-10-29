@@ -4,7 +4,7 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Commonly requested tweaks for servers and single player modes. Toggle the Valkyrie opening, track Hugin tutorials, customize arrival messages, hide the Haldor/Hildir/Temple map pins, PVP options, disable pings, and more!
+Commonly requested tweaks for servers and single player modes. Toggle the Valkyrie opening, track Hugin tutorials, customize arrival messages, hide the Trader/Temple map pins, PVP options, disable pings, and more!
 
 ## Features
 
@@ -12,7 +12,7 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 * Toggle Valkyrie opening cut scene.
 * Add Hugin tutorials to the seen list when tutorials are turned off.
 * Toggle or customize the "I have arrived!" message on new player connection.
-* Toggle the visibility of the Haldor, Hildir, and Start Temple Map Pins.
+* Toggle the visibility of the Haldor, Hildir, Bog Witch, and Start Temple Map Pins.
 * Toggle player Map Position Icons always on or off.
 * Toggle PVP always on or off.
 * Toggle teleporting on death, or only on PVP deaths.
