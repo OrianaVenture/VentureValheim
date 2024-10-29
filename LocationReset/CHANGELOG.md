@@ -1,3 +1,7 @@
+## 0.10.1
+
+* Update for game version 0.219.13.
+
 ## 0.10.0
 
 * Added new configuration IgnoreList to specify locations to not reset.

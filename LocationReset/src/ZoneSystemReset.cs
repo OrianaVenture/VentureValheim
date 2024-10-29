@@ -131,7 +131,7 @@ namespace VentureValheim.LocationReset
                     zoneSystem.m_tempClearAreas.Clear();
                     zoneSystem.m_tempSpawnedObjects.Clear();
 
-                    Vector3 zonePos = zoneSystem.GetZonePos(zoneID);
+                    Vector3 zonePos = ZoneSystem.GetZonePos(zoneID);
 
                     var vegetation = zoneSystem.m_vegetation;
                     zoneSystem.m_vegetation = ResetVegetation;

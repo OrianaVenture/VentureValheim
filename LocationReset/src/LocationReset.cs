@@ -399,7 +399,7 @@ namespace VentureValheim.LocationReset
         /// </summary>
         /// <param name="loc"></param>
         /// <param name="hash"></param>
-        /// <param name="force">True to bypass time constriant and player activity checks</param>
+        /// <param name="force">True to bypass time constraint and player activity checks</param>
         public void TryReset(LocationProxy loc, int hash, bool force = false)
         {
             LocationResetPlugin.LocationResetLogger.LogDebug($"Trying to reset Location with hash {hash} at: {loc.transform.position}");
