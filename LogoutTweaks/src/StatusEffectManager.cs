@@ -6,6 +6,7 @@ namespace VentureValheim.LogoutTweaks
     {
         private static readonly int Poison = "Poison".GetStableHashCode();
         private static readonly int Burning = "Burning".GetStableHashCode();
+        private static readonly int Spirit = "Spirit".GetStableHashCode();
 
         private static HashSet<int> BasicStatusEffects = new HashSet<int>
         {
@@ -31,17 +32,31 @@ namespace VentureValheim.LogoutTweaks
             "Potion_stamina_minor".GetStableHashCode(),
             "Potion_eitr_minor".GetStableHashCode(),
             "Potion_eitr_lingering".GetStableHashCode(),
+            "Potion_BugRepellent".GetStableHashCode(),
+            "Potion_bzerker".GetStableHashCode(),
+            "Potion_hasty".GetStableHashCode(),
+            "Potion_LightFoot".GetStableHashCode(),
+            "Potion_strength".GetStableHashCode(),
+            "Potion_swimmer".GetStableHashCode(),
+            "Potion_tamer".GetStableHashCode(),
+            "Potion_TrollPheromones".GetStableHashCode(),
             "CorpseRun".GetStableHashCode(),
             "SoftDeath".GetStableHashCode(),
             "Slimed".GetStableHashCode(),
-            "Tared".GetStableHashCode()
+            "Tared".GetStableHashCode(),
+            "Lightning".GetStableHashCode(),
+            "Frost".GetStableHashCode(),
+            "Immobilized".GetStableHashCode(),
+            "ImmobilizedAshlands".GetStableHashCode(),
+            "ImmobilizedLong".GetStableHashCode()
         };
 
         public static bool SupportedStatusEffect(int name)
         {
             return BasicStatusEffects.Contains(name) ||
                 name == Poison ||
-                name == Burning;
+                name == Burning ||
+                name == Spirit;
         }
 
         public static StatusEffect BuildStatusEffect(StatusEffectData data)
@@ -70,7 +85,7 @@ namespace VentureValheim.LogoutTweaks
                 sePoison.m_damagePerHit = data.Value2;
                 return sePoison;
             }
-            else if (data.Name == Burning)
+            else if (data.Name == Burning || data.Name == Spirit)
             {
                 var seBurning = (SE_Burning)se;
                 seBurning.m_ttl = data.Ttl;
@@ -112,7 +127,7 @@ namespace VentureValheim.LogoutTweaks
                     Value1 = sePosion.m_damageLeft;
                     Value2 = sePosion.m_damagePerHit;
                 }
-                else if (Name == Burning)
+                else if (Name == Burning || Name == Spirit)
                 {
                     var seBurining = (SE_Burning)se;
                     Value1 = seBurining.m_fireDamageLeft;
@@ -170,7 +185,7 @@ namespace VentureValheim.LogoutTweaks
                 {
                     return $"{Name}:{Ttl}:{Time}:{Value1}:{Value2}";
                 }
-                else if (Name == Burning)
+                else if (Name == Burning || Name == Spirit)
                 {
                     return $"{Name}:{Ttl}:{Time}:{Value1}:{Value2}:{Value3}:{Value4}";
                 }

@@ -13,10 +13,13 @@ On logout saves some of your current status effects to the player file to reappl
 * Rested
 * Wet
 * Poison
-* Burning
+* Burning/Spirit
+* Frost
+* Lightning
 * Vanilla Potions
 * Death effects
 * Slimed & Tared
+* Immobilized
 * Boss Powers
 
 As of version 0.5.0 the poison and burning status effects will track their damage and time remaining, preventing people from logging out to cheat death. Also, reapplying custom status effects from other mods is no longer automatically supported.

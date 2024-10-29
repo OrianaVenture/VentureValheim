@@ -1,3 +1,9 @@
+## 0.6.0
+
+* Update for game version 0.219.13.
+* Supports new meads added in Bog Witch update.
+* Now supports Spirit, Lightning, Frost, and Immobilized effects.
+
 ## 0.5.2
 
 * Fixed bug that would cause status effects received during gameplay to have the wrong values due to modifying the original rather than a copy.
