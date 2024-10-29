@@ -135,6 +135,7 @@ namespace VentureValheim.Progression
             { "SerpentMeat", BOSS_KEY_BLACKFOREST },
             { "SerpentMeatCooked", BOSS_KEY_BLACKFOREST },
             { "Turnip", BOSS_KEY_BLACKFOREST },
+            { "SpiceForests", BOSS_KEY_BLACKFOREST },
             // Mountain
             { "FreezeGland", BOSS_KEY_SWAMP },
             { "Onion", BOSS_KEY_SWAMP },
@@ -147,6 +148,9 @@ namespace VentureValheim.Progression
             { "ChickenMeat", BOSS_KEY_MOUNTAIN },
             { "Cloudberry", BOSS_KEY_MOUNTAIN },
             { "LoxMeat", BOSS_KEY_MOUNTAIN },
+            { "MushroomBzerker", BOSS_KEY_MOUNTAIN },
+            { "FragrantBundle", BOSS_KEY_MOUNTAIN },
+            { "SpiceMountains", BOSS_KEY_MOUNTAIN },
             // Mistlands
             { "BugMeat", BOSS_KEY_PLAIN },
             { "GiantBloodSack", BOSS_KEY_PLAIN },
@@ -154,6 +158,7 @@ namespace VentureValheim.Progression
             { "MushroomJotunPuffs", BOSS_KEY_PLAIN },
             { "RoyalJelly", BOSS_KEY_PLAIN },
             { "Sap", BOSS_KEY_PLAIN },
+            { "SpicePlains", BOSS_KEY_PLAIN },
             // Ashlands
             { "AsksvinMeat", BOSS_KEY_MISTLAND },
             { "BoneMawSerpentMeat", BOSS_KEY_MISTLAND },
@@ -161,7 +166,10 @@ namespace VentureValheim.Progression
             { "MushroomSmokePuff", BOSS_KEY_MISTLAND },
             { "Vineberry", BOSS_KEY_MISTLAND },
             { "VoltureEgg", BOSS_KEY_MISTLAND },
-            { "VoltureMeat", BOSS_KEY_MISTLAND }
+            { "VoltureMeat", BOSS_KEY_MISTLAND },
+            { "SpiceMistlands", BOSS_KEY_MISTLAND },
+            // Deep North
+            { "SpiceAshlands", BOSS_KEY_ASHLAND}
         };
 
         private static int _cachedPublicBossKeys = 0;
@@ -407,7 +415,7 @@ namespace VentureValheim.Progression
             {
                 if (ProgressionConfiguration.Instance.GetUseBlockedActionEffect())
                 {
-                    player.GetSEMan()?.AddStatusEffect(Character.s_statusEffectBurning, resetTime: false);
+                    player.GetSEMan()?.AddStatusEffect("Burning".GetStableHashCode(), resetTime: false);
                 }
 
                 if (ProgressionConfiguration.Instance.GetUseBlockedActionMessage())
@@ -415,6 +423,50 @@ namespace VentureValheim.Progression
                     player.Message(MessageHud.MessageType.Center, ProgressionConfiguration.Instance.GetBlockedActionMessage());
                 }
             }
+        }
+
+        public bool IsTeleportable(string name)
+        {
+            string key = "";
+            switch (name)
+            {
+                case "Copper":
+                case "CopperOre":
+                case "CopperScrap":
+                case "Tin":
+                case "TinOre":
+                    key = ProgressionConfiguration.Instance.GetUnlockPortalCopperTinKey();
+                    break;
+                case "Iron":
+                case "IronOre":
+                case "IronScrap":
+                case "Ironpit":
+                    key = ProgressionConfiguration.Instance.GetUnlockPortalIronKey();
+                    break;
+                case "Silver":
+                case "SilverOre":
+                    key = ProgressionConfiguration.Instance.GetUnlockPortalSilverKey();
+                    break;
+                case "BlackMetal":
+                case "BlackMetalScrap":
+                    key = ProgressionConfiguration.Instance.GetUnlockPortalBlackMetalKey();
+                    break;
+                case "Flametal":
+                case "FlametalOre":
+                case "FlametalNew":
+                case "FlametalOreNew":
+                    key = ProgressionConfiguration.Instance.GetUnlockPortalFlametalKey();
+                    break;
+                default:
+                    break;
+            }
+
+            if (!key.IsNullOrWhiteSpace())
+            {
+                return HasKey(key);
+            }
+
+            return true;
         }
     }
 }

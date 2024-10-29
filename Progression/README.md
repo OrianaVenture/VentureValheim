@@ -66,6 +66,7 @@ If you see conflicts with other mods you can turn off this mod's private raids f
 * KilledTroll
 * killed_surtling
 * KilledBat
+* defeated_serpent
 * Hildir1
 * Hildir2
 * Hildir3
@@ -111,13 +112,13 @@ Additionally, you can bypass the progression order and just enforce in-game days
 
 If you want manual control over when bosses become available to summon you will need to manually update the OverrideLockBossSummonsDefaults setting each time you want to unlock a new boss. Using any key that a player cannot obtain will block them from summoning it. You can also use this strategy to only give certain player access to boss alters. Example of locking all boss alters: Eikthyr, Locked, gd_king, Locked, Bonemass, Locked, Dragon, Locked, GoblinKing, Locked, SeekerQueen, Locked, Fader, Locked
 
-#### Locking Portals
+#### Locking/Unlocking Portals
 
-The ability to use portals can be locked behind one specified key with the LockPortalsKey setting.
+The ability to use portals can be locked behind one specified key with the LockPortalsKey setting. Additionally you can unlock portaling metals based off keys with the configurations in the "PortalUnlocking" section.
 
 #### Locking Everything Else
 
-Using equipment, crafting, building, and cooking can all be locked with individual settings. The materials are categorized by the biome they are naturally found in. For example, if you lock all these features, if you have not defeated any bosses then you cannot use or craft the antler pickaxe, place a forge, make deer stew, or unlock swamp crypts. When paired with private keys, these features force new players joining your server to follow the progression of the game in order to advance. This will apply to all game items that use vanilla crafting materials.
+Using equipment, crafting, building, and cooking can all be locked with individual settings. The materials are categorized by the biome they and their crafting ingredients are naturally found in. For example, if you lock all these features, if you have not defeated any bosses then you cannot use or craft the antler pickaxe, place a forge, make deer stew, or unlock swamp crypts. When paired with private keys, these features force new players joining your server to follow the progression of the game in order to advance. This will apply to all game items that use vanilla crafting materials.
 
 #### Locking Configuration Options
 
@@ -138,12 +139,15 @@ Using equipment, crafting, building, and cooking can all be locked with individu
 
 ### Trader Configuration Options
 
-There are more key options specifically for Haldor under it's own section called "Trader". Similarly there is a section for Hildir. All vanilla items have their own configuration option if you wish to override the required key to unlock them. If these configurations are left blank it will use the game defaults. If you wish to remove only some item key requirements you can achieve this by setting the item keys to your own custom key like "Trader" and then "enforce" this key in the appropriate configuration mentioned above so all players can access it. Similarly, you can lock items by specifying a custom key that is then never added to the game (or only given to certain players when using private keys).
+There are more key options specifically for Haldor under it's own section called "Trader". Similarly there is a section for each Hildir and the Bog Witch. Many vanilla items have additional configuration option if you wish to override the required key to unlock them. If these configurations are left blank it will use the game defaults. If you wish to remove only some item key requirements you can achieve this by setting the item keys to your own custom key like "Trader" and then "enforce" this key in the appropriate configuration mentioned above so all players can access it. Similarly, you can lock items by specifying a custom key that is then never added to the game (or only given to certain players when using private keys).
 
 | Configuration <br>_______________| Description <br>_____________|
 |--- |--- |
 | UnlockAllHaldorItems | If true bypasses the key check for Haldor's items and unlocks everything. |
 | UnlockAllHildirItems | If true bypasses the key check for Hildir's items and unlocks everything. |
+| UnlockAllBogWitchItems | If true bypasses the key check for Bog Witch's items and unlocks everything. |
+
+Some configurations options are not listed in this readme, see the configuration file for all options.
 
 ### Skill Manager
 

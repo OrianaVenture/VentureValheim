@@ -22,8 +22,10 @@ namespace VentureValheim.Progression
         public Dictionary<string, string> TamingKeysList { get; protected set; }
         public Dictionary<string, string> SummoningKeysList { get; protected set; }
 
-        // Cache for Hildir's items
-        public Dictionary<string, string> HildirOriginalItemsList { get; protected set; }
+        // Cache for Trader Items
+        public Dictionary<string, string> HaldorOriginalItemsList;
+        public Dictionary<string, string> HildirOriginalItemsList;
+        public Dictionary<string, string> BogWitchOriginalItemsList;
 
         public void UpdateAllConfigurations()
         {
@@ -244,63 +246,84 @@ namespace VentureValheim.Progression
         /// and their new key requirements.
         /// </summary>
         /// <returns></returns>
-        protected Dictionary<string, string> GetTraderConfiguration()
+        protected Dictionary<string, string> GetTraderConfiguration(List<Trader.TradeItem> items)
         {
-            var trades = new Dictionary<string, string>();
+            SetOriginalItemsList(ref HaldorOriginalItemsList, items);
+
+            var keyReplacements = new Dictionary<string, string>();
             if (!ProgressionConfiguration.Instance.GetHelmetYuleKey().IsNullOrWhiteSpace())
             {
-                trades.Add("HelmetYule", ProgressionConfiguration.Instance.GetHelmetYuleKey());
+                keyReplacements.Add("HelmetYule", ProgressionConfiguration.Instance.GetHelmetYuleKey());
             }
             if (!ProgressionConfiguration.Instance.GetHelmetDvergerKey().IsNullOrWhiteSpace())
             {
-                trades.Add("HelmetDverger", ProgressionConfiguration.Instance.GetHelmetDvergerKey());
+                keyReplacements.Add("HelmetDverger", ProgressionConfiguration.Instance.GetHelmetDvergerKey());
             }
             if (!ProgressionConfiguration.Instance.GetBeltStrengthKey().IsNullOrWhiteSpace())
             {
-                trades.Add("BeltStrength", ProgressionConfiguration.Instance.GetBeltStrengthKey());
+                keyReplacements.Add("BeltStrength", ProgressionConfiguration.Instance.GetBeltStrengthKey());
             }
             if (!ProgressionConfiguration.Instance.GetYmirRemainsKey().IsNullOrWhiteSpace())
             {
-                trades.Add("YmirRemains", ProgressionConfiguration.Instance.GetYmirRemainsKey());
+                keyReplacements.Add("YmirRemains", ProgressionConfiguration.Instance.GetYmirRemainsKey());
             }
             if (!ProgressionConfiguration.Instance.GetFishingRodKey().IsNullOrWhiteSpace())
             {
-                trades.Add("FishingRod", ProgressionConfiguration.Instance.GetFishingRodKey());
+                keyReplacements.Add("FishingRod", ProgressionConfiguration.Instance.GetFishingRodKey());
             }
             if (!ProgressionConfiguration.Instance.GetFishingBaitKey().IsNullOrWhiteSpace())
             {
-                trades.Add("FishingBait", ProgressionConfiguration.Instance.GetFishingBaitKey());
+                keyReplacements.Add("FishingBait", ProgressionConfiguration.Instance.GetFishingBaitKey());
             }
             if (!ProgressionConfiguration.Instance.GetThunderstoneKey().IsNullOrWhiteSpace())
             {
-                trades.Add("Thunderstone", ProgressionConfiguration.Instance.GetThunderstoneKey());
+                keyReplacements.Add("Thunderstone", ProgressionConfiguration.Instance.GetThunderstoneKey());
             }
             if (!ProgressionConfiguration.Instance.GetChickenEggKey().IsNullOrWhiteSpace())
             {
-                trades.Add("ChickenEgg", ProgressionConfiguration.Instance.GetChickenEggKey());
+                keyReplacements.Add("ChickenEgg", ProgressionConfiguration.Instance.GetChickenEggKey());
+            }
+            if (!ProgressionConfiguration.Instance.GetBarrelRingsKey().IsNullOrWhiteSpace())
+            {
+                keyReplacements.Add("BarrelRings", ProgressionConfiguration.Instance.GetBarrelRingsKey());
+            }
+
+            var trades = new Dictionary<string, string>();
+            foreach (var item in HaldorOriginalItemsList)
+            {
+                if (keyReplacements.ContainsKey(item.Key))
+                {
+                    trades.Add(item.Key, keyReplacements[item.Key]);
+                }
+                else
+                {
+                    trades.Add(item.Key, item.Value);
+                }
             }
 
             return trades;
         }
 
         /// <summary>
-        /// Record Hildir's original item-key requirements.
+        /// Record original item-key requirements.
         /// </summary>
         /// <param name="items"></param>
-        protected void SetHildirOriginalItemsList(List<Trader.TradeItem> items)
+        protected void SetOriginalItemsList(ref Dictionary<string, string> cache, List<Trader.TradeItem> items)
         {
-            if (HildirOriginalItemsList == null)
+            if (cache != null)
             {
-                HildirOriginalItemsList = new Dictionary<string, string>();
-                foreach (var item in items)
+                return;
+            }
+
+            cache = new Dictionary<string, string>();
+            foreach (var item in items)
+            {
+                if (item.m_prefab != null)
                 {
-                    if (item.m_prefab != null)
+                    var name = Utils.GetPrefabName(item.m_prefab.gameObject);
+                    if (!cache.ContainsKey(name))
                     {
-                        var name = Utils.GetPrefabName(item.m_prefab.gameObject);
-                        if (!HildirOriginalItemsList.ContainsKey(name))
-                        {
-                            HildirOriginalItemsList.Add(name, item.m_requiredGlobalKey);
-                        }
+                        cache.Add(name, item.m_requiredGlobalKey.ToLower());
                     }
                 }
             }
@@ -313,7 +336,7 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         protected Dictionary<string, string> GetHildirConfiguration(List<Trader.TradeItem> items)
         {
-            SetHildirOriginalItemsList(items);
+            SetOriginalItemsList(ref HildirOriginalItemsList, items);
 
             var keyReplacements = new Dictionary<string, string>();
             if (!ProgressionConfiguration.Instance.GetCryptItemsKey().IsNullOrWhiteSpace())
@@ -335,6 +358,30 @@ namespace VentureValheim.Progression
                 if (keyReplacements.ContainsKey(item.Value))
                 {
                     trades.Add(item.Key, keyReplacements[item.Value]);
+                }
+                else
+                {
+                    trades.Add(item.Key, item.Value);
+                }
+            }
+
+            return trades;
+        }
+
+        protected Dictionary<string, string> GetBogWitchConfiguration(List<Trader.TradeItem> items)
+        {
+            SetOriginalItemsList(ref BogWitchOriginalItemsList, items);
+
+            var trades = new Dictionary<string, string>();
+            foreach (var item in BogWitchOriginalItemsList)
+            {
+                if (item.Key.Equals("ScytheHandle") && !ProgressionConfiguration.Instance.GetScytheHandleKey().IsNullOrWhiteSpace())
+                {
+                    trades.Add(item.Key, ProgressionConfiguration.Instance.GetScytheHandleKey());
+                }
+                else
+                {
+                    trades.Add(item.Key, item.Value);
                 }
             }
 

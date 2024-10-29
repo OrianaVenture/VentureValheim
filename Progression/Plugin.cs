@@ -23,7 +23,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.2.14";
+        private const string ModVersion = "0.3.0";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -63,6 +63,13 @@ namespace VentureValheim.Progression
         public static ConfigEntry<bool> CE_LockCooking = null!;
         public static ConfigEntry<string> CE_LockPortalsKey = null!;
 
+        // Locking Teleporting Metals
+        public static ConfigEntry<string> CE_UnlockPortalCopperTinKey = null!;
+        public static ConfigEntry<string> CE_UnlockPortalIronKey = null!;
+        public static ConfigEntry<string> CE_UnlockPortalSilverKey = null!;
+        public static ConfigEntry<string> CE_UnlockPortalBlackMetalKey = null!;
+        public static ConfigEntry<string> CE_UnlockPortalFlametalKey = null!;
+
         // Skills Manager
         public static ConfigEntry<bool> CE_EnableSkillManager = null!;
         public static ConfigEntry<bool> CE_AllowSkillDrain = null!;
@@ -87,12 +94,17 @@ namespace VentureValheim.Progression
         public static ConfigEntry<string> CE_FishingBaitKey = null!;
         public static ConfigEntry<string> CE_ThunderstoneKey = null!;
         public static ConfigEntry<string> CE_ChickenEggKey = null!;
+        public static ConfigEntry<string> CE_BarrelRingsKey = null!;
 
         // Hildir Configuration
         public static ConfigEntry<bool> CE_UnlockAllHildirItems = null!;
         public static ConfigEntry<string> CE_CryptItemsKey = null!;
         public static ConfigEntry<string> CE_CaveItemsKey = null!;
         public static ConfigEntry<string> CE_TowerItemsKey = null!;
+
+        // Bog Witch Configuration
+        public static ConfigEntry<bool> CE_UnlockAllBogWitchItems = null!;
+        public static ConfigEntry<string> CE_ScytheHandleKey = null!;
 
         // Raids Configuration
         public static ConfigEntry<bool> CE_UsePrivateRaids = null!;
@@ -120,9 +132,11 @@ namespace VentureValheim.Progression
 
             const string keys = "Keys";
             const string locking = "Locking";
+            const string portal = "PortalUnlocking";
             const string skills = "Skills";
             const string trader = "Trader";
             const string hildir = "Hildir";
+            const string witch = "BogWitch";
             const string raids = "Raids";
 
             // Keys
@@ -201,6 +215,24 @@ namespace VentureValheim.Progression
                 "Use this key to control player ability to use portals (ex: defeated_eikthyr). Leave blank to allow vanilla portal behavior (string).",
                 true, "", ref CE_LockPortalsKey);
 
+            // Portal Unlocking
+            // TODO: Move LockPortalsKey to this section
+            AddConfig("UnlockPortalCopperTinKey", portal,
+                "Use this key to control player ability to teleport copper and tin. Leave blank to allow vanilla portal behavior (string).",
+                true, "", ref CE_UnlockPortalCopperTinKey);
+            AddConfig("UnlockPortalIronKey", portal,
+                "Use this key to control player ability to teleport iron. Leave blank to allow vanilla portal behavior (string).",
+                true, "", ref CE_UnlockPortalIronKey);
+            AddConfig("UnlockPortalSilverKey", portal,
+                "Use this key to control player ability to teleport silver. Leave blank to allow vanilla portal behavior (string).",
+                true, "", ref CE_UnlockPortalSilverKey);
+            AddConfig("UnlockPortalBlackMetalKey", portal,
+                "Use this key to control player ability to teleport black metal. Leave blank to allow vanilla portal behavior (string).",
+                true, "", ref CE_UnlockPortalBlackMetalKey);
+            AddConfig("UnlockPortalFlametalKey", portal,
+                "Use this key to control player ability to teleport flametal. Leave blank to allow vanilla portal behavior (string).",
+                true, "", ref CE_UnlockPortalFlametalKey);
+
             // Skills
             AddConfig("EnableSkillManager", skills,
                 "Enable the Skill Manager feature (boolean).",
@@ -267,6 +299,9 @@ namespace VentureValheim.Progression
             AddConfig("ChickenEggKey", trader,
                 "Custom key for unlocking the Egg. Leave blank to use default (string).",
                 true, "", ref CE_ChickenEggKey);
+            AddConfig("BarrelRingsKey", trader,
+                "Custom key for unlocking the Barrel Rings. Leave blank to use default (string).",
+                true, "", ref CE_BarrelRingsKey);
 
             // Hildir
             AddConfig("UnlockAllHildirItems", hildir,
@@ -281,6 +316,14 @@ namespace VentureValheim.Progression
             AddConfig("TowerItemsKey", hildir,
                 "Custom key for unlocking the Tower Dungeon items. Leave blank to use default (string).",
                 true, "", ref CE_TowerItemsKey);
+
+            // Bog Witch
+            AddConfig("UnlockAllBogWitchItems", witch,
+                "True to remove the key check from Bog Witch entirely and unlock all items (boolean).",
+                true, false, ref CE_UnlockAllBogWitchItems);
+            AddConfig("ScytheHandleKey", witch,
+                "Custom key for unlocking the Scythe Handle. Leave blank to use default (string).",
+                true, "", ref CE_ScytheHandleKey);
 
             // Raids
             AddConfig("UsePrivateRaids", raids, "True to use this mod's raids feature when using private keys (bool).",
@@ -367,6 +410,13 @@ namespace VentureValheim.Progression
         public bool GetLockCooking();
         public string GetLockPortalsKey();
 
+        // Portal Unlocking
+        public string GetUnlockPortalCopperTinKey();
+        public string GetUnlockPortalIronKey();
+        public string GetUnlockPortalSilverKey();
+        public string GetUnlockPortalBlackMetalKey();
+        public string GetUnlockPortalFlametalKey();
+
         // Skills Manager
         public bool GetEnableSkillManager();
         public bool GetAllowSkillDrain();
@@ -391,12 +441,17 @@ namespace VentureValheim.Progression
         public string GetFishingBaitKey();
         public string GetThunderstoneKey();
         public string GetChickenEggKey();
+        public string GetBarrelRingsKey();
 
         // Hildir Configuration
         public bool GetUnlockAllHildirItems();
         public string GetCryptItemsKey();
         public string GetCaveItemsKey();
         public string GetTowerItemsKey();
+
+        // Bog Witch Configuration
+        public bool GetUnlockAllBogWitchItems();
+        public string GetScytheHandleKey();
 
         // Raids Configuration
         public bool GetUsePrivateRaids();
@@ -516,6 +571,13 @@ namespace VentureValheim.Progression
             return ProgressionPlugin.CE_LockPortalsKey.Value;
         }
 
+        // Portal Unlocking
+        public string GetUnlockPortalCopperTinKey() => ProgressionPlugin.CE_UnlockPortalCopperTinKey.Value;
+        public string GetUnlockPortalIronKey() => ProgressionPlugin.CE_UnlockPortalIronKey.Value;
+        public string GetUnlockPortalSilverKey() => ProgressionPlugin.CE_UnlockPortalSilverKey.Value;
+        public string GetUnlockPortalBlackMetalKey() => ProgressionPlugin.CE_UnlockPortalBlackMetalKey.Value;
+        public string GetUnlockPortalFlametalKey() => ProgressionPlugin.CE_UnlockPortalFlametalKey.Value;
+
         // Skills
         public bool GetEnableSkillManager() => ProgressionPlugin.CE_EnableSkillManager.Value;
         public bool GetAllowSkillDrain() => ProgressionPlugin.CE_AllowSkillDrain.Value;
@@ -540,12 +602,17 @@ namespace VentureValheim.Progression
         public string GetFishingBaitKey() => ProgressionPlugin.CE_FishingBaitKey.Value;
         public string GetThunderstoneKey() => ProgressionPlugin.CE_ThunderstoneKey.Value;
         public string GetChickenEggKey() => ProgressionPlugin.CE_ChickenEggKey.Value;
+        public string GetBarrelRingsKey() => ProgressionPlugin.CE_BarrelRingsKey.Value;
 
         // Hildir
         public bool GetUnlockAllHildirItems() => ProgressionPlugin.CE_UnlockAllHildirItems.Value;
         public string GetCryptItemsKey() => ProgressionPlugin.CE_CryptItemsKey.Value;
         public string GetCaveItemsKey() => ProgressionPlugin.CE_CaveItemsKey.Value;
         public string GetTowerItemsKey() => ProgressionPlugin.CE_TowerItemsKey.Value;
+
+        // Bog Witch
+        public bool GetUnlockAllBogWitchItems() => ProgressionPlugin.CE_UnlockAllBogWitchItems.Value;
+        public string GetScytheHandleKey() => ProgressionPlugin.CE_ScytheHandleKey.Value;
 
         // Raids
         public bool GetUsePrivateRaids() => ProgressionPlugin.CE_UsePrivateRaids.Value;

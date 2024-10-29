@@ -203,8 +203,8 @@ namespace VentureValheim.Progression
         /// <summary>
         /// Block placing items without the proper keys.
         /// </summary>
-        [HarmonyPatch(typeof(Player), nameof(Player.PlacePiece))]
-        public static class Patch_Player_PlacePiece
+        [HarmonyPatch(typeof(Player), nameof(Player.TryPlacePiece))]
+        public static class Patch_Player_TryPlacePiece
         {
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(ref bool __result, Piece piece)
@@ -263,6 +263,35 @@ namespace VentureValheim.Progression
                 }
 
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Unblock portal usage for metals with proper keys.
+        /// </summary>
+        [HarmonyPatch(typeof(Inventory), nameof(Inventory.IsTeleportable))]
+        public static class Patch_Inventory_IsTeleportable
+        {
+            private static bool Prefix(Inventory __instance, ref bool __result)
+            {
+                // TODO: test
+                if (ZoneSystem.instance.GetGlobalKey(GlobalKeys.TeleportAll))
+                {
+                    __result = true;
+                    return false;
+                }
+
+                foreach (ItemDrop.ItemData item in __instance.m_inventory)
+                {
+                    if (!item.m_shared.m_teleportable && !Instance.IsTeleportable(item.m_dropPrefab.name))
+                    {
+                        __result = false;
+                        return false;
+                    }
+                }
+
+                __result = true;
+                return false;
             }
         }
     }

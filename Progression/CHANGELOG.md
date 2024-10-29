@@ -1,3 +1,10 @@
+## 0.3.0
+
+* Update for game version 0.219.13.
+* New configurations for unlocking portaling metals based on keys.
+* New configurations for Bog Witch trader items, and new Haldor item.
+* Added new Bog Witch items to cooking locking system.
+
 ## 0.2.14
 
 * Compatibility support added for properly unlocking items that have only one required ingredient for crafting (Thank you nbusseneau for the report).
