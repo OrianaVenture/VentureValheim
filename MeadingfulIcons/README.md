@@ -21,6 +21,11 @@ This mod needs to be on all clients to work properly. Config Syncing is included
 
 ## Changelog
 
+### 0.2.0
+
+* Update for game version 0.219.13.
+* Includes new mead bases added in Bog Witch update.
+
 ### 0.1.3
 
 * Updated to include new items from Ashlands.

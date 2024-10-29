@@ -35,7 +35,14 @@ namespace VentureValheim.MeadingfulIcons
             "MeadBaseEitrLingering",
             "MeadBaseFrostResist",
             "MeadBasePoisonResist",
-            "BarleyWineBase"
+            "BarleyWineBase",
+            "MeadBaseBugRepellent",
+            "MeadBaseBzerker",
+            "MeadBaseHasty",
+            "MeadBaseLightFoot",
+            "MeadBaseStrength",
+            "MeadBaseSwimmer",
+            "MeadBaseTamer"
         };
 
         private static bool _objectDBReady = false;
@@ -89,7 +96,8 @@ namespace VentureValheim.MeadingfulIcons
             int width = (int)sprite.textureRect.width;
             int height = (int)sprite.textureRect.height;
             int x = (int)sprite.textureRect.x;
-            int y = sprite.texture.height - (int)sprite.textureRect.y - height; // Inverted
+            int y = (int)sprite.textureRect.y;
+            //int y = sprite.texture.height - (int)sprite.textureRect.y - height; // Inverted (Legacy code after Bog Witch)
 
             RenderTexture previous = RenderTexture.active;
             RenderTexture atlas = RenderTexture.GetTemporary(
@@ -198,8 +206,26 @@ namespace VentureValheim.MeadingfulIcons
             {
                 if (GetItemDrop(mead, out var item))
                 {
-                    if (MeadingfulIconsPlugin.GetReplaceIcons() && _iconBundle != null && baseSpriteTexture != null)
+                    if (MeadingfulIconsPlugin.GetReplaceIcons() && _iconBundle != null)
                     {
+                        Texture2D originalSpriteTexture = null;
+                        if (item.m_itemData.m_shared.m_icons.Length > 0)
+                        {
+                            Sprite baseSprite = item.m_itemData.m_shared.m_icons[0];
+                            if (baseSprite.texture.isReadable)
+                            {
+                                originalSpriteTexture = baseSprite.texture;
+                            }
+                            else
+                            {
+                                originalSpriteTexture = DuplicateTexture(baseSprite);
+                            }
+                        }
+                        else
+                        {
+                            originalSpriteTexture = baseSpriteTexture;
+                        }
+
                         Sprite overlay = null;
                         try
                         {
@@ -213,7 +239,7 @@ namespace VentureValheim.MeadingfulIcons
 
                         if (overlay != null && overlay.texture.isReadable)
                         {
-                            var sprite = MergeTextures($"VV_{mead}", baseSpriteTexture, overlay.texture);
+                            var sprite = MergeTextures($"VV_{mead}", originalSpriteTexture, overlay.texture);
                             item.m_itemData.m_shared.m_icons = new Sprite[] { sprite };
                         }
                         else
