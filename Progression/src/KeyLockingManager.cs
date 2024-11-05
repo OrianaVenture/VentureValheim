@@ -466,7 +466,7 @@ namespace VentureValheim.Progression
                 return HasKey(key);
             }
 
-            return true;
+            return false;
         }
     }
 }

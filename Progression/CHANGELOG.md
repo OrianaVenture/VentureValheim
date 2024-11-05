@@ -1,3 +1,7 @@
+## 0.3.1
+
+* Fixed a bug that allowed portaling items when not allowed.
+
 ## 0.3.0
 
 * Update for game version 0.219.13.
