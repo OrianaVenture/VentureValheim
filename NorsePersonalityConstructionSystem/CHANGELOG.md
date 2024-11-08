@@ -1,3 +1,7 @@
+## 0.0.7
+
+* Update for game version 0.219.13.
+
 ## 0.0.6
 
 * Fixed a bug where NPC ragdolls were assigned to their vanilla counterparts. 
