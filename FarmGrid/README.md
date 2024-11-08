@@ -31,6 +31,11 @@ This mod is client side only and changes made to the configurations will only af
 
 ## Changelog
 
+### 0.1.1
+
+* Added missing Pickable_Fiddlehead to default configurations.
+* Fixed grown (and sometimes partially grown) plants not activating grid snapping correctly.
+
 ### 0.1.0
 
 * First release.

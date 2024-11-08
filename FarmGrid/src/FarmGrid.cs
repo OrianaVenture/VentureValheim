@@ -23,18 +23,21 @@ public class FarmGrid
     }
 
     private static Dictionary<string, float> customPlants = new Dictionary<string, float>();
-    private static readonly Dictionary<string, float> vanillaPlants = new Dictionary<string, float>()
+    private static readonly Dictionary<string, float> vanillaPlantsDefaults = new Dictionary<string, float>()
     {
-        { "RaspberryBush", 0.5f },
         { "BlueberryBush", 0.5f },
-        { "Pickable_Mushroom", 0.5f },
-        { "Pickable_Mushroom_yellow", 0.5f },
-        { "Pickable_Mushroom_blue", 0.5f },
         { "CloudberryBush", 0.5f },
-        { "Pickable_Thistle", 0.5f },
+        { "RaspberryBush", 0.5f },
         { "Pickable_Dandelion", 0.5f },
-        { "Pickable_SmokePuff", 0.5f }
+        { "Pickable_Fiddlehead", 0.5f },
+        { "Pickable_Mushroom", 0.5f },
+        { "Pickable_Mushroom_blue", 0.5f },
+        { "Pickable_Mushroom_yellow", 0.5f },
+        { "Pickable_SmokePuff", 0.5f },
+        { "Pickable_Thistle", 0.5f }
     };
+
+    private static Dictionary<string, float> plantsConfiguration = new Dictionary<string, float>();
 
     private static readonly string[] plantObjectMasks =
         { "Default", "Default_small", "item", "piece", "piece_nonsolid", "static_solid" };
@@ -49,6 +52,30 @@ public class FarmGrid
     private static bool freeDraw = true;
 
     #region Methods
+
+    public static void SetupPlantCache()
+    {
+        if (ZNetScene.instance == null)
+        {
+            return;
+        }
+
+        plantsConfiguration = vanillaPlantsDefaults;
+
+        foreach (GameObject obj in ZNetScene.instance.m_prefabs)
+        {
+            var plant = obj.GetComponent<Plant>();
+            if (plant != null)
+            {
+                plantsConfiguration.Add(plant.name, plant.m_growRadius);
+
+                foreach (var grownPlant in plant.m_grownPrefabs)
+                {
+                    plantsConfiguration.Add(grownPlant.name, plant.m_growRadius);
+                }
+            }
+        }
+    }
 
     public static void SetupConfigurations()
     {
@@ -80,9 +107,9 @@ public class FarmGrid
             return true;
         }
 
-        if (vanillaPlants.ContainsKey(name))
+        if (plantsConfiguration.ContainsKey(name))
         {
-            size = vanillaPlants[name];
+            size = plantsConfiguration[name];
             return true;
         }
 
@@ -91,8 +118,7 @@ public class FarmGrid
 
     private static float GetCollisionRadius(PlantObject plant)
     {
-        float spacing = plant.growthSize * 2 + FarmGridPlugin.GetExtraPlantSpacing();
-        return spacing * (FarmGridPlugin.GetFarmGridSections() + 1);
+        return GetPlantSpacing(plant.growthSize) * (FarmGridPlugin.GetFarmGridSections() + 1);
     }
 
     private static float GetPlantSpacing(float growthSize)
@@ -124,7 +150,7 @@ public class FarmGrid
         farmGridVisible = true;
     }
 
-    private static void DrawSegments(int farmGridSections, float gridSize,GameObject grid,
+    private static void DrawSegments(int farmGridSections, float gridSize, GameObject grid,
         Vector3 position, Vector3 pivot)
     {
         grid.transform.position = position;
@@ -222,7 +248,7 @@ public class FarmGrid
 
         Collider component = localPlayer.m_placementGhost.GetComponentInChildren<Collider>();
 
-        if (component != null && GetPlantObject(component, out var plantObject))
+        if (GetPlantObject(component, out var plantObject))
         {
             plantGhost = plantObject;
             plantGhostPosition = plantGhost.position;
@@ -488,34 +514,13 @@ public class FarmGrid
 
     private static bool GetPlantObject(Collider collider, out PlantObject plantObject)
     {
-        if (collider == null)
+        if (collider != null)
         {
-            plantObject = null;
-            return false;
-        }
-
-        Plant plant = collider.GetComponentInParent<Plant>();
-        if (plant != null)
-        {
-            if (!HasCustomSize(plant.name, out float size1))
+            if (HasCustomSize(collider.transform.root.name, out float size))
             {
-                size1 = plant.m_growRadius;
+                plantObject = new PlantObject(collider.transform.position, size);
+                return true;
             }
-
-            plantObject = new PlantObject(collider.transform.position, size1);
-            return true;
-        }
-
-        Piece piece = collider.GetComponentInParent<Piece>();
-        if (piece != null && HasCustomSize(piece.name, out float size2))
-        {
-            if (size2 == 0f)
-            {
-                size2 = collider.contactOffset;
-            }
-
-            plantObject = new PlantObject(collider.transform.position, size2);
-            return true;
         }
 
         plantObject = null;
@@ -601,6 +606,16 @@ public class FarmGrid
                 HideFarmGrid();
                 ResetCache();
             }
+        }
+    }
+
+    [HarmonyPriority(Priority.Last)]
+    [HarmonyPatch(typeof(ZNetScene), nameof(ZNetScene.Awake))]
+    public static class Patch_ZNetScene_Awake
+    {
+        private static void Postfix()
+        {
+            SetupPlantCache();
         }
     }
 
