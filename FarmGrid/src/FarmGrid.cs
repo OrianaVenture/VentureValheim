@@ -60,19 +60,32 @@ public class FarmGrid
             return;
         }
 
-        plantsConfiguration = vanillaPlantsDefaults;
+        plantsConfiguration.Clear();
 
         foreach (GameObject obj in ZNetScene.instance.m_prefabs)
         {
             var plant = obj.GetComponent<Plant>();
-            if (plant != null)
+            if (plant == null || plantsConfiguration.ContainsKey(plant.name))
             {
-                plantsConfiguration.Add(plant.name, plant.m_growRadius);
+                continue;
+            }
 
-                foreach (var grownPlant in plant.m_grownPrefabs)
+            plantsConfiguration.Add(plant.name, plant.m_growRadius);
+
+            foreach (var grownPlant in plant.m_grownPrefabs)
+            {
+                if (!plantsConfiguration.ContainsKey(grownPlant.name))
                 {
                     plantsConfiguration.Add(grownPlant.name, plant.m_growRadius);
                 }
+            }
+        }
+
+        foreach (var vanilla in vanillaPlantsDefaults)
+        {
+            if (!plantsConfiguration.ContainsKey(vanilla.Key))
+            {
+                plantsConfiguration.Add(vanilla.Key, vanilla.Value);
             }
         }
     }

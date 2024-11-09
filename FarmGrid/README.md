@@ -31,6 +31,10 @@ This mod is client side only and changes made to the configurations will only af
 
 ## Changelog
 
+### 0.1.2
+
+* Bug fix for crashing on login.
+
 ### 0.1.1
 
 * Added missing Pickable_Fiddlehead to default configurations.
