@@ -23,7 +23,7 @@ namespace VentureValheim.LocationReset
         }
 
         private const string ModName = "LocationReset";
-        private const string ModVersion = "0.10.1";
+        private const string ModVersion = "0.10.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -82,7 +82,7 @@ namespace VentureValheim.LocationReset
         private static readonly int Hash_Queen = "Mistlands_DvergrBossEntrance1".GetStableHashCode();
         private static readonly int Hash_HildirBurial = "Hildir_crypt".GetStableHashCode();
         private static readonly int Hash_HildirCave = "Hildir_cave".GetStableHashCode();
-        private static readonly int Hash_HildirTower = "Hildir_plainsfortress".GetStableHashCode();
+        public static readonly int Hash_HildirTower = "Hildir_plainsfortress".GetStableHashCode();
 
         private static readonly int Hash_CharredFortress = "CharredFortress".GetStableHashCode();
         private static readonly int Hash_LeviathanLava = "LeviathanLava".GetStableHashCode();

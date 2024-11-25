@@ -45,7 +45,7 @@ If you want "sky locations" to reset even if players have built/died around the 
 <details close>
 <summary>Expand/Collapse Hildir Note (Spoilers!)</summary>
 
-You may notice that Sealed Towers (Hildir plains dungeon) are not resetting. Since you must build to enter the tower it is very likely the mod is detecting your player placed pieces and is refusing to reset. Your placed pieces must be about 16 meters away from the tower itself, or about 8 wooden walls length. If you do not see a log line like "Done regenerating location Hildir_plainsfortress ..." then it did not reset. Turn on bepinex debug logs to see more detailed information.
+You may notice that Sealed Towers (Hildir plains dungeon) are not resetting. There is an exception in place just for this location as of version 0.10.2. It will reset unless there is a crafting station or a fireplace placed by a player in range. When you are finished at the tower be sure to remove these pieces to enable resetting. Your placed pieces must be about 16 meters away from the tower itself, or about 8 wooden walls length to avoid being deleted. If you do not see a log line like "Done regenerating location Hildir_plainsfortress ..." then it did not reset. Turn on bepinex debug logs to see more detailed information.
 
 </details>
 

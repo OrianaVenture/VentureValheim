@@ -1,3 +1,7 @@
+## 0.10.2
+
+* Added logic to reset Sealed Towers with player built pieces unless there is a crafting station or fireplace piece in range.
+
 ## 0.10.1
 
 * Update for game version 0.219.13.

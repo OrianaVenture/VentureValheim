@@ -140,8 +140,9 @@ namespace VentureValheim.LocationReset
         /// </summary>
         /// <param name="position"></param>
         /// <returns></returns>
-        private static PlayerActivity GetPlayerActivity(LocationPosition position)
+        private static PlayerActivity GetPlayerActivity(LocationPosition position, int hash)
         {
+            bool exemptLocation = hash == LocationResetPlugin.Hash_HildirTower;
             PlayerActivity activity = new PlayerActivity(false, false);
 
             var list = SceneManager.GetActiveScene().GetRootGameObjects();
@@ -159,10 +160,10 @@ namespace VentureValheim.LocationReset
                 }
                 else
                 {
-                    if (!activity.GroundActivity && 
+                    if (!activity.GroundActivity &&
                         InBounds(obj.transform.position, position.GroundPosition, position.GroundDistance))
                     {
-                        activity.GroundActivity = IsPlayerActiveObject(obj);
+                        activity.GroundActivity = IsPlayerActiveObject(obj, exemptLocation);
                     }
                 }
             }
@@ -171,17 +172,22 @@ namespace VentureValheim.LocationReset
         }
 
         /// <summary>
-        /// Returns true if the object is of type TombStone, Player, 
-        /// or is a player placed Piece.
+        /// Returns true if the object is of type TombStone, Player,
+        /// or is a player placed Piece. Special rules for exempt locations
+        /// such that only crafting station and fireplace player pieces are considered.
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        private static bool IsPlayerActiveObject(GameObject obj)
+        private static bool IsPlayerActiveObject(GameObject obj, bool exemptLocation = false)
         {
             var piece = obj.GetComponent<Piece>();
             if (piece != null)
             {
-                if (piece.GetCreator() != 0L)
+                bool exempt = exemptLocation &&
+                    (obj.GetComponent<CraftingStation>() == null &&
+                    obj.GetComponent<Fireplace>() == null);
+
+                if (!exempt && piece.GetCreator() != 0L)
                 {
                     return true;
                 }
@@ -474,7 +480,7 @@ namespace VentureValheim.LocationReset
             }
             else
             {
-                playerActivity = GetPlayerActivity(position);
+                playerActivity = GetPlayerActivity(position, hash);
             }
 
             bool skipGround = LocationResetPlugin.GetSkipPlayerGroundPieceCheck() && position.IsSkyLocation;
