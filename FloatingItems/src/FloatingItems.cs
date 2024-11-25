@@ -236,7 +236,9 @@ namespace VentureValheim.FloatingItems
         /// <param name="item"></param>
         private static void ApplyFloatingComponent(GameObject item)
         {
-            if (item.gameObject.GetComponent<Floating>() != null)
+            if (item.gameObject.GetComponent<Floating>() != null ||
+                item.gameObject.GetComponentInChildren<Collider>() == null ||
+                item.gameObject.GetComponent<Rigidbody>() == null)
             {
                 return;
             }
@@ -301,5 +303,22 @@ namespace VentureValheim.FloatingItems
 
             FloatingItemsPlugin.FloatingItemsLogger.LogDebug($"Found {count} floating items.");
         }*/
+
+        [HarmonyPatch(typeof(Floating), nameof(Floating.CustomFixedUpdate))]
+        public static class Patch_Floating_CustomFixedUpdate
+        {
+            private static bool Prefix(Floating __instance)
+            {
+                if (__instance.m_body == null || __instance.m_collider == null)
+                {
+                    FloatingItemsPlugin.FloatingItemsLogger.LogDebug($"Null found: {__instance.name}. " +
+                        $"{__instance.m_body == null}, " +
+                        $"{__instance.m_collider == null}");
+                    return false;
+                }
+
+                return true;
+            }
+        }
     }
 }
