@@ -422,6 +422,12 @@ namespace VentureValheim.LocationReset
                 return;
             }
 
+            if (LocationResetPlugin.MVBPInstalled && hash == LocationResetPlugin.Hash_StartTemple)
+            {
+                LocationResetPlugin.LocationResetLogger.LogDebug($"Cannot reset start temple when using More Vanilla Build Prefabs.");
+                return;
+            }
+
             if (!force && !loc.NeedsReset(hash))
             {
                 return;

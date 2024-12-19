@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -10,6 +9,7 @@ namespace VentureValheim.LocationReset
 {
     [BepInDependency(Jotunn.Main.ModGuid)]
     [BepInDependency(DungeonSplitterName, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(MVBPName, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class LocationResetPlugin : BaseUnityPlugin
     {
@@ -23,7 +23,7 @@ namespace VentureValheim.LocationReset
         }
 
         private const string ModName = "LocationReset";
-        private const string ModVersion = "0.10.2";
+        private const string ModVersion = "0.10.3";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -35,6 +35,8 @@ namespace VentureValheim.LocationReset
 
         private const string DungeonSplitterName = "dungeon_splitter";
         public static bool DungeonSplitterInstalled = false;
+        private const string MVBPName = "Searica.Valheim.MoreVanillaBuildPrefabs";
+        public static bool MVBPInstalled = false;
 
         #region ConfigurationEntries
 
@@ -67,6 +69,8 @@ namespace VentureValheim.LocationReset
 
         private static ConfigEntry<bool> CE_EnableLeviathanReset = null!;
         private static ConfigEntry<int> CE_LeviathanResetTime = null!;
+
+        public static readonly int Hash_StartTemple = "StartTemple".GetStableHashCode();
 
         private static readonly int Hash_TrollCave02 = "TrollCave02".GetStableHashCode();
         private static readonly int Hash_Village = "WoodVillage1".GetStableHashCode();
@@ -277,6 +281,13 @@ namespace VentureValheim.LocationReset
             if (DungeonSplitterInstalled)
             {
                 LocationResetLogger.LogInfo("Detected Dungeon Splitter, this mod will NOT reset sky locations!");
+            }
+
+            // Check for More Vanilla Build Prefabs
+            MVBPInstalled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(MVBPName);
+            if (MVBPInstalled)
+            {
+                LocationResetLogger.LogInfo("Detected More Vanilla Build Prefabs, this mod will NOT reset the start temple!");
             }
 
             Jotunn.Managers.SynchronizationManager.OnConfigurationSynchronized += (obj, attr) =>

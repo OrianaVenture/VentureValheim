@@ -1,3 +1,7 @@
+## 0.10.3
+
+* Added compatibility for the "More Vanilla Build Prefabs" mod, will not reset the start temple when using it.
+
 ## 0.10.2
 
 * Added logic to reset Sealed Towers with player built pieces unless there is a crafting station or fireplace piece in range.

@@ -79,7 +79,13 @@ The following locations from other mods are excluded from resetting to prevent i
 * Monsterlabz: Mystical_Well0
 * Wayshrine by Azumatt: Wayshrine, Wayshrine_Ashlands, Wayshrine_Frost, Wayshrine_Plains, Wayshrine_Skull, Wayshrine_Skull_2
 
+#### Dungeon Splitter
+
 When using the mod "Dungeon Splitter" by JereKuusela all sky location resetting will be disabled for compatibility reasons. If you still wish to reset sky locations you will have to use Jere's server side mods for that. Resetting leviathans and ground locations will still work as expected.
+
+#### More Vanilla Build Prefabs
+
+When using the mod "More Vanilla Build Prefabs" by Searica resetting the start temple will be disabled for compatibility reasons. Other locations with pieces altered by that mod may not reset as expected. Please report any game breaking issues.
 
 ## Installation
 
