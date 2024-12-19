@@ -13,7 +13,7 @@ This mod is not finished! There are many features that still need to get added. 
   * Reward: Give a reward to players for speaking with them or giving them an item.
   * Sellsword: Hireable and will fight for the player. (Not finished)
   * SlayTarget: Defeat this NPC for rewards. (Not finished)
-  * Trader: Runs a store similar to Haldor/Hildir. (Not finished)
+  * Trader: Runs a store similar to Haldor/Hildir.
 * NPCs can have random movement and actions such as sitting in chairs. (Not finished)
 * NPCs come back to life once killed by default.
 * NPCs can be set to permanently die and players can choose when to bury the body.
@@ -50,6 +50,12 @@ The yaml file is local and will not sync to others. This file is not required on
 
 You can always reach out for support if you have trouble setting things up (see contributing at bottom).
 
+## Quests
+
+To customize what your NPC does and says you will need to define certain data for it or give it quests. Quests are the building blocks of the Information and Reward NPC types explained below.
+
+The list of quests for your NPC will try to complete in the order they are defined. Only one quest can be active on an NPC at a time for a player. I recommend the last quest in the questline to be a "default text" you want your npc to say with no defined constraints. If all of the other quests in the questlines have constraints and none are met for a player, this last quest will be selected. This prevents your NPC from "doing nothing". Examples are explained below under their respective NPC type.
+
 ## NPC Types
 
 Acceptable types include: None, Information, Reward, Sellsword, SlayTarget, Trader
@@ -58,9 +64,7 @@ Acceptable types include: None, Information, Reward, Sellsword, SlayTarget, Trad
 
 These NPCs simply say something when interacted with. 
 
-* ``interactText`` information will only display when the NPC meets both their ``requiredKeys`` and ``notRequiredKeys`` criteria. These will check for the key presence in both the Player and Global key lists.
-* ``interactKey`` is awarded to the player(s) speaking with them. ``interactKeyType`` field can be set to "Player" or "Global" depending on how this key should be awarded.
-* ``defaultText`` will be said whenever key requirements for the ``interactText`` are not met.
+TODO
 
 #### Example
 
@@ -95,12 +99,7 @@ npcs:
 
 These NPCs have all the functionality of an information NPC plus the ability to accept an item in exchange for a reward item.
 
-* ``giveItem``, ``giveItemAmount``, and ``giveItemQuality`` are the quest requirements that a player must give the NPC.
-* ``rewardText``, ``rewardItem``, and ``rewardItemAmount`` are used for the physical reward once the NPC receives the ``giveItem``.
-* ``rewardKey`` with ``rewardKeyType`` (Player or Global) is given when the player successfully completes the quest. 
-* ``rewardLimit`` or ``notRequiredKeys`` are two different methods to control how often a quest is completable:
-  * ``rewardLimit``: when set to 10 this will allow the quest the be completed 10 total times; when reaching 0 it will lock the quest. By default ``rewardLimit`` is set to -1, which allows for unlimited completion.
-  * ``notRequiredKeys``: when set to the same key as the reward key will lock the quest the first time it is completed.
+TODO
 
 The difference between the ``interactKey`` and ``rewardKey`` is important to note here since ``interactKey`` will always be given to the player when the Reward NPC is spoken to, where the reward key will only be given when reward conditions are met.
 
@@ -186,7 +185,7 @@ Not Finished.
 
 ### Trader
 
-Not Finished.
+Traders function like Haldor and the other vanilla traders. You can specify items for them to sell and buy using coins as currency. They also support some kinds of quests such as giving them items in exchange for a key or reward. If you wish your trader to function
 
 ## NPC Style
 
@@ -298,8 +297,9 @@ You can spawn a random NPC on a chair or bed with **RightCtrl + E** (Subject to 
 * Necromancy options for fallen NPCs.
 * Translation options.
 * More complex data:
-  * Questlines: ability to have multiple dialog options and quest paths on one NPC.
-  * Items/Attacks: ability to assign multiple weapons and attacks ot one NPC.
+  * Items/Attacks: ability to assign multiple weapons and attacks to one NPC.
+* Traders: Ability to change currency type.
+* Sound effects for things.
 
 ## Installation
 

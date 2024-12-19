@@ -68,13 +68,15 @@ public class Utility
 
     public static HashSet<string> StringToSet(string str)
     {
+        NPCSPlugin.NPCSLogger.LogDebug($"Creating new set...");
         var set = new HashSet<string>();
 
         if (!str.IsNullOrWhiteSpace())
         {
-            List<string> keys = str.Split(',').ToList();
-            for (var lcv = 0; lcv < keys.Count; lcv++)
+            var keys = str.Split(NPCZDOUtils.CommaSeparatorList, int.MaxValue, System.StringSplitOptions.RemoveEmptyEntries);
+            for (var lcv = 0; lcv < keys.Length; lcv++)
             {
+                NPCSPlugin.NPCSLogger.LogDebug($"Added to set: {keys[lcv].Trim().ToLower()}");
                 set.Add(keys[lcv].Trim().ToLower());
             }
         }
@@ -150,11 +152,11 @@ public class Utility
         return closestChair;
     }
 
-    public static void SetKey(string key, bool global)
+    public static void SetKey(string key, NPCData.NPCKeyType type)
     {
         if (!string.IsNullOrEmpty(key))
         {
-            if (global)
+            if (type == NPCData.NPCKeyType.Global)
             {
                 ZoneSystem.instance.SetGlobalKey(key);
             }
@@ -175,5 +177,44 @@ public class Utility
         key = key.ToLower();
 
         return ZoneSystem.instance.GetGlobalKey(key) || Player.m_localPlayer.HaveUniqueKey(key);
+    }
+
+    public static GameObject CreateGameObject(GameObject original, string name)
+    {
+        GameObject go = GameObject.Instantiate(original, NPCSPlugin.Root.transform, false);
+        go.name = NPCSPlugin.MOD_PREFIX + name;
+        go.transform.SetParent(NPCSPlugin.Root.transform, false);
+
+        return go;
+    }
+
+    public static void RegisterGameObject(GameObject obj)
+    {
+        ZNetScene.instance.m_prefabs.Add(obj);
+        ZNetScene.instance.m_namedPrefabs.Add(obj.name.GetStableHashCode(), obj);
+        NPCSPlugin.NPCSLogger.LogDebug($"Adding object to prefabs {obj.name}");
+    }
+
+    public static string GetString<T>(T item)
+    {
+        string result = "";
+        if (item != null)
+        {
+            result = item.ToString();
+        }
+        return result;
+    }
+
+    public static string GetStringFromList<T>(List<T> items)
+    {
+        string result = "";
+        if (items != null)
+        {
+            foreach (T item in items)
+            {
+                result += $"{item.ToString()}{NPCZDOUtils.PipeSeparator}";
+            }
+        }
+        return result;
     }
 }

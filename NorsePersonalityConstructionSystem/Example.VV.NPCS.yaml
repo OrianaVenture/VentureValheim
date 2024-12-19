@@ -5,10 +5,13 @@ npcs:
     name: Ragnar The Brave
     standStill: true
     type: Information
-    notRequiredKeys: ragnarbrave
-    defaultText: "Did you say you had mead?"
-    interactKey: ragnarbrave
-    interactText: "Here's some gossip about Ragnar The Bold!"
+    quests:
+      -
+        text: "Here's some gossip about Ragnar The Bold!"
+        notRequiredKeys: ragnarbrave
+        interactKey: ragnarbrave
+      -
+        text: "Did you say you had mead?"
     model: Player
     modelIndex: 0
     hair: Hair1
@@ -24,11 +27,15 @@ npcs:
     name: Ragnar The Bold
     standStill: true
     type: Information
-    notRequiredKeys: ragnarbold
-    requiredKeys: ragnarbrave
-    defaultText: "I love a good mead."
-    interactText: "He said that? Let me tell you a secret about Ragnar The Brave."
-    rewardKey: ragnarbold
+    quests:
+      -
+        text: "Have you seen Ragnar The Brave?"
+        notRequiredKeys: ragnarbold
+        requiredKeys: ragnarbrave
+        rewardText: "He said that? Let me tell you a secret about Ragnar The Brave."
+        rewardKey: ragnarbold
+      -
+        text: "I love a good mead."
     model: Player
     modelIndex: 0
     hair: Hair2
@@ -41,7 +48,45 @@ npcs:
     id: Wildir1
     name: Wildir
     type: Trader
-    defaultText: "I'm all out of stock, kid."
+    tradeItems:
+      -
+        prefabName: Stone
+        amount: 20
+        cost: 5
+        requiredKey: gave_pickaxe
+      -
+        prefabName: Wood
+        amount: 20
+        cost: 5
+      -
+        prefabName: AxeStone
+        quality: 2
+        cost: 200
+    traderUseItems:
+      -
+        prefabName: PickaxeAntler
+        rewardKey: gave_pickaxe
+        removeItem: true
+        text: "Hey thanks with this I can get some more stone."
+    talkTexts:
+      - "Beautiful day."
+      - "The smell of pine makes me smile."
+      - "I could really use a new pickaxe."
+    greetTexts:
+      - "Hello there!"
+    goodbyeTexts:
+      - "Always sharpen your axe before a long day!"
+    startTradeTexts:
+      - "Need something?"
+      - "I have the best lumber!"
+    buyTexts:
+      - "Thanks, come again!"
+    sellTexts:
+      - "This is acceptable quality."
+    notCorrectTexts:
+      - "Umm..."
+    notAvailableTexts:
+      - "I already have what I need."
     model: Player
     modelIndex: 1
     hair: Hair4
@@ -55,7 +100,10 @@ npcs:
     trueDeath: true
     standStill: true
     type: SlayTarget
-    defaultText: "Please don't kill me"
+    greetTexts:
+      - "Please don't kill me"
+    goodbyeTexts:
+      - "That was close!"
     defeatKey: defeated_cain
     model: Player
     modelIndex: 0
@@ -90,18 +138,27 @@ npcs:
     model: Boar
     giveDefaultItems: true
     type: Information
-    interactText: "Feed me human!"
+    quests:
+      -
+        text: "Feed me human!"
 
   -
     id: Liv
     name: Liv the Wise
     type: Reward
-    notRequiredKeys: liv
-    defaultText: "Did you bring {reward} to Vivica?"
-    interactKey: liv
-    rewardText: "Can you give this to Vivica? She's too shy to admit she needs my help."
-    rewardItem: KnifeFlint
-    rewardItemQuality: 2
+    quests:
+      -
+        text: "Can you give this to Vivica? She's too shy to admit she needs my help."
+        notRequiredKeys: liv
+        rewardItem:
+          prefabName: KnifeFlint
+          quality: 2
+        rewardKey: liv
+      -
+        text: "Did you bring that knife to Vivica?"
+        notRequiredKeys: vivica2
+      -
+        text: "Beautiful day, is it not?"
     model: Player
     modelIndex: 1
     hair: Hair12
@@ -111,14 +168,27 @@ npcs:
     id: Vivica
     name: Vivica
     type: Reward
-    requiredKeys: liv
-    notRequiredKeys: vivica
-    defaultText: "I'm too busy to talk."
-    interactText: "Liv sent you? I guess I could use some help. I need {giveitem}."
-    giveItem: KnifeFlint
-    giveItemQuality: 2
-    rewardText: "My husband Rahshahs could use some help too, can you find him?"
-    rewardKey: vivica
+    quests:
+      -
+        text: "I'm too busy to talk."
+        requiredKeys: liv
+        notRequiredKeys: vivica1
+        rewardKey: vivica1
+        rewardText: "Liv sent you? I guess I could use some help. I need a sharper knife."
+      -
+        text: "I need {giveitem}."
+        requiredKeys: vivica1
+        notRequiredKeys: vivica2
+        giveItem:
+          prefabName: KnifeFlint
+          quality: 2
+        rewardKey: vivica2
+        rewardText: "My husband Rahshahs could use some help too, can you find him?"
+      -
+        text: "Did you find Rahshahs?"
+        notRequiredKeys: rahshahs2
+      -
+        text: "I love the smell of the open seas."
     model: Player
     modelIndex: 1
     hair: Hair8
@@ -129,16 +199,27 @@ npcs:
     id: MrHamHands
     name: Rahshahs
     type: Reward
-    requiredKeys: vivica
-    notRequiredKeys: rahshahs
-    defaultText: "What do you want? Go away."
-    interactText: "Vivica sent you? She didn't pay you!? I need {giveitem}, I will give you {reward} in exchange."
-    giveItem: DeerStew
-    giveItemAmount: 1
-    rewardText: "Thanks, I was hungry! Sorry about my wife, this should be more than enough to cover your help."
-    rewardItem: Coins
-    rewardItemAmount: 10
-    rewardKey: rahshahs
+    quests:
+      -
+        text: "What do you want? Go away."
+        requiredKeys: vivica2
+        notRequiredKeys: rahshahs1
+        rewardKey: rahshahs1
+        rewardText: "Vivica sent you? She didn't pay you!?"
+      -
+        text: "I need {giveitem}, I will give you {reward} in exchange."
+        requiredKeys: vivica2
+        notRequiredKeys: rahshahs2
+        giveItem:
+          prefabName: DeerStew
+          amount: 1
+        rewardItem:
+          prefabName: Coins
+          amount: 10
+        rewardKey: rahshahs2
+        rewardText: "Thanks, I was hungry! Sorry about my wife, this should be more than enough to cover your help."
+      -
+        text: "Thanks for your help."
     model: Player
     modelIndex: 0
     legs: ArmorLeatherLegs
@@ -147,13 +228,18 @@ npcs:
     id: Jarl
     name: Jarl Halsin
     type: Reward
-    requiredKeys: liv, vivica, rahshahs
-    notRequiredKeys: thaneofvalheim
-    defaultText: "Good day citizen."
-    interactText: "Help my people and I will give you {reward}."
-    rewardText: "You actually did it, I'm impressed!"
-    rewardItem: SwordIron
-    rewardKey: thaneofvalheim
+    quests:
+      -
+        text: "Help my people and I will give you {reward}."
+        requiredKeys: liv, vivica2, rahshahs2
+        notRequiredKeys: thaneofvalheim
+        rewardItem:
+          prefabName: SwordIron
+          quality: 5
+        rewardText: "You actually did it, I'm impressed!"
+        rewardKey: thaneofvalheim
+      -
+        text: "Good day citizen."
     model: Player
     modelIndex: 0
     chest: ArmorTunic6

@@ -1,10 +1,25 @@
+
+
+## 0.0.8
+
+* Overhauled the config system!!! Readme has been updated, please read it again!
+* Supports more complex questlines on a single NPC, can now add multiple quest stages.
+* Support for Trader NPCS.
+* Interact and give texts now uses vanilla localization keys.
+* New option to not remove items for give quests, now can just check for presence.
+
+
+* New option to not remove items for give quests, now can just check if the player has it.
+* Fixed NPCS not keeping a manually set rotation. TODO
+
+
 ## 0.0.7
 
 * Update for game version 0.219.13.
 
 ## 0.0.6
 
-* Fixed a bug where NPC ragdolls were assigned to their vanilla counterparts. 
+* Fixed a bug where NPC ragdolls were assigned to their vanilla counterparts.
 
 ## 0.0.5
 

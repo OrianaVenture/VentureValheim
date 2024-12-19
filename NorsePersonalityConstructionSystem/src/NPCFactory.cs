@@ -33,11 +33,11 @@ public class NPCFactory
         {
             if (model.Equals("Player"))
             {
-                npcComponent.SetRandom();
+                npcComponent.Data.SetRandom();
             }
 
-            npcComponent.SetName(name);
-            npcComponent.SetSpawnPoint(position);
+            npcComponent.Data.SetName(name);
+            npcComponent.Data.SetSpawnPoint(position);
         }
         
         return npc;
@@ -64,8 +64,8 @@ public class NPCFactory
         var npcComponent = npc.GetComponent<INPC>();
         if (npcComponent != null)
         {
-            npcComponent.SetFromConfig(config, true);
-            npcComponent.SetSpawnPoint(position);
+            npcComponent.Data.SetFromConfig(config, true);
+            npcComponent.Data.SetSpawnPoint(position);
         }
 
         return npc;
@@ -79,7 +79,7 @@ public class NPCFactory
             return null;
         }
 
-        var respawn = NPCUtils.GetSpawnPoint(originalZNetView);
+        var respawn = NPCZDOUtils.GetSpawnPoint(originalZNetView);
         if (respawn != Vector3.zero)
         {
             var prefabName = Utils.GetPrefabName(original.name);
@@ -100,14 +100,14 @@ public class NPCFactory
                 return null;
             }
 
-            NPCUtils.CopyZDO(ref newZNetView, originalZNetView);
+            NPCZDOUtils.CopyZDO(ref newZNetView, originalZNetView);
 
             VisEquipment originalVisEquipment = original.GetComponent<VisEquipment>();
             VisEquipment newVisEquipment = gameobject.GetComponent<VisEquipment>();
 
             if (originalVisEquipment != null && newVisEquipment != null)
             {
-                NPCUtils.CopyVisEquipment(ref newVisEquipment, originalVisEquipment);
+                NPCZDOUtils.CopyVisEquipment(ref newVisEquipment, originalVisEquipment);
             }
 
             return gameobject;
@@ -163,7 +163,7 @@ public class NPCFactory
         var prefabActive = prefab.activeSelf;
         prefab.SetActive(false);
 
-        GameObject npc = NPCUtils.CreateGameObject(prefab, model);
+        GameObject npc = Utility.CreateGameObject(prefab, model);
 
         foreach (var remove in RemoveComponents)
         {
@@ -213,7 +213,7 @@ public class NPCFactory
         // Allow tamable behavior when hiring NPCs as bodyguards
         npcCharacter.m_faction = Character.Faction.Dverger;
         npcCharacter.m_tamed = false;
-        npcCharacter.m_group = NPCUtils.NPCGROUP;
+        npcCharacter.m_group = NPCData.NPCGROUP;
 
         /*var tamable = npc.GetComponent<Tameable>();
         if (tamable == null)
@@ -259,7 +259,7 @@ public class NPCFactory
         npc.SetActive(prefabActive);
 
         // Register prefab
-        NPCUtils.RegisterGameObject(npc);
+        Utility.RegisterGameObject(npc);
 
         return npc;
     }
@@ -291,7 +291,7 @@ public class NPCFactory
         var ragdollActive = original.activeSelf;
         original.SetActive(false);
 
-        GameObject npcRagdoll = NPCUtils.CreateGameObject(original, original.name);
+        GameObject npcRagdoll = Utility.CreateGameObject(original, original.name);
 
         var originalRagdollComponent = original.GetComponent<Ragdoll>();
         var ragdollComponent = npcRagdoll.GetComponent<Ragdoll>();
@@ -328,7 +328,7 @@ public class NPCFactory
         npcRagdoll.SetActive(ragdollActive);
 
         // Register prefab
-        NPCUtils.RegisterGameObject(npcRagdoll);
+        Utility.RegisterGameObject(npcRagdoll);
 
         return npcRagdoll;
     }

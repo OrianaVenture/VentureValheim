@@ -80,7 +80,7 @@ public class Patches
 
                 if (args.Length >= 2)
                 {
-                    npc.SetFromConfig(NPCConfiguration.GetConfig(args[1]), false);
+                    npc.Data.SetFromConfig(NPCConfiguration.GetConfig(args[1]), false);
                 }
                 else
                 {
@@ -100,11 +100,11 @@ public class Patches
 
                 if (args.Length >= 2)
                 {
-                    npc.SetTrueDeath(bool.Parse(args[1]));
+                    npc.Data.SetTrueDeath(bool.Parse(args[1]));
                 }
                 else
                 {
-                    npc.SetTrueDeath(true);
+                    npc.Data.SetTrueDeath(true);
                 }
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
@@ -118,7 +118,7 @@ public class Patches
                     return;
                 }
 
-                npc.Attach(false);
+                npc.Data.Attach(false);
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
@@ -132,7 +132,7 @@ public class Patches
                     return;
                 }
 
-                npc.Attach(true);
+                npc.Data.Attach(true);
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
@@ -148,7 +148,7 @@ public class Patches
 
                 var chair = Utility.GetClosestChair(playerPosition, Vector3.one * 2);
 
-                npc.Attach(true, chair);
+                npc.Data.Attach(true, chair);
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
@@ -186,7 +186,7 @@ public class Patches
                     return;
                 }
 
-                npc.SetRotation(playerRotation * new Quaternion(0, 1, 0, 0));
+                npc.Data.SetRotation(playerRotation * new Quaternion(0, 1, 0, 0));
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
             new Terminal.ConsoleCommand("npcs_get_skincolor", "", delegate (Terminal.ConsoleEventArgs args)
@@ -199,7 +199,7 @@ public class Patches
                     return;
                 }
 
-                args.Context.AddString($"{(npc as NPCHumanoid).m_name}: {(npc as NPCHumanoid).GetSkinColor()}");
+                args.Context.AddString($"{(npc as NPCHumanoid).m_name}: {(npc as NPCHumanoid).Data.GetSkinColor()}");
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
             new Terminal.ConsoleCommand("npcs_get_haircolor", "", delegate (Terminal.ConsoleEventArgs args)
@@ -212,7 +212,7 @@ public class Patches
                     return;
                 }
 
-                args.Context.AddString($"{(npc as NPCHumanoid).m_name}: {(npc as NPCHumanoid).GetHairColor()}");
+                args.Context.AddString($"{(npc as NPCHumanoid).m_name}: {(npc as NPCHumanoid).Data.GetHairColor()}");
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
@@ -249,7 +249,7 @@ public class Patches
                     return;
                 }
 
-                npc.SetRandom();
+                npc.Data.SetRandom();
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
             new Terminal.ConsoleCommand("npcs_info", "", delegate (Terminal.ConsoleEventArgs args)
@@ -300,7 +300,7 @@ public class Patches
 
                 if (npc != null)
                 {
-                    npc.SetSpawnPoint(__instance.transform.position);
+                    npc.Data.SetSpawnPoint(__instance.transform.position);
                     __instance.SetOwner(0L, npc.m_name);
                 }
 
@@ -325,7 +325,7 @@ public class Patches
 
                 if (npcComponent != null)
                 {
-                    npcComponent.AttachStart(__instance);
+                    npcComponent.Attach(true, __instance);
                 }
 
                 __result = false;

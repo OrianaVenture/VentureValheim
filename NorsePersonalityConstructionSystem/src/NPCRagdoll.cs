@@ -32,7 +32,7 @@ public class NPCRagdoll : Ragdoll, Interactable, Hoverable
         yield return null;
         yield return null;
 
-        if (!m_nview.GetZDO().GetBool(NPCUtils.ZDOVar_TRUEDEATH))
+        if (!NPCZDOUtils.GetTrueDeath(m_nview))
         {
             InvokeRepeating("DestroyNow", m_ttl, 1f);
         }
@@ -55,7 +55,7 @@ public class NPCRagdoll : Ragdoll, Interactable, Hoverable
 
     public string GetHoverText()
     {
-        if (m_nview != null && m_nview.GetZDO() != null && m_nview.GetZDO().GetBool(NPCUtils.ZDOVar_TRUEDEATH))
+        if (m_nview != null && m_nview.GetZDO() != null && NPCZDOUtils.GetTrueDeath(m_nview))
         {
             return Localization.instance.Localize(
                 $"{m_nview.GetZDO().GetString(ZDOVars.s_tamedName)}\n" +
