@@ -280,7 +280,7 @@ namespace VentureValheim.LocationReset
                 obj.GetComponent<MineRock>() ||
                 obj.GetComponent<MineRock5>() ||
                 obj.GetComponent<ItemDrop>() ||
-                obj.GetComponent<Piece>() ||
+                (obj.GetComponent<Piece>() && !ModCompat.InvokeIsPieceAddedByMVBP(obj)) ||
                 obj.GetComponent<Pickable>() ||
                 obj.GetComponent<Character>() ||
                 obj.GetComponent<CreatureSpawner>() ||
