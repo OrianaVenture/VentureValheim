@@ -8,8 +8,8 @@ using HarmonyLib;
 namespace VentureValheim.LocationReset
 {
     [BepInDependency(Jotunn.Main.ModGuid)]
-    [BepInDependency(DungeonSplitterName, BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency(MVBPName, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(ModCompat.DungeonSplitterName, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(ModCompat.MVBPName, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class LocationResetPlugin : BaseUnityPlugin
     {
@@ -32,11 +32,6 @@ namespace VentureValheim.LocationReset
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
         public static readonly ManualLogSource LocationResetLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
-
-        private const string DungeonSplitterName = "dungeon_splitter";
-        public static bool DungeonSplitterInstalled = false;
-        private const string MVBPName = "Searica.Valheim.MoreVanillaBuildPrefabs";
-        public static bool MVBPInstalled = false;
 
         #region ConfigurationEntries
 
@@ -277,15 +272,13 @@ namespace VentureValheim.LocationReset
             SetupWatcher();
 
             // Check for Dungeon Splitter
-            DungeonSplitterInstalled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(DungeonSplitterName);
-            if (DungeonSplitterInstalled)
+            if (ModCompat.DungeonSplitterInstalled)
             {
                 LocationResetLogger.LogInfo("Detected Dungeon Splitter, this mod will NOT reset sky locations!");
             }
 
             // Check for More Vanilla Build Prefabs
-            MVBPInstalled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(MVBPName);
-            if (MVBPInstalled)
+            if (ModCompat.MVBPInstalled)
             {
                 LocationResetLogger.LogInfo("Detected More Vanilla Build Prefabs, this mod will NOT reset the start temple!");
             }

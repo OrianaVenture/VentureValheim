@@ -422,7 +422,7 @@ namespace VentureValheim.LocationReset
                 return;
             }
 
-            if (LocationResetPlugin.MVBPInstalled && hash == LocationResetPlugin.Hash_StartTemple)
+            if (ModCompat.MVBPInstalled && hash == LocationResetPlugin.Hash_StartTemple)
             {
                 LocationResetPlugin.LocationResetLogger.LogDebug($"Cannot reset start temple when using More Vanilla Build Prefabs.");
                 return;
@@ -459,7 +459,7 @@ namespace VentureValheim.LocationReset
 
             LocationPosition position = new LocationPosition(loc, zone, location);
 
-            if (LocationResetPlugin.DungeonSplitterInstalled && position.IsSkyLocation)
+            if (ModCompat.DungeonSplitterInstalled && position.IsSkyLocation)
             {
                 LocationResetPlugin.LocationResetLogger.LogDebug($"Cannot reset sky locations when using Dungeon Splitter.");
                 return;
