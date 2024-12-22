@@ -366,9 +366,11 @@ namespace VentureValheim.LocationReset
         /// </summary>
         /// <param name="position"></param>
         /// <param name="activity"></param>
-        public static void DeleteLocation(LocationPosition position, PlayerActivity activity)
+        /// <returns>HashSet containing the names the root prefab of all objects that were destroyed.</returns> 
+        public static HashSet<string> DeleteLocation(LocationPosition position, PlayerActivity activity)
         {
             var list = SceneManager.GetActiveScene().GetRootGameObjects();
+            List<string> deletedObjects = new();
 
             for (int lcv = 0; lcv < list.Length; lcv++)
             {
@@ -382,7 +384,7 @@ namespace VentureValheim.LocationReset
                     {
                         if (!obj.GetComponent<Player>() && QualifyingObject(obj))
                         {
-                            DeleteObject(ref obj);
+                            deletedObjects.Add(DeleteObject(ref obj));
                         }
                         else
                         {
@@ -396,10 +398,12 @@ namespace VentureValheim.LocationReset
                     if (!activity.SkyActivity && QualifyingSkyObject(obj) && 
                         InBounds(position.SkyPosition, obj.transform.position, position.SkyDistance))
                     {
-                        DeleteObject(ref obj);
+                        deletedObjects.Add(DeleteObject(ref obj));
                     }
                 }
             }
+
+            return deletedObjects.ToHashSet();
         }
 
         /// <summary>
@@ -519,7 +523,7 @@ namespace VentureValheim.LocationReset
         private void Reset(LocationProxy loc, ZoneSystem.ZoneLocation zone, Location location,
             int seed, LocationPosition position, PlayerActivity activity)
         {
-            DeleteLocation(position, activity);
+            HashSet<string> deletedObjectNames = DeleteLocation(position, activity);
 
             if (!activity.GroundActivity)
             {
