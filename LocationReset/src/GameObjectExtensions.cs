@@ -8,7 +8,8 @@ namespace VentureValheim.LocationReset
         private const string MineRock5Name = "___MineRock5";
 
         /// <summary>
-        ///     Gets the root Prefab name by recursively stripping the suffix "(Clone)".
+        /// Gets the root Prefab name using Utils.GetPrefabName 
+        /// or if the object is a MineRock5 using the MineRock5PrefabTracker.
         /// </summary>
         /// <param name="gameObject"></param>
         /// <returns></returns>
@@ -22,11 +23,7 @@ namespace VentureValheim.LocationReset
                     return tracker.m_prefabName;
                 }
             }
-            while (prefabName.EndsWith(CloneSuffix))
-            {
-                prefabName = prefabName.Substring(0, prefabName.Length - CloneSuffix.Length);
-            }
-            return prefabName;
+            return Utils.GetPrefabName(gameObject);
         }
 
 
