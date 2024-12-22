@@ -7,7 +7,7 @@ using UnityEngine;
 namespace VentureValheim.LocationReset
 {
     /// <summary>
-    ///     Mod compatiability checks.
+    /// Mod compatibility checks.
     /// </summary>
     internal static class ModCompat
     {
