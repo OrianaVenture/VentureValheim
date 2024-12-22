@@ -51,11 +51,12 @@ namespace VentureValheim.LocationReset
         ///     via reflection if and only if MVBP is installed.
         /// </summary>
         /// <param name="prefab"></param>
+        /// <param name="piece"></param>
         /// <returns>
         /// True if MVBP is installed and the prefab (or root prefab this GameObject is a clone of) 
         /// has had a Piece component added by MVBP, False otherwise.
         /// </returns>
-        public static bool InvokeIsPieceAddedByMVBP(GameObject prefab)
+        public static bool InvokeIsPieceAddedByMVBP(GameObject prefab, Piece piece = null)
         {
             if (!MVBPInstalled || MVBPPlugin is null || IsPieceAddedByMVBP is null)
             {
@@ -64,7 +65,7 @@ namespace VentureValheim.LocationReset
 
             try
             {
-                return (bool)IsPieceAddedByMVBP.Invoke(MVBPPlugin, new GameObject[] { prefab });
+                return (bool)IsPieceAddedByMVBP.Invoke(MVBPPlugin, new object[] { prefab, piece });
             }
             catch (Exception ex)
             {
