@@ -328,15 +328,17 @@ namespace VentureValheim.LocationReset
         /// Deletes an object from the ZNetScene.
         /// </summary>
         /// <param name="obj"></param>
-        private static void DeleteObject(ref GameObject obj)
+        /// <returns>Name of the root prefab of the object that was destroyed.</returns> 
+        private static string DeleteObject(ref GameObject obj)
         {
             var nview = obj.GetComponent<ZNetView>();
             if (nview != null && nview.GetZDO() != null)
             {
                 nview.GetZDO().SetOwner(ZDOMan.GetSessionID());
             }
-
+            var prefabName = obj.GetPrefabName();
             ZNetScene.instance.Destroy(obj);
+            return prefabName;
         }
 
         /// <summary>
