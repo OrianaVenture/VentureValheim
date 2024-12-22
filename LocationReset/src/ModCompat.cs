@@ -14,6 +14,10 @@ namespace VentureValheim.LocationReset
 
         internal const string DungeonSplitterName = "dungeon_splitter";
         private static bool? _DungeonSplitterInstalled = null;
+
+        /// <summary>
+        /// Flag indicating if DungeonSplitter is installed.
+        /// </summary>
         public static bool DungeonSplitterInstalled { 
             get {
                 // Check for Dungeon Splitter if have not already checked
@@ -29,7 +33,7 @@ namespace VentureValheim.LocationReset
         private static MethodInfo IsPieceAddedByMVBP;
 
         /// <summary>
-        ///     Flag indicating if MVBP is installed.
+        /// Flag indicating if MVBP is installed.
         /// </summary>
         public static bool MVBPInstalled
         {
