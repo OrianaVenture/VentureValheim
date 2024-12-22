@@ -530,7 +530,7 @@ namespace VentureValheim.LocationReset
                 TerrainReset.ResetTerrain(position.GroundPosition, position.GroundDistance);
             }
 
-            Regenerate(loc, zone, location, seed, position, activity);
+            Regenerate(loc, zone, location, seed, position, activity, deletedObjectNames);
         }
 
         /// <summary>
@@ -540,8 +540,15 @@ namespace VentureValheim.LocationReset
         /// <param name="zone">ZoneLocation of the LocationProxy</param>/// <param name="location">Location of the ZoneLocation</param>
         /// <param name="seed"></param>
         /// <param name="position"></param>
-        private void Regenerate(LocationProxy loc, ZoneSystem.ZoneLocation zone, Location location,
-            int seed, LocationPosition position, PlayerActivity activity)
+        private void Regenerate(
+            LocationProxy loc, 
+            ZoneSystem.ZoneLocation zone,
+            Location location,
+            int seed, 
+            LocationPosition position, 
+            PlayerActivity activity,
+            HashSet<string> deletedObjectNames
+        )
         {
             // Prepare
             ZNetView[] zNetViews = Utils.GetEnabledComponentsInChildren<ZNetView>(zone.m_prefab.Asset);
@@ -587,7 +594,7 @@ namespace VentureValheim.LocationReset
                     if (obj.transform.position.y < LOCATION_MINIMUM)
                     {
                         // Ground object
-                        if (activity.GroundActivity || !QualifyingObject(obj.gameObject))
+                        if (activity.GroundActivity || !deletedObjectNames.Contains(obj.GetPrefabName()))
                         {
                             countIgnored++;
                             continue;
