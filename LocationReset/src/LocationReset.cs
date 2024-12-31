@@ -594,7 +594,7 @@ namespace VentureValheim.LocationReset
                     if (obj.transform.position.y < LOCATION_MINIMUM)
                     {
                         // Ground object
-                        if (activity.GroundActivity || !deletedObjectNames.Contains(obj.GetPrefabName()))
+                        if (activity.GroundActivity || (!QualifyingObject(obj) && !deletedObjectNames.Contains(obj.GetPrefabName())))
                         {
                             countIgnored++;
                             continue;
