@@ -243,7 +243,8 @@ namespace VentureValheim.LocationReset
         }
 
         /// <summary>
-        /// Calculates the maximum distance a point in space can be from another: The hypotenuse of a triangle represented by x, z.
+        /// Calculates the maximum distance a point in space can be from another:
+        /// The hypotenuse of a triangle represented by x, z.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="z"></param>
@@ -271,7 +272,9 @@ namespace VentureValheim.LocationReset
         /// <returns></returns>
         private static bool QualifyingObject(GameObject obj)
         {
-            if (obj.GetComponent<RandomFlyingBird>() != null)
+            if (obj.GetComponent<RandomFlyingBird>() != null ||
+                obj.GetComponentInChildren<ItemStand>() ||
+                obj.GetComponentInChildren<OfferingBowl>())
             {
                 return false;
             }
@@ -328,7 +331,10 @@ namespace VentureValheim.LocationReset
         /// Deletes an object from the ZNetScene.
         /// </summary>
         /// <param name="obj"></param>
-        private static void DeleteObject(ref GameObject obj)
+        /// <returns>
+        /// Name of the root prefab of the object that was destroyed.
+        /// </returns>
+        private static string DeleteObject(ref GameObject obj)
         {
             var nview = obj.GetComponent<ZNetView>();
             if (nview != null && nview.GetZDO() != null)
@@ -336,7 +342,9 @@ namespace VentureValheim.LocationReset
                 nview.GetZDO().SetOwner(ZDOMan.GetSessionID());
             }
 
+            var prefabName = Utils.GetPrefabName(obj);
             ZNetScene.instance.Destroy(obj);
+            return prefabName;
         }
 
         /// <summary>
@@ -349,7 +357,8 @@ namespace VentureValheim.LocationReset
 
             if (door != null && door.m_keyItem != null)
             {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"Attempting to reset a door at {obj.transform.position}.");
+                LocationResetPlugin.LocationResetLogger.LogDebug(
+                    $"Attempting to reset a door at {obj.transform.position}.");
                 if (door.m_nview != null && door.m_nview.GetZDO() != null)
                 {
                     door.m_nview.GetZDO().Set(ZDOVars.s_state, 0);
@@ -364,9 +373,13 @@ namespace VentureValheim.LocationReset
         /// </summary>
         /// <param name="position"></param>
         /// <param name="activity"></param>
-        public static void DeleteLocation(LocationPosition position, PlayerActivity activity)
+        /// <returns>
+        /// HashSet containing the names the root prefab name hashes of all objects that were skipped.
+        /// </returns>
+        public static HashSet<int> DeleteLocation(LocationPosition position, PlayerActivity activity)
         {
             var list = SceneManager.GetActiveScene().GetRootGameObjects();
+            HashSet<int> skippedObjects = new HashSet<int>();
 
             for (int lcv = 0; lcv < list.Length; lcv++)
             {
@@ -375,7 +388,7 @@ namespace VentureValheim.LocationReset
                 if (obj.transform.position.y < LOCATION_MINIMUM)
                 {
                     // ground object
-                    if (!activity.GroundActivity && 
+                    if (!activity.GroundActivity &&
                         InBounds(position.GroundPosition, obj.transform.position, position.GroundDistance))
                     {
                         if (!obj.GetComponent<Player>() && QualifyingObject(obj))
@@ -385,19 +398,29 @@ namespace VentureValheim.LocationReset
                         else
                         {
                             TryResetDoor(obj);
+                            skippedObjects.Add(Utils.GetPrefabName(obj).GetStableHashCode());
                         }
                     }
                 }
                 else if (position.IsSkyLocation)
                 {
                     // sky object
-                    if (!activity.SkyActivity && QualifyingSkyObject(obj) && 
+                    if (!activity.SkyActivity &&
                         InBounds(position.SkyPosition, obj.transform.position, position.SkyDistance))
                     {
-                        DeleteObject(ref obj);
+                        if (QualifyingSkyObject(obj))
+                        {
+                            DeleteObject(ref obj);
+                        }
+                        else
+                        {
+                            skippedObjects.Add(Utils.GetPrefabName(obj).GetStableHashCode());
+                        }
                     }
                 }
             }
+
+            return skippedObjects;
         }
 
         /// <summary>
@@ -408,7 +431,8 @@ namespace VentureValheim.LocationReset
         /// <param name="force">True to bypass time constraint and player activity checks</param>
         public void TryReset(LocationProxy loc, int hash, bool force = false)
         {
-            LocationResetPlugin.LocationResetLogger.LogDebug($"Trying to reset Location with hash {hash} at: {loc.transform.position}");
+            LocationResetPlugin.LocationResetLogger.LogDebug(
+                $"Trying to reset Location with hash {hash} at: {loc.transform.position}");
 
             int seed = 0;
             if (loc.m_nview != null && loc.m_nview.GetZDO() != null)
@@ -418,13 +442,8 @@ namespace VentureValheim.LocationReset
 
             if (seed == 0 || hash == 0)
             {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"There was an issue getting the location hash or seed, abort.");
-                return;
-            }
-
-            if (LocationResetPlugin.MVBPInstalled && hash == LocationResetPlugin.Hash_StartTemple)
-            {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"Cannot reset start temple when using More Vanilla Build Prefabs.");
+                LocationResetPlugin.LocationResetLogger.LogDebug(
+                    $"There was an issue getting the location hash or seed, abort.");
                 return;
             }
 
@@ -436,7 +455,8 @@ namespace VentureValheim.LocationReset
             ZoneSystem.ZoneLocation zone = ZoneSystem.instance.GetLocation(hash);
             if (zone == null)
             {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"There was an issue getting the zone location, abort.");
+                LocationResetPlugin.LocationResetLogger.LogDebug(
+                    $"There was an issue getting the zone location, abort.");
                 return;
             }
 
@@ -449,19 +469,22 @@ namespace VentureValheim.LocationReset
             //zone.m_prefab.Release();
         }
 
-        private void TryResetAfterLoadPrefab(LocationProxy loc, ZoneSystem.ZoneLocation zone, Location location, int hash, int seed, bool force)
+        private void TryResetAfterLoadPrefab(LocationProxy loc, ZoneSystem.ZoneLocation zone,
+            Location location, int hash, int seed, bool force)
         {
             if (location == null)
             {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"There was an issue getting the location, abort.");
+                LocationResetPlugin.LocationResetLogger.LogDebug(
+                    $"There was an issue getting the location, abort.");
                 return;
             }
 
             LocationPosition position = new LocationPosition(loc, zone, location);
 
-            if (LocationResetPlugin.DungeonSplitterInstalled && position.IsSkyLocation)
+            if (ModCompatibility.DungeonSplitterInstalled && position.IsSkyLocation)
             {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"Cannot reset sky locations when using Dungeon Splitter.");
+                LocationResetPlugin.LocationResetLogger.LogDebug(
+                    $"Cannot reset sky locations when using Dungeon Splitter.");
                 return;
             }
 
@@ -469,7 +492,8 @@ namespace VentureValheim.LocationReset
             {
                 if (position.DungeonGenerator.m_nview == null || !position.DungeonGenerator.m_nview.IsOwner())
                 {
-                    LocationResetPlugin.LocationResetLogger.LogDebug($"Needs a reset but does not own the DG object! Skipping.");
+                    LocationResetPlugin.LocationResetLogger.LogDebug(
+                        $"Needs a reset but does not own the DG object! Skipping.");
                     return;
                 }
             }
@@ -492,18 +516,21 @@ namespace VentureValheim.LocationReset
             bool skipGround = LocationResetPlugin.GetSkipPlayerGroundPieceCheck() && position.IsSkyLocation;
             if ((!skipGround && playerActivity.GroundActivity) || playerActivity.SkyActivity)
             {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"There is player activity here! Skipping.");
+                LocationResetPlugin.LocationResetLogger.LogDebug(
+                    $"There is player activity here! Skipping.");
                 return;
             }
 
             if (!loc.SetLastResetNow())
             {
-                LocationResetPlugin.LocationResetLogger.LogDebug($"There was an issue setting the reset time, abort.");
+                LocationResetPlugin.LocationResetLogger.LogDebug(
+                    $"There was an issue setting the reset time, abort.");
                 return;
             }
 
             Reset(loc, zone, location, seed, position, playerActivity);
-            LocationResetPlugin.LocationResetLogger.LogInfo($"Done regenerating location {zone.m_prefabName} at: {loc.transform.position}");
+            LocationResetPlugin.LocationResetLogger.LogInfo(
+                $"Done regenerating location {zone.m_prefabName} at: {loc.transform.position}");
         }
 
         /// <summary>
@@ -517,27 +544,31 @@ namespace VentureValheim.LocationReset
         private void Reset(LocationProxy loc, ZoneSystem.ZoneLocation zone, Location location,
             int seed, LocationPosition position, PlayerActivity activity)
         {
-            DeleteLocation(position, activity);
+            HashSet<int> skippedObjects = DeleteLocation(position, activity);
 
             if (!activity.GroundActivity)
             {
                 TerrainReset.ResetTerrain(position.GroundPosition, position.GroundDistance);
             }
 
-            Regenerate(loc, zone, location, seed, position, activity);
+            Regenerate(loc, zone, location, seed, position, activity, skippedObjects);
         }
 
         /// <summary>
         /// Rerolls and generates the Location objects.
         /// </summary>
         /// <param name="loc">LocationProxy needing a reset</param>
-        /// <param name="zone">ZoneLocation of the LocationProxy</param>/// <param name="location">Location of the ZoneLocation</param>
+        /// <param name="zone">ZoneLocation of the LocationProxy</param>
+        /// <param name="location">Location of the ZoneLocation</param>
         /// <param name="seed"></param>
         /// <param name="position"></param>
+        /// <param name="activity"></param>
+        /// <param name="skippedObjects"></param>
         private void Regenerate(LocationProxy loc, ZoneSystem.ZoneLocation zone, Location location,
-            int seed, LocationPosition position, PlayerActivity activity)
+            int seed, LocationPosition position, PlayerActivity activity, HashSet<int> skippedObjects)
         {
             // Prepare
+            SpawnPrefab[] spawnPrefabs = Utils.GetEnabledComponentsInChildren<SpawnPrefab>(zone.m_prefab.Asset);
             ZNetView[] zNetViews = Utils.GetEnabledComponentsInChildren<ZNetView>(zone.m_prefab.Asset);
             RandomSpawn[] randomSpawns = Utils.GetEnabledComponentsInChildren<RandomSpawn>(zone.m_prefab.Asset);
             for (int lcv = 0; lcv < randomSpawns.Length; lcv++)
@@ -549,13 +580,14 @@ namespace VentureValheim.LocationReset
             Quaternion originalRotation = zone.m_prefab.Asset.transform.rotation;
             zone.m_prefab.Asset.transform.position = Vector3.zero;
             zone.m_prefab.Asset.transform.rotation = Quaternion.identity;
-            
+        
             WearNTear.m_randomInitialDamage = (location != null && location.m_applyRandomDamage) ? true : false;
 
             // Regenerate original dungeon if exists
             if (position.DungeonGenerator != null)
             {
                 position.DungeonGenerator.m_originalPosition = position.GeneratorPosition;
+                position.DungeonGenerator.m_nview.m_functions = new Dictionary<int, RoutedMethodBase>();
 
                 // Note: this will always cause a randomized radial camp due to vanilla algorithm.
                 // Seed is always the same and UnityEngine.Random.InitState is called beforehand
@@ -577,34 +609,45 @@ namespace VentureValheim.LocationReset
             {
                 if (obj.gameObject.activeSelf)
                 {
-                    // Do not regenerate items that have not been deleted
-                    if (obj.transform.position.y < LOCATION_MINIMUM)
+                    string prefabName = Utils.GetPrefabName(obj.gameObject);
+
+                    if (!skippedObjects.Contains(prefabName.GetStableHashCode()))
                     {
-                        // Ground object
-                        if (activity.GroundActivity || !QualifyingObject(obj.gameObject))
+                        var bestObject = Jotunn.Managers.PrefabManager.Instance.GetPrefab(prefabName) ?? obj.gameObject;
+
+                        if (TrySpawnGameObject(obj.gameObject, bestObject, prefabName.GetStableHashCode(), loc, activity))
                         {
-                            countIgnored++;
+                            count++;
                             continue;
                         }
                     }
-                    else if (activity.SkyActivity || obj.GetComponent<DungeonGenerator>())
-                    {
-                        countIgnored++;
-                        continue;
-                    }
-
-                    Vector3 objPosition = loc.transform.position + loc.transform.rotation * obj.gameObject.transform.position;
-                    Quaternion objRotation = loc.transform.rotation * obj.gameObject.transform.rotation;
-
-                    GameObject gameObject = UnityEngine.Object.Instantiate(obj.gameObject, objPosition, objRotation);
-                    gameObject.GetComponent<ZNetView>().HoldReferenceTo(zone.m_prefab);
-                    gameObject.SetActive(value: true);
-                    count++;
                 }
-                else
+
+                countIgnored++;
+            }
+
+            // Include objcets created with the SpawnPrefab script
+            foreach (SpawnPrefab spawnPrefab in spawnPrefabs)
+            {
+                if (spawnPrefab.gameObject.activeSelf && spawnPrefab.m_prefab != null)
                 {
-                    countIgnored++;
+                    string prefabName = Utils.GetPrefabName(spawnPrefab.m_prefab.gameObject);
+
+                    if (!skippedObjects.Contains(prefabName.GetStableHashCode()))
+                    {
+                        var bestObject = Jotunn.Managers.PrefabManager.Instance.GetPrefab(prefabName) ??
+                        spawnPrefab.m_prefab.gameObject;
+
+                        if (TrySpawnGameObject(spawnPrefab.gameObject, bestObject,
+                            prefabName.GetStableHashCode(), loc, activity))
+                        {
+                            count++;
+                            continue;
+                        }
+                    }
                 }
+
+                countIgnored++;
             }
 
             LocationResetPlugin.LocationResetLogger.LogDebug($"Spawned {count} objects, ignored {countIgnored}.");
@@ -625,6 +668,46 @@ namespace VentureValheim.LocationReset
 
             WearNTear.m_randomInitialDamage = false;
             SnapToGround.SnappAll();
+        }
+
+        private static bool TrySpawnGameObject(GameObject original, GameObject databaseObject,
+            int originalHash, LocationProxy loc, PlayerActivity activity)
+        {
+            // Do not regenerate items that have not been deleted
+            if (original.transform.position.y < LOCATION_MINIMUM)
+            {
+                // Ground object
+                if (activity.GroundActivity || !QualifyingObject(databaseObject))
+                {
+                    return false;
+                }
+            }
+            else if (activity.SkyActivity || !QualifyingSkyObject(databaseObject))
+            {
+                return false;
+            }
+
+            Vector3 objPosition = loc.transform.position + loc.transform.rotation * original.transform.position;
+            Quaternion objRotation = loc.transform.rotation * original.transform.rotation;
+
+            // Set object from database to have correct transform values for the location
+            Vector3 originalTransformPosition = databaseObject.transform.position;
+            Quaternion originalTransformRotation = databaseObject.transform.rotation;
+            Vector3 originalTransformScale = databaseObject.transform.localScale;
+
+            databaseObject.transform.position = original.transform.position;
+            databaseObject.transform.rotation = original.transform.rotation;
+            databaseObject.transform.localScale = original.transform.localScale;
+
+            GameObject gameObject = UnityEngine.Object.Instantiate(databaseObject, objPosition, objRotation);
+            gameObject.SetActive(value: true);
+
+            // Cleanup
+            databaseObject.transform.position = originalTransformPosition;
+            databaseObject.transform.rotation = originalTransformRotation;
+            databaseObject.transform.localScale = originalTransformScale;
+
+            return true;
         }
 
         #endregion
