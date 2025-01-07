@@ -374,7 +374,7 @@ namespace VentureValheim.LocationReset
         /// <param name="position"></param>
         /// <param name="activity"></param>
         /// <returns>
-        /// HashSet containing the names the root prefab name hashes of all objects that were destroyed.
+        /// HashSet containing the names the root prefab name hashes of all objects that were skipped.
         /// </returns>
         public static HashSet<int> DeleteLocation(LocationPosition position, PlayerActivity activity)
         {
