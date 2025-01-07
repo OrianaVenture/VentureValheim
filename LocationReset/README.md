@@ -85,7 +85,7 @@ When using the mod "Dungeon Splitter" by JereKuusela all sky location resetting 
 
 #### More Vanilla Build Prefabs
 
-When using the mod "More Vanilla Build Prefabs" by Searica resetting the start temple will be disabled for compatibility reasons. Other locations with pieces altered by that mod may not reset as expected. Please report any game breaking issues.
+When using the mod "More Vanilla Build Prefabs" by Searica (or mods with similar functionality) resetting locations with pieces altered by that mod may not reset as expected. Please report any game breaking issues.
 
 ## Installation
 
