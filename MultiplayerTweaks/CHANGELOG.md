@@ -1,3 +1,8 @@
+## 0.11.5
+
+* Fix for EnableValkrie setting not working properly in multiplayer.
+* Compatibility fix for PlayerDefaultSpawnPoint setting not working with the Server Characters mod.
+
 ## 0.11.4
 
 * Update for game version 0.219.13.

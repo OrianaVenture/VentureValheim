@@ -60,11 +60,11 @@ public class ArrivalTweaks
                 {
                     if (codes[lcv].operand?.Equals(method) ?? false)
                     {
-                        codes[lcv - 5].opcode = OpCodes.Nop;
-                        codes[lcv - 4].opcode = OpCodes.Nop;
-                        codes[lcv - 3].opcode = OpCodes.Nop;
-                        codes[lcv - 2].opcode = OpCodes.Nop;
-                        codes[lcv - 1].opcode = OpCodes.Nop;
+                        codes[lcv - 5].opcode = OpCodes.Nop; // ldarg.0
+                        codes[lcv - 4].opcode = OpCodes.Nop; // ldc.i4.0
+                        codes[lcv - 3].opcode = OpCodes.Nop; // call
+                        codes[lcv - 2].opcode = OpCodes.Nop; // ldstr
+                        codes[lcv - 1].opcode = OpCodes.Nop; // callvirt
                         var methodCall = AccessTools.Method(typeof(ArrivalTweaks), nameof(SendArrivalMessage));
                         codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
                         break;
@@ -78,27 +78,23 @@ public class ArrivalTweaks
 
     /// <summary>
     /// Disables the Valkrie on first spawn.
+    /// Set the Player position as public or private if overridden.
     /// </summary>
-    [HarmonyPatch(typeof(Game), nameof(Game.Start))]
-    public static class Patch_Game_Start
+    [HarmonyPatch(typeof(Game), nameof(Game.SpawnPlayer))]
+    public static class Patch_Game_SpawnPlayer
     {
-        private static void Postfix(Game __instance)
+        private static void Prefix(Game __instance, ref Vector3 spawnPoint, ref bool spawnValkyrie)
         {
-            if (!MultiplayerTweaksPlugin.GetEnableValkrie())
+            if (spawnValkyrie && !MultiplayerTweaksPlugin.GetEnableValkrie())
             {
-                __instance.m_queuedIntro = false;
+                spawnValkyrie = false;
+                if (__instance.m_inIntro)
+                {
+                    // Redundant skip intro in case of ShowIntro patch failure
+                    __instance.SkipIntro();
+                }
             }
-        }
-    }
 
-    [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
-    public static class Patch_Player_OnSpawned
-    {
-        /// <summary>
-        /// Set the Player position as public or private if overridden.
-        /// </summary>
-        private static void Postfix()
-        {
             if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins())
             {
                 ZNet.instance.SetPublicReferencePosition(MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn());
@@ -106,30 +102,41 @@ public class ArrivalTweaks
         }
     }
 
+
     /// <summary>
-    /// Replace the ZoneSystem.GetLocationIcon method call with GetCustomSpawnPoint.
+    /// Disables the intro text on first spawn.
+    /// </summary>
+    [HarmonyPatch(typeof(Game), nameof(Game.ShowIntro))]
+    public static class Patch_Game_ShowIntro
+    {
+        private static bool Prefix(Game __instance)
+        {
+            if (!MultiplayerTweaksPlugin.GetEnableValkrie())
+            {
+                __instance.m_inIntro = false;
+                return false; // Skip original
+            }
+
+            return true; //continue
+        }
+    }
+
+    /// <summary>
+    /// The game checks for a logout point first when respawning, set this value here
+    /// when a custom spawn point is used and existing values for spawn points do not exist.
     /// </summary>
     [HarmonyPatch(typeof(Game), nameof(Game.FindSpawnPoint))]
     public static class Patch_Game_FindSpawnPoint
     {
-        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static void Prefix(Game __instance)
         {
-            var codes = new List<CodeInstruction>(instructions);
-            var method = AccessTools.Method(typeof(ZoneSystem), nameof(ZoneSystem.GetLocationIcon));
-            for (var lcv = 0; lcv < codes.Count; lcv++)
+            if (!__instance.m_playerProfile.HaveLogoutPoint() &&
+                !__instance.m_playerProfile.HaveCustomSpawnPoint() &&
+                GetCustomSpawnPoint(out var point))
             {
-                if (codes[lcv].opcode == OpCodes.Callvirt)
-                {
-                    if (codes[lcv].operand?.Equals(method) ?? false)
-                    {
-                        var methodCall = AccessTools.Method(typeof(ArrivalTweaks), nameof(GetCustomSpawnPoint));
-                        codes[lcv] = new CodeInstruction(OpCodes.Callvirt, methodCall);
-                        break;
-                    }
-                }
+                __instance.m_respawnAfterDeath = false;
+                __instance.m_playerProfile.SetLogoutPoint(point);
             }
-
-            return codes.AsEnumerable();
         }
     }
 
@@ -139,7 +146,7 @@ public class ArrivalTweaks
     /// <param name="iconname"></param>
     /// <param name="position"></param>
     /// <returns></returns>
-    public bool GetCustomSpawnPoint(string iconname, out Vector3 position)
+    public static bool GetCustomSpawnPoint(out Vector3 position)
     {
         var point = MultiplayerTweaksPlugin.GetPlayerDefaultSpawnPoint();
         if (!point.IsNullOrWhiteSpace())
@@ -158,18 +165,20 @@ public class ArrivalTweaks
                 }
                 catch (Exception e)
                 {
-                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError("Error setting the new spawn point. Check your configuration for formatting issues.");
+                    MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError(
+                        "Error setting the new spawn point. Check your configuration for formatting issues.");
                     MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogWarning(e);
                 }
             }
             else
             {
-                MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError("Error setting the new spawn point. Check your configuration for formatting issues.");
+                MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogError(
+                    "Error setting the new spawn point. Check your configuration for formatting issues.");
             }
         }
 
-        // Default to original behavior
-        return ZoneSystem.instance.GetLocationIcon(iconname, out position);
+        position = Vector3.zero;
+        return false;
     }
 
     /// <summary>
