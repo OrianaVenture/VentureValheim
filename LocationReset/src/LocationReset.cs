@@ -302,7 +302,10 @@ namespace VentureValheim.LocationReset
         {
             return !(obj.GetComponent<DungeonGenerator>() ||
                 obj.GetComponent<LocationProxy>() ||
-                obj.GetComponent<Player>());
+                obj.GetComponent<Player>() ||
+                // Offering Bowls rely on a parent to assign the znetview in Start().
+                // Throws errors when reset so exclude them.
+                obj.GetComponent<OfferingBowl>());
         }
 
         /// <summary>
