@@ -60,7 +60,7 @@ namespace VentureValheim.Progression
         {
             var eventData = default(RandEventSystem.PlayerEventData);
             eventData.position = peer.m_refPos;
-            eventData.possibleEvents = GetPossiblePlayerEvents(peer.m_characterID.UserID);
+            eventData.possibleEvents = GetPossiblePlayerEvents(ProgressionAPI.GetPersistentPlayerID(peer.m_characterID));
             eventData.baseValue = 0;
             if (peer.m_serverSyncedPlayerData.TryGetValue("baseValue", out var basevalue))
             {
@@ -123,7 +123,7 @@ namespace VentureValheim.Progression
         {
             private static bool Prefix(ref bool __result)
             {
-                if (!ProgressionConfiguration.Instance.GetUsePrivateRaids() || 
+                if (!ProgressionConfiguration.Instance.GetUsePrivateRaids() ||
                     !ProgressionConfiguration.Instance.GetUsePrivateKeys())
                 {
                     return true;

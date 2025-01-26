@@ -147,12 +147,29 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Attempts to find the player id with the given name.
+        /// Attempts to find the persistent player id from the given ZDOID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static long GetPersistentPlayerID(ZDOID id)
+        {
+            var playerZDO = ZDOMan.instance.GetZDO(id);
+
+            if (playerZDO != null)
+            {
+                return playerZDO.GetLong(ZDOVars.s_playerID, 0L);
+            }
+
+            return 0L;
+        }
+
+        /// <summary>
+        /// Attempts to find the player zdo id with the given name.
         /// Case-insensitive, ignores whitespace.
         /// </summary>
         /// <param name="playerName"></param>
         /// <returns></returns>
-        public static long GetPlayerID(string playerName)
+        public static long GetPlayerZDOID(string playerName)
         {
             var nameSimple = playerName.Trim().ToLower();
             var players = ZNet.instance.GetPlayerList();
@@ -176,7 +193,7 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         public static string GetPlayerName(long playerID)
         {
-            if (GetLocalPlayerID() == playerID)
+            if (!ZNet.instance.IsDedicated() && ZNet.instance.IsServer())
             {
                 // In singleplayer the player list may not be populated
                 return GetLocalPlayerName();
@@ -186,10 +203,15 @@ namespace VentureValheim.Progression
 
             for (int lcv = 0; lcv < players.Count; lcv++)
             {
-                var player = players[lcv].m_characterID.UserID;
-                if (player == playerID)
+                var playerZDO = ZDOMan.instance.GetZDO(players[lcv].m_characterID);
+
+                if (playerZDO != null)
                 {
-                    return players[lcv].m_name;
+                    long currentPlayerID = playerZDO.GetLong(ZDOVars.s_playerID, 0L);
+                    if (currentPlayerID == playerID)
+                    {
+                        return playerZDO.GetString(ZDOVars.s_playerName, "IssueRetrievingPlayerName");
+                    }
                 }
             }
 
@@ -217,7 +239,13 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         public static long GetLocalPlayerID()
         {
-            return ZNet.instance.m_characterID.UserID;
+            var profile = Game.instance.GetPlayerProfile();
+            if (profile != null)
+            {
+                return profile.m_playerID;
+            }
+
+            return 0L;
         }
 
         /// <summary>
