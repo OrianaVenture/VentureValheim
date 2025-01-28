@@ -101,7 +101,8 @@ private static Texture2D DuplicateTexture(Sprite sprite)
 
     // The location of the target icon in the texture
     int x = (int)sprite.textureRect.x;
-    int y = sprite.texture.height - (int)sprite.textureRect.y - height; // Y is inverted for my example
+    int y = (int)sprite.textureRect.y;
+    //int y = sprite.texture.height - (int)sprite.textureRect.y - height; // Inverted (Legacy code after Bog Witch)
 
     // The whole sprite atlas
     var texture = sprite.texture;
