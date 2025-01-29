@@ -1,3 +1,7 @@
+## 0.3.3
+
+* Added Bronze and BronzeScrap to the copper/tin portaling unlocking logic.
+
 ## 0.3.2
 
 * Changed which player ID gets stored to the server, should now be persistent and fix the private raids selecting incorrectly after the player was destroyed (dying, portaling, etc).
