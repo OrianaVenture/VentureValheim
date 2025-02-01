@@ -168,9 +168,10 @@ public static class NPCZDOUtils
 
     public static void SetNPCQuest(ref ZNetView nview, int index, NPCQuest quest)
     {
-        nview.GetZDO().Set($"{ZDOVar_QUESTS}{index}", Utility.GetString(quest));
+        SetNPCQuestString(ref nview, index, Utility.GetString(quest));
         if (quest == null)
         {
+            NPCSPlugin.NPCSLogger.LogDebug($"SetNPCQuest, quest null! Setting blank data.");
             SetNPCQuestGive(ref nview, index, "");
             SetNPCQuestReward(ref nview, index, "");
         }
@@ -183,14 +184,17 @@ public static class NPCZDOUtils
 
     public static void SetNPCQuestString(ref ZNetView nview, int index, string quest)
     {
+        NPCSPlugin.NPCSLogger.LogDebug($"Setting Quest String: {quest}");
         nview.GetZDO().Set($"{ZDOVar_QUESTS}{index}", quest);
     }
     public static void SetNPCQuestGive(ref ZNetView nview, int index, string give)
     {
+        NPCSPlugin.NPCSLogger.LogDebug($"Setting Quest Give: {give}");
         nview.GetZDO().Set($"{ZDOVar_QUESTS}{index}GIVE", give);
     }
     public static void SetNPCQuestReward(ref ZNetView nview, int index, string reward)
     {
+        NPCSPlugin.NPCSLogger.LogDebug($"Setting Quest Reward: {reward}");
         nview.GetZDO().Set($"{ZDOVar_QUESTS}{index}REWARD", reward);
     }
 
@@ -310,7 +314,12 @@ public static class NPCZDOUtils
     public static List<string> GetNPCTexts(string zdoVar, ZNetView nview)
     {
         string text = nview.GetZDO().GetString(zdoVar);
-        return text.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.RemoveEmptyEntries).ToList();
+        var thing = text.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.RemoveEmptyEntries).ToList();
+        if (thing.Count == 0)
+        {
+            thing.Add("Hmm?");
+        }
+        return thing;
     }
 
     public static void SetNPCTexts(string zdoVar, ref ZNetView nview, List<string> texts) =>
@@ -431,6 +440,8 @@ public static class NPCZDOUtils
 
     public static void CopyZDO(ref ZNetView copy, ZNetView original)
     {
+
+        SetVersion(ref copy);
         // TODO, what rotation needs to be copied when?
         //copy.GetZDO().SetRotation(original.GetZDO().GetRotation());
         SetRotation(ref copy, GetRotation(original));
@@ -539,6 +550,8 @@ public static class NPCZDOUtils
             SetNPCTexts(ZDOVar_SELLTEXTS, ref nview, config.SellTexts);
             SetNPCTexts(ZDOVar_NOTAVAILABLETEXTS, ref nview, config.NotAvailableTexts);
             SetNPCTexts(ZDOVar_NOTCORRECTTEXTS, ref nview, config.NotCorrectTexts);
+
+            SetVersion(ref nview);
         }
         catch (Exception e)
         {
@@ -551,10 +564,11 @@ public static class NPCZDOUtils
     private static void SetQuestData(ref ZNetView nview, List<NPCQuest> quests)
     {
         int oldCount = GetNPCQuestCount(nview);
+        NPCSPlugin.NPCSLogger.LogDebug($"Setting quest data, {oldCount} old quests found");
         if (oldCount > 0)
         {
             // Clean up old data
-            for (int lcv = quests.Count; lcv < oldCount; lcv++)
+            for (int lcv = 0; lcv < oldCount; lcv++)
             {
                 SetNPCQuest(ref nview, lcv, null);
             }
@@ -572,6 +586,7 @@ public static class NPCZDOUtils
     {
         if (GetVersion(nview) < 2)
         {
+            NPCSPlugin.NPCSLogger.LogDebug($"Upgrading version....");
             // Upgrade from unversioned
             NPCData.NPCType type = (NPCData.NPCType)GetType(nview);
 

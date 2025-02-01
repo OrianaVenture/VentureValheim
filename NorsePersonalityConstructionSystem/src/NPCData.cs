@@ -139,6 +139,7 @@ public class NPCData
     {
         if (!_questsInitialized)
         {
+            NPCSPlugin.NPCSLogger.LogDebug("Updating Quest: refreshing quest list because not init");
             RefreshQuestList(false);
         }
 

@@ -279,16 +279,19 @@ public static class NPCUtils
 
         if (type != (int)NPCData.NPCType.None)
         {
-            text = Localization.instance.Localize(
-                "[<color=yellow><b>$KEY_Use</b></color>] $raven_interact");
-
             var npcComponent = npc.GetComponent<INPC>();
             var quest = npcComponent.Data.GetCurrentQuest();
 
-            if (quest != null && quest.GiveItem != null)
+            if (quest != null || type == (int)NPCData.NPCType.Trader)
             {
-                text += Localization.instance.Localize(
-                    "\n[<color=yellow><b>1-8</b></color>] $npc_giveitem");
+                text = Localization.instance.Localize(
+                    "[<color=yellow><b>$KEY_Use</b></color>] $raven_interact");
+
+                if (quest != null && quest.GiveItem != null)
+                {
+                    text += Localization.instance.Localize(
+                        "\n[<color=yellow><b>1-8</b></color>] $npc_giveitem");
+                }
             }
         }
 
