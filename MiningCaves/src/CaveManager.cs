@@ -59,6 +59,23 @@ namespace VentureValheim.MiningCaves
             CustomLocation silverCaveLoc = new CustomLocation(silverCave, true, silverCaveLocConfig);
             ZoneManager.Instance.AddCustomLocation(silverCaveLoc);
 
+            // Tar & Iron Cave
+            var tarCaveName = "VV_TarCave";
+            GameObject tarCave = ZoneManager.Instance.CreateLocationContainer(bundle, tarCaveName);
+            LocationConfig tarCaveLocConfig = new LocationConfig();
+            tarCaveLocConfig.Biome = Heightmap.Biome.Plains;
+            tarCaveLocConfig.Quantity = 25;
+            tarCaveLocConfig.ExteriorRadius = 40;
+            tarCaveLocConfig.HasInterior = true;
+            tarCaveLocConfig.InteriorRadius = 60;
+            tarCaveLocConfig.MinAltitude = 3;
+            tarCaveLocConfig.MaxAltitude = 1000;
+            tarCaveLocConfig.Priotized = true;
+            tarCaveLocConfig.ClearArea = true;
+
+            CustomLocation tarCaveLoc = new CustomLocation(tarCave, true, tarCaveLocConfig);
+            ZoneManager.Instance.AddCustomLocation(tarCaveLoc);
+
             ZoneManager.OnVanillaLocationsAvailable -= AddMiningCaves;
         }
     }

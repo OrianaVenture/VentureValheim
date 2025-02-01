@@ -81,6 +81,8 @@ namespace VentureValheim.TerrainReset
 
             #endregion
 
+            TerrainResetLogger.LogInfo("Always has been.");
+
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
             SetupWatcher();

@@ -19,11 +19,11 @@ namespace VentureValheim.TerrainReset
 
         public static bool IgnoreKeyPresses()
         {
-            return ZNetScene.instance == null || Player.m_localPlayer == null || 
-                Minimap.IsOpen() || Console.IsVisible() || TextInput.IsVisible() || 
-                ZNet.instance.InPasswordDialog() || 
-                (Chat.instance != null && Chat.instance.HasFocus() == true) || 
-                StoreGui.IsVisible() || InventoryGui.IsVisible() || Menu.IsVisible() || 
+            return ZNetScene.instance == null || Player.m_localPlayer == null ||
+                Minimap.IsOpen() || Console.IsVisible() || TextInput.IsVisible() ||
+                ZNet.instance.InPasswordDialog() ||
+                (Chat.instance != null && Chat.instance.HasFocus() == true) ||
+                StoreGui.IsVisible() || InventoryGui.IsVisible() || Menu.IsVisible() ||
                 (TextViewer.instance != null && TextViewer.instance.IsVisible() == true);
         }
 
