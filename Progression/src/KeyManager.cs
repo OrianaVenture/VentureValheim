@@ -242,7 +242,7 @@ namespace VentureValheim.Progression
         /// <param name="key"></param>
         private void SendPrivateKey(string playerName, string key)
         {
-            var id = ProgressionAPI.GetPlayerID(playerName);
+            var id = ProgressionAPI.GetPlayerZDOID(playerName);
             if (id != 0)
             {
                 ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_SetPrivateKey, key);
@@ -305,7 +305,7 @@ namespace VentureValheim.Progression
         /// <param name="key"></param>
         private void SendRemovePrivateKey(string playerName, string key)
         {
-            var id = ProgressionAPI.GetPlayerID(playerName);
+            var id = ProgressionAPI.GetPlayerZDOID(playerName);
             if (id != 0)
             {
                 ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_RemovePrivateKey, key);
@@ -362,7 +362,7 @@ namespace VentureValheim.Progression
         /// <param name="playerName"></param>
         private void SendResetPrivateKeys(string playerName)
         {
-            var id = ProgressionAPI.GetPlayerID(playerName);
+            var id = ProgressionAPI.GetPlayerZDOID(playerName);
             if (id != 0)
             {
                 ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_ResetPrivateKeys);
@@ -403,7 +403,7 @@ namespace VentureValheim.Progression
         {
             var set = ProgressionAPI.StringToSet(keys);
             ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: " +
-                $"{set.Count} keys found for peer {sender}: \"{ProgressionAPI.GetPlayerName(playerID)}\".");
+                $"{set.Count} keys found for player: \"{ProgressionAPI.GetPlayerName(playerID)}\".");
             SetServerKeys(playerID, set);
         }
 
@@ -425,7 +425,7 @@ namespace VentureValheim.Progression
         private void RPC_ServerSetPrivateKey(long sender, string key, long playerID)
         {
             ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: " +
-                $"Adding key {key} for peer {sender}: \"{ProgressionAPI.GetPlayerName(playerID)}\".");
+                $"Adding key {key} for player: \"{ProgressionAPI.GetPlayerName(playerID)}\".");
             SetServerKey(playerID, key);
         }
 
@@ -439,7 +439,7 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Removes a Server key for a player for tracking
+        /// Removes a Server key for a player for tracking.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="key"></param>
@@ -447,7 +447,7 @@ namespace VentureValheim.Progression
         private void RPC_ServerRemovePrivateKey(long sender, string key, long playerID)
         {
             ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: " +
-                $"Removing key {key} for peer {sender}: \"{ProgressionAPI.GetPlayerName(playerID)}\".");
+                $"Removing key {key} for player \"{ProgressionAPI.GetPlayerName(playerID)}\".");
             RemoveServerKey(playerID, key);
         }
 

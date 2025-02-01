@@ -18,10 +18,10 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 * Toggle teleporting on death, or only on PVP deaths.
 * Toggle skill loss  on death, or only on PVP deaths.
 * Toggle player ability to ping the map.
-* Automatic death grace window on player respawn
-* Boss message banners only send to players within range
-* Ability to offset the game day
-* Ability to hide steam/xbox platform tags from shouts and chat messages
+* Automatic death grace window on player respawn.
+* Boss message banners only send to players within range.
+* Ability to offset the game day.
+* Ability to hide steam/xbox platform tags from shouts and chat messages.
 
 Admins have the ability to bypass some of these settings when the AdminBypass config is enabled.
 

@@ -435,6 +435,8 @@ namespace VentureValheim.Progression
                 case "CopperScrap":
                 case "Tin":
                 case "TinOre":
+                case "Bronze":
+                case "BronzeScrap":
                     key = ProgressionConfiguration.Instance.GetUnlockPortalCopperTinKey();
                     break;
                 case "Iron":

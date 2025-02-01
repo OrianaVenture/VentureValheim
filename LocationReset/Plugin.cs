@@ -7,9 +7,10 @@ using HarmonyLib;
 
 namespace VentureValheim.LocationReset
 {
+
     [BepInDependency(Jotunn.Main.ModGuid)]
-    [BepInDependency(DungeonSplitterName, BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency(MVBPName, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(ModCompatibility.DungeonSplitterName, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(ModCompatibility.MVBPName, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class LocationResetPlugin : BaseUnityPlugin
     {
@@ -23,7 +24,7 @@ namespace VentureValheim.LocationReset
         }
 
         private const string ModName = "LocationReset";
-        private const string ModVersion = "0.10.3";
+        private const string ModVersion = "0.10.5";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -32,11 +33,6 @@ namespace VentureValheim.LocationReset
         private readonly Harmony HarmonyInstance = new(ModGUID);
 
         public static readonly ManualLogSource LocationResetLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
-
-        private const string DungeonSplitterName = "dungeon_splitter";
-        public static bool DungeonSplitterInstalled = false;
-        private const string MVBPName = "Searica.Valheim.MoreVanillaBuildPrefabs";
-        public static bool MVBPInstalled = false;
 
         #region ConfigurationEntries
 
@@ -212,6 +208,8 @@ namespace VentureValheim.LocationReset
             const string advanced = "Advanced";
             const string leviathans = "Leviathans";
 
+            Config.SaveOnConfigSet = false;
+
             AddConfig("ResetTime", general, "Default number of in-game days for reset, one day is about 30 minutes (int).",
                 true, 30, ref CE_ResetTime);
             AddConfig("SkipPlayerGroundPieceCheck", general, "When True will reset locations even if player placed pieces " +
@@ -268,6 +266,9 @@ namespace VentureValheim.LocationReset
             AddConfig("LeviathanResetTime", leviathans, "Default number of in-game days for reset, one day is about 30 minutes (int).",
                 true, 30, ref CE_LeviathanResetTime);
 
+            Config.Save();
+            Config.SaveOnConfigSet = true;
+
             #endregion
 
             LocationResetLogger.LogInfo("LocationReset getting ready for mass destruction. Consider making backups before using this mod!");
@@ -277,15 +278,13 @@ namespace VentureValheim.LocationReset
             SetupWatcher();
 
             // Check for Dungeon Splitter
-            DungeonSplitterInstalled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(DungeonSplitterName);
-            if (DungeonSplitterInstalled)
+            if (ModCompatibility.DungeonSplitterInstalled)
             {
                 LocationResetLogger.LogInfo("Detected Dungeon Splitter, this mod will NOT reset sky locations!");
             }
 
             // Check for More Vanilla Build Prefabs
-            MVBPInstalled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(MVBPName);
-            if (MVBPInstalled)
+            if (ModCompatibility.MVBPInstalled)
             {
                 LocationResetLogger.LogInfo("Detected More Vanilla Build Prefabs, this mod will NOT reset the start temple!");
             }

@@ -13,7 +13,7 @@ namespace VentureValheim.MultiplayerTweaks
     public class MultiplayerTweaksPlugin : BaseUnityPlugin
     {
         private const string ModName = "MultiplayerTweaks";
-        private const string ModVersion = "0.11.4";
+        private const string ModVersion = "0.11.5";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -164,6 +164,8 @@ namespace VentureValheim.MultiplayerTweaks
             const string map = "Map";
             const string arrival = "Arrival";
 
+            Config.SaveOnConfigSet = false;
+
             AddConfig("AdminBypass", general, "True to allow admins to bypass some setting restrictions (boolean).",
                 true, false, ref CE_AdminBypass);
             AddConfig("GameDayOffset", general, "Number to offset the game day display (int).",
@@ -210,6 +212,9 @@ namespace VentureValheim.MultiplayerTweaks
                 true, true, ref CE_AllowMapPings);
             AddConfig("AllowShoutPings", map, "False to disable pings on the map when players shout messages (boolean).",
                 true, true, ref CE_AllowShoutPings);
+
+            Config.Save();
+            Config.SaveOnConfigSet = true;
 
             #endregion
 

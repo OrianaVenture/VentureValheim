@@ -1,3 +1,14 @@
+## 0.10.5
+
+* Also exclude OfferingBowl objects from being reset in sky portions of locations. (If you see an error in your log file when trying to summon the Mistland's boss please reset the location again to try and fix)
+
+## 0.10.4
+
+* Improved compatibility with other mods like "More Vanilla Build Prefabs":
+  * Can now respawn prefabs created from a "SpawnPrefab" component.
+  * No longer resets ItemStand and OfferingBowl objects, these are ignored by the mod to prevent item loss.
+  * Removed preventing reset of the StartTemple when MVBP is installed, now works with improvements above.
+
 ## 0.10.3
 
 * Added compatibility for the "More Vanilla Build Prefabs" mod, will not reset the start temple when using it.
