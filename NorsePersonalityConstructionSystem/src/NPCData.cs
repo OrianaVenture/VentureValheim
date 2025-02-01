@@ -99,6 +99,13 @@ public class NPCData
             string animation = NPCZDOUtils.GetAnimation(_character.m_nview);
             AttachStart(animation);
         }
+
+        var rotation = NPCZDOUtils.GetRotation(_character.m_nview);
+        if (rotation != Quaternion.identity)
+        {
+            NPCSPlugin.NPCSLogger.LogDebug("Updating from saved roatation!");
+            _character.transform.rotation = rotation;
+        }
     }
 
     public void UpdateTrader()

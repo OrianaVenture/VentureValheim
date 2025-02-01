@@ -31,11 +31,6 @@ public static class NPCZDOUtils
     public static int GetType(ZNetView nview) => nview.GetZDO().GetInt(ZDOVar_NPCTYPE);
     public static void SetType(ref ZNetView nview, int type) => nview.GetZDO().Set(ZDOVar_NPCTYPE, type);
 
-    // TODO support all kinds of attachment, probably by enum type
-    /*public const string ZDOVar_SITTING = "VV_Sitting";
-    public static bool GetSitting(ZNetView nview) => nview.GetZDO().GetBool(ZDOVar_SITTING);
-    public static void SetSitting(ref ZNetView nview, bool sit) => nview.GetZDO().Set(ZDOVar_SITTING, sit);*/
-
     public const string ZDOVar_ANIMATION = "VV_Animation";
     public static string GetAnimation(ZNetView nview) => nview.GetZDO().GetString(ZDOVar_ANIMATION);
     public static void SetAnimation(ref ZNetView nview, string animation) => nview.GetZDO().Set(ZDOVar_ANIMATION, animation);
@@ -59,50 +54,6 @@ public static class NPCZDOUtils
     public const string ZDOVar_TRUEDEATH = "VV_TrueDeath";
     public static bool GetTrueDeath(ZNetView nview) => nview.GetZDO().GetBool(ZDOVar_TRUEDEATH);
     public static void SetTrueDeath(ref ZNetView nview, bool death) => nview.GetZDO().Set(ZDOVar_TRUEDEATH, death);
-
-    // Main Text used when all else fails
-    /*public const string ZDOVar_DEFAULTTEXT = "VV_DefaultText";
-    public static string GetNPCDefaultText(ZNetView nview) => nview.GetZDO().GetString(ZDOVar_DEFAULTTEXT);
-    public static void SetNPCDefaultText(ref ZNetView nview, string text) => nview.GetZDO().Set(ZDOVar_DEFAULTTEXT, text);
-
-    // Interact Text
-    public const string ZDOVar_INTERACTTEXT = "VV_InteractText";
-    public static string GetNPCInteractText(ZNetView nview) => nview.GetZDO().GetString(ZDOVar_INTERACTTEXT);
-    public static void SetNPCInteractText(ref ZNetView nview, string text) => nview.GetZDO().Set(ZDOVar_INTERACTTEXT, text);
-
-    // Use Item
-    public const string ZDOVar_GIVEITEM = "VV_GiveItem";
-    public static string GetNPCGiveItem(ZNetView nview) => nview.GetZDO().GetString(ZDOVar_GIVEITEM);
-    public static void SetNPCGiveItem(ref ZNetView nview, string item) => nview.GetZDO().Set(ZDOVar_GIVEITEM, item);
-
-    public const string ZDOVar_GIVEITEMQUALITY = "VV_UseItemQuality";
-    public static int GetNPCGiveItemQuality(ZNetView nview) => nview.GetZDO().GetInt(ZDOVar_GIVEITEMQUALITY);
-    public static void SetNPCGiveItemQuality(ref ZNetView nview, int quality) => nview.GetZDO().Set(ZDOVar_GIVEITEMQUALITY, quality);
-
-    public const string ZDOVar_GIVEITEMAMOUNT = "VV_UseItemAmount";
-    public static int GetNPCGiveItemAmount(ZNetView nview) => nview.GetZDO().GetInt(ZDOVar_GIVEITEMAMOUNT);
-    public static void SetNPCGiveItemAmount(ref ZNetView nview, int amount) => nview.GetZDO().Set(ZDOVar_GIVEITEMAMOUNT, amount);
-
-    // Reward
-    public const string ZDOVar_REWARDTEXT = "VV_RewardText";
-    public static string GetNPCRewardText(ZNetView nview) => nview.GetZDO().GetString(ZDOVar_REWARDTEXT);
-    public static void SetNPCRewardText(ref ZNetView nview, string text) => nview.GetZDO().Set(ZDOVar_REWARDTEXT, text);
-
-    public const string ZDOVar_REWARDITEM = "VV_RewardItem";
-    public static string GetNPCRewardItem(ZNetView nview) => nview.GetZDO().GetString(ZDOVar_REWARDITEM);
-    public static void SetNPCRewardItem(ref ZNetView nview, string item) => nview.GetZDO().Set(ZDOVar_REWARDITEM, item);
-
-    public const string ZDOVar_REWARDITEMQUALITY = "VV_RewardItemQualtiy";
-    public static int GetNPCRewardItemQuality(ZNetView nview) => nview.GetZDO().GetInt(ZDOVar_REWARDITEMQUALITY);
-    public static void SetNPCRewardItemQuality(ref ZNetView nview, int quality) => nview.GetZDO().Set(ZDOVar_REWARDITEMQUALITY, quality);
-
-    public const string ZDOVar_REWARDITEMAMOUNT = "VV_RewardItemAmount";
-    public static int GetNPCRewardItemAmount(ZNetView nview) => nview.GetZDO().GetInt(ZDOVar_REWARDITEMAMOUNT);
-    public static void SetNPCRewardItemAmount(ref ZNetView nview, int amount) => nview.GetZDO().Set(ZDOVar_REWARDITEMAMOUNT, amount);
-
-    public const string ZDOVar_REWARDLIMIT = "VV_RewardLimit";
-    public static int GetNPCRewardLimit(ZNetView nview) => nview.GetZDO().GetInt(ZDOVar_REWARDLIMIT, -1); // -1 is unlimited
-    public static void SetNPCRewardLimit(ref ZNetView nview, int limit) => nview.GetZDO().Set(ZDOVar_REWARDLIMIT, limit);*/
 
     public const string ZDOVar_QUESTCOUNT = "VV_QuestCount";
     public static int GetNPCQuestCount(ZNetView nview) => nview.GetZDO().GetInt(ZDOVar_QUESTCOUNT);
@@ -326,31 +277,9 @@ public static class NPCZDOUtils
         nview.GetZDO().Set(zdoVar, JoinStrings(texts));
 
     // TODO add cooldown option
-    // Keys
-    /*public const string ZDOVar_REQUIREDKEYS = "VV_RequiredKeys";
-    public static string GetNPCRequiredKeys(ZNetView nview) => nview.GetZDO().GetString(ZDOVar_REQUIREDKEYS);
-    public static void SetNPCRequiredKeys(ref ZNetView nview, string keys) => nview.GetZDO().Set(ZDOVar_REQUIREDKEYS, keys);
-
-    public const string ZDOVar_NOTREQUIREDKEYS = "VV_NotRequiredKeys";
-    public static string GetNPCNotRequiredKeys(ZNetView nview) => nview.GetZDO().GetString(ZDOVar_NOTREQUIREDKEYS);
-    public static void SetNPCNotRequiredKeys(ref ZNetView nview, string keys) => nview.GetZDO().Set(ZDOVar_NOTREQUIREDKEYS, keys);
-
-    public const string ZDOVar_INTERACTKEY = "VV_InteractKey";
-    public static string GetNPCInteractKey(ZNetView nview) => nview.GetZDO().GetString(ZDOVar_INTERACTKEY);
-    public static void SetNPCInteractKey(ref ZNetView nview, string key) => nview.GetZDO().Set(ZDOVar_INTERACTKEY, key);
-
-    public const string ZDOVar_INTERACTKEYTYPE = "VV_InteractKeyType";
-    public static bool GetNPCInteractKeyType(ZNetView nview) => nview.GetZDO().GetBool(ZDOVar_INTERACTKEYTYPE);
-    public static void SetNPCInteractKeyType(ref ZNetView nview, bool type) => nview.GetZDO().Set(ZDOVar_INTERACTKEYTYPE, type);
-
-    public const string ZDOVar_REWARDKEY = "VV_RewardKey";
-    public static string GetNPCRewardKey(ZNetView nview) => nview.GetZDO().GetString(ZDOVar_REWARDKEY);
-    public static void SetNPCRewardKey(ref ZNetView nview, string key) => nview.GetZDO().Set(ZDOVar_REWARDKEY, key);
-
-    public const string ZDOVar_REWARDKEYTYPE = "VV_RewardKeyType";
-    public static bool GetNPCRewardKeyType(ZNetView nview) => nview.GetZDO().GetBool(ZDOVar_REWARDKEYTYPE);
-    public static void SetNPCRewardKeyType(ref ZNetView nview, bool type) => nview.GetZDO().Set(ZDOVar_REWARDKEYTYPE, type);*/
     #region Legacy Fields
+    public const string ZDOVar_SITTING = "VV_Sitting";
+    public static bool GetLegacyNPCSitting(ZNetView nview) => nview.GetZDO().GetBool(ZDOVar_SITTING);
 
     // Main Text used when all else fails
     private const string ZDOVar_DEFAULTTEXT = "VV_DefaultText";
@@ -405,6 +334,30 @@ public static class NPCZDOUtils
     private const string ZDOVar_REWARDKEYTYPE = "VV_RewardKeyType";
     private static bool GetLegacyNPCRewardKeyType(ZNetView nview) => nview.GetZDO().GetBool(ZDOVar_REWARDKEYTYPE);
 
+    private static void ResetLegacyNPCData(ref ZNetView nview)
+    {
+        // TODO validate
+        ZDO zdo = nview.GetZDO();
+        zdo.Set(ZDOVar_DEFAULTTEXT, "");
+        zdo.Set(ZDOVar_INTERACTTEXT, "");
+        zdo.Set(ZDOVar_GIVEITEM, "");
+        zdo.RemoveInt(ZDOVar_GIVEITEMQUALITY);
+        zdo.RemoveInt(ZDOVar_GIVEITEMAMOUNT);
+        zdo.Set(ZDOVar_REWARDTEXT, "");
+        zdo.Set(ZDOVar_REWARDITEM, "");
+        zdo.RemoveInt(ZDOVar_REWARDITEMQUALITY);
+        zdo.RemoveInt(ZDOVar_REWARDITEMAMOUNT);
+        zdo.RemoveInt(ZDOVar_REWARDLIMIT);
+        zdo.Set(ZDOVar_REQUIREDKEYS, ""); 
+        zdo.Set(ZDOVar_NOTREQUIREDKEYS, "");
+        zdo.Set(ZDOVar_INTERACTKEY, "");
+        zdo.RemoveInt(ZDOVar_INTERACTKEYTYPE);
+        zdo.Set(ZDOVar_REWARDKEY, "");
+        zdo.RemoveInt(ZDOVar_REWARDKEYTYPE);
+
+        zdo.RemoveInt(ZDOVar_SITTING);
+    }
+
     # endregion
 
     // Vanity
@@ -440,7 +393,6 @@ public static class NPCZDOUtils
 
     public static void CopyZDO(ref ZNetView copy, ZNetView original)
     {
-
         SetVersion(ref copy);
         // TODO, what rotation needs to be copied when?
         //copy.GetZDO().SetRotation(original.GetZDO().GetRotation());
@@ -479,26 +431,6 @@ public static class NPCZDOUtils
             SetNPCQuestGive(ref copy, lcv, GetNPCQuestGive(original, lcv));
             SetNPCQuestReward(ref copy, lcv, GetNPCQuestReward(original, lcv));
         }
-
-        /*SetNPCDefaultText(ref copy, GetNPCDefaultText(original));
-        SetNPCInteractText(ref copy, GetNPCInteractText(original));
-
-        SetNPCGiveItem(ref copy, GetNPCGiveItem(original));
-        SetNPCGiveItemQuality(ref copy, GetNPCGiveItemQuality(original));
-        SetNPCGiveItemAmount(ref copy, GetNPCGiveItemAmount(original));
-
-        SetNPCRewardText(ref copy, GetNPCRewardText(original));
-        SetNPCRewardItem(ref copy, GetNPCRewardItem(original));
-        SetNPCRewardItemQuality(ref copy, GetNPCRewardItemQuality(original));
-        SetNPCRewardItemAmount(ref copy, GetNPCRewardItemAmount(original));
-        SetNPCRewardLimit(ref copy, GetNPCRewardLimit(original));
-
-        SetNPCRequiredKeys(ref copy, GetNPCRequiredKeys(original));
-        SetNPCNotRequiredKeys(ref copy, GetNPCNotRequiredKeys(original));
-        SetNPCInteractKey(ref copy, GetNPCInteractKey(original));
-        SetNPCInteractKeyType(ref copy, GetNPCInteractKeyType(original));
-        SetNPCRewardKey(ref copy, GetNPCRewardKey(original));
-        SetNPCRewardKeyType(ref copy, GetNPCRewardKeyType(original));*/
     }
 
     public static void SetZDOFromConfig(ref ZNetView nview, NPCConfig config)
@@ -516,27 +448,6 @@ public static class NPCZDOUtils
             {
                 SetQuestData(ref nview, config.Quests);
             }
-
-            /*SetNPCDefaultText(ref nview, config.DefaultText);
-            SetNPCInteractText(ref nview, config.InteractText);
-
-            SetNPCGiveItem(ref nview, config.GiveItem);
-            SetNPCGiveItemQuality(ref nview, config.GiveItemQuality.Value);
-            SetNPCGiveItemAmount(ref nview, config.GiveItemAmount.Value);
-
-            SetNPCRewardText(ref nview, config.RewardText);
-            SetNPCRewardItem(ref nview, config.RewardItem);
-            SetNPCRewardItemQuality(ref nview, config.RewardItemQuality.Value);
-            SetNPCRewardItemAmount(ref nview, config.RewardItemAmount.Value);
-            SetNPCRewardLimit(ref nview, config.RewardLimit.Value);
-
-            SetNPCRequiredKeys(ref nview, config.RequiredKeys);
-            SetNPCNotRequiredKeys(ref nview, config.NotRequiredKeys);
-            SetNPCInteractKey(ref nview, config.InteractKey);
-            SetNPCInteractKeyType(ref nview, config.InteractKeyType == NPCKeyType.Global);
-            SetNPCRewardKey(ref nview, config.RewardKey);
-            SetNPCRewardKeyType(ref nview, config.RewardKeyType == NPCKeyType.Global);
-            SetNPCDefeatKey(ref nview, config.DefeatKey);*/
 
             SetNPCTradeItems(ref nview, config.TradeItems);
             SetNPCTraderUseItems(ref nview, config.TraderUseItems);
@@ -593,7 +504,7 @@ public static class NPCZDOUtils
             if (type == NPCData.NPCType.Information || type == NPCData.NPCType.Reward)
             {
                 NPCQuest firstQuest = new NPCQuest();
-                // TODO text cases
+                // TODO text cases for InteractText
                 firstQuest.Text = GetLegacyNPCDefaultText(nview); //GetLegacyNPCInteractText(nview);
                 firstQuest.RewardText = GetLegacyNPCRewardText(nview);
 
@@ -627,7 +538,13 @@ public static class NPCZDOUtils
 
                 SetQuestData(ref nview, new List<NPCQuest> { firstQuest });
 
-                // TODO clear old data
+                if (GetLegacyNPCSitting(nview))
+                {
+                    SetAttached(ref nview, true);
+                    SetAnimation(ref nview, "attach_chair");
+                }
+
+                ResetLegacyNPCData(ref nview);
             }
 
             SetVersion(ref nview);
