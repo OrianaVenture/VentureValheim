@@ -60,7 +60,6 @@ npcs:
         cost: 5
       -
         prefabName: AxeStone
-        quality: 2
         cost: 200
     traderUseItems:
       -
@@ -150,9 +149,10 @@ npcs:
       -
         text: "Can you give this to Vivica? She's too shy to admit she needs my help."
         notRequiredKeys: liv
-        rewardItem:
-          prefabName: KnifeFlint
-          quality: 2
+        rewardItems:
+          -
+            prefabName: KnifeFlint
+            quality: 2
         rewardKey: liv
       -
         text: "Did you bring that knife to Vivica?"
@@ -213,9 +213,10 @@ npcs:
         giveItem:
           prefabName: DeerStew
           amount: 1
-        rewardItem:
-          prefabName: Coins
-          amount: 10
+        rewardItems:
+          -
+            prefabName: Coins
+            amount: 10
         rewardKey: rahshahs2
         rewardText: "Thanks, I was hungry! Sorry about my wife, this should be more than enough to cover your help."
       -
@@ -233,9 +234,10 @@ npcs:
         text: "Help my people and I will give you {reward}."
         requiredKeys: liv, vivica2, rahshahs2
         notRequiredKeys: thaneofvalheim
-        rewardItem:
-          prefabName: SwordIron
-          quality: 5
+        rewardItems:
+          -
+            prefabName: SwordIron
+            quality: 5
         rewardText: "You actually did it, I'm impressed!"
         rewardKey: thaneofvalheim
       -

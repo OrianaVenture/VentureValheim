@@ -203,6 +203,9 @@ public class NPCFactory
             npcCharacter.m_speed = 2f;
             npcCharacter.m_runSpeed = 4f;
             npcCharacter.m_health = 200f;
+
+            Utility.GetItemPrefab("PlayerUnarmed".GetStableHashCode(), out var fists);
+            (npcCharacter as NPCHumanoid).m_unarmedWeapon = fists.GetComponent<ItemDrop>();
         }
 
         // Make sure to set this to the new object component, otherwise attacks are broken
@@ -234,6 +237,13 @@ public class NPCFactory
             var npcAI = npc.AddComponent<NPCAI>();
 
             SetupMonsterAI(ref npcAI, originalAI);
+
+            // Only add talker if has a MonsterAI
+            var talker = npc.GetComponent<NpcTalk>();
+            if (talker == null)
+            {
+                talker = npc.AddComponent<NpcTalk>();
+            }
         }
         else if (baseAI is AnimalAI)
         {

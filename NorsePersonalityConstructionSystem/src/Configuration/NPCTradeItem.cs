@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace VentureValheim.NPCS;
 
@@ -15,9 +14,10 @@ public class NPCTradeItem
     public NPCTradeItem() { }
     public NPCTradeItem(string[] fields)
     {
-        if (!int.TryParse(fields[1], out int quality) && quality != 1)
+        if (!int.TryParse(fields[1], out int quality))
         {
-            // TODO, assign quality to item drop by making new item?
+            quality = 1;
+            // TODO: This is not easily supported at time of creation
         }
 
         if (!int.TryParse(fields[2], out int amount))

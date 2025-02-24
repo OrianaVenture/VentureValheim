@@ -1,17 +1,19 @@
 
 
-## 0.0.8
+## 0.1.0
 
 * Overhauled the config system!!! Readme has been updated, please read it again!
-* Supports more complex questlines on a single NPC, can now add multiple quest stages.
+    * Supports more complex questlines on a single NPC, can now add multiple quest stages.
+    * Can now set multiple reward items on a single quest stage.
 * Support for Trader NPCS.
 * Interact and give texts now uses vanilla localization keys.
 * New option to not remove items for give quests, now can just check for presence.
-
-
-* New option to not remove items for give quests, now can just check if the player has it.
-* Fixed NPCS not keeping a manually set rotation. TODO
-
+* Humans will now properly punch things, hiya!
+* Player now performs interact animation when giving npc an item. todo test
+* Improvements to commands: 
+    * Calm command now functions better.
+    * Fixed NPCS not restoring a manually set rotation after using faceme command. TODO test
+    * Remove command now supports an optional range field to remove multiple npcs at once.
 
 ## 0.0.7
 

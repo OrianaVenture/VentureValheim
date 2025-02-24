@@ -1,4 +1,5 @@
 using HarmonyLib;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VentureValheim.NPCS;
@@ -161,9 +162,21 @@ public class Patches
                     var npcs = Utility.GetAllNPCS(playerPosition, float.Parse(args[1]));
                     foreach (var npc in npcs)
                     {
-                        var ai = npc.GetComponent<BaseAI>();
+                        BaseAI ai = null;
+                        if (npc is NPCHumanoid)
+                        {
+                            (npc as NPCHumanoid).m_nview.ClaimOwnership();
+                            ai = (npc as NPCHumanoid).GetComponent<BaseAI>();
+                        }
+                        else if (npc is NPCCharacter)
+                        {
+                            (npc as NPCCharacter).m_nview.ClaimOwnership();
+                            ai = (npc as NPCCharacter).GetComponent<BaseAI>();
+                        }
+
                         if (ai != null)
                         {
+                            ai.SetAlerted(false);
                             ai.SetAggravated(false, BaseAI.AggravatedReason.Damage);
                         }
                     }
@@ -219,22 +232,41 @@ public class Patches
             new Terminal.ConsoleCommand("npcs_remove", "", delegate (Terminal.ConsoleEventArgs args)
             {
                 var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = Utility.GetClosestNPC(playerPosition);
-                if (npc == null)
+
+                List<INPC> npcs;
+
+                if (args.Length >= 2 && int.TryParse(args[1], out int range))
                 {
-                    args.Context.AddString("No npc found.");
-                    return;
+                    npcs = Utility.GetAllNPCS(playerPosition, range);
+                }
+                else
+                {
+                    var npc = Utility.GetClosestNPC(playerPosition);
+                    npcs = new List<INPC>()
+                    {
+                        npc
+                    };
                 }
 
-                if (npc is NPCHumanoid)
+                for (int lcv = 0; lcv < npcs.Count; lcv++)
                 {
-                    (npc as NPCHumanoid).m_nview.ClaimOwnership();
-                    ZNetScene.instance.Destroy((npc as NPCHumanoid).gameObject);
-                }
-                else if (npc is NPCCharacter)
-                {
-                    (npc as NPCCharacter).m_nview.ClaimOwnership();
-                    ZNetScene.instance.Destroy((npc as NPCCharacter).gameObject);
+                    var npc = npcs[lcv];
+                    if (npc == null)
+                    {
+                        args.Context.AddString("No npc found.");
+                        return;
+                    }
+
+                    if (npc is NPCHumanoid)
+                    {
+                        (npc as NPCHumanoid).m_nview.ClaimOwnership();
+                        ZNetScene.instance.Destroy((npc as NPCHumanoid).gameObject);
+                    }
+                    else if (npc is NPCCharacter)
+                    {
+                        (npc as NPCCharacter).m_nview.ClaimOwnership();
+                        ZNetScene.instance.Destroy((npc as NPCCharacter).gameObject);
+                    }
                 }
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
@@ -333,6 +365,30 @@ public class Patches
             }
 
             return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.Show))]
+    private static class Patch_StoreGui_Show
+    {
+        private static void Postfix(StoreGui __instance, Trader trader)
+        {
+            if (trader == __instance.m_trader)
+            {
+                // todo set npcs to stop walking
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.Hide))]
+    private static class Patch_StoreGui_Hide
+    {
+        private static void Prefix(StoreGui __instance)
+        {
+            if (__instance.m_trader && __instance.GetComponent<NPCTrader>())
+            {
+                // todo set npcs to continue walking
+            }
         }
     }
 }

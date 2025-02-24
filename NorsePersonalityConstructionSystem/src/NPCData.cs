@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace VentureValheim.NPCS;
@@ -12,6 +11,8 @@ public class NPCData
     private NPCQuest[] _quests;
     private int _questIndex = -1;
     private bool _questsInitialized = false;
+
+    private NPCQuest _currentQuest = null;
 
     public bool HasAttach = false; // TODO fix zdo syncing for this?
     public Vector3 AttachPosition;
@@ -80,19 +81,22 @@ public class NPCData
             }
         }
 
-        // TODO fix up sitting
-        /*if (NPCZDOUtils.GetSitting(_character.m_nview))
+        if (NPCZDOUtils.GetAttached(_character.m_nview) && NPCZDOUtils.GetAnimation(_character.m_nview) == "attach_chair")
         {
             var chair = Utility.GetClosestChair(_character.transform.position, _character.transform.localScale / 2);
             if (chair != null)
             {
                 AttachStart(chair);
             }
+            else
+            {
+                AttachStart();
+            }
         }
         else if (NPCZDOUtils.GetAttached(_character.m_nview))
         {
             AttachStart();
-        }*/
+        }
 
         if (NPCZDOUtils.GetAttached(_character.m_nview))
         {
@@ -103,8 +107,18 @@ public class NPCData
         var rotation = NPCZDOUtils.GetRotation(_character.m_nview);
         if (rotation != Quaternion.identity)
         {
-            NPCSPlugin.NPCSLogger.LogDebug("Updating from saved roatation!");
+            NPCSPlugin.NPCSLogger.LogDebug("Updating from saved rotation!");
             _character.transform.rotation = rotation;
+        }
+
+        var talker = _character.GetComponent<NpcTalk>();
+        if (talker != null)
+        {
+            talker.m_randomTalk = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_TALKTEXTS, _character.m_nview);
+            talker.m_randomGreets = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GREETTEXTS, _character.m_nview);
+            talker.m_randomGoodbye = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GOODBYETEXTS, _character.m_nview);
+            talker.m_aggravated = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_AGGROTEXTS, _character.m_nview);
+            talker.m_name = _character.m_name;
         }
     }
 
@@ -123,6 +137,7 @@ public class NPCData
 
     public void RefreshQuestList(bool forceReset = false)
     {
+        // TODO: Optimize only to load quest at index when ready
         if (_quests == null || forceReset)
         {
             NPCSPlugin.NPCSLogger.LogDebug($"Refreshing quests list");
@@ -140,6 +155,7 @@ public class NPCData
         }
 
         _questsInitialized = true;
+        _questIndex = 0;
     }
 
     public void UpdateQuest(bool forceReset = false)
@@ -150,16 +166,14 @@ public class NPCData
             RefreshQuestList(false);
         }
 
-        if (!forceReset && _questIndex >= 0)
+        if (forceReset)
         {
-            return;
+            _questIndex = 0;
         }
-
-        _questIndex = -1;
 
         if (_quests != null)
         {
-            for (int lcv = 0; lcv < _quests.Length; lcv++)
+            for (int lcv = _questIndex; lcv < _quests.Length; lcv++)
             {
                 // TODO, decide how this will work
                 if (_quests[lcv] == null ||
@@ -173,20 +187,29 @@ public class NPCData
                 break;
             }
 
+            if (_questIndex >= 0 && _questIndex < _quests.Length)
+            {
+                _currentQuest = _quests[_questIndex];
+            }
+            else
+            {
+                _currentQuest = null;
+            }
+
             NPCSPlugin.NPCSLogger.LogDebug($"Selecting quest at index: {_questIndex}, out of {_quests.Length} total");
         }
     }
 
     public NPCQuest GetCurrentQuest()
     {
-        UpdateQuest(false);
-
-        if (_questIndex >= 0)
+        if (!_questsInitialized)
         {
-            return _quests[_questIndex];
+            NPCSPlugin.NPCSLogger.LogDebug("Updating Quest: refreshing quest list because not init");
+            RefreshQuestList(false);
+            UpdateQuest(true);
         }
 
-        return null;
+        return _currentQuest;
     }
 
     #region Attachments
@@ -329,7 +352,6 @@ public class NPCData
         {
             NPCZDOUtils.SetAnimation(ref _character.m_nview, "");
             NPCZDOUtils.SetAttached(ref _character.m_nview, false);
-            //NPCZDOUtils.SetSitting(ref _character.m_nview, false);
         }
 
         if (_character.m_zanim.IsOwner() && AttachAnimation != null)

@@ -13,7 +13,7 @@ public static class NPCUtils
             return text;
         }
 
-        if (quest.GiveItem != null)
+        if (quest.GiveItem != null && text.Contains("{giveitem}"))
         {
             string giveItem = quest.GiveItem.PrefabName;
             if (Utility.GetItemDrop(giveItem, out var requirement))
@@ -30,18 +30,28 @@ public static class NPCUtils
             text = text.Replace("{giveitem}", giveItemText);
         }
 
-        if (quest.RewardItem != null)
+        if (quest.RewardItems != null && text.Contains("{reward}"))
         {
-            string rewardItem = quest.RewardItem.PrefabName;
-            if (Utility.GetItemDrop(rewardItem, out var reward))
+            string rewardItemText = "";
+            for (int lcv = 0; lcv < quest.RewardItems.Count; lcv++)
             {
-                rewardItem = reward.m_itemData.m_shared.m_name;
-            }
+                var item = quest.RewardItems[lcv];
+                string rewardItem = item.PrefabName;
+                if (Utility.GetItemDrop(rewardItem, out var reward))
+                {
+                    rewardItem = reward.m_itemData.m_shared.m_name;
+                }
 
-            string rewardItemText = $"{quest.RewardItem.Amount} {rewardItem}";
-            if (quest.RewardItem.Quality > 1)
-            {
-                rewardItemText += $" *{quest.RewardItem.Quality}";
+                rewardItemText += $"{item.Amount} {rewardItem}";
+                if (item.Quality > 1)
+                {
+                    rewardItemText += $" *{item.Quality}";
+                }
+
+                if (lcv < quest.RewardItems.Count -1)
+                {
+                    rewardItemText += ", ";
+                }
             }
 
             text = text.Replace("{reward}", rewardItemText);
@@ -91,19 +101,25 @@ public static class NPCUtils
 
     public static void GiveReward(ref ZNetView nview, ref Character character, NPCQuest quest)
     {
-        NPCSPlugin.NPCSLogger.LogDebug($"Trying giving reward item! {quest.RewardItem == null}");
-        if (quest.RewardItem != null &&
-            Utility.GetItemPrefab(quest.RewardItem.PrefabName.GetStableHashCode(), out GameObject reward))
+        NPCSPlugin.NPCSLogger.LogDebug($"Trying giving reward items! {quest.RewardItems == null}");
+        if (quest.RewardItems != null)
         {
-            NPCSPlugin.NPCSLogger.LogDebug("Giving reward item!");
-            var go = GameObject.Instantiate(reward,
-                character.transform.position + new Vector3(0, 0.75f, 0) + (character.transform.rotation * Vector3.forward),
-                character.transform.rotation);
+            foreach (var item in quest.RewardItems)
+            {
+                if (Utility.GetItemPrefab(item.PrefabName.GetStableHashCode(), out GameObject reward))
+                {
+                    NPCSPlugin.NPCSLogger.LogDebug("Giving reward item!");
+                    var go = GameObject.Instantiate(reward,
+                        character.transform.position + new Vector3(0, 0.75f, 0) + (character.transform.rotation * Vector3.forward),
+                        character.transform.rotation);
 
-            var itemdrop = go.GetComponent<ItemDrop>();
-            itemdrop.SetStack(quest.RewardItem.Amount.Value);
-            itemdrop.SetQuality(quest.RewardItem.Quality.Value);
-            itemdrop.GetComponent<Rigidbody>().velocity = (character.transform.forward + Vector3.up) * 1f;
+                    var itemdrop = go.GetComponent<ItemDrop>();
+                    itemdrop.SetStack(item.Amount.Value);
+                    itemdrop.SetQuality(item.Quality.Value);
+                    itemdrop.GetComponent<Rigidbody>().velocity = (character.transform.forward + Vector3.up) * 1f;
+                }
+            }
+
             character.m_zanim.SetTrigger("interact");
         }
 
@@ -169,6 +185,7 @@ public static class NPCUtils
                 {
                     player.UnequipItem(item);
                     player.GetInventory().RemoveItem(item.m_shared.m_name, amount, quality);
+                    player.m_zanim.SetTrigger("interact");
                 }
                 else
                 {
@@ -193,7 +210,7 @@ public static class NPCUtils
 
         Talk(npc, name, text, quest);
 
-        npcComponent.Data.UpdateQuest(true);
+        npcComponent.Data.UpdateQuest(false); //todo, test validity
         return true;
     }
 
@@ -252,7 +269,7 @@ public static class NPCUtils
         var name = NPCZDOUtils.GetTamedName(zNetView);
         Talk(npc, name, text, quest); // TODO disable talking as needed
 
-        npcComponent.Data.UpdateQuest(true);
+        npcComponent.Data.UpdateQuest(false); //todo, test validity
         return false;
     }
 

@@ -16,7 +16,7 @@ public class NPCQuest
     public string InteractKey { get; set; }
     public NPCData.NPCKeyType InteractKeyType { get; set; }
     public NPCItem GiveItem { get; set; }
-    public NPCItem RewardItem { get; set; } // TODO make list
+    public List<NPCItem> RewardItems { get; set; }
     public string RewardKey { get; set; }
     public NPCData.NPCKeyType RewardKeyType { get; set; }
     public int? RewardLimit { get; set; }
@@ -65,7 +65,14 @@ public class NPCQuest
         RewardLimit ??= -1; // Unlimited
 
         GiveItem?.CleanData();
-        RewardItem?.CleanData();
+
+        if (RewardItems != null)
+        {
+            foreach (var item in RewardItems)
+            {
+                item?.CleanData();
+            }
+        }
     }
 
     public override string ToString()

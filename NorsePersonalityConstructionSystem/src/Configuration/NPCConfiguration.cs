@@ -9,10 +9,6 @@ namespace VentureValheim.NPCS;
 
 public static class NPCConfiguration
 {
-    // TODO: Data migration
-    // Replace all {reward} and {giveitem} with the actual names
-    // 
-
     private static readonly string FileName = "VV.NPCS.yaml";
     private static Dictionary<string, NPCConfig> Configurations;
 

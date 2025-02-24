@@ -7,7 +7,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using Jotunn.Managers;
 
-namespace VentureValheim.NPCSTests;
+namespace VentureValheim.NPCS;
 
 [BepInPlugin(ModGUID, ModName, ModVersion)]
 public class NPCSTestsPlugin : BaseUnityPlugin

@@ -47,23 +47,6 @@ public class NPCConfig
     public string RightHand { get; set; }
     public string LeftHand { get; set; }
     public int? LeftHandVariant { get; set; }
-    // OLD, TODO: migrate old data
-    /*public string DefaultText { get; set; }
-    public string RequiredKeys { get; set; }
-    public string NotRequiredKeys { get; set; }
-    public string InteractKey { get; set; }
-    public NPCUtils.NPCKeyType InteractKeyType { get; set; }
-    public string InteractText { get; set; }
-    public string GiveItem { get; set; }
-    public int? GiveItemQuality { get; set; }
-    public int? GiveItemAmount { get; set; }
-    public string RewardText { get; set; }
-    public string RewardItem { get; set; }
-    public int? RewardItemQuality { get; set; }
-    public int? RewardItemAmount { get; set; }
-    public string RewardKey { get; set; }
-    public NPCUtils.NPCKeyType RewardKeyType { get; set; }
-    public int? RewardLimit { get; set; }*/
 
     public void CleanData()
     {
@@ -87,7 +70,7 @@ public class NPCConfig
             item.CleanData();
         }
 
-        // TODO
+        // TODO: Add support for all npcs to use these fields
         TalkTexts ??= new List<string>();
         NPCConfiguration.ReplaceReservedCharacters(TalkTexts);
         GreetTexts ??= new List<string>();

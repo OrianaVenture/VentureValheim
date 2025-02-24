@@ -94,10 +94,17 @@ public static class NPCZDOUtils
             NPCSPlugin.NPCSLogger.LogDebug($"GetNPCQuest reward: {reward}");
             if (!reward.IsNullOrWhiteSpace())
             {
-                var rewards = reward.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
-                if (rewards.Length >= 4)
+                var rewards = reward.Split(PipeSeparatorList, int.MaxValue, StringSplitOptions.None);
+                if (rewards.Length > 0)
                 {
-                    quest.RewardItem = new NPCItem(rewards);
+                    var rewardIndexed = reward.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
+                    if (rewardIndexed.Length >= 4)
+                    {
+                        quest.RewardItems = new List<NPCItem>
+                        {
+                            new NPCItem(rewardIndexed)
+                        };
+                    }
                 }
             }
 
@@ -129,7 +136,7 @@ public static class NPCZDOUtils
         else
         {
             SetNPCQuestGive(ref nview, index, Utility.GetString(quest.GiveItem));
-            SetNPCQuestReward(ref nview, index, Utility.GetString(quest.RewardItem));
+            SetNPCQuestReward(ref nview, index, Utility.GetStringFromList(quest.RewardItems));
         }
     }
 
@@ -176,19 +183,19 @@ public static class NPCZDOUtils
                 list.Add(item);
             }
         }
-        NPCSPlugin.NPCSLogger.LogDebug($"GetTradeItems: {list.Count}");
+        NPCSPlugin.NPCSLogger.LogDebug($"GetTradeItems: {list.Count}, from fields {fields.Length}: {config}");
 
         return list;
     }
 
     private static Trader.TradeItem GetTradeItem(string item)
     {
-        var fields = item.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
+        string[] fields = item.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
 
         if (fields.Length >= 5)
         {
             var npcTradeItem = new NPCTradeItem(fields);
-            var prefab = ZNetScene.instance.GetPrefab(npcTradeItem.PrefabName);
+            Utility.GetItemPrefab(npcTradeItem.PrefabName.GetStableHashCode(), out var prefab);
             if (prefab == null || !prefab.TryGetComponent<ItemDrop>(out var itemdrop))
             {
                 return null;
@@ -241,7 +248,6 @@ public static class NPCZDOUtils
     }
 
     // Random Talking
-    // TODO
     private static string JoinStrings(List<string> strings)
     {
         string result = "";
@@ -262,13 +268,13 @@ public static class NPCZDOUtils
     public const string ZDOVar_NOTCORRECTTEXTS = "VV_NoCorrTexts";
     public const string ZDOVar_NOTAVAILABLETEXTS = "VV_NoAvailTexts";
 
-    public static List<string> GetNPCTexts(string zdoVar, ZNetView nview)
+    public static List<string> GetNPCTexts(string zdoVar, ZNetView nview, bool isTrader = false)
     {
         string text = nview.GetZDO().GetString(zdoVar);
         var thing = text.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.RemoveEmptyEntries).ToList();
-        if (thing.Count == 0)
+        if (thing.Count == 0 && isTrader)
         {
-            thing.Add("Hmm?");
+            thing.Add("...");
         }
         return thing;
     }
@@ -404,7 +410,6 @@ public static class NPCZDOUtils
         SetTamedName(ref copy, GetTamedName(original));
         SetType(ref copy, GetType(original));
         SetAnimation(ref copy, GetAnimation(original));
-        //SetSitting(ref copy, GetSitting(original));
         SetAttached(ref copy, GetAttached(original));
         SetSpawnPoint(ref copy, GetSpawnPoint(original));
         SetTrueDeath(ref copy, GetTrueDeath(original));
@@ -519,11 +524,13 @@ public static class NPCZDOUtils
                 var reward = GetLegacyNPCRewardItem(nview);
                 if (!reward.IsNullOrWhiteSpace())
                 {
-                    firstQuest.RewardItem = new NPCItem();
-                    firstQuest.RewardItem.PrefabName = reward;
-                    firstQuest.RewardItem.Amount = GetLegacyNPCRewardItemAmount(nview);
-                    firstQuest.RewardItem.Quality = GetLegacyNPCRewardItemQuality(nview);
-                    firstQuest.RewardItem.RemoveItem = true;
+                    firstQuest.RewardItems = new List<NPCItem>();
+                    var item = new NPCItem();
+                    item.PrefabName = reward;
+                    item.Amount = GetLegacyNPCRewardItemAmount(nview);
+                    item.Quality = GetLegacyNPCRewardItemQuality(nview);
+                    item.RemoveItem = true;
+                    firstQuest.RewardItems.Add(item);
                 }
 
                 var give = GetLegacyNPCGiveItem(nview);

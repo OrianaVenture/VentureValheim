@@ -110,14 +110,14 @@ public class Utility
         return null;
     }
 
-    public static List<NPCHumanoid> GetAllNPCS(Vector3 position, float range)
+    public static List<INPC> GetAllNPCS(Vector3 position, float range)
     {
         Collider[] hits = Physics.OverlapBox(position, Vector3.one * range, Quaternion.identity);
-        List<NPCHumanoid> npcs = new List<NPCHumanoid>();
+        List<INPC> npcs = new List<INPC>();
 
         foreach (var hit in hits)
         {
-            var npc = hit.transform.root.gameObject.GetComponentInChildren<NPCHumanoid>();
+            var npc = hit.transform.root.gameObject.GetComponentInChildren<INPC>();
             if (npc != null)
             {
                 npcs.Add(npc);
@@ -215,6 +215,8 @@ public class Utility
                 result += $"{item.ToString()}{NPCZDOUtils.PipeSeparator}";
             }
         }
+
+        NPCSPlugin.NPCSLogger.LogInfo($"GetStringFromList: {result}");
         return result;
     }
 }
