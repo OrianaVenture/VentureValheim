@@ -54,14 +54,17 @@ public class NPCData
         NPCZDOUtils.UpgradeVersion(ref _character.m_nview);
 
         _character.m_name = NPCZDOUtils.GetTamedName(_character.m_nview);
-
         _character.m_defeatSetGlobalKey = NPCZDOUtils.GetNPCDefeatKey(_character.m_nview);
 
         // TODO: fixup for tamed
         _character.m_nview.GetZDO().Set(ZDOVars.s_tamed, false);
         _character.m_tamed = false;
 
-        UpdateTrader();
+        if (!UpdateTrader())
+        {
+            // Setup talker for all non-trader npcs
+            UpdateTalker();
+        }
 
         if (_character is NPCHumanoid)
         {
@@ -81,29 +84,6 @@ public class NPCData
             }
         }
 
-        if (NPCZDOUtils.GetAttached(_character.m_nview) && NPCZDOUtils.GetAnimation(_character.m_nview) == "attach_chair")
-        {
-            var chair = Utility.GetClosestChair(_character.transform.position, _character.transform.localScale / 2);
-            if (chair != null)
-            {
-                AttachStart(chair);
-            }
-            else
-            {
-                AttachStart();
-            }
-        }
-        else if (NPCZDOUtils.GetAttached(_character.m_nview))
-        {
-            AttachStart();
-        }
-
-        if (NPCZDOUtils.GetAttached(_character.m_nview))
-        {
-            string animation = NPCZDOUtils.GetAnimation(_character.m_nview);
-            AttachStart(animation);
-        }
-
         var rotation = NPCZDOUtils.GetRotation(_character.m_nview);
         if (rotation != Quaternion.identity)
         {
@@ -111,18 +91,15 @@ public class NPCData
             _character.transform.rotation = rotation;
         }
 
-        var talker = _character.GetComponent<NpcTalk>();
-        if (talker != null)
+        if (NPCZDOUtils.GetAttached(_character.m_nview))
         {
-            talker.m_randomTalk = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_TALKTEXTS, _character.m_nview);
-            talker.m_randomGreets = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GREETTEXTS, _character.m_nview);
-            talker.m_randomGoodbye = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GOODBYETEXTS, _character.m_nview);
-            talker.m_aggravated = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_AGGROTEXTS, _character.m_nview);
-            talker.m_name = _character.m_name;
+            NPCSPlugin.NPCSLogger.LogDebug("Updating attachment!");
+            string animation = NPCZDOUtils.GetAnimation(_character.m_nview);
+            AttachStart(animation);
         }
     }
 
-    public void UpdateTrader()
+    public bool UpdateTrader()
     {
         if (NPCZDOUtils.GetType(_character.m_nview) == (int)NPCType.Trader)
         {
@@ -132,7 +109,26 @@ public class NPCData
             }
 
             trader.Setup();
+            return true;
         }
+
+        return false;
+    }
+
+    public bool UpdateTalker()
+    {
+        var talker = _character.GetComponent<NpcTalk>();
+        if (talker != null)
+        {
+            talker.m_randomTalk = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_TALKTEXTS, _character.m_nview);
+            talker.m_randomGreets = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GREETTEXTS, _character.m_nview);
+            talker.m_randomGoodbye = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GOODBYETEXTS, _character.m_nview);
+            talker.m_aggravated = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_AGGROTEXTS, _character.m_nview);
+            talker.m_name = _character.m_name;
+            return true;
+        }
+
+        return false;
     }
 
     public void RefreshQuestList(bool forceReset = false)
@@ -221,10 +217,10 @@ public class NPCData
             _character.transform.position = AttachPosition;
             _character.transform.rotation = AttachRotation;
             var velocity = Vector3.zero;
-            if (AttachRoot != null)
+            if (AttachRoot)
             {
                 Rigidbody componentInParent = AttachRoot.GetComponentInParent<Rigidbody>();
-                if (componentInParent != null)
+                if (componentInParent)
                 {
                     velocity = componentInParent.GetPointVelocity(_character.transform.position);
                 }
@@ -234,7 +230,7 @@ public class NPCData
             _character.m_body.angularVelocity = Vector3.zero;
             _character.m_maxAirAltitude = _character.transform.position.y;
         }
-        // TODO check for attach stop as needed
+        // TODO: check for attach stop as needed
     }
 
     public bool IsAttached()
@@ -242,98 +238,88 @@ public class NPCData
         return HasAttach;
     }
 
-    public void Attach(bool attach, Chair chair = null)
+    public void Attach(bool attach, string animation = "", Chair chair = null)
     {
-        _character.m_nview.ClaimOwnership();
         if (attach)
         {
             AttachStop();
-            if (chair != null)
-            {
-                AttachStart(chair);
-            }
-            else
-            {
-                AttachStart();
-            }
+            SetAttachStart(animation, chair);
         }
         else
         {
-            AttachStop();
+            SetAttachStop(animation);
         }
     }
 
-    public void AttachStart(string animation)
+    public void SetAttachStart(string animation = "", Chair chair = null)
     {
-        if (animation == "attach_chair" || animation == "attach_throne")
+        _character.m_nview.ClaimOwnership();
+        NPCZDOUtils.SetAttached(ref _character.m_nview, true);
+
+        if (chair)
         {
-            var chair = Utility.GetClosestChair(_character.transform.position, _character.transform.localScale / 2);
-            if (chair != null)
-            {
-                AttachStart(chair);
-            }
+            animation = chair.m_attachAnimation;
+        }
+
+        NPCZDOUtils.SetAnimation(ref _character.m_nview, animation);
+
+        AttachStart(animation, chair);
+    }
+
+    protected void AttachStart(string animation = "", Chair chair = null)
+    {
+        HasAttach = true;
+
+        if (!chair && (animation == "attach_chair" || animation == "attach_throne"))
+        {
+            chair = Utility.GetClosestChair(_character.transform.position, _character.transform.localScale / 2);
+        }
+
+        if (chair)
+        {
+            AttachPosition = chair.m_attachPoint.position;
+            AttachRotation = chair.m_attachPoint.rotation;
+            _character.transform.position = AttachPosition;
+            _character.transform.rotation = AttachRotation;
+            AttachAnimation = chair.m_attachAnimation;
+            AttachRoot = chair.transform.root.gameObject;
         }
         else
         {
-            AttachStart();
-        }
-    }
-
-    public void AttachStart()
-    {
-        HasAttach = true;
-        AttachPosition = _character.transform.position;
-        AttachRotation = _character.transform.rotation; //TODO
-        AttachAnimation = ""; // todo test "Stand" // ZSyncAnimation.GetHash("dodge");
-        if (_character.m_nview.IsOwner())
-        {
-            //_character.m_zanim.SetBool(AttachAnimation, value: true);
-            NPCZDOUtils.SetAttached(ref _character.m_nview, true);
+            AttachPosition = _character.transform.position;
+            AttachRotation = _character.transform.rotation;
+            AttachAnimation = animation;
+            AttachRoot = null;
         }
 
-        _character.m_body.mass = 1000f;
-
-        _character.m_body.useGravity = false;
-        _character.m_body.velocity = Vector3.zero;
-        _character.m_body.angularVelocity = Vector3.zero;
-        _character.m_maxAirAltitude = _character.transform.position.y;
-    }
-
-    public void AttachStart(Chair chair)
-    {
-        HasAttach = true;
-        AttachPosition = chair.m_attachPoint.position;
-        AttachRotation = chair.m_attachPoint.rotation;
-        AttachAnimation = chair.m_attachAnimation;
-        AttachRoot = chair.transform.root.gameObject;
-
-        _character.transform.position = AttachPosition;
-        _character.transform.rotation = AttachRotation;
-
-        if (_character.m_nview.IsOwner())
+        if (AttachAnimation != null) //_character.m_zanim.IsOwner() todo: check needed
         {
             _character.m_zanim.SetBool(AttachAnimation, value: true);
-            NPCZDOUtils.SetAnimation(ref _character.m_nview, AttachAnimation);
-            //NPCZDOUtils.SetSitting(ref _character.m_nview, true);
         }
 
-        _character.m_body.mass = 1000f;
+        var velocity = Vector3.zero;
+        if (AttachRoot)
+        {
+            Rigidbody componentInParent = AttachRoot.GetComponentInParent<Rigidbody>();
+            if (componentInParent != null)
+            {
+                velocity = componentInParent.GetPointVelocity(_character.transform.position);
+            }
 
-        Rigidbody componentInParent = AttachRoot.GetComponent<Rigidbody>();
+            AttachColliders = AttachRoot.GetComponentsInChildren<Collider>();
+            Collider[] attachColliders = AttachColliders;
+            foreach (Collider collider in attachColliders)
+            {
+                Physics.IgnoreCollision(_character.m_collider, collider, ignore: true);
+            }
+        }
+
+        _character.m_body.velocity = velocity;
+        _character.m_body.mass = 1000f;
         _character.m_body.useGravity = false;
-        _character.m_body.velocity = (componentInParent ?
-            componentInParent.GetPointVelocity(_character.transform.position) : Vector3.zero);
         _character.m_body.angularVelocity = Vector3.zero;
         _character.m_maxAirAltitude = _character.transform.position.y;
 
-        AttachColliders = AttachRoot.GetComponentsInChildren<Collider>();
-
-        Collider[] attachColliders = AttachColliders;
-        foreach (Collider collider in attachColliders)
-        {
-            Physics.IgnoreCollision(_character.m_collider, collider, ignore: true);
-        }
-        
         if (_character is Humanoid)
         {
             (_character as Humanoid).HideHandItems();
@@ -341,24 +327,23 @@ public class NPCData
         _character.ResetCloth();
     }
 
-    public void AttachStop()
+    public void SetAttachStop(string animation = "")
     {
         if (!HasAttach)
         {
             return;
         }
 
-        if (_character.m_nview.IsOwner())
-        {
-            NPCZDOUtils.SetAnimation(ref _character.m_nview, "");
-            NPCZDOUtils.SetAttached(ref _character.m_nview, false);
-        }
+        _character.m_nview.ClaimOwnership();
 
-        if (_character.m_zanim.IsOwner() && AttachAnimation != null)
-        {
-            _character.m_zanim.SetBool(AttachAnimation, value: false);
-        }
+        NPCZDOUtils.SetAnimation(ref _character.m_nview, animation);
+        NPCZDOUtils.SetAttached(ref _character.m_nview, false);
 
+        AttachStop();
+    }
+
+    protected void AttachStop(string animation = "")
+    {
         if (AttachColliders != null)
         {
             Collider[] attachColliders = AttachColliders;
@@ -369,7 +354,13 @@ public class NPCData
         }
 
         HasAttach = false;
-        AttachAnimation = "";
+
+        if (AttachAnimation != null) //_character.m_zanim.IsOwner() todo: check needed
+        {
+            _character.m_zanim.SetBool(AttachAnimation, value: false);
+        }
+        AttachAnimation = animation;
+
         _character.m_body.useGravity = true;
         _character.m_body.mass = _character.m_originalMass;
         AttachColliders = null;
@@ -402,7 +393,11 @@ public class NPCData
 
         if (config.StandStill && !HasAttach)
         {
-            AttachStart();
+            SetAttachStart(config.Animation);
+        }
+        else if (!config.StandStill && HasAttach)
+        {
+            SetAttachStop(config.Animation);
         }
 
         if (config.ModelIndex.HasValue)
@@ -454,20 +449,21 @@ public class NPCData
 
         NPCZDOUtils.SetZDOFromConfig(ref _character.m_nview, config);
         UpdateQuest(true);
-        UpdateTrader();
+        if (!UpdateTrader())
+        {
+            // TODO: Fix issues when changing NPC type, such as trader to non trader
+            UpdateTalker();
+        }
     }
 
     public void SetRotation(Quaternion rotation)
     {
         _character.m_nview.ClaimOwnership();
 
+        _character.transform.rotation = rotation;
         if (IsAttached())
         {
             AttachRotation = rotation;
-        }
-        else
-        {
-            _character.transform.rotation = rotation;
         }
 
         NPCZDOUtils.SetRotation(ref _character.m_nview, rotation);

@@ -85,11 +85,11 @@ public class NPCHumanoid : Humanoid, Interactable, Hoverable, INPC
 
     public void Attach(bool attach, Chair chair = null)
     {
-        Data.Attach(attach, chair);
+        Data.Attach(attach, "",chair);
     }
 
     public override void AttachStop()
     {
-        Data.AttachStop();
+        Data.SetAttachStop();
     }
 }

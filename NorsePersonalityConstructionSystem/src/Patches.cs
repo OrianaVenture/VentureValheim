@@ -119,7 +119,13 @@ public class Patches
                     return;
                 }
 
-                npc.Data.Attach(false);
+                string animation = "";
+                if (args.Length >= 2)
+                {
+                    animation = args[1];
+                }
+
+                npc.Data.Attach(false, animation);
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
@@ -133,7 +139,13 @@ public class Patches
                     return;
                 }
 
-                npc.Data.Attach(true);
+                string animation = "";
+                if (args.Length >= 2)
+                {
+                    animation = args[1];
+                }
+
+                npc.Data.Attach(true, animation);
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
@@ -149,7 +161,7 @@ public class Patches
 
                 var chair = Utility.GetClosestChair(playerPosition, Vector3.one * 2);
 
-                npc.Data.Attach(true, chair);
+                npc.Data.Attach(true, "", chair);
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
@@ -389,6 +401,15 @@ public class Patches
             {
                 // todo set npcs to continue walking
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(Chair), nameof(Chair.Interact))]
+    private static class Patch_Chair_Interact2
+    {
+        private static void Prefix()
+        {
+            //TODO: don't let players sit on npcs
         }
     }
 }

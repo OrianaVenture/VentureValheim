@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace VentureValheim.NPCS;
 
@@ -12,6 +13,7 @@ public class NPCConfig
     public string DefeatKey { get; set; }
     public bool TrueDeath { get; set; }
     public bool StandStill { get; set; }
+    public string Animation { get; set; }
     public bool GiveDefaultItems { get; set; }
     public List<NPCQuest> Quests { get; set; }
     // Trader
@@ -52,6 +54,8 @@ public class NPCConfig
     {
         Name ??= "Ragnar";
         DefeatKey ??= "";
+        Animation ??= "";
+
         Quests ??= new List<NPCQuest>();
         foreach (var quest in Quests)
         {

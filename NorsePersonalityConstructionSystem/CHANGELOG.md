@@ -6,14 +6,16 @@
     * Supports more complex questlines on a single NPC, can now add multiple quest stages.
     * Can now set multiple reward items on a single quest stage.
 * Support for Trader NPCS.
+* Can now set more animation states for npcs. TODO test
 * Interact and give texts now uses vanilla localization keys.
 * New option to not remove items for give quests, now can just check for presence.
 * Humans will now properly punch things, hiya!
-* Player now performs interact animation when giving npc an item. todo test
+* Player now performs interact animation when giving an npc an item.
 * Improvements to commands: 
     * Calm command now functions better.
     * Fixed NPCS not restoring a manually set rotation after using faceme command. TODO test
     * Remove command now supports an optional range field to remove multiple npcs at once.
+    * move and still commands now take an optional animation entry TODO test
 
 ## 0.0.7
 
