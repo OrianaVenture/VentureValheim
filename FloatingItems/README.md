@@ -25,6 +25,10 @@ This mod needs to be on all clients to work properly. Config Syncing is included
 
 ## Changelog
 
+### 0.3.2
+
+* Fixed a bug where some items were not applying floating correctly on a server or live configuration change.
+
 ### 0.3.1
 
 * Fixed a bug that caused the Bonemaw Serpent attacks (and other creature attacks) to spam errors.
