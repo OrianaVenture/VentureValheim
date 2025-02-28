@@ -3,19 +3,23 @@
 ## 0.1.0
 
 * Overhauled the config system!!! Readme has been updated, please read it again!
-    * Supports more complex questlines on a single NPC, can now add multiple quest stages.
-    * Can now set multiple reward items on a single quest stage.
-* Support for Trader NPCS.
-* Can now set more animation states for npcs. TODO test
-* Interact and give texts now uses vanilla localization keys.
-* New option to not remove items for give quests, now can just check for presence.
-* Humans will now properly punch things, hiya!
-* Player now performs interact animation when giving an npc an item.
-* Improvements to commands: 
-    * Calm command now functions better.
-    * Fixed NPCS not restoring a manually set rotation after using faceme command. TODO test
-    * Remove command now supports an optional range field to remove multiple npcs at once.
-    * move and still commands now take an optional animation entry TODO test
+    * Automatic upgrade of existing NPCs to the new system as they are loaded in game.
+    * Can now add multiple quest stages on one NPC.
+    * Can now set multiple rewards for a quest.
+    * Can now set animation states for NPCs.
+    * Can now set player keep the quest give item upon reward.
+    * Can now give NPCs "NpcTalk" values to some NPCs so they can say things without interacting with them.
+* Can now create Trader NPCs with custom store items.
+* Interact and Give hover texts now use vanilla localization keys.
+* Player now performs interact animation when giving an NPC an item.
+* Humans NPCs will now properly punch things when given no weapons, hiya!
+* Manually set rotations should now persist and reapply to NPCs.
+* NPCs now have a short delay before respawn on death.
+* Improvements to existing commands:
+    * npcs_set_calm should fully reset alertness and agitation.
+    * npcs_set_faceme should now work as intended and save state.
+    * npcs_remove now accepts optional range field to remove multiple in an area at once.
+    * npcs_set_still and npcs_set_move now accepts optional animation field.
 
 ## 0.0.7
 

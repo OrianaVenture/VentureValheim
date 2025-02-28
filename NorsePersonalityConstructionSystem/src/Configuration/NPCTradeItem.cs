@@ -2,14 +2,15 @@ using System;
 
 namespace VentureValheim.NPCS;
 
+#nullable enable
 [Serializable]
 public class NPCTradeItem
 {
-    public string PrefabName { get; set; }
+    public string? PrefabName { get; set; }
     public int? Quality { get; set; }
     public int? Amount { get; set; }
     public int? Cost { get; set; }
-    public string RequiredKey { get; set; }
+    public string? RequiredKey { get; set; }
 
     public NPCTradeItem() { }
     public NPCTradeItem(string[] fields)

@@ -71,53 +71,45 @@ public class NPCFactory
         return npc;
     }
 
-    public static GameObject RespawnNPC(GameObject original)
+    public static GameObject RespawnNPC(ZPackage original)
     {
-        ZNetView originalZNetView = original.GetComponent<ZNetView>();
-        if (originalZNetView == null)
+        NPCSPlugin.NPCSLogger.LogDebug($"Trying RespawnNPC...");
+        // TODO clean up, do not want to Deserialize twice
+        ZDO copy = new ZDO();
+        original.m_stream.Position = 0L;
+        copy.Deserialize(original); 
+        var respawn = NPCZDOUtils.GetSpawnPoint(copy);
+
+        if (respawn == Vector3.zero)
         {
+            NPCSPlugin.NPCSLogger.LogDebug("No spawn point found!");
             return null;
         }
 
-        var respawn = NPCZDOUtils.GetSpawnPoint(originalZNetView);
-        if (respawn != Vector3.zero)
+        var prefab = ZNetScene.instance.GetPrefab(copy.m_prefab);
+
+        if (prefab == null)
         {
-            var prefabName = Utils.GetPrefabName(original.name);
-            var prefab = ZNetScene.instance.GetPrefab(prefabName.GetStableHashCode());
-
-            if (prefab == null)
-            {
-                NPCSPlugin.NPCSLogger.LogDebug("Issue finding prefab!");
-                return null;
-            }
-
-            var gameobject = GameObject.Instantiate(prefab, respawn, Quaternion.identity);
-            ZNetView newZNetView = gameobject.GetComponent<ZNetView>();
-
-            if (newZNetView == null)
-            {
-                NPCSPlugin.NPCSLogger.LogDebug("Issue instantiating prefab!");
-                return null;
-            }
-
-            NPCZDOUtils.CopyZDO(ref newZNetView, originalZNetView);
-
-            VisEquipment originalVisEquipment = original.GetComponent<VisEquipment>();
-            VisEquipment newVisEquipment = gameobject.GetComponent<VisEquipment>();
-
-            if (originalVisEquipment != null && newVisEquipment != null)
-            {
-                NPCZDOUtils.CopyVisEquipment(ref newVisEquipment, originalVisEquipment);
-            }
-
-            return gameobject;
-        }
-        else
-        {
-            NPCSPlugin.NPCSLogger.LogDebug("No spawn point found!");
+            NPCSPlugin.NPCSLogger.LogDebug("Issue finding prefab!");
+            return null;
         }
 
-        return null;
+        var gameobject = GameObject.Instantiate(prefab, respawn, Quaternion.identity);
+        ZNetView newZNetView = gameobject.GetComponent<ZNetView>();
+
+        if (newZNetView == null)
+        {
+            NPCSPlugin.NPCSLogger.LogDebug("Issue instantiating prefab!");
+            ZNetScene.instance.Destroy(gameobject);
+            return null;
+        }
+
+        ZDO zdo = newZNetView.GetZDO();
+        original.m_stream.Position = 0L;
+        zdo.Deserialize(original);
+        zdo.Set(ZDOVars.s_health, gameobject.GetComponent<Character>().GetMaxHealth());
+
+        return gameobject;
     }
 
     public static void AddNPCS()

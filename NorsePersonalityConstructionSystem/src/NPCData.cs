@@ -15,9 +15,9 @@ public class NPCData
     private NPCQuest _currentQuest = null;
 
     public bool HasAttach = false; // TODO fix zdo syncing for this?
-    public Vector3 AttachPosition;
-    public Quaternion AttachRotation;
-    public string AttachAnimation;
+    public Vector3 AttachPosition = Vector3.zero;
+    public Quaternion AttachRotation = Quaternion.identity;
+    public string AttachAnimation = "";
     public GameObject AttachRoot;
     public Collider[] AttachColliders;
 
@@ -51,10 +51,11 @@ public class NPCData
 
     public void Setup()
     {
-        NPCZDOUtils.UpgradeVersion(ref _character.m_nview);
+        ZDO zdo = _character.m_nview.GetZDO();
+        NPCZDOUtils.UpgradeVersion(ref zdo);
 
-        _character.m_name = NPCZDOUtils.GetTamedName(_character.m_nview);
-        _character.m_defeatSetGlobalKey = NPCZDOUtils.GetNPCDefeatKey(_character.m_nview);
+        _character.m_name = NPCZDOUtils.GetTamedName(zdo);
+        _character.m_defeatSetGlobalKey = NPCZDOUtils.GetNPCDefeatKey(zdo);
 
         // TODO: fixup for tamed
         _character.m_nview.GetZDO().Set(ZDOVars.s_tamed, false);
@@ -71,7 +72,6 @@ public class NPCData
             var humanoid = _character as Humanoid;
             if (!_newSpawn && humanoid.m_visEquipment != null && humanoid.m_visEquipment.m_nview != null)
             {
-                var zdo = humanoid.m_visEquipment.m_nview.GetZDO();
                 SetHelmet(zdo.GetInt(ZDOVars.s_helmetItem));
                 SetChest(zdo.GetInt(ZDOVars.s_chestItem));
                 SetLegs(zdo.GetInt(ZDOVars.s_legItem));
@@ -84,24 +84,25 @@ public class NPCData
             }
         }
 
-        var rotation = NPCZDOUtils.GetRotation(_character.m_nview);
+        var rotation = NPCZDOUtils.GetRotation(zdo);
         if (rotation != Quaternion.identity)
         {
             NPCSPlugin.NPCSLogger.LogDebug("Updating from saved rotation!");
             _character.transform.rotation = rotation;
         }
 
-        if (NPCZDOUtils.GetAttached(_character.m_nview))
+        if (NPCZDOUtils.GetAttached(zdo))
         {
             NPCSPlugin.NPCSLogger.LogDebug("Updating attachment!");
-            string animation = NPCZDOUtils.GetAnimation(_character.m_nview);
+            string animation = NPCZDOUtils.GetAnimation(zdo);
             AttachStart(animation);
         }
     }
 
     public bool UpdateTrader()
     {
-        if (NPCZDOUtils.GetType(_character.m_nview) == (int)NPCType.Trader)
+        ZDO zdo = _character.m_nview.GetZDO();
+        if (NPCZDOUtils.GetType(zdo) == (int)NPCType.Trader)
         {
             if (!_character.TryGetComponent<NPCTrader>(out var trader))
             {
@@ -120,10 +121,11 @@ public class NPCData
         var talker = _character.GetComponent<NpcTalk>();
         if (talker != null)
         {
-            talker.m_randomTalk = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_TALKTEXTS, _character.m_nview);
-            talker.m_randomGreets = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GREETTEXTS, _character.m_nview);
-            talker.m_randomGoodbye = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GOODBYETEXTS, _character.m_nview);
-            talker.m_aggravated = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_AGGROTEXTS, _character.m_nview);
+            ZDO zdo = _character.m_nview.GetZDO();
+            talker.m_randomTalk = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_TALKTEXTS, zdo);
+            talker.m_randomGreets = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GREETTEXTS, zdo);
+            talker.m_randomGoodbye = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GOODBYETEXTS, zdo);
+            talker.m_aggravated = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_AGGROTEXTS, zdo);
             talker.m_name = _character.m_name;
             return true;
         }
@@ -136,15 +138,16 @@ public class NPCData
         // TODO: Optimize only to load quest at index when ready
         if (_quests == null || forceReset)
         {
+            ZDO zdo = _character.m_nview.GetZDO();
             NPCSPlugin.NPCSLogger.LogDebug($"Refreshing quests list");
-            int count = NPCZDOUtils.GetNPCQuestCount(_character.m_nview);
+            int count = NPCZDOUtils.GetNPCQuestCount(zdo);
             if (count > 0)
             {
                 _quests = new NPCQuest[count];
 
                 for (int lcv = 0; lcv < count; lcv++)
                 {
-                    NPCZDOUtils.GetNPCQuest(_character.m_nview, lcv, out NPCQuest quest);
+                    NPCZDOUtils.GetNPCQuest(zdo, lcv, out NPCQuest quest);
                     _quests[lcv] = quest;
                 }
             }
@@ -253,15 +256,16 @@ public class NPCData
 
     public void SetAttachStart(string animation = "", Chair chair = null)
     {
+        ZDO zdo = _character.m_nview.GetZDO();
         _character.m_nview.ClaimOwnership();
-        NPCZDOUtils.SetAttached(ref _character.m_nview, true);
+        NPCZDOUtils.SetAttached(ref zdo, true);
 
         if (chair)
         {
             animation = chair.m_attachAnimation;
         }
 
-        NPCZDOUtils.SetAnimation(ref _character.m_nview, animation);
+        NPCZDOUtils.SetAnimation(ref zdo, animation);
 
         AttachStart(animation, chair);
     }
@@ -336,8 +340,9 @@ public class NPCData
 
         _character.m_nview.ClaimOwnership();
 
-        NPCZDOUtils.SetAnimation(ref _character.m_nview, animation);
-        NPCZDOUtils.SetAttached(ref _character.m_nview, false);
+        ZDO zdo = _character.m_nview.GetZDO();
+        NPCZDOUtils.SetAnimation(ref zdo, animation);
+        NPCZDOUtils.SetAttached(ref zdo, false);
 
         AttachStop();
     }
@@ -447,7 +452,8 @@ public class NPCData
             SetRightHand(config.RightHand);
         }
 
-        NPCZDOUtils.SetZDOFromConfig(ref _character.m_nview, config);
+        ZDO zdo = _character.m_nview.GetZDO();
+        NPCZDOUtils.SetZDOFromConfig(ref zdo, config);
         UpdateQuest(true);
         if (!UpdateTrader())
         {
@@ -466,7 +472,8 @@ public class NPCData
             AttachRotation = rotation;
         }
 
-        NPCZDOUtils.SetRotation(ref _character.m_nview, rotation);
+        ZDO zdo = _character.m_nview.GetZDO();
+        NPCZDOUtils.SetRotation(ref zdo, rotation);
     }
 
     public void SetName(string name)
@@ -479,13 +486,15 @@ public class NPCData
     public void SetSpawnPoint(Vector3 position)
     {
         _character.m_nview.ClaimOwnership();
-        NPCZDOUtils.SetSpawnPoint(ref _character.m_nview, position);
+        ZDO zdo = _character.m_nview.GetZDO();
+        NPCZDOUtils.SetSpawnPoint(ref zdo, position);
     }
 
     public void SetTrueDeath(bool death)
     {
         _character.m_nview.ClaimOwnership();
-        NPCZDOUtils.SetTrueDeath(ref _character.m_nview, death);
+        ZDO zdo = _character.m_nview.GetZDO();
+        NPCZDOUtils.SetTrueDeath(ref zdo, death);
     }
 
     public void SetRandom()
@@ -850,13 +859,13 @@ public class NPCData
 
     public string GetSkinColor()
     {
-        var color = NPCZDOUtils.GetSkinColor(_character.m_nview);
+        var color = NPCZDOUtils.GetSkinColor(_character.m_nview.GetZDO());
         return $"Skin Color RGB: {color.x}, {color.y}, {color.z}";
     }
 
     public string GetHairColor()
     {
-        var color = NPCZDOUtils.GetHairColor(_character.m_nview);
+        var color = NPCZDOUtils.GetHairColor(_character.m_nview.GetZDO());
         return $"Hair Color RGB: {color.x}, {color.y}, {color.z}";
     }
 

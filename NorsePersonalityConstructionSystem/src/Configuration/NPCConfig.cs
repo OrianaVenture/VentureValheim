@@ -1,36 +1,36 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace VentureValheim.NPCS;
 
+#nullable enable
 [Serializable]
 public class NPCConfig
 {
-    public string Id { get; set; }
-    public string Name { get; set; }
+    public string? Id { get; set; }
+    public string? Name { get; set; }
     public NPCData.NPCType Type { get; set; }
-    public string DefeatKey { get; set; }
+    public string? DefeatKey { get; set; }
     public bool TrueDeath { get; set; }
     public bool StandStill { get; set; }
-    public string Animation { get; set; }
+    public string? Animation { get; set; }
     public bool GiveDefaultItems { get; set; }
-    public List<NPCQuest> Quests { get; set; }
+    public List<NPCQuest>? Quests { get; set; }
     // Trader
-    public List<NPCTradeItem> TradeItems { get; set; }
-    public List<NPCTraderUseItem> TraderUseItems { get; set; }
+    public List<NPCTradeItem>? TradeItems { get; set; }
+    public List<NPCTraderUseItem>? TraderUseItems { get; set; }
     // Texts
-    public List<string> TalkTexts { get; set; }
-    public List<string> GreetTexts { get; set; }
-    public List<string> GoodbyeTexts { get; set; }
-    public List<string> AggravatedTexts { get; set; }
-    public List<string> StartTradeTexts { get; set; }
-    public List<string> BuyTexts { get; set; }
-    public List<string> SellTexts { get; set; }
-    public List<string> NotCorrectTexts { get; set; }
-    public List<string> NotAvailableTexts { get; set; }
+    public List<string>? TalkTexts { get; set; }
+    public List<string>? GreetTexts { get; set; }
+    public List<string>? GoodbyeTexts { get; set; }
+    public List<string>? AggravatedTexts { get; set; }
+    public List<string>? StartTradeTexts { get; set; }
+    public List<string>? BuyTexts { get; set; }
+    public List<string>? SellTexts { get; set; }
+    public List<string>? NotCorrectTexts { get; set; }
+    public List<string>? NotAvailableTexts { get; set; }
     // Style
-    public string Model { get; set; }
+    public string? Model { get; set; }
     public float? HairColorR { get; set; }
     public float? HairColorG { get; set; }
     public float? HairColorB { get; set; }
@@ -38,16 +38,16 @@ public class NPCConfig
     public float? SkinColorG { get; set; }
     public float? SkinColorB { get; set; }
     public int? ModelIndex { get; set; }
-    public string Hair { get; set; }
-    public string Beard { get; set; }
-    public string Helmet { get; set; }
-    public string Chest { get; set; }
-    public string Legs { get; set; }
-    public string Shoulder { get; set; }
+    public string? Hair { get; set; }
+    public string? Beard { get; set; }
+    public string? Helmet { get; set; }
+    public string? Chest { get; set; }
+    public string? Legs { get; set; }
+    public string? Shoulder { get; set; }
     public int? ShoulderVariant { get; set; }
-    public string Utility { get; set; }
-    public string RightHand { get; set; }
-    public string LeftHand { get; set; }
+    public string? Utility { get; set; }
+    public string? RightHand { get; set; }
+    public string? LeftHand { get; set; }
     public int? LeftHandVariant { get; set; }
 
     public void CleanData()

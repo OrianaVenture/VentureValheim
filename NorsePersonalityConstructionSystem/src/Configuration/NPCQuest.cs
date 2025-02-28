@@ -3,21 +3,22 @@ using System.Collections.Generic;
 
 namespace VentureValheim.NPCS;
 
+#nullable enable
 [Serializable]
 public class NPCQuest
 {
     public int? Index { get; set; }
-    public string Text { get; set; }
-    public string RewardText { get; set; }
-    public string RequiredKeys { get; set; }
-    public HashSet<string> RequiredKeysSet { get; private set; }
-    public string NotRequiredKeys { get; set; }
-    public HashSet<string> NotRequiredKeysSet { get; private set; }
-    public string InteractKey { get; set; }
+    public string? Text { get; set; }
+    public string? RewardText { get; set; }
+    public string? RequiredKeys { get; set; }
+    public HashSet<string>? RequiredKeysSet { get; private set; }
+    public string? NotRequiredKeys { get; set; }
+    public HashSet<string>? NotRequiredKeysSet { get; private set; }
+    public string? InteractKey { get; set; }
     public NPCData.NPCKeyType InteractKeyType { get; set; }
-    public NPCItem GiveItem { get; set; }
-    public List<NPCItem> RewardItems { get; set; }
-    public string RewardKey { get; set; }
+    public NPCItem? GiveItem { get; set; }
+    public List<NPCItem>? RewardItems { get; set; }
+    public string? RewardKey { get; set; }
     public NPCData.NPCKeyType RewardKeyType { get; set; }
     public int? RewardLimit { get; set; }
 

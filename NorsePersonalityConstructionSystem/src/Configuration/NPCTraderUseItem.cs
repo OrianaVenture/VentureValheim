@@ -2,13 +2,14 @@ using System;
 
 namespace VentureValheim.NPCS;
 
+#nullable enable
 [Serializable]
 public class NPCTraderUseItem
 {
-    public string PrefabName { get; set; }
-    public string RewardKey { get; set; }
+    public string? PrefabName { get; set; }
+    public string? RewardKey { get; set; }
     public bool? RemoveItem { get; set; }
-    public string Text { get; set; }
+    public string? Text { get; set; }
 
     public NPCTraderUseItem() { }
     public NPCTraderUseItem(string[] fields)

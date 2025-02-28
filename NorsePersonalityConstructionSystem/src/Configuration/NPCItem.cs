@@ -2,10 +2,11 @@ using System;
 
 namespace VentureValheim.NPCS;
 
+#nullable enable
 [Serializable]
 public class NPCItem
 {
-    public string PrefabName { get; set; }
+    public string? PrefabName { get; set; }
     public int? Quality { get; set; }
     public int? Amount { get; set; }
     public bool? RemoveItem { get; set; }

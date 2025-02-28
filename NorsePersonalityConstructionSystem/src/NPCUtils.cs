@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using BepInEx;
 using UnityEngine;
@@ -129,7 +130,8 @@ public static class NPCUtils
             // TODO evaluate if this cna be broken into a seperate zdo variable to minimize setting stuff
             nview.ClaimOwnership();
             quest.RewardLimit -= 1;
-            NPCZDOUtils.SetNPCQuest(ref nview, quest.Index.Value, quest);
+            ZDO zdo = nview.GetZDO();
+            NPCZDOUtils.SetNPCQuest(ref zdo, quest.Index.Value, quest);
         }
 
         if (!quest.RewardKey.IsNullOrWhiteSpace())
@@ -147,9 +149,10 @@ public static class NPCUtils
             return false;
         }
 
-        var zNetView = npc.GetComponent<ZNetView>();
+        ZNetView zNetView = npc.GetComponent<ZNetView>();
+        ZDO zdo = zNetView.GetZDO();
 
-        if (NPCZDOUtils.GetType(zNetView) == (int)NPCData.NPCType.Trader)
+        if (NPCZDOUtils.GetType(zdo) == (int)NPCData.NPCType.Trader)
         {
             var trader = npc.GetComponent<NPCTrader>();
             if (trader == null)
@@ -170,7 +173,7 @@ public static class NPCUtils
             return false;
         }
 
-        var name = NPCZDOUtils.GetTamedName(zNetView);
+        var name = NPCZDOUtils.GetTamedName(zdo);
         string text = quest.Text;
 
         if (quest.GiveItem != null && !quest.GiveItem.PrefabName.IsNullOrWhiteSpace())
@@ -183,9 +186,12 @@ public static class NPCUtils
                 var count = player.GetInventory().CountItems(item.m_shared.m_name, quality);
                 if (count >= amount)
                 {
-                    player.UnequipItem(item);
-                    player.GetInventory().RemoveItem(item.m_shared.m_name, amount, quality);
-                    player.m_zanim.SetTrigger("interact");
+                    if (quest.GiveItem.RemoveItem.Value)
+                    {
+                        player.UnequipItem(item);
+                        player.GetInventory().RemoveItem(item.m_shared.m_name, amount, quality);
+                        player.m_zanim.SetTrigger("interact");
+                    }
                 }
                 else
                 {
@@ -225,7 +231,7 @@ public static class NPCUtils
 
         var zNetView = npc.GetComponent<ZNetView>();
 
-        if (NPCZDOUtils.GetType(zNetView) == (int)NPCData.NPCType.Trader)
+        if (NPCZDOUtils.GetType(zNetView.GetZDO()) == (int)NPCData.NPCType.Trader)
         {
             var trader = npc.GetComponent<NPCTrader>();
             if (trader == null)
@@ -266,7 +272,7 @@ public static class NPCUtils
             Utility.SetKey(quest.InteractKey, quest.InteractKeyType);
         }
 
-        var name = NPCZDOUtils.GetTamedName(zNetView);
+        var name = NPCZDOUtils.GetTamedName(zNetView.GetZDO());
         Talk(npc, name, text, quest); // TODO disable talking as needed
 
         npcComponent.Data.UpdateQuest(false); //todo, test validity
@@ -291,7 +297,7 @@ public static class NPCUtils
             return "";
         }
 
-        var type = NPCZDOUtils.GetType(npc.m_nview);
+        var type = NPCZDOUtils.GetType(npc.m_nview.GetZDO());
         string text = "";
 
         if (type != (int)NPCData.NPCType.None)
@@ -322,6 +328,8 @@ public static class NPCUtils
             return;
         }
 
+        ZDO zdo = character.m_nview.GetZDO();
+
         GameObject[] effects = character.m_deathEffects.Create(
         character.transform.position, character.transform.rotation, character.transform);
         for (int lcv = 0; lcv < effects.Length; lcv++)
@@ -341,11 +349,12 @@ public static class NPCUtils
                 VisEquipment visEquip = effects[lcv].GetComponent<VisEquipment>();
                 if (visEquip != null)
                 {
-                    NPCZDOUtils.CopyVisEquipment(ref visEquip, (character as Humanoid).m_visEquipment);
+                    NPCZDOUtils.CopyVisEquipment(ref visEquip, zdo);
                 }
 
-                NPCZDOUtils.SetTamedName(ref ragdoll.m_nview, character.m_name);
-                NPCZDOUtils.SetTrueDeath(ref ragdoll.m_nview, NPCZDOUtils.GetTrueDeath(character.m_nview));
+                ZDO ragdollZdo = ragdoll.m_nview.GetZDO();
+                NPCZDOUtils.SetTamedName(ref ragdollZdo, character.m_name);
+                NPCZDOUtils.SetTrueDeath(ref ragdollZdo, NPCZDOUtils.GetTrueDeath(zdo));
             }
         }
 
@@ -356,9 +365,10 @@ public static class NPCUtils
             character.m_onDeath();
         }
 
-        if (!NPCZDOUtils.GetTrueDeath(character.m_nview))
+        if (!NPCZDOUtils.GetTrueDeath(zdo))
         {
-            NPCFactory.RespawnNPC(character.transform.root.gameObject);
+            NPCSPlugin.NPCSLogger.LogWarning($"Adding new {character.name} to respawner!");
+            NPCRespawner.Instance.AddZdo(Utils.GetPrefabName(character.name), zdo);
         }
 
         ZNetScene.instance.Destroy(character.gameObject);
