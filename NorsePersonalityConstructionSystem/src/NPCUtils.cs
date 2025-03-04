@@ -292,7 +292,7 @@ public static class NPCUtils
 
     public static string GetHoverText(Character npc, BaseAI baseAI)
     {
-        if (npc == null || baseAI == null || baseAI.m_aggravated)
+        if (npc == null || (baseAI != null && baseAI.m_aggravated))
         {
             return "";
         }
@@ -305,12 +305,13 @@ public static class NPCUtils
             var npcComponent = npc.GetComponent<INPC>();
             var quest = npcComponent.Data.GetCurrentQuest();
 
-            if (quest != null || type == (int)NPCData.NPCType.Trader)
+            if (type == (int)NPCData.NPCType.Trader || quest != null)
             {
                 text = Localization.instance.Localize(
                     "[<color=yellow><b>$KEY_Use</b></color>] $raven_interact");
 
-                if (quest != null && quest.GiveItem != null)
+                if (type == (int)NPCData.NPCType.Trader ||
+                    (quest != null && quest.GiveItem != null))
                 {
                     text += Localization.instance.Localize(
                         "\n[<color=yellow><b>1-8</b></color>] $npc_giveitem");

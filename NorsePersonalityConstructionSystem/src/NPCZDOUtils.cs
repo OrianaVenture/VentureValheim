@@ -396,48 +396,6 @@ public static class NPCZDOUtils
         }
     }
 
-    // TODO remove
-    /*public static void CopyZDO(ref ZDO copy, ZDO original)
-    {
-        SetVersion(ref copy);
-        // TODO, what rotation needs to be copied when?
-        //copy.SetRotation(original.GetRotation());
-        SetRotation(ref copy, GetRotation(original));
-
-        // TODO, investigate seed not working to spawn exact same creature
-        copy.Set(ZDOVars.s_seed, original.GetInt(ZDOVars.s_seed));
-        SetInitialized(ref copy, GetInitialized(original));
-        SetTamedName(ref copy, GetTamedName(original));
-        SetType(ref copy, GetType(original));
-        SetAnimation(ref copy, GetAnimation(original));
-        SetAttached(ref copy, GetAttached(original));
-        SetSpawnPoint(ref copy, GetSpawnPoint(original));
-        SetTrueDeath(ref copy, GetTrueDeath(original));
-        SetNPCDefeatKey(ref copy, GetNPCDefeatKey(original));
-
-        int oldCount = GetNPCQuestCount(copy);
-        int count = GetNPCQuestCount(original);
-
-        if (oldCount > count)
-        {
-            // Clean up old data
-            for (int lcv = count; lcv < oldCount; lcv++)
-            {
-                SetNPCQuestString(ref copy, lcv, "");
-                SetNPCQuestGive(ref copy, lcv, "");
-                SetNPCQuestReward(ref copy, lcv, "");
-            }
-        }
-
-        SetNPCQuestCount(ref copy, count);
-        for (int lcv = 0; lcv < count; lcv++)
-        {
-            SetNPCQuestString(ref copy, lcv, GetNPCQuest(original, lcv));
-            SetNPCQuestGive(ref copy, lcv, GetNPCQuestGive(original, lcv));
-            SetNPCQuestReward(ref copy, lcv, GetNPCQuestReward(original, lcv));
-        }
-    }*/
-
     public static void SetZDOFromConfig(ref ZDO zdo, NPCConfig config)
     {
         try

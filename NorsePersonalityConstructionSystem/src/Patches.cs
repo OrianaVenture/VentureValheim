@@ -1,6 +1,8 @@
 using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static PrivilegeManager;
 
 namespace VentureValheim.NPCS;
 
@@ -387,7 +389,7 @@ public class Patches
         {
             if (trader == __instance.m_trader)
             {
-                // todo set npcs to stop walking
+                // TODO: set npcs to stop walking
             }
         }
     }
@@ -399,7 +401,23 @@ public class Patches
         {
             if (__instance.m_trader && __instance.GetComponent<NPCTrader>())
             {
-                // todo set npcs to continue walking
+                // TODO: set npcs to continue walking
+            }
+        }
+    }
+
+    /// <summary>
+    /// Visual bug fix patch for Trader script not unequipping items before removing
+    /// </summary>
+    [HarmonyPatch(typeof(Inventory), nameof(Inventory.RemoveItem),
+        new Type[] { typeof(ItemDrop.ItemData) })]
+    private static class Patch_Inventory_RemoveItem
+    {
+        private static void Prefix(Inventory __instance, ItemDrop.ItemData item)
+        {
+            if (__instance == Player.m_localPlayer.m_inventory)
+            {
+                Player.m_localPlayer.UnequipItem(item);
             }
         }
     }
@@ -409,7 +427,7 @@ public class Patches
     {
         private static void Prefix()
         {
-            //TODO: don't let players sit on npcs
+            // TODO: don't let players sit on npcs
         }
     }
 }
