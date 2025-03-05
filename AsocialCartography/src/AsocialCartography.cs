@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
+using Splatform;
 using UnityEngine;
 
 namespace VentureValheim.AsocialCartography
@@ -81,7 +82,7 @@ namespace VentureValheim.AsocialCartography
                                     pin.m_save = true;
                                     pin.m_checked = isChecked;
                                     pin.m_ownerID = playerID;
-                                    pin.m_author = author;
+                                    pin.m_author = new PlatformUserID(author);
                                     existingPins.Add(pin);
                                 }
                             }
@@ -167,7 +168,7 @@ namespace VentureValheim.AsocialCartography
         /// <summary>
         /// Minimap.AddPin replacement: Skip add pins when config disabled.
         /// </summary>
-        public Minimap.PinData AddPinReplacement(Vector3 pos, Minimap.PinType type, string name, bool save, bool isChecked, long ownerID, string author)
+        public Minimap.PinData AddPinReplacement(Vector3 pos, Minimap.PinType type, string name, bool save, bool isChecked, long ownerID, PlatformUserID author)
         {
             if (AsocialCartographyPlugin.GetReceivePins() || AllowedPin(type))
             {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -12,7 +11,7 @@ namespace VentureValheim.AsocialCartography
     public class AsocialCartographyPlugin : BaseUnityPlugin
     {
         private const string ModName = "AsocialCartography";
-        private const string ModVersion = "0.2.1";
+        private const string ModVersion = "0.2.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
