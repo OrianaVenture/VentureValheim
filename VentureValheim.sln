@@ -61,6 +61,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NorsePersonalityConstructio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FarmGrid", "FarmGrid\FarmGrid.csproj", "{9574D247-B4C6-45F8-92FC-A52DE6A636C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoVegvisirHints", "NoVegvisirHints\NoVegvisirHints.csproj", "{C89FE73C-B004-4421-9C68-D8511708D7ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -183,6 +185,10 @@ Global
 		{9574D247-B4C6-45F8-92FC-A52DE6A636C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9574D247-B4C6-45F8-92FC-A52DE6A636C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9574D247-B4C6-45F8-92FC-A52DE6A636C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C89FE73C-B004-4421-9C68-D8511708D7ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C89FE73C-B004-4421-9C68-D8511708D7ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C89FE73C-B004-4421-9C68-D8511708D7ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C89FE73C-B004-4421-9C68-D8511708D7ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
