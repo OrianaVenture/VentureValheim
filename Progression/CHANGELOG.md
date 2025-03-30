@@ -1,3 +1,7 @@
+## 0.3.4
+
+* Added more null checks to fix compatibility issue with ZenCombat and other mods.
+
 ## 0.3.3
 
 * Added Bronze and BronzeScrap to the copper/tin portaling unlocking logic.

@@ -316,7 +316,7 @@ namespace VentureValheim.Progression
         /// <returns></returns>
         private bool IsActionBlocked(ItemDrop.ItemData item, int quality, bool checkBossItems, bool checkMaterials, bool checkFood)
         {
-            if (item?.m_dropPrefab == null || !Instance.HasItemKey(
+            if (item.m_dropPrefab == null || !Instance.HasItemKey(
                 Utils.GetPrefabName(item.m_dropPrefab), checkBossItems, checkMaterials, checkFood))
             {
                 return true;

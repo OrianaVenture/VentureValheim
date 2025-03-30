@@ -107,7 +107,7 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(Humanoid __instance, ref bool __result, ItemDrop.ItemData item)
             {
-                if (__instance != Player.m_localPlayer)
+                if (item == null || __instance != Player.m_localPlayer)
                 {
                     return true;
                 }
@@ -134,7 +134,7 @@ namespace VentureValheim.Progression
         {
             private static void Postfix(Inventory __instance, ref ItemDrop.ItemData __result)
             {
-                if (__instance != Player.m_localPlayer.GetInventory() || __result == null)
+                if (__result == null || __instance != Player.m_localPlayer.GetInventory())
                 {
                     return;
                 }
@@ -236,7 +236,8 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(ItemDrop.ItemData item, ref bool __result)
             {
-                if (ProgressionConfiguration.Instance.GetLockCooking() &&
+                if (item != null &&
+                    ProgressionConfiguration.Instance.GetLockCooking() &&
                     Instance.IsActionBlocked(item, item.m_quality, false, false, true))
                 {
                     Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
@@ -274,7 +275,6 @@ namespace VentureValheim.Progression
         {
             private static bool Prefix(Inventory __instance, ref bool __result)
             {
-                // TODO: test
                 if (ZoneSystem.instance.GetGlobalKey(GlobalKeys.TeleportAll))
                 {
                     __result = true;
