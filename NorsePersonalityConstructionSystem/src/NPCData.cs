@@ -24,11 +24,12 @@ public class NPCData
     public enum NPCType
     {
         None = 0,
-        Information = 1,
-        Reward = 2,
+        Information = 1, // Legacy
+        Reward = 2, // Legacy
         Sellsword = 3,
         SlayTarget = 4,
-        Trader = 5
+        Trader = 5,
+        Quest = 6
     }
 
     public enum NPCKeyType

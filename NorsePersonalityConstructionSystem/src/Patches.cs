@@ -2,7 +2,6 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static PrivilegeManager;
 
 namespace VentureValheim.NPCS;
 
@@ -174,7 +173,13 @@ public class Patches
                 if (args.Length >= 2)
                 {
                     var npcs = Utility.GetAllNPCS(playerPosition, float.Parse(args[1]));
-                    foreach (var npc in npcs)
+                }
+                else
+                {
+                    var npcs = Utility.GetAllNPCS(playerPosition, 5f);
+                }
+
+                foreach (var npc in npcs)
                     {
                         BaseAI ai = null;
                         if (npc is NPCHumanoid)
@@ -194,11 +199,6 @@ public class Patches
                             ai.SetAggravated(false, BaseAI.AggravatedReason.Damage);
                         }
                     }
-                }
-                else
-                {
-                    var npcs = Utility.GetAllNPCS(playerPosition, 5f);
-                }
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
             new Terminal.ConsoleCommand("npcs_set_faceme", "", delegate (Terminal.ConsoleEventArgs args)

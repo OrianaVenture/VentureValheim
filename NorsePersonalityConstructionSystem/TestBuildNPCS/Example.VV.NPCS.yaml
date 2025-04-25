@@ -4,13 +4,12 @@ npcs:
     id: Ragnar1
     name: Ragnar The Brave
     standStill: true
-    type: Quest
+    type: Information
     quests:
       -
         text: "Here's some gossip about Ragnar The Bold!"
         notRequiredKeys: ragnarbrave
         interactKey: ragnarbrave
-        interactKeyType: Global
       -
         text: "Did you say you had mead?"
     model: Player
@@ -35,7 +34,6 @@ npcs:
         requiredKeys: ragnarbrave
         rewardText: "He said that? Let me tell you a secret about Ragnar The Brave."
         rewardKey: ragnarbold
-        rewardKeyType: Global
       -
         text: "I love a good mead."
     model: Player

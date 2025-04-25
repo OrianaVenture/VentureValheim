@@ -40,6 +40,7 @@ public class NPCRagdoll : Ragdoll, Interactable, Hoverable
 
     public bool Interact(Humanoid user, bool hold, bool alt)
     {
+        // TODO: add dust effects
         DestroyNow();
 
         return false;

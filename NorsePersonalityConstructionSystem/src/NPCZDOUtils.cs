@@ -466,6 +466,8 @@ public static class NPCZDOUtils
 
             if (type == NPCData.NPCType.Information || type == NPCData.NPCType.Reward)
             {
+                SetType(ref zdo, (int)NPCData.NPCType.Quest);
+
                 NPCQuest firstQuest = new NPCQuest();
                 // TODO text cases for InteractText
                 firstQuest.Text = GetLegacyNPCDefaultText(zdo); //GetLegacyNPCInteractText(zdo);

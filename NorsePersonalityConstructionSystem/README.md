@@ -50,25 +50,21 @@ The yaml file is local and will not sync to others. This file is not required on
 
 You can always reach out for support if you have trouble setting things up (see contributing at bottom).
 
-## Quests
-
-To customize what your NPC does and says you will need to define certain data for it or give it quests. Quests are the building blocks of the Information and Reward NPC types explained below.
-
-The list of quests for your NPC will try to complete in the order they are defined. Only one quest can be active on an NPC at a time for a player. I recommend the last quest in the questline to be a "default text" you want your npc to say with no defined constraints. If all of the other quests in the questlines have constraints and none are met for a player, this last quest will be selected. This prevents your NPC from "doing nothing". Examples are explained below under their respective NPC type.
-
 ## NPC Types
 
-Acceptable types include: None, Information, Reward, Sellsword, SlayTarget, Trader
+Acceptable types include: None, Quest, Sellsword, SlayTarget, Trader
 
-### Information
+### Quest
 
-These NPCs simply say something when interacted with. 
+These NPCs can simply say something when interacted with or have the ability to accept an item in exchange for a reward item. To customize what your NPC does and says you will need to define certain data for it using the YAML file described above.
 
-TODO
+The building blocks of Quest NPCs is the list of "quests". The list of quests for your NPC will try to complete in the order they are defined. Only one quest can be active on an NPC at a time for a player. I recommend the last quest in the questline to be a "default text" you want your npc to say with no defined constraints. If all of the other quests in the questlines have constraints and none are met for a player, this last quest will be selected. This prevents your NPC from "doing nothing". Examples are explained below under their respective NPC type.
 
-#### Example
+Simple is key. If your quests become long and complex this can introduce lag as data is sent from the server and the client selects the current available quest. The more NPCs you have in an area the worst this lag can get. If you experience issues try spreading your NPCs out to different areas or split quests between other NPCs.
 
-Here is an example of a pair of NPCs. Ragnar1 will give the key "ragnarbrave" when interacting with them, which Ragnar2 requires to tell you a secret. Ragnar1 will only tell you their secret once, so you better pay attention! This key is set to "Global" so only the first player to access the NPC will be able to see the interactText for Ragnar1.
+#### Example 1
+
+Here is an example of a pair of NPCs. Ragnar1 will give the key "ragnarbrave" when interacting with them, which Ragnar2 requires to tell you a secret. Ragnar1 will only tell you their secret once, so you better pay attention! The notRequiredKeys field is used to "skip" quests, once this key is present the quest will be non-qualifying and will try to select the next quest in the list. These keys are set to "Global" so only the first player to access the quest will be able to see the interactText for Ragnar1 and the rewardText for Ragnar2 (Unless you have another mod that changes this behavior).
 
 Note both of these are set to stand still on spawn, which can be very helpful when setting things up.
 
@@ -79,45 +75,53 @@ npcs:
     name: Ragnar The Brave
     standStill: true
     type: Information
-    notRequiredKeys: ragnarbrave
-    defaultText: "Did you say you had mead?"
-    interactKey: ragnarbrave
-    interactKeyType: Global
-    interactText: "Here's some gossip about Ragnar The Bold!"
+    quests:
+      -
+        text: "Here's some gossip about Ragnar The Bold!"
+        notRequiredKeys: ragnarbrave
+        interactKey: ragnarbrave
+        interactKeyType: Global
+      -
+        text: "Did you say you had mead?"
 
   -
     id: Ragnar2
     name: Ragnar The Bold
     standStill: true
     type: Information
-    requiredKeys: ragnarbrave
-    defaultText: "I love a good mead."
-    interactText: "He said that? Let me tell you a secret about Ragnar The Brave."
+    quests:
+      -
+        text: "Have you seen Ragnar The Brave?"
+        notRequiredKeys: ragnarbold
+        requiredKeys: ragnarbrave
+        rewardText: "He said that? Let me tell you a secret about Ragnar The Brave."
+        rewardKey: ragnarbold
+        rewardKeyType: Global
+      -
+        text: "I love a good mead."
 ```
 
-### Reward
-
-These NPCs have all the functionality of an information NPC plus the ability to accept an item in exchange for a reward item.
-
-TODO
-
-The difference between the ``interactKey`` and ``rewardKey`` is important to note here since ``interactKey`` will always be given to the player when the Reward NPC is spoken to, where the reward key will only be given when reward conditions are met.
-
-There are two "keywords" you can use when setting up your NPC text: **{giveitem}** and **{reward}**, which will be automatically replaced with the corresponding prefab and amount so you don't have to type it out.
-
-#### Example
+#### Example 2
 
 Here's an example of four NPCs that require you speak to them and complete their quests in order. Liv will give out a reward of a 2 star Flint Knife, which Vivica will accept and give the Rahshahs quest to bring him Deer Stew in exchange for Coins. The Jarl then rewards you for helping them all with an Iron Sword.
 
-Liv is set up in a way that only the first 5 players there will get the Knife and the rewardText. Other players when talking to this NPC will still be able to receive the "liv" key but will not be given the reward and will only see the defaultText once the limit is reached. Again, note the difference between rewardKey and interactKey. Since Liv does not have any requiredKeys nor require a giveItem to give a reward you will never see the InteractText used, so it is not specified here.
+Liv is set up to give the player a knife when spoken to for the first time. Then this NPC will ask if you have completed the task until you receive the quest reward key "vivica2". Once both stages are completed Liv defaults to saying the last quest text. Since the ``interactKeyType`` is not specified here it will default to "Player". This means every player will be able to complete the quest.
 
-Vivica is set up such that you must speak first to liv before you can see her interactText. When giving her the requested item she will say the rewardText. After this quest is completed Vivica will return to saying her defaultText. Since the ``interactKeyType`` is not specified it will default to "Player". So every player will be able get the reward key.
+Vivica is set up such that you must speak first to Liv before you can see her rewardText for the first quest. Then, when giving her the requested item in the second quest she will say the rewardText and move to the third quest which reminds you of your task. After you receive the "rahshahs2" key Vivica will default to the last quest in her list.
 
-Similar to Vivica, Rahshahs will also require a key to unlock the interactText, then return to saying his defaultText once the quest is completed.
+Similar to Vivica, Rahshahs will also ignore you until the quest granting the "vivica2" key has begun. He asks for DeerStew but does not remove this item from the player, changing his mind about needing it but rewarding the player anyway.
 
-Finally, the Jarl will give you a reward for helping all his people. Since the Jarl does not have a giveItem requirement the interactText will be displayed until the requiredKeys conditions are met. The only time you will see the defaultText is after receiving your reward.
+Finally, the Jarl will give you a reward for helping all his people once all the other NPCs quest lines are finished.
 
 This can be a bit confusing, so try spawning these examples and interacting with them in game to see how they work.
+
+```
+The difference between the ``interactKey`` and ``rewardKey`` is important to note here since ``interactKey`` will always be given to the player when the NPC is spoken to, where the reward key will only be given when reward conditions are met.
+```
+
+```
+There are two "keywords" you can use when setting up your NPC text: **{giveitem}** and **{reward}**, which will be automatically replaced with the corresponding prefab and amount so you don't have to type it out.
+```
 
 ```yaml
 npcs:
@@ -125,53 +129,92 @@ npcs:
     id: Liv
     name: Liv the Wise
     type: Reward
-    notRequiredKeys: liv
-    defaultText: "Did you bring {reward} to Vivica?"
-    interactKey: liv
-    interactKeyType: Player
-    rewardText: "Can you give this to Vivica? She's too shy to admit she needs my help."
-    rewardItem: KnifeFlint
-    rewardItemQuality: 2
-    rewardLimit: 5
+    quests:
+      -
+        text: "Can you give this to Vivica? She's too shy to admit she needs my help."
+        notRequiredKeys: liv
+        rewardItems:
+          -
+            prefabName: KnifeFlint
+            quality: 2
+        rewardKey: liv
+      -
+        text: "Did you bring that knife to Vivica?"
+        notRequiredKeys: vivica2
+      -
+        text: "Beautiful day, is it not?"
 
   -
     id: Vivica
     name: Vivica
     type: Reward
-    requiredKeys: liv
-    notRequiredKeys: vivica
-    defaultText: "I'm too busy to talk."
-    interactText: "Liv sent you? I guess I could use some help. I need {giveitem}."
-    giveItem: KnifeFlint
-    giveItemQuality: 2
-    rewardText: "My husband Rahshahs could use some help too, can you find him?"
-    rewardKey: vivica
+    quests:
+      -
+        text: "I'm too busy to talk."
+        requiredKeys: liv
+        notRequiredKeys: vivica1
+        rewardKey: vivica1
+        rewardText: "Liv sent you? I guess I could use some help. I need a sharper knife."
+      -
+        text: "I need {giveitem}."
+        requiredKeys: vivica1
+        notRequiredKeys: vivica2
+        giveItem:
+          prefabName: KnifeFlint
+          quality: 2
+        rewardKey: vivica2
+        rewardText: "My husband Rahshahs could use some help too, can you find him?"
+      -
+        text: "Did you find Rahshahs?"
+        notRequiredKeys: rahshahs2
+      -
+        text: "I love the smell of the open seas."
 
   -
     id: MrHamHands
     name: Rahshahs
     type: Reward
-    requiredKeys: vivica
-    notRequiredKeys: rahshahs
-    defaultText: "What do you want? Go away."
-    interactText: "Vivica sent you? She didn't pay you!? I need {giveitem}, I will give you {reward} in exchange."
-    giveItem: DeerStew
-    giveItemAmount: 1
-    rewardText: "Thanks, I was hungry! Sorry about my wife, this should be more than enough to cover your help."
-    rewardItem: Coins
-    rewardItemAmount: 10
-    rewardKey: rahshahs
+    quests:
+      -
+        text: "What do you want? Go away."
+        requiredKeys: vivica2
+        notRequiredKeys: rahshahs1
+        rewardKey: rahshahs1
+        rewardText: "Vivica sent you? She didn't pay you!?"
+      -
+        text: "I need {giveitem}, I will give you {reward} in exchange."
+        requiredKeys: vivica2
+        notRequiredKeys: rahshahs2
+        giveItem:
+          prefabName: DeerStew
+          amount: 1
+          removeItem: false
+        rewardItems:
+          -
+            prefabName: Coins
+            amount: 10
+        rewardKey: rahshahs2
+        rewardText: "Thanks, but Vivica found me already, keep it! Sorry about my wife, this should be more than enough to cover your help."
+      -
+        text: "Thanks for your help."
+
   -
     id: Jarl
     name: Jarl Halsin
     type: Reward
-    requiredKeys: liv, vivica, rahshahs
-    notRequiredKeys: thaneofvalheim
-    defaultText: "Good day citizen."
-    interactText: "Help my people and I will give you {reward}."
-    rewardText: "You actually did it, I'm impressed!"
-    rewardItem: SwordIron
-    rewardKey: thaneofvalheim
+    quests:
+      -
+        text: "Help my people and I will give you {reward}."
+        requiredKeys: liv, vivica2, rahshahs2
+        notRequiredKeys: thaneofvalheim
+        rewardItems:
+          -
+            prefabName: SwordIron
+            quality: 5
+        rewardText: "You actually did it, I'm impressed!"
+        rewardKey: thaneofvalheim
+      -
+        text: "Good day citizen."
 
 ```
 
@@ -185,7 +228,56 @@ Not Finished.
 
 ### Trader
 
-Traders function like Haldor and the other vanilla traders. You can specify items for them to sell and buy using coins as currency. They also support some kinds of quests such as giving them items in exchange for a key or reward. If you wish your trader to function
+Traders function like Haldor and the other vanilla traders. You can specify items for them to sell and buy using coins as currency. The "Texts" fields must exist for Traders, if left blank in your configuration they will appear as blank floating boxes in game.
+
+#### Example
+
+```yaml
+
+  -
+    id: Wildir1
+    name: Wildir
+    type: Trader
+    tradeItems:
+      -
+        prefabName: Stone
+        amount: 20
+        cost: 5
+        requiredKey: gave_pickaxe
+      -
+        prefabName: Wood
+        amount: 20
+        cost: 5
+      -
+        prefabName: AxeStone
+        quality: 2
+        cost: 200
+    traderUseItems:
+      -
+        prefabName: PickaxeAntler
+        rewardKey: gave_pickaxe
+        removeItem: true
+        text: "Hey thanks with this I can get some more stone."
+    talkTexts:
+      - "Beautiful day."
+      - "The smell of pine makes me smile."
+      - "I could really use a new pickaxe."
+    greetTexts:
+      - "Hello there!"
+    goodbyeTexts:
+      - "Always sharpen your axe before a long day!"
+    startTradeTexts:
+      - "Need something?"
+      - "I have the best lumber!"
+    buyTexts:
+      - "Thanks, come again!"
+    sellTexts:
+      - "This is acceptable quality."
+    notCorrectTexts:
+      - "Umm..."
+    notAvailableTexts:
+      - "I already have what I need."
+```
 
 ## NPC Style
 
