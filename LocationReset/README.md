@@ -26,15 +26,16 @@ Don't know how to use commands? Dedicated servers do not allow for use of comman
 
 ### Locations Supported
 
-"Sky locations" are any dungeon or location that is generated suspended in the sky in the game. If the location has a teleporting feature it probably is located in the sky. The following are considered "sky locations":
+"Sky locations" are any dungeon or location that is generated suspended in the sky in the game. If the location has a teleporting feature it probably is located in the sky. The following examples are considered "sky locations":
 
 * Troll Caves
 * Burial Chambers
 * Sunken Crypts
 * Frost Caves
 * Infested Mines/Citadel
+* Morgen Holes
 
-"Ground locations" are every other type of location in the game. This mod supports resetting all kinds of ground locations including abandoned buildings, shipwrecks, infested trees, tar pits, etc. If you do not want to reset ground locations set ResetGroundLocations to False. This will not apply for meadows farms/villages or fuling camps as those locations are considered dungeons and are in a separate category.
+"Ground locations" are every other type of location in the game. This mod supports resetting all kinds of ground locations including abandoned buildings, shipwrecks, infested trees, tar pits, etc. If you do not want to reset ground locations set ``ResetGroundLocations`` to False. This will not apply for meadows farms/villages or fuling camps as those locations are considered dungeons and are in a separate category (large locations with randomly generated "rooms"). It will also not apply to any location that has an individual reset time in the configuration file like the CharredFortress.
 
 If you are using another mod that adds custom locations or dungeons you may see this mod behave unexpectedly. If you would like support added for another mod please reach out to me in my discord (link below).
 
@@ -49,9 +50,11 @@ You may notice that Sealed Towers (Hildir plains dungeon) are not resetting. The
 
 </details>
 
-### Skip Resetting Certain Locations
+### Skip/Allow Resetting Certain Locations
 
-There is a config called ``IgnoreList`` in the configuration file in which you can specify locations NOT to reset separated by commas, for example: ``StartTemple, Eikthyrnir, WoodHouse6``. To see a list of all location names you can see them on the [Jotunn Modding Wiki](https://valheim-modding.github.io/Jotunn/data/zones/location-list.html).
+There is a config called ``IgnoreList`` in the configuration file in which you can specify locations NOT to reset separated by commas, for example: ``StartTemple, Eikthyrnir, WoodHouse6``. Similarly there is a config called ``AllowList`` in which you can specify locations to always reset regardless of the ``ResetGroundLocations`` setting and internal mod default settings. Be warned that overriding default ignored locations can cause strange behaviors, there is a reason they are hard coded as ignored.
+
+To see a list of all location names you can see them on the [Jotunn Modding Wiki](https://valheim-modding.github.io/Jotunn/data/zones/location-list.html).
 
 ### Leviathans
 
