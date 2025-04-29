@@ -1,3 +1,7 @@
+## 0.3.5
+
+* Fixed issue that blocked custom boss powers from being used when LockGuardianPower was true.
+
 ## 0.3.4
 
 * Added more null checks to fix compatibility issue with ZenCombat and other mods.

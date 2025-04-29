@@ -195,7 +195,7 @@ namespace VentureValheim.Progression
         {
             if (creature.IsNullOrWhiteSpace())
             {
-                return false;
+                return true;
             }
 
             if (TamingKeysList.ContainsKey(creature))
@@ -216,7 +216,7 @@ namespace VentureValheim.Progression
         {
             if (creature.IsNullOrWhiteSpace())
             {
-                return false;
+                return true;
             }
 
             if (SummoningKeysList.ContainsKey(creature))
@@ -240,7 +240,8 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// True if the in-game days passed allows for the creature to be summoned.
+        /// True if the in-game days passed allows for the creature to be summoned
+        /// or true if the configuration does not exist for the creature.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -256,7 +257,8 @@ namespace VentureValheim.Progression
         }
 
         /// <summary>
-        /// Returns whether the Player contains the necessary key for accepting a boss power.
+        /// Returns whether the Player contains the necessary key for accepting a boss power
+        /// or true if the configuration does not exist for the power.
         /// </summary>
         /// <param name="guardianPower"></param>
         /// <returns></returns>
@@ -264,19 +266,20 @@ namespace VentureValheim.Progression
         {
             if (guardianPower.IsNullOrWhiteSpace())
             {
-                return false;
+                return true;
             }
 
             // Mod compatibility with Passive Powers where string can be "GP_Eikthyr,GP_TheElder"
-            var guardianPowers = guardianPower.Split(',');
-            var allPowersHaveKnownKeys = guardianPowers.All(GuardianKeysList.ContainsKey);
-            if (allPowersHaveKnownKeys)
+            string[] guardianPowers = guardianPower.Split(',');
+            foreach (string power in guardianPowers)
             {
-                var allKeysAreUnlocked = guardianPowers.All(gp => HasKey(GuardianKeysList[gp]));
-                return allKeysAreUnlocked;
+                if (GuardianKeysList.ContainsKey(power) && !HasKey(GuardianKeysList[power]))
+                {
+                    return false;
+                }
             }
 
-            return false; // If there are other mods that add powers will need to revisit this
+            return true;
         }
 
         /// <summary>
@@ -291,7 +294,7 @@ namespace VentureValheim.Progression
         {
             if (item.IsNullOrWhiteSpace())
             {
-                return false;
+                return true;
             }
 
             if ((checkBossItems && BossItemKeysList.ContainsKey(item) && !HasKey(BossItemKeysList[item])) ||
@@ -314,9 +317,15 @@ namespace VentureValheim.Progression
         /// <param name="checkMaterials"></param>
         /// <param name="checkFood"></param>
         /// <returns></returns>
-        private bool IsActionBlocked(ItemDrop.ItemData item, int quality, bool checkBossItems, bool checkMaterials, bool checkFood)
+        private bool IsActionBlocked(ItemDrop.ItemData item, int quality,
+            bool checkBossItems, bool checkMaterials, bool checkFood)
         {
-            if (item.m_dropPrefab == null || !Instance.HasItemKey(
+            if (item.m_dropPrefab == null)
+            {
+                return false;
+            }
+
+            if (!Instance.HasItemKey(
                 Utils.GetPrefabName(item.m_dropPrefab), checkBossItems, checkMaterials, checkFood))
             {
                 return true;
@@ -337,7 +346,8 @@ namespace VentureValheim.Progression
         /// <param name="checkMaterials"></param>
         /// <param name="checkFood"></param>
         /// <returns></returns>
-        private bool IsActionBlocked(Recipe recipe, int quality, bool checkBossItems, bool checkMaterials, bool checkFood)
+        private bool IsActionBlocked(Recipe recipe, int quality,
+            bool checkBossItems, bool checkMaterials, bool checkFood)
         {
             if (recipe == null)
             {
@@ -420,13 +430,19 @@ namespace VentureValheim.Progression
 
                 if (ProgressionConfiguration.Instance.GetUseBlockedActionMessage())
                 {
-                    player.Message(MessageHud.MessageType.Center, ProgressionConfiguration.Instance.GetBlockedActionMessage());
+                    player.Message(MessageHud.MessageType.Center,
+                        ProgressionConfiguration.Instance.GetBlockedActionMessage());
                 }
             }
         }
 
-        public bool IsTeleportable(string name)
+        public bool IsTeleportable(string name, bool teleportable)
         {
+            if (teleportable)
+            {
+                return true;
+            }
+
             string key = "";
             switch (name)
             {
@@ -468,7 +484,7 @@ namespace VentureValheim.Progression
                 return HasKey(key);
             }
 
-            return false;
+            return teleportable;
         }
     }
 }
