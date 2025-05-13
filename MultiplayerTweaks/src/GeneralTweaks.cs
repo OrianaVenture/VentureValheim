@@ -200,7 +200,7 @@ public class GeneralTweaks
     {
         private static bool Prefix(Character __instance)
         {
-            if (__instance == Player.m_localPlayer)
+            if (__instance.IsPlayer() && __instance == Player.m_localPlayer)
             {
                 // 15 seconds of immunity
                 var time = ZNet.instance.GetTimeSeconds() - _lastSpawnTime;

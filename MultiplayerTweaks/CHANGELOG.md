@@ -1,3 +1,7 @@
+## 0.11.7
+
+* Small optimization to help with FPS issues.
+
 ## 0.11.6
 
 * Update for game version 0.220.3.
