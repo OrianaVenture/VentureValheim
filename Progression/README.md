@@ -114,7 +114,7 @@ If you want manual control over when bosses become available to summon you will 
 
 #### Locking/Unlocking Portals
 
-The ability to use portals can be locked behind one specified key with the LockPortalsKey setting. Additionally you can unlock portaling metals based off keys with the configurations in the "PortalUnlocking" section.
+The ability to use portals can be locked behind one specified key with the LockPortalsKey setting. Additionally you can unlock portaling metals (and other select items) based off keys with the configurations in the "PortalUnlocking" section.
 
 #### Locking Everything Else
 

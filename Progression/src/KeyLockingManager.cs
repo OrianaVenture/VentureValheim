@@ -475,6 +475,9 @@ namespace VentureValheim.Progression
                 case "FlametalOreNew":
                     key = ProgressionConfiguration.Instance.GetUnlockPortalFlametalKey();
                     break;
+                case "DragonEgg":
+                    key = ProgressionConfiguration.Instance.GetUnlockPortalDragonEggKey();
+                    break;
                 default:
                     break;
             }

@@ -1,3 +1,7 @@
+## 0.3.6
+
+* Added DragonEgg to portaling unlocking logic with new configuration.
+
 ## 0.3.5
 
 * Fixed issue that blocked custom boss powers from being used when LockGuardianPower was true.
