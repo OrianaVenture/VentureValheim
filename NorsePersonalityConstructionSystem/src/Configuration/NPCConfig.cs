@@ -15,6 +15,7 @@ public class NPCConfig
     public bool StandStill { get; set; }
     public string? Animation { get; set; }
     public bool GiveDefaultItems { get; set; }
+    public float? MaxHealth { get; set; }
     public List<NPCQuest>? Quests { get; set; }
     // Trader
     public List<NPCTradeItem>? TradeItems { get; set; }
@@ -55,6 +56,7 @@ public class NPCConfig
         Name ??= "Ragnar";
         DefeatKey ??= "";
         Animation ??= "";
+        MaxHealth ??= 0f;
 
         Quests ??= new List<NPCQuest>();
         foreach (var quest in Quests)

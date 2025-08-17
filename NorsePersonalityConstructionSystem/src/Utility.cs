@@ -84,20 +84,22 @@ public class Utility
         return set;
     }
 
-    public static INPC GetClosestNPC(Vector3 position)
+    public static INPC GetClosestNPC(Vector3 position, out float distance)
     {
         Collider[] hits = Physics.OverlapBox(position, Vector3.one * 3, Quaternion.identity);
         GameObject closestnpc = null;
+        distance = 1000;
 
         foreach (var hit in hits)
         {
             var go = hit.transform.root.gameObject;
             if (go != null && go.GetComponentInChildren<INPC>() != null)
             {
-                if (closestnpc == null || (Vector3.Distance(position, go.transform.position) <
-                        Vector3.Distance(position, closestnpc.transform.position)))
+                var newDistance = Vector3.Distance(position, go.transform.position);
+                if (closestnpc == null || (newDistance < distance))
                 {
                     closestnpc = go;
+                    distance = newDistance;
                 }
             }
         }

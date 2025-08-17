@@ -24,6 +24,8 @@ public static class NPCZDOUtils
     public static bool GetInitialized(ZDO zdo) => zdo.GetBool(ZDOVar_INITIALIZED);
     public static void SetInitialized(ref ZDO zdo, bool init) => zdo.Set(ZDOVar_INITIALIZED, init);
 
+    public static void SetMaxHealth(ref ZDO zdo, float health) => zdo.Set(ZDOVars.s_maxHealth, health);
+
     public static string GetTamedName(ZDO zdo) => zdo.GetString(ZDOVars.s_tamedName);
     public static void SetTamedName(ref ZDO zdo, string name) => zdo.Set(ZDOVars.s_tamedName, name);
 
@@ -145,11 +147,13 @@ public static class NPCZDOUtils
         NPCSPlugin.NPCSLogger.LogDebug($"Setting Quest String: {quest}");
         zdo.Set($"{ZDOVar_QUESTS}{index}", quest);
     }
+
     public static void SetNPCQuestGive(ref ZDO zdo, int index, string give)
     {
         NPCSPlugin.NPCSLogger.LogDebug($"Setting Quest Give: {give}");
         zdo.Set($"{ZDOVar_QUESTS}{index}GIVE", give);
     }
+
     public static void SetNPCQuestReward(ref ZDO zdo, int index, string reward)
     {
         NPCSPlugin.NPCSLogger.LogDebug($"Setting Quest Reward: {reward}");
@@ -406,6 +410,11 @@ public static class NPCZDOUtils
             SetNPCDefeatKey(ref zdo, config.DefeatKey);
 
             SetInitialized(ref zdo, !config.GiveDefaultItems);
+
+            if (config.MaxHealth > 0f)
+            {
+                SetMaxHealth(ref zdo, config.MaxHealth.Value);
+            }
 
             if (config.Quests != null)
             {

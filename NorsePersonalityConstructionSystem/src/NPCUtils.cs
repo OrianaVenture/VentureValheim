@@ -292,7 +292,7 @@ public static class NPCUtils
 
     public static string GetHoverText(Character npc, BaseAI baseAI)
     {
-        if (npc == null || (baseAI != null && baseAI.m_aggravated))
+        if (npc == null || npc.m_nview.GetZDO() == null || (baseAI != null && baseAI.m_aggravated))
         {
             return "";
         }

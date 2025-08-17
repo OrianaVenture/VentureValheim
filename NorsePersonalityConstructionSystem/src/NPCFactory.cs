@@ -13,7 +13,8 @@ public class NPCFactory
         typeof(Skills),
         typeof(CharacterDrop),
         typeof(NpcTalk),
-        typeof(Tameable)
+        typeof(Tameable),
+        typeof(Procreation)
     };
 
     public static GameObject SpawnNPC(Vector3 position, Quaternion rotation, string name = "Ragnar", string model = "Player")
@@ -77,7 +78,7 @@ public class NPCFactory
         // TODO clean up, do not want to Deserialize twice
         ZDO copy = new ZDO();
         original.m_stream.Position = 0L;
-        copy.Deserialize(original); 
+        copy.Deserialize(original);
         var respawn = NPCZDOUtils.GetSpawnPoint(copy);
 
         if (respawn == Vector3.zero)

@@ -1,6 +1,7 @@
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using UnityEngine;
 
 namespace VentureValheim.NPCS;
@@ -32,9 +33,9 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_spawnrandom", "[name] [model]", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
-                var position = playerPosition + (playerRotation * Vector3.forward);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                Quaternion playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
+                Vector3 position = playerPosition + (playerRotation * Vector3.forward);
 
                 if (args.Length > 2)
                 {
@@ -52,13 +53,13 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_spawnsaved", "[id]", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
-                var position = playerPosition + (playerRotation * Vector3.forward);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                Quaternion playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
+                Vector3 position = playerPosition + (playerRotation * Vector3.forward);
 
                 if (args.Length >= 2)
                 {
-                    var go = NPCFactory.SpawnSavedNPC(position, playerRotation, args[1]);
+                    GameObject go = NPCFactory.SpawnSavedNPC(position, playerRotation, args[1]);
                     if (go == null)
                     {
                         args.Context.AddString("Could not spawn NPC!");
@@ -72,8 +73,8 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_set", "[id]", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = Utility.GetClosestNPC(playerPosition);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                 if (npc == null)
                 {
                     args.Context.AddString("No npc found.");
@@ -92,8 +93,8 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_set_truedeath", "[boolean]", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = Utility.GetClosestNPC(playerPosition);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                 if (npc == null)
                 {
                     args.Context.AddString("No npc found.");
@@ -112,8 +113,8 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_set_move", "", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = Utility.GetClosestNPC(playerPosition);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                 if (npc == null)
                 {
                     args.Context.AddString("No npc found.");
@@ -132,8 +133,8 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_set_still", "", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = Utility.GetClosestNPC(playerPosition);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                 if (npc == null)
                 {
                     args.Context.AddString("No npc found.");
@@ -152,15 +153,15 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_set_sit", "", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = Utility.GetClosestNPC(playerPosition);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                 if (npc == null)
                 {
                     args.Context.AddString("No npc found.");
                     return;
                 }
 
-                var chair = Utility.GetClosestChair(playerPosition, Vector3.one * 2);
+                Chair chair = Utility.GetClosestChair(playerPosition, Vector3.one * 2);
 
                 npc.Data.Attach(true, "", chair);
 
@@ -168,45 +169,36 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_set_calm", "[range]", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
 
-                if (args.Length >= 2)
+                float range = 5f;
+                if (args.Length >= 2 && float.TryParse(args[1], out float newRange))
                 {
-                    var npcs = Utility.GetAllNPCS(playerPosition, float.Parse(args[1]));
-                }
-                else
-                {
-                    var npcs = Utility.GetAllNPCS(playerPosition, 5f);
+                    range = newRange;
                 }
 
-                foreach (var npc in npcs)
+                List<INPC> npcs = Utility.GetAllNPCS(playerPosition, range);
+
+                foreach (INPC npc in npcs)
+                {
+                    BaseAI ai = null;
+                    (npc as Character).m_nview.ClaimOwnership();
+                    ai = (npc as Character).GetComponent<BaseAI>();
+
+                    if (ai != null)
                     {
-                        BaseAI ai = null;
-                        if (npc is NPCHumanoid)
-                        {
-                            (npc as NPCHumanoid).m_nview.ClaimOwnership();
-                            ai = (npc as NPCHumanoid).GetComponent<BaseAI>();
-                        }
-                        else if (npc is NPCCharacter)
-                        {
-                            (npc as NPCCharacter).m_nview.ClaimOwnership();
-                            ai = (npc as NPCCharacter).GetComponent<BaseAI>();
-                        }
-
-                        if (ai != null)
-                        {
-                            ai.SetAlerted(false);
-                            ai.SetAggravated(false, BaseAI.AggravatedReason.Damage);
-                        }
+                        ai.SetAlerted(false);
+                        ai.SetAggravated(false, BaseAI.AggravatedReason.Damage);
                     }
+                }
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
             new Terminal.ConsoleCommand("npcs_set_faceme", "", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                Quaternion playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
 
-                var npc = Utility.GetClosestNPC(playerPosition);
+                INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                 if (npc == null)
                 {
                     args.Context.AddString("No npc found.");
@@ -218,8 +210,8 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_get_skincolor", "", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = Utility.GetClosestNPC(playerPosition);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                 if (npc == null || npc is not NPCHumanoid)
                 {
                     args.Context.AddString("No npc found.");
@@ -231,8 +223,8 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_get_haircolor", "", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = Utility.GetClosestNPC(playerPosition);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                 if (npc == null || npc is not NPCHumanoid)
                 {
                     args.Context.AddString("No npc found.");
@@ -245,7 +237,7 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_remove", "", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
 
                 List<INPC> npcs;
 
@@ -255,7 +247,7 @@ public class Patches
                 }
                 else
                 {
-                    var npc = Utility.GetClosestNPC(playerPosition);
+                    INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                     npcs = new List<INPC>()
                     {
                         npc
@@ -264,31 +256,23 @@ public class Patches
 
                 for (int lcv = 0; lcv < npcs.Count; lcv++)
                 {
-                    var npc = npcs[lcv];
+                    INPC npc = npcs[lcv];
                     if (npc == null)
                     {
                         args.Context.AddString("No npc found.");
                         return;
                     }
 
-                    if (npc is NPCHumanoid)
-                    {
-                        (npc as NPCHumanoid).m_nview.ClaimOwnership();
-                        ZNetScene.instance.Destroy((npc as NPCHumanoid).gameObject);
-                    }
-                    else if (npc is NPCCharacter)
-                    {
-                        (npc as NPCCharacter).m_nview.ClaimOwnership();
-                        ZNetScene.instance.Destroy((npc as NPCCharacter).gameObject);
-                    }
+                    (npc as Character).m_nview.ClaimOwnership();
+                    ZNetScene.instance.Destroy((npc as Character).gameObject);
                 }
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
             new Terminal.ConsoleCommand("npcs_randomize", "", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = Utility.GetClosestNPC(playerPosition);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                 if (npc == null)
                 {
                     args.Context.AddString("No npc found.");
@@ -300,8 +284,8 @@ public class Patches
 
             new Terminal.ConsoleCommand("npcs_info", "", delegate (Terminal.ConsoleEventArgs args)
             {
-                var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-                var npc = Utility.GetClosestNPC(playerPosition);
+                Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+                INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
                 if (npc == null)
                 {
                     args.Context.AddString("No npc found.");
@@ -310,7 +294,7 @@ public class Patches
 
                 if (npc is NPCHumanoid)
                 {
-                    var npcHuman = (NPCHumanoid)npc;
+                    NPCHumanoid npcHuman = (NPCHumanoid)npc;
                     args.Context.AddString($"{npcHuman.m_name}: " +
                     $"{npcHuman.m_hairItem}, " +
                     $"{npcHuman.m_beardItem}, " +
@@ -324,8 +308,8 @@ public class Patches
                 }
                 else if (npc is NPCCharacter)
                 {
-                    var npcHuman = (NPCHumanoid)npc;
-                    args.Context.AddString($"{npcHuman.m_name}");
+                    NPCCharacter npcCharacter = (NPCCharacter)npc;
+                    args.Context.AddString($"{npcCharacter.m_name}");
                 }
             }, isCheat: true, isNetwork: false, onlyServer: false);
         }
@@ -341,8 +325,9 @@ public class Patches
         {
             if (ZInput.GetKey(KeyCode.RightControl))
             {
-                var gameobject = NPCFactory.SpawnNPC(__instance.transform.position, __instance.transform.rotation);
-                var npc = gameobject.GetComponent<NPCHumanoid>();
+                GameObject gameobject = NPCFactory.SpawnNPC(__instance.transform.position,
+                    __instance.transform.rotation);
+                NPCHumanoid npc = gameobject.GetComponent<NPCHumanoid>();
 
                 if (npc != null)
                 {
@@ -365,9 +350,10 @@ public class Patches
             if (!hold && ZInput.GetKey(KeyCode.RightControl))
             {
                 // Add npc to chair
-                var npc = NPCFactory.SpawnNPC(__instance.m_attachPoint.position, __instance.m_attachPoint.rotation, "Sitter");
+                GameObject npc = NPCFactory.SpawnNPC(__instance.m_attachPoint.position,
+                    __instance.m_attachPoint.rotation, "Sitter");
 
-                var npcComponent = npc.GetComponent<NPCHumanoid>();
+                NPCHumanoid npcComponent = npc.GetComponent<NPCHumanoid>();
 
                 if (npcComponent != null)
                 {
@@ -382,32 +368,68 @@ public class Patches
         }
     }
 
-    [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.Show))]
-    private static class Patch_StoreGui_Show
+    private static class Patch_StoreGui
     {
-        private static void Postfix(StoreGui __instance, Trader trader)
+        private static bool originalAttach = false;
+
+        /// <summary>
+        /// Set the trader to attach and stand still for interaction.
+        /// </summary>
+        [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.Show))]
+        private static class Patch_StoreGui_Show
         {
-            if (trader == __instance.m_trader)
+            private static void Postfix(StoreGui __instance, Trader trader)
             {
-                // TODO: set npcs to stop walking
+                if (trader != __instance.m_trader)
+                {
+                    return;
+                }
+
+                originalAttach = false;
+                INPC npc = __instance.m_trader.GetComponent<INPC>();
+
+                if (npc != null)
+                {
+                    originalAttach = npc.Data.HasAttach;
+                    if (!originalAttach)
+                    {
+                        npc.Data.Attach(true, "");
+                    }
+                }
             }
         }
-    }
 
-    [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.Hide))]
-    private static class Patch_StoreGui_Hide
-    {
-        private static void Prefix(StoreGui __instance)
+        /// <summary>
+        /// Set the trader to continue the original animation.
+        /// </summary>
+        [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.Hide))]
+        private static class Patch_StoreGui_Hide
         {
-            if (__instance.m_trader && __instance.GetComponent<NPCTrader>())
+            private static void Prefix(StoreGui __instance)
             {
-                // TODO: set npcs to continue walking
+                if (!__instance.m_trader || originalAttach)
+                {
+                    return;
+                }
+
+                INPC npc = __instance.m_trader.GetComponent<INPC>();
+
+                if (npc != null)
+                {
+                    string animation = "";
+                    if ((npc as Character).m_nview.GetZDO() != null)
+                    {
+                        animation = NPCZDOUtils.GetAnimation((npc as Character).m_nview.GetZDO());
+                    }
+
+                    npc.Data.Attach(false, animation);
+                }
             }
         }
     }
 
     /// <summary>
-    /// Visual bug fix patch for Trader script not unequipping items before removing
+    /// Visual bug fix patch for Trader script not unequipping items before removing.
     /// </summary>
     [HarmonyPatch(typeof(Inventory), nameof(Inventory.RemoveItem),
         new Type[] { typeof(ItemDrop.ItemData) })]
@@ -422,12 +444,49 @@ public class Patches
         }
     }
 
-    [HarmonyPatch(typeof(Chair), nameof(Chair.Interact))]
-    private static class Patch_Chair_Interact2
+    /// <summary>
+    /// Do not let players sit on NPCs.
+    /// </summary>
+    [HarmonyPatch(typeof(Chair))]
+    static class ChairPatch
     {
-        private static void Prefix()
+        // Thank you Redseiko for the beautiful transpiler
+        [HarmonyTranspiler]
+        [HarmonyPatch(nameof(Chair.Interact))]
+        static IEnumerable<CodeInstruction> InputTextTranspiler(
+            IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            // TODO: don't let players sit on npcs
+            return new CodeMatcher(instructions, generator)
+                .Start()
+                .MatchStartForward(
+                    new CodeMatch(OpCodes.Ldsfld, AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer))),
+                    new CodeMatch(OpCodes.Ldc_I4_2),
+                    new CodeMatch(OpCodes.Ldstr, "$msg_blocked"))
+                .ThrowIfInvalid($"Could not patch Chair.Interact()! (msg-blocked)")
+                .CreateLabel(out Label msgBlockedLabel)
+                .Start()
+                .MatchStartForward(
+                    new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.GetClosestPlayer))),
+                    new CodeMatch(OpCodes.Stloc_1))
+                .ThrowIfInvalid("Could not patch Chair.Interact()! (get-closest-player)")
+                .Advance(offset: 2)
+                .InsertAndAdvance(
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ChairPatch), nameof(IsChairOccupied))),
+                    new CodeInstruction(OpCodes.Brtrue, msgBlockedLabel))
+                .InstructionEnumeration();
+        }
+
+        static bool IsChairOccupied(Chair chair)
+        {
+            Vector3 position = chair.m_attachPoint.position;
+            INPC npc = Utility.GetClosestNPC(position, out float distance);
+            if (npc != null && distance <= 0.1f)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

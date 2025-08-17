@@ -101,6 +101,7 @@ npcs:
     name: Cain
     trueDeath: true
     standStill: true
+    maxHealth: 1000
     type: SlayTarget
     greetTexts:
       - "Please don't kill me"
