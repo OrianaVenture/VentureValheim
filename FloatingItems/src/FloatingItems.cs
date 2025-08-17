@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using BepInEx;
 using HarmonyLib;
+using Jotunn;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -236,16 +237,21 @@ namespace VentureValheim.FloatingItems
         /// <param name="item"></param>
         private static void ApplyFloatingComponent(GameObject item)
         {
-            if (item.gameObject.GetComponent<Floating>() != null ||
-                item.gameObject.GetComponentInChildren<Collider>() == null ||
+            if (item.gameObject.GetComponentInChildren<Collider>() == null ||
                 item.gameObject.GetComponent<Rigidbody>() == null)
             {
                 return;
             }
 
-            var floating = item.gameObject.AddComponent<Floating>();
-            floating.m_waterLevelOffset = 0.7f;
-            FloatingAddedPrefabs.Add(item.gameObject.name.ToLower());
+            var floating = item.gameObject.GetComponent<Floating>();
+            if (floating == null)
+            {
+                floating = item.gameObject.AddComponent<Floating>();
+                floating.m_waterLevelOffset = 0.7f;
+                FloatingAddedPrefabs.Add(item.gameObject.name.ToLower());
+            }
+
+            floating.enabled = true;
         }
 
         /// <summary>

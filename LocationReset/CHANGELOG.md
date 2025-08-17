@@ -1,3 +1,8 @@
+## 0.10.6
+
+* Added new configuration AllowList to specify locations to reset regardless of other settings.
+* Added locations with specific reset time configurations to be allowed by default.
+
 ## 0.10.5
 
 * Also exclude OfferingBowl objects from being reset in sky portions of locations. (If you see an error in your log file when trying to summon the Mistland's boss please reset the location again to try and fix)

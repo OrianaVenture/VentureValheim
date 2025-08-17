@@ -13,7 +13,7 @@ namespace VentureValheim.FloatingItems
     public class FloatingItemsPlugin : BaseUnityPlugin
     {
         private const string ModName = "VentureFloatingItems";
-        private const string ModVersion = "0.3.1";
+        private const string ModVersion = "0.3.2";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";

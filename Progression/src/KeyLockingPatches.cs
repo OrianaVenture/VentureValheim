@@ -14,10 +14,9 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Low)]
             private static void Prefix(Tameable __instance, ref float time)
             {
-                if (ProgressionConfiguration.Instance.GetLockTaming())
+                if (ProgressionConfiguration.Instance.GetLockTaming() && __instance.m_character != null)
                 {
-                    if (__instance.m_character == null ||
-                        !Instance.HasTamingKey(Utils.GetPrefabName(__instance.m_character.gameObject)))
+                    if (!Instance.HasTamingKey(Utils.GetPrefabName(__instance.m_character.gameObject)))
                     {
                         time = 0f;
                     }
@@ -62,7 +61,7 @@ namespace VentureValheim.Progression
                     return false;
                 }
 
-                if (!__instance.m_guardianPower.IsNullOrWhiteSpace() && ProgressionConfiguration.Instance.GetLockGuardianPower())
+                if (ProgressionConfiguration.Instance.GetLockGuardianPower())
                 {
                     if (!Instance.HasGuardianKey(__instance.m_guardianPower))
                     {
@@ -107,7 +106,7 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(Humanoid __instance, ref bool __result, ItemDrop.ItemData item)
             {
-                if (__instance != Player.m_localPlayer)
+                if (item == null || __instance != Player.m_localPlayer)
                 {
                     return true;
                 }
@@ -134,7 +133,7 @@ namespace VentureValheim.Progression
         {
             private static void Postfix(Inventory __instance, ref ItemDrop.ItemData __result)
             {
-                if (__instance != Player.m_localPlayer.GetInventory() || __result == null)
+                if (__result == null || __instance != Player.m_localPlayer.GetInventory())
                 {
                     return;
                 }
@@ -236,7 +235,8 @@ namespace VentureValheim.Progression
             [HarmonyPriority(Priority.Low)]
             private static bool Prefix(ItemDrop.ItemData item, ref bool __result)
             {
-                if (ProgressionConfiguration.Instance.GetLockCooking() &&
+                if (item != null &&
+                    ProgressionConfiguration.Instance.GetLockCooking() &&
                     Instance.IsActionBlocked(item, item.m_quality, false, false, true))
                 {
                     Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
@@ -256,7 +256,8 @@ namespace VentureValheim.Progression
         {
             private static bool Prefix(Player player)
             {
-                if (player == Player.m_localPlayer && !Instance.HasKey(ProgressionConfiguration.Instance.GetLockPortalsKey()))
+                if (player == Player.m_localPlayer &&
+                    !Instance.HasKey(ProgressionConfiguration.Instance.GetLockPortalsKey()))
                 {
                     Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                     return false; // Skip portaling
@@ -274,7 +275,6 @@ namespace VentureValheim.Progression
         {
             private static bool Prefix(Inventory __instance, ref bool __result)
             {
-                // TODO: test
                 if (ZoneSystem.instance.GetGlobalKey(GlobalKeys.TeleportAll))
                 {
                     __result = true;
@@ -283,7 +283,12 @@ namespace VentureValheim.Progression
 
                 foreach (ItemDrop.ItemData item in __instance.m_inventory)
                 {
-                    if (!item.m_shared.m_teleportable && !Instance.IsTeleportable(item.m_dropPrefab.name))
+                    if (item.m_dropPrefab == null)
+                    {
+                        continue;
+                    }
+
+                    if (!Instance.IsTeleportable(item.m_dropPrefab.name, item.m_shared.m_teleportable))
                     {
                         __result = false;
                         return false;

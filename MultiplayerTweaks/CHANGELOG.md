@@ -1,3 +1,12 @@
+## 0.11.7
+
+* Small optimization to help with FPS issues.
+
+## 0.11.6
+
+* Update for game version 0.220.3.
+* Temporarily disabled the HidePlatformTag setting until it can be fixed.
+
 ## 0.11.5
 
 * Fix for EnableValkrie setting not working properly in multiplayer.

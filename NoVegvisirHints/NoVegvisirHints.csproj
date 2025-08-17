@@ -6,12 +6,12 @@
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <ProjectGuid>{7BDF2320-F171-4843-84B4-95C86CD03E77}</ProjectGuid>
+        <ProjectGuid>{C89FE73C-B004-4421-9C68-D8511708D7ED}</ProjectGuid>
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
-        <RootNamespace>VentureValheim.IncognitoMode</RootNamespace>
-        <AssemblyName>VentureValheim.IncognitoMode</AssemblyName>
-        <Version>0.4.1</Version>
+        <RootNamespace>VentureValheim.NoVegvisirHints</RootNamespace>
+        <AssemblyName>VentureValheim.NoVegvisirHints</AssemblyName>
+        <Version>0.1.0</Version>
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>
@@ -22,7 +22,7 @@
         </NuGetPackageImportStamp>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-        <AssemblyName>VentureValheim.IncognitoMode.$(Version)</AssemblyName>
+        <AssemblyName>VentureValheim.NoVegvisirHints.$(Version)</AssemblyName>
         <PlatformTarget>AnyCPU</PlatformTarget>
         <DebugSymbols>true</DebugSymbols>
         <DebugType>full</DebugType>
@@ -44,7 +44,6 @@
     <ItemGroup>
         <Compile Include="Plugin.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="src\*.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

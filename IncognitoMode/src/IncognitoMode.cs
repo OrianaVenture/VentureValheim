@@ -142,10 +142,10 @@ namespace VentureValheim.IncognitoMode
                     if (hidden)
                     {
                         __instance.Name = GetDisplayName();
-                        if (IncognitoModePlugin.GetHidePlatformTag())
+                        /*if (IncognitoModePlugin.GetHidePlatformTag())
                         {
-                            __instance.Gamertag = "";
-                        }
+                            // TODO fix this
+                        }*/
                     }
                 }
             }

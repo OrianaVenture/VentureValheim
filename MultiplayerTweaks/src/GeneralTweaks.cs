@@ -200,7 +200,7 @@ public class GeneralTweaks
     {
         private static bool Prefix(Character __instance)
         {
-            if (__instance == Player.m_localPlayer)
+            if (__instance.IsPlayer() && __instance == Player.m_localPlayer)
             {
                 // 15 seconds of immunity
                 var time = ZNet.instance.GetTimeSeconds() - _lastSpawnTime;
@@ -249,7 +249,7 @@ public class GeneralTweaks
     /// <summary>
     /// Always hide the platform id when disabled.
     /// </summary>
-    [HarmonyPatch(typeof(UserInfo), nameof(UserInfo.GamertagSuffix))]
+    /*[HarmonyPatch(typeof(UserInfo), nameof(UserInfo.GamertagSuffix))]
     public static class Patch_UserInfo_GamertagSuffix
     {
         private static void Postfix(ref string __result)
@@ -259,5 +259,5 @@ public class GeneralTweaks
                 __result = "";
             }
         }
-    }
+    }*/ // TODO fix this
 }

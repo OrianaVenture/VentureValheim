@@ -23,7 +23,7 @@ namespace VentureValheim.Progression
         }
 
         private const string ModName = "WorldAdvancementProgression";
-        private const string ModVersion = "0.3.3";
+        private const string ModVersion = "0.3.6";
         private const string Author = "com.orianaventure.mod";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -63,12 +63,13 @@ namespace VentureValheim.Progression
         public static ConfigEntry<bool> CE_LockCooking = null!;
         public static ConfigEntry<string> CE_LockPortalsKey = null!;
 
-        // Locking Teleporting Metals
+        // Locking Teleporting Metals & Others
         public static ConfigEntry<string> CE_UnlockPortalCopperTinKey = null!;
         public static ConfigEntry<string> CE_UnlockPortalIronKey = null!;
         public static ConfigEntry<string> CE_UnlockPortalSilverKey = null!;
         public static ConfigEntry<string> CE_UnlockPortalBlackMetalKey = null!;
         public static ConfigEntry<string> CE_UnlockPortalFlametalKey = null!;
+        public static ConfigEntry<string> CE_UnlockPortalDragonEggKey = null!;
 
         // Skills Manager
         public static ConfigEntry<bool> CE_EnableSkillManager = null!;
@@ -232,6 +233,9 @@ namespace VentureValheim.Progression
             AddConfig("UnlockPortalFlametalKey", portal,
                 "Use this key to control player ability to teleport flametal. Leave blank to allow vanilla portal behavior (string).",
                 true, "", ref CE_UnlockPortalFlametalKey);
+            AddConfig("UnlockPortalDragonEggKey", portal,
+                "Use this key to control player ability to teleport dragon eggs. Leave blank to allow vanilla portal behavior (string).",
+                true, "", ref CE_UnlockPortalDragonEggKey);
 
             // Skills
             AddConfig("EnableSkillManager", skills,
@@ -416,6 +420,7 @@ namespace VentureValheim.Progression
         public string GetUnlockPortalSilverKey();
         public string GetUnlockPortalBlackMetalKey();
         public string GetUnlockPortalFlametalKey();
+        public string GetUnlockPortalDragonEggKey();
 
         // Skills Manager
         public bool GetEnableSkillManager();
@@ -577,6 +582,7 @@ namespace VentureValheim.Progression
         public string GetUnlockPortalSilverKey() => ProgressionPlugin.CE_UnlockPortalSilverKey.Value;
         public string GetUnlockPortalBlackMetalKey() => ProgressionPlugin.CE_UnlockPortalBlackMetalKey.Value;
         public string GetUnlockPortalFlametalKey() => ProgressionPlugin.CE_UnlockPortalFlametalKey.Value;
+        public string GetUnlockPortalDragonEggKey() => ProgressionPlugin.CE_UnlockPortalDragonEggKey.Value;
 
         // Skills
         public bool GetEnableSkillManager() => ProgressionPlugin.CE_EnableSkillManager.Value;
