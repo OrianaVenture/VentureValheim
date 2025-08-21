@@ -12,7 +12,7 @@ public class NPCFactory
         typeof(Talker),
         typeof(Skills),
         typeof(CharacterDrop),
-        typeof(NpcTalk),
+        //typeof(NpcTalk),
         typeof(Tameable),
         typeof(Procreation)
     };
@@ -221,7 +221,8 @@ public class NPCFactory
         var baseAI = npc.GetComponent<BaseAI>();
         if (baseAI == null)
         {
-            npc.AddComponent<NPCAI>();
+            // This is likely only applied to the "Player" npc
+            baseAI = npc.AddComponent<NPCAI>();
         }
         else if (baseAI is MonsterAI)
         {
@@ -230,13 +231,6 @@ public class NPCFactory
             var npcAI = npc.AddComponent<NPCAI>();
 
             SetupMonsterAI(ref npcAI, originalAI);
-
-            // Only add talker if has a MonsterAI
-            var talker = npc.GetComponent<NpcTalk>();
-            if (talker == null)
-            {
-                talker = npc.AddComponent<NpcTalk>();
-            }
         }
         else if (baseAI is AnimalAI)
         {
@@ -245,6 +239,16 @@ public class NPCFactory
             var npcAI = npc.AddComponent<NPCAnimalAI>();
 
             SetupAnimalAI(ref npcAI, originalAI);
+        }
+
+        // Only add talker if has a MonsterAI
+        if (baseAI is MonsterAI)
+        {
+            var talker = npc.GetComponent<NpcTalk>();
+            if (talker == null)
+            {
+                talker = npc.AddComponent<NpcTalk>();
+            }
         }
 
         var znetview = npc.GetComponent<ZNetView>();

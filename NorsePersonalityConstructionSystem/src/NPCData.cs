@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BepInEx;
+using System;
 using UnityEngine;
 
 namespace VentureValheim.NPCS;
@@ -88,13 +89,11 @@ public class NPCData
         var rotation = NPCZDOUtils.GetRotation(zdo);
         if (rotation != Quaternion.identity)
         {
-            NPCSPlugin.NPCSLogger.LogDebug("Updating from saved rotation!");
             _character.transform.rotation = rotation;
         }
 
         if (NPCZDOUtils.GetAttached(zdo))
         {
-            NPCSPlugin.NPCSLogger.LogDebug("Updating attachment!");
             string animation = NPCZDOUtils.GetAnimation(zdo);
             AttachStart(animation);
         }
@@ -119,9 +118,10 @@ public class NPCData
 
     public bool UpdateTalker()
     {
-        var talker = _character.GetComponent<NpcTalk>();
+        var talker = _character.gameObject.GetComponent<NpcTalk>();
         if (talker != null)
         {
+            NPCSPlugin.NPCSLogger.LogDebug($"Setting the NpcTalk data");
             ZDO zdo = _character.m_nview.GetZDO();
             talker.m_randomTalk = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_TALKTEXTS, zdo);
             talker.m_randomGreets = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GREETTEXTS, zdo);
@@ -280,6 +280,12 @@ public class NPCData
             chair = Utility.GetClosestChair(_character.transform.position, _character.transform.localScale / 2);
         }
 
+        // Reset previous animation state
+        if (!AttachAnimation.IsNullOrWhiteSpace())
+        {
+            _character.m_zanim.SetBool(AttachAnimation, value: false);
+        }
+
         if (chair)
         {
             AttachPosition = chair.m_attachPoint.position;
@@ -297,7 +303,8 @@ public class NPCData
             AttachRoot = null;
         }
 
-        if (AttachAnimation != null) //_character.m_zanim.IsOwner() todo: check needed
+        // Set new animation state
+        if (!AttachAnimation.IsNullOrWhiteSpace()) //_character.m_zanim.IsOwner() todo: check needed
         {
             _character.m_zanim.SetBool(AttachAnimation, value: true);
         }
@@ -345,7 +352,7 @@ public class NPCData
         NPCZDOUtils.SetAnimation(ref zdo, animation);
         NPCZDOUtils.SetAttached(ref zdo, false);
 
-        AttachStop();
+        AttachStop(animation);
     }
 
     protected void AttachStop(string animation = "")
@@ -361,11 +368,19 @@ public class NPCData
 
         HasAttach = false;
 
-        if (AttachAnimation != null) //_character.m_zanim.IsOwner() todo: check needed
+        // Reset previous animation state
+        if (!AttachAnimation.IsNullOrWhiteSpace()) //_character.m_zanim.IsOwner() todo: check needed
         {
             _character.m_zanim.SetBool(AttachAnimation, value: false);
         }
+
         AttachAnimation = animation;
+
+        // Set new animation state
+        if (!AttachAnimation.IsNullOrWhiteSpace())
+        {
+            _character.m_zanim.SetBool(AttachAnimation, value: true);
+        }
 
         _character.m_body.useGravity = true;
         _character.m_body.mass = _character.m_originalMass;
