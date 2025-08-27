@@ -1,3 +1,7 @@
+## 0.4.2
+
+* Bug fix for name not hiding in chat after the 0.220.X game updates.
+
 ## 0.4.1
 
 * Update for game version 0.220.3.
