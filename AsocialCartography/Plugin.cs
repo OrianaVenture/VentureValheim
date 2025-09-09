@@ -5,97 +5,96 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 
-namespace VentureValheim.AsocialCartography
+namespace VentureValheim.AsocialCartography;
+
+[BepInPlugin(ModGUID, ModName, ModVersion)]
+public class AsocialCartographyPlugin : BaseUnityPlugin
 {
-    [BepInPlugin(ModGUID, ModName, ModVersion)]
-    public class AsocialCartographyPlugin : BaseUnityPlugin
+    private const string ModName = "AsocialCartography";
+    private const string ModVersion = "0.2.2";
+    private const string Author = "com.orianaventure.mod";
+    private const string ModGUID = Author + "." + ModName;
+    private static string ConfigFileName = ModGUID + ".cfg";
+    private static string ConfigFileFullPath = BepInEx.Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
+
+    private readonly Harmony HarmonyInstance = new(ModGUID);
+
+    public static readonly ManualLogSource AsocialCartographyLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
+
+    #region ConfigurationEntries
+
+    private static ConfigEntry<bool> CE_AddPins = null!;
+    private static ConfigEntry<bool> CE_ReceivePins = null!;
+    private static ConfigEntry<bool> CE_IgnoreBossPins = null!;
+    private static ConfigEntry<bool> CE_IgnoreHildirPins = null!;
+
+    public static bool GetAddPins() => CE_AddPins.Value;
+    public static bool GetIgnoreBossPins() => CE_IgnoreBossPins.Value;
+    public static bool GetIgnoreHildirPins() => CE_IgnoreHildirPins.Value;
+    public static bool GetReceivePins() => CE_ReceivePins.Value;
+
+    private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
     {
-        private const string ModName = "AsocialCartography";
-        private const string ModVersion = "0.2.2";
-        private const string Author = "com.orianaventure.mod";
-        private const string ModGUID = Author + "." + ModName;
-        private static string ConfigFileName = ModGUID + ".cfg";
-        private static string ConfigFileFullPath = BepInEx.Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
+        string extendedDescription = GetExtendedDescription(description, synced);
+        configEntry = Config.Bind(section, key, value, extendedDescription);
+    }
 
-        private readonly Harmony HarmonyInstance = new(ModGUID);
+    public string GetExtendedDescription(string description, bool synchronizedSetting)
+    {
+        return description + (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]");
+    }
 
-        public static readonly ManualLogSource AsocialCartographyLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
+    #endregion
 
-        #region ConfigurationEntries
+    public void Awake()
+    {
+        #region Configuration
 
-        private static ConfigEntry<bool> CE_AddPins = null!;
-        private static ConfigEntry<bool> CE_ReceivePins = null!;
-        private static ConfigEntry<bool> CE_IgnoreBossPins = null!;
-        private static ConfigEntry<bool> CE_IgnoreHildirPins = null!;
+        const string general = "General";
 
-        public static bool GetAddPins() => CE_AddPins.Value;
-        public static bool GetIgnoreBossPins() => CE_IgnoreBossPins.Value;
-        public static bool GetIgnoreHildirPins() => CE_IgnoreHildirPins.Value;
-        public static bool GetReceivePins() => CE_ReceivePins.Value;
-
-        private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
-        {
-            string extendedDescription = GetExtendedDescription(description, synced);
-            configEntry = Config.Bind(section, key, value, extendedDescription);
-        }
-
-        public string GetExtendedDescription(string description, bool synchronizedSetting)
-        {
-            return description + (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]");
-        }
+        AddConfig("AddPins", general, "False to disable adding player-placed map pins when adding to a map table (boolean).",
+            false, false, ref CE_AddPins);
+        AddConfig("ReceivePins", general, "False to disable taking player-placed map pins when reading a map table (boolean).",
+            false, true, ref CE_ReceivePins);
+        AddConfig("IgnoreBossPins", general, "False to include boss map pins in the above configs (boolean).",
+            false, true, ref CE_IgnoreBossPins);
+        AddConfig("IgnoreHildirPins", general, "False to include hildir map pins in the above configs (boolean).",
+            false, true, ref CE_IgnoreHildirPins);
 
         #endregion
 
-        public void Awake()
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        HarmonyInstance.PatchAll(assembly);
+        SetupWatcher();
+    }
+
+    private void OnDestroy()
+    {
+        Config.Save();
+    }
+
+    private void SetupWatcher()
+    {
+        FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
+        watcher.Changed += ReadConfigValues;
+        watcher.Created += ReadConfigValues;
+        watcher.Renamed += ReadConfigValues;
+        watcher.IncludeSubdirectories = true;
+        watcher.SynchronizingObject = ThreadingHelper.SynchronizingObject;
+        watcher.EnableRaisingEvents = true;
+    }
+
+    private void ReadConfigValues(object sender, FileSystemEventArgs e)
+    {
+        if (!File.Exists(ConfigFileFullPath)) return;
+        try
         {
-            #region Configuration
-
-            const string general = "General";
-
-            AddConfig("AddPins", general, "False to disable adding player-placed map pins when adding to a map table (boolean).",
-                false, false, ref CE_AddPins);
-            AddConfig("ReceivePins", general, "False to disable taking player-placed map pins when reading a map table (boolean).",
-                false, true, ref CE_ReceivePins);
-            AddConfig("IgnoreBossPins", general, "False to include boss map pins in the above configs (boolean).",
-                false, true, ref CE_IgnoreBossPins);
-            AddConfig("IgnoreHildirPins", general, "False to include hildir map pins in the above configs (boolean).",
-                false, true, ref CE_IgnoreHildirPins);
-
-            #endregion
-
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            HarmonyInstance.PatchAll(assembly);
-            SetupWatcher();
+            AsocialCartographyLogger.LogDebug("Attempting to reload configuration...");
+            Config.Reload();
         }
-
-        private void OnDestroy()
+        catch
         {
-            Config.Save();
-        }
-
-        private void SetupWatcher()
-        {
-            FileSystemWatcher watcher = new(BepInEx.Paths.ConfigPath, ConfigFileName);
-            watcher.Changed += ReadConfigValues;
-            watcher.Created += ReadConfigValues;
-            watcher.Renamed += ReadConfigValues;
-            watcher.IncludeSubdirectories = true;
-            watcher.SynchronizingObject = ThreadingHelper.SynchronizingObject;
-            watcher.EnableRaisingEvents = true;
-        }
-
-        private void ReadConfigValues(object sender, FileSystemEventArgs e)
-        {
-            if (!File.Exists(ConfigFileFullPath)) return;
-            try
-            {
-                AsocialCartographyLogger.LogDebug("Attempting to reload configuration...");
-                Config.Reload();
-            }
-            catch
-            {
-                AsocialCartographyLogger.LogError($"There was an issue loading {ConfigFileName}");
-            }
+            AsocialCartographyLogger.LogError($"There was an issue loading {ConfigFileName}");
         }
     }
 }

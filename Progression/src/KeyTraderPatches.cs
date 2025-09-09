@@ -1,92 +1,91 @@
 ﻿using HarmonyLib;
 using System.Collections.Generic;
 
-namespace VentureValheim.Progression
+namespace VentureValheim.Progression;
+
+public partial class KeyManager
 {
-    public partial class KeyManager
+    private const string Haldor = "Haldor";
+    private const string Hildir = "Hildir";
+    private const string BogWitch = "BogWitch";
+
+    /// <summary>
+    /// Enables all of Haldor's items by bypassing key checking.
+    /// </summary>
+    [HarmonyPatch(typeof(Trader), nameof(Trader.GetAvailableItems))]
+    public static class Patch_Trader_GetAvailableItems
     {
-        private const string Haldor = "Haldor";
-        private const string Hildir = "Hildir";
-        private const string BogWitch = "BogWitch";
-
-        /// <summary>
-        /// Enables all of Haldor's items by bypassing key checking.
-        /// </summary>
-        [HarmonyPatch(typeof(Trader), nameof(Trader.GetAvailableItems))]
-        public static class Patch_Trader_GetAvailableItems
+        private static bool Prefix(Trader __instance, ref List<Trader.TradeItem> __result)
         {
-            private static bool Prefix(Trader __instance, ref List<Trader.TradeItem> __result)
+            var name = Utils.GetPrefabName(__instance.gameObject);
+
+            if ((name.Equals(Haldor) && ProgressionConfiguration.Instance.GetUnlockAllHaldorItems()) ||
+                (name.Equals(Hildir) && ProgressionConfiguration.Instance.GetUnlockAllHildirItems()) ||
+                (name.Equals(BogWitch) && ProgressionConfiguration.Instance.GetUnlockAllBogWitchItems()))
             {
-                var name = Utils.GetPrefabName(__instance.gameObject);
+                __result = new List<Trader.TradeItem>(__instance.m_items);
+                return false;
+            }
 
-                if ((name.Equals(Haldor) && ProgressionConfiguration.Instance.GetUnlockAllHaldorItems()) ||
-                    (name.Equals(Hildir) && ProgressionConfiguration.Instance.GetUnlockAllHildirItems()) ||
-                    (name.Equals(BogWitch) && ProgressionConfiguration.Instance.GetUnlockAllBogWitchItems()))
-                {
-                    __result = new List<Trader.TradeItem>(__instance.m_items);
-                    return false;
-                }
+            return true;
+        }
+    }
 
-                return true;
+    /// <summary>
+    /// Fix error thrown when index is 0 and no items exist.
+    /// </summary>
+    [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.SelectItem))]
+    public static class Patch_StoreGui_SelectItem
+    {
+        private static void Prefix(StoreGui __instance, ref int index)
+        {
+            if (__instance.m_itemList.Count == 0)
+            {
+                index = -1;
             }
         }
+    }
 
-        /// <summary>
-        /// Fix error thrown when index is 0 and no items exist.
-        /// </summary>
-        [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.SelectItem))]
-        public static class Patch_StoreGui_SelectItem
+    /// <summary>
+    /// Set up custom keys for Trader items.
+    /// </summary>
+    [HarmonyPatch(typeof(Trader), nameof(Trader.Start))]
+    public static class Patch_Trader_Start
+    {
+        [HarmonyPriority(Priority.First)]
+        private static void Postfix(Trader __instance)
         {
-            private static void Prefix(StoreGui __instance, ref int index)
+            var traderName = Utils.GetPrefabName(__instance.gameObject);
+
+            Dictionary<string, string> items = null;
+
+            if (traderName.Equals(Haldor))
             {
-                if (__instance.m_itemList.Count == 0)
-                {
-                    index = -1;
-                }
+                items = Instance.GetTraderConfiguration(__instance.m_items);
             }
-        }
-
-        /// <summary>
-        /// Set up custom keys for Trader items.
-        /// </summary>
-        [HarmonyPatch(typeof(Trader), nameof(Trader.Start))]
-        public static class Patch_Trader_Start
-        {
-            [HarmonyPriority(Priority.First)]
-            private static void Postfix(Trader __instance)
+            else if (traderName.Equals(Hildir))
             {
-                var traderName = Utils.GetPrefabName(__instance.gameObject);
+                items = Instance.GetHildirConfiguration(__instance.m_items);
+            }
+            else if (traderName.Equals(BogWitch))
+            {
+                items = Instance.GetBogWitchConfiguration(__instance.m_items);
+            }
 
-                Dictionary<string, string> items = null;
+            if (items == null)
+            {
+                return;
+            }
 
-                if (traderName.Equals(Haldor))
+            foreach (var item in __instance.m_items)
+            {
+                if (item.m_prefab != null)
                 {
-                    items = Instance.GetTraderConfiguration(__instance.m_items);
-                }
-                else if (traderName.Equals(Hildir))
-                {
-                    items = Instance.GetHildirConfiguration(__instance.m_items);
-                }
-                else if (traderName.Equals(BogWitch))
-                {
-                    items = Instance.GetBogWitchConfiguration(__instance.m_items);
-                }
+                    var name = Utils.GetPrefabName(item.m_prefab.gameObject);
 
-                if (items == null)
-                {
-                    return;
-                }
-
-                foreach (var item in __instance.m_items)
-                {
-                    if (item.m_prefab != null)
+                    if (items.ContainsKey(name))
                     {
-                        var name = Utils.GetPrefabName(item.m_prefab.gameObject);
-
-                        if (items.ContainsKey(name))
-                        {
-                            item.m_requiredGlobalKey = items[name];
-                        }
+                        item.m_requiredGlobalKey = items[name];
                     }
                 }
             }
