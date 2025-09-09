@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Splatform;
@@ -147,15 +148,17 @@ public class AsocialCartography
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             var codes = new List<CodeInstruction>(instructions);
-            var method = AccessTools.Method(typeof(Minimap), nameof(Minimap.AddPin));
+            MethodInfo method = AccessTools.Method(typeof(Minimap), nameof(Minimap.AddPin));
             for (var lcv = 0; lcv < codes.Count; lcv++)
             {
                 if (codes[lcv].opcode == OpCodes.Call)
                 {
                     if (codes[lcv].operand?.Equals(method) ?? false)
                     {
-                        var methodCall = AccessTools.Method(typeof(AsocialCartography), nameof(AddPinReplacement));
+                        MethodInfo methodCall = AccessTools.Method(typeof(AsocialCartography), nameof(AddPinReplacement));
+                        List<Label> lables = codes[lcv].labels;
                         codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
+                        codes[lcv].labels = lables;
                         break;
                     }
                 }
