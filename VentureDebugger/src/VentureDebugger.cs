@@ -46,13 +46,13 @@ public class VentureDebugger
     [HarmonyPatch(typeof(ZSteamMatchmaking), "RegisterServer")]
     public static class Patch_ZSteamMatchmaking_RegisterServer
     {
-        private static void Prefix(ref List<string> modifiers)
+        private static void Prefix(ref string[] modifiers)
         {
             RemoveDuplicates(ref modifiers);
         }
     }
 
-    private static void RemoveDuplicates(ref List<string> keys)
+    private static void RemoveDuplicates(ref string[] keys)
     {
         if (keys != null)
         {
@@ -69,7 +69,7 @@ public class VentureDebugger
                 }
             }
 
-            keys = fixedKeys.ToList();
+            keys = fixedKeys.ToArray();
         }
     }
 }
