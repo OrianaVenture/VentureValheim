@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using BepInEx;
 
 namespace VentureValheim.Progression;
@@ -57,10 +56,14 @@ public partial class KeyManager
     public readonly Dictionary<string, string> MaterialKeysList = new Dictionary<string, string>
     {
         // Black Forest
+        { "BjornHide", BOSS_KEY_MEADOW },
+        { "BjornPaw", BOSS_KEY_MEADOW },
+        { "Chitin", BOSS_KEY_MEADOW }, // Ocean
         { "Copper", BOSS_KEY_MEADOW },
         { "Bronze", BOSS_KEY_MEADOW },
         { "BronzeNails", BOSS_KEY_MEADOW },
         { "FineWood", BOSS_KEY_MEADOW },
+        { "SerpentScale", BOSS_KEY_MEADOW }, // Ocean
         { "Tin", BOSS_KEY_MEADOW },
         { "TrollHide", BOSS_KEY_MEADOW },
         // Swamp
@@ -86,6 +89,8 @@ public partial class KeyManager
         { "Needle", BOSS_KEY_MOUNTAIN },
         { "LinenThread", BOSS_KEY_MOUNTAIN },
         { "LoxPelt", BOSS_KEY_MOUNTAIN },
+        { "TrophyBjornUndead", BOSS_KEY_MOUNTAIN },
+        { "UndeadBjornRibcage", BOSS_KEY_MOUNTAIN },
         // Mistlands
         { "Bilebag", BOSS_KEY_PLAIN },
         { "BlackMarble", BOSS_KEY_PLAIN },
@@ -124,9 +129,12 @@ public partial class KeyManager
     public readonly Dictionary<string, string> FoodKeysList = new Dictionary<string, string>
     {
         // Black Forest
+        { "BjornMeat", BOSS_KEY_MEADOW },
+        { "CookedBjornMeat", BOSS_KEY_MEADOW },
         { "Blueberries", BOSS_KEY_MEADOW },
         { "Carrot", BOSS_KEY_MEADOW },
         { "Entrails", BOSS_KEY_MEADOW }, // soft lock due to draugr villages
+        { "FishCooked", BOSS_KEY_MEADOW }, // Ocean
         { "MushroomYellow", BOSS_KEY_MEADOW },
         { "Thistle", BOSS_KEY_MEADOW },
         // Swamp
@@ -135,38 +143,56 @@ public partial class KeyManager
         { "SerpentMeat", BOSS_KEY_BLACKFOREST },
         { "SerpentMeatCooked", BOSS_KEY_BLACKFOREST },
         { "Turnip", BOSS_KEY_BLACKFOREST },
-        { "SpiceForests", BOSS_KEY_BLACKFOREST },
+        //{ "SpiceForests", BOSS_KEY_BLACKFOREST }, // Meadows roast uses this
         // Mountain
         { "FreezeGland", BOSS_KEY_SWAMP },
         { "Onion", BOSS_KEY_SWAMP },
         { "WolfMeat", BOSS_KEY_SWAMP },
+        { "CookedWolfMeat", BOSS_KEY_SWAMP },
         // Plains
         { "Barley", BOSS_KEY_MOUNTAIN },
         { "BarleyFlour", BOSS_KEY_MOUNTAIN },
         { "BreadDough", BOSS_KEY_MOUNTAIN },
+        { "Bread", BOSS_KEY_MOUNTAIN },
         { "ChickenEgg", BOSS_KEY_MOUNTAIN },
+        { "CookedEgg", BOSS_KEY_MOUNTAIN },
         { "ChickenMeat", BOSS_KEY_MOUNTAIN },
+        { "CookedChickenMeat", BOSS_KEY_MOUNTAIN },
         { "Cloudberry", BOSS_KEY_MOUNTAIN },
+        { "FishAndBread", BOSS_KEY_MOUNTAIN },
         { "LoxMeat", BOSS_KEY_MOUNTAIN },
+        { "LoxPie", BOSS_KEY_MOUNTAIN },
+        { "CookedLoxMeat", BOSS_KEY_MOUNTAIN },
         { "MushroomBzerker", BOSS_KEY_MOUNTAIN },
         { "FragrantBundle", BOSS_KEY_MOUNTAIN },
         { "SpiceMountains", BOSS_KEY_MOUNTAIN },
         // Mistlands
         { "BugMeat", BOSS_KEY_PLAIN },
+        { "CookedBugMeat", BOSS_KEY_PLAIN },
         { "GiantBloodSack", BOSS_KEY_PLAIN },
         { "HareMeat", BOSS_KEY_PLAIN },
+        { "CookedHareMeat", BOSS_KEY_PLAIN },
+        { "HoneyGlazedChicken", BOSS_KEY_PLAIN },
+        { "MagicallyStuffedShroom", BOSS_KEY_PLAIN },
+        { "MeatPlatter", BOSS_KEY_PLAIN },
+        { "MisthareSupreme", BOSS_KEY_PLAIN },
         { "MushroomJotunPuffs", BOSS_KEY_PLAIN },
         { "RoyalJelly", BOSS_KEY_PLAIN },
         { "Sap", BOSS_KEY_PLAIN },
         { "SpicePlains", BOSS_KEY_PLAIN },
         // Ashlands
         { "AsksvinMeat", BOSS_KEY_MISTLAND },
+        { "CookedAsksvinMeat", BOSS_KEY_MISTLAND },
         { "BoneMawSerpentMeat", BOSS_KEY_MISTLAND },
+        { "CookedBoneMawSerpentMeat", BOSS_KEY_MISTLAND },
         { "Fiddleheadfern", BOSS_KEY_MISTLAND },
         { "MushroomSmokePuff", BOSS_KEY_MISTLAND },
+        { "PiquantPie", BOSS_KEY_MISTLAND },
+        { "RoastedCrustPie", BOSS_KEY_MISTLAND },
         { "Vineberry", BOSS_KEY_MISTLAND },
         { "VoltureEgg", BOSS_KEY_MISTLAND },
         { "VoltureMeat", BOSS_KEY_MISTLAND },
+        { "CookedVoltureMeat", BOSS_KEY_MISTLAND },
         { "SpiceMistlands", BOSS_KEY_MISTLAND },
         // Deep North
         { "SpiceAshlands", BOSS_KEY_ASHLAND}
@@ -320,7 +346,7 @@ public partial class KeyManager
     private bool IsActionBlocked(ItemDrop.ItemData item, int quality,
         bool checkBossItems, bool checkMaterials, bool checkFood)
     {
-        if (item.m_dropPrefab == null)
+        if (item == null || item.m_dropPrefab == null)
         {
             return false;
         }

@@ -1,3 +1,12 @@
+## 0.3.7
+
+* Added new Call To Arms (0.221.4 update) items to locking system. This patch should be backwards compatible with previous game versions.
+* Added LockEating configuration option to lock eating food (excludes meads).
+* Fix for cooking locking not working correctly after addition of the new cooking stations.
+* Added Fermenter to cooking locking system (incomplete, report any specific exploits).
+* Added missing ocean items to locking system.
+* Removed SpiceForests from food locking system.
+
 ## 0.3.6
 
 * Added DragonEgg to portaling unlocking logic with new configuration.

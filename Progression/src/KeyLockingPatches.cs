@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using HarmonyLib;
+﻿using HarmonyLib;
 
 namespace VentureValheim.Progression;
 
@@ -180,7 +179,8 @@ public partial class KeyManager
             if (__instance.m_craftRecipe?.m_craftingStation != null)
             {
                 string station = Utils.GetPrefabName(__instance.m_craftRecipe.m_craftingStation.gameObject);
-                cookingStation = station.Equals("piece_cauldron");
+                cookingStation = station.Equals("piece_cauldron") ||
+                    station.Equals("piece_preptable") || station.Equals("piece_MeadCauldron");
             }
 
             var lockCrafting = ProgressionConfiguration.Instance.GetLockCrafting() && !cookingStation;
@@ -242,6 +242,50 @@ public partial class KeyManager
                 Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
                 __result = false;
                 return false; // Skip cooking
+            }
+
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Block fermenting items without the proper keys.
+    /// </summary>
+    [HarmonyPatch(typeof(Fermenter), nameof(Fermenter.AddItem))]
+    public static class Patch_Fermenter_AddItem
+    {
+        [HarmonyPriority(Priority.Low)]
+        private static bool Prefix(Fermenter __instance, ItemDrop.ItemData item, ref bool __result)
+        {
+            if (item != null &&
+                ProgressionConfiguration.Instance.GetLockCooking() &&
+                Instance.IsActionBlocked(item, item.m_quality, false, false, true))
+            {
+                Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                __result = false;
+                return false; // Skip fermenting
+            }
+
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Block eating items without the proper keys.
+    /// </summary>
+    [HarmonyPatch(typeof(Player), nameof(Player.CanEat))]
+    public static class Patch_Player_CanEat
+    {
+        [HarmonyPriority(Priority.Low)]
+        private static bool Prefix(ItemDrop.ItemData item, ref bool __result)
+        {
+            if (item != null &&
+                ProgressionConfiguration.Instance.GetLockEating() &&
+                Instance.IsActionBlocked(item, item.m_quality, false, false, true))
+            {
+                Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                __result = false;
+                return false; // Skip eating
             }
 
             return true;

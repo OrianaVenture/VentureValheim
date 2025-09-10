@@ -23,7 +23,7 @@ public class ProgressionPlugin : BaseUnityPlugin
     }
 
     private const string ModName = "WorldAdvancementProgression";
-    private const string ModVersion = "0.3.6";
+    private const string ModVersion = "0.3.7";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -61,6 +61,7 @@ public class ProgressionPlugin : BaseUnityPlugin
     public static ConfigEntry<bool> CE_LockCrafting = null!;
     public static ConfigEntry<bool> CE_LockBuilding = null!;
     public static ConfigEntry<bool> CE_LockCooking = null!;
+    public static ConfigEntry<bool> CE_LockEating = null!;
     public static ConfigEntry<string> CE_LockPortalsKey = null!;
 
     // Locking Teleporting Metals & Others
@@ -212,6 +213,9 @@ public class ProgressionPlugin : BaseUnityPlugin
         AddConfig("LockCooking", locking,
             "True to lock the ability to cook with biome food materials based on keys. Uses private key if enabled, global key if not (boolean).",
             true, true, ref CE_LockCooking);
+        AddConfig("LockEating", locking,
+            "True to lock the ability to eat biome food materials based on keys. Uses private key if enabled, global key if not (boolean).",
+            true, true, ref CE_LockEating);
         AddConfig("LockPortalsKey", locking,
             "Use this key to control player ability to use portals (ex: defeated_eikthyr). Leave blank to allow vanilla portal behavior (string).",
             true, "", ref CE_LockPortalsKey);
@@ -412,6 +416,7 @@ public interface IProgressionConfiguration
     public bool GetLockCrafting();
     public bool GetLockBuilding();
     public bool GetLockCooking();
+    public bool GetLockEating();
     public string GetLockPortalsKey();
 
     // Portal Unlocking
@@ -564,6 +569,16 @@ public class ProgressionConfiguration : IProgressionConfiguration
         }
 
         return ProgressionPlugin.CE_LockCooking.Value;
+    }
+
+    public bool GetLockEating()
+    {
+        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+        {
+            return false;
+        }
+
+        return ProgressionPlugin.CE_LockEating.Value;
     }
 
     public string GetLockPortalsKey()
