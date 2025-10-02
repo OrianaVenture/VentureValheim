@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using BepInEx;
 using HarmonyLib;
-using Jotunn;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -130,8 +129,8 @@ public class FloatingItems
     private static bool IsPlayerGear(GameObject item)
     {
         var name = item.name.ToLower();
-        if (Instance.ItemsPrefabs.Contains(name) || 
-            name.Contains(MeadPrefab) || 
+        if (Instance.ItemsPrefabs.Contains(name) ||
+            name.Contains(MeadPrefab) ||
             name.Contains(CookedPrefab) ||
             name.Contains(PiePrefab))
         {
@@ -237,8 +236,9 @@ public class FloatingItems
     /// <param name="item"></param>
     private static void ApplyFloatingComponent(GameObject item)
     {
-        if (item.gameObject.GetComponentInChildren<Collider>() == null ||
-            item.gameObject.GetComponent<Rigidbody>() == null)
+        Rigidbody rigidbody = item.gameObject.GetComponent<Rigidbody>();
+        if (rigidbody == null ||
+            item.gameObject.GetComponentInChildren<Collider>() == null)
         {
             return;
         }
@@ -249,6 +249,8 @@ public class FloatingItems
             floating = item.gameObject.AddComponent<Floating>();
             floating.m_waterLevelOffset = 0.7f;
             FloatingAddedPrefabs.Add(item.gameObject.name.ToLower());
+
+            rigidbody.centerOfMass = NormalizeCenterOfMass(rigidbody.centerOfMass);
         }
 
         floating.enabled = true;
@@ -266,6 +268,18 @@ public class FloatingItems
             floating.enabled = false;
             FloatingDisabledPrefabs.Add(item.gameObject.name.ToLower());
         }
+    }
+
+    /// <summary>
+    /// This is needed to prevent objects from floating away into the sky.
+    /// </summary>
+    private static Vector3 NormalizeCenterOfMass(Vector3 mass)
+    {
+        if (mass.x < -1) { mass.x = 0; }
+        if (mass.y < -1) { mass.y = 0; }
+        if (mass.z < -1) { mass.z = 0; }
+
+        return mass;
     }
 
     /// <summary>
@@ -309,21 +323,4 @@ public class FloatingItems
 
         FloatingItemsPlugin.FloatingItemsLogger.LogDebug($"Found {count} floating items.");
     }*/
-
-    [HarmonyPatch(typeof(Floating), nameof(Floating.CustomFixedUpdate))]
-    public static class Patch_Floating_CustomFixedUpdate
-    {
-        private static bool Prefix(Floating __instance)
-        {
-            if (__instance.m_body == null || __instance.m_collider == null)
-            {
-                FloatingItemsPlugin.FloatingItemsLogger.LogDebug($"Null found: {__instance.name}. " +
-                    $"{__instance.m_body == null}, " +
-                    $"{__instance.m_collider == null}");
-                return false;
-            }
-
-            return true;
-        }
-    }
 }
