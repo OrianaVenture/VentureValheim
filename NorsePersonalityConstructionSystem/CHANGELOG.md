@@ -1,5 +1,11 @@
 ## 0.1.0
 
+IF YOU HAVE A WORLD WITH VERSION 0.0.7 - UPDATING MAY BREAK YOUR CURRENT NPCS!!!!!!
+
+This is the warning. You have been warned.
+
+I did my best to make a smooth transition, but it is not perfect.
+
 * Overhauled the configuration system!!! Readme has been updated, please read it again if you have questions!
     * Automatic upgrade of existing NPCs to the new system as they are loaded in game (old information/reward npcs may need manual fixes for quests).
     * NPC types Information and Reward are now under the "Quest" type
@@ -8,16 +14,19 @@
     * Can now set animation states for NPCs like dancing!
     * Can now set player keep the quest give item upon reward.
     * Can now give NPCs "NpcTalk" values to some NPCs so they can say things without interacting with them.
+    * GiveDefaultItems config will now default to true.
 * New Trader NPC type with customizable store items.
 * Interact and Give hover texts now use vanilla localization keys (will translate into your language).
 * Player now performs the interact animation when giving an NPC an item.
-* Humans NPCs will now properly punch things when given no weapons, hiya!
+* Human NPCs will now properly punch things when given no weapons, hiya!
 * NPCs now have a short delay before respawn on death.
 * Improvements to existing commands:
     * npcs_set_calm should fully reset alertness and agitation.
     * npcs_set_faceme should now work as intended; Rotations should now persist and reapply to NPCs properly.
     * npcs_remove now accepts optional range field to remove multiple in an area at once.
     * npcs_set_still and npcs_set_move now accepts optional animation field.
+
+To anyone who reads the code changes: I am so sorry for the mess I have made. Please forgive me.
 
 ## 0.0.7
 

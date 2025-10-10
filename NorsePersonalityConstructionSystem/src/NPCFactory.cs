@@ -12,7 +12,6 @@ public class NPCFactory
         typeof(Talker),
         typeof(Skills),
         typeof(CharacterDrop),
-        //typeof(NpcTalk),
         typeof(Tameable),
         typeof(Procreation)
     };

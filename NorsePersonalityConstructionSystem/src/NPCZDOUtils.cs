@@ -409,7 +409,7 @@ public static class NPCZDOUtils
             SetTrueDeath(ref zdo, config.TrueDeath);
             SetNPCDefeatKey(ref zdo, config.DefeatKey);
 
-            SetInitialized(ref zdo, !config.GiveDefaultItems);
+            SetInitialized(ref zdo, !config.GiveDefaultItems.Value);
 
             if (config.MaxHealth > 0f)
             {

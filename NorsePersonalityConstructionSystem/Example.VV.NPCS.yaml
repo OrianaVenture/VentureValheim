@@ -144,7 +144,7 @@ npcs:
     id: Boar
     name: An Exquisite Specimen
     model: Boar
-    giveDefaultItems: true
+    giveDefaultItems: false
     type: Quest
     quests:
       -

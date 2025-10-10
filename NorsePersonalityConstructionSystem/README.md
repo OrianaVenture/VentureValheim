@@ -2,6 +2,14 @@
 
 A questing framework for servers. Create your own NPCs and give them purpose! Great for roleplaying servers!
 
+## Version 0.1.0 Upgrade
+
+IF YOU HAVE A WORLD WITH VERSION 0.0.7 - UPDATING MAY BREAK YOUR CURRENT NPCS!!!!!!
+
+This is the warning. You have been warned.
+
+I did my best to make a smooth transition, but it is not perfect.
+
 ## Disclaimer!
 
 This mod is not finished! There are many features that still need to get added. Feedback on current supported features will be greatly appreciated. See the list of possible future improvements and contributing information at the bottom of this readme.
@@ -11,7 +19,7 @@ Thank you to everyone who has tried the first beta versions of this mod! Your en
 ## Features
 
 * Create your own custom NPC characters and assign them different functions including:
-  * Quest: Give the player a quest line. Includes speaking, rewarding items or keys to control; game behavior.
+  * Quest: Give the player a quest line. Includes speaking, rewarding items or keys to control game behavior.
   * Sellsword: Hireable and will fight for the player. (Not finished)
   * SlayTarget: Defeat this NPC for rewards. (Not finished)
   * Trader: Runs a store similar to Haldor/Hildir.
@@ -31,6 +39,8 @@ This mod will pair nicely with WAP's private key system. If an NPC is configured
 
 If you desire that some keys are allowed to be Global you can use the advanced configurations for the progression mod to allow for these keys to be added to the global list. This is useful for quests that you only want one player to be able to complete, or if you only want to require one player to perform an action to unlock a certain quest line for the entire server.
 
+Note: When Valheim is fully released WAP will go through some major changes that may change how these mods interact with each other.
+
 ## Getting Started
 
 Currently there are three ways to spawn NPCs: Using **RightCtrl + E** on either a Bed or Chair, the ``npcs_spawnrandom`` console command, or from a configuration with the command ``npcs_spawnsaved``. Random NPCs will all be of the default NPC type none and will have random styles. They have no functionality other than adding clutter and life to the world. To customize NPCs and give them functions you need to first define them using the YAML file. The next section explains this process.
@@ -45,9 +55,13 @@ See all available commands in the Commands section below.
 
 There is a file that comes with the mod called **Example.VV.NPCS.yaml** in the config folder with examples. This file must be manually renamed to **VV.NPCS.yaml** to load in the mod, this prevents mod updates from overriding your configurations. This file is where you can define your custom NPCs to be able to spawn them in game. You can also update existing NPCs from these configurations without needing to remove them from the game. When you update an existing NPC it will get overwritten and lose all data previously tied to it.
 
-This file does not automatically live update if you change it while the game is running, but there is a command ``npcs_reloadconfig`` to force reload it. If there is information missing from your NPC configurations it will be set to the default value and should not throw errors. If you see errors check you have used the correct data type for the config and do not have any spelling mistakes. The error should tell you which line of your file is causing the problem.
+* This file does not automatically live update if you change it while the game is running, but there is a command ``npcs_reloadconfig`` to force reload it.
+* If there is information missing from your NPC configurations it will be set to the default value and should not throw errors.
+* If you see errors check you have used the correct data type for the config and do not have any spelling mistakes. The error should tell you which line of your file is causing the problem.
 
 The yaml file is local and will not sync to others. This file is not required on the server nor is it needed for the mod to function. It is purely for setup if you want to customize NPCs. Once your NPC is spawned in a world the data is saved to that object and thusly in the world file.
+
+Having issues with the file? Copy and Paste an example that is close to what you want EXACTLY. Yaml files enforce indentation. Incorrect tabs, spaces, or other characters can cause errors preventing your file from loading.
 
 You can always reach out for support if you have trouble setting things up (see contributing at bottom).
 
@@ -59,15 +73,15 @@ Acceptable types include: None, Quest, Sellsword, SlayTarget, Trader
 
 These NPCs can simply say something when interacted with or have the ability to accept an item/key in exchange for a reward item/key. To customize what your NPC does and says you will need to define certain data for it using the YAML file.
 
-The building blocks of Quest NPCs is the list of "quests". The list of quests for your NPC will try to complete in the order they are defined. Only one quest can be active on an NPC at a time for a player. I recommend the last quest in the questline to be a "default text" you want your npc to say with no defined constraints. If all of the other quests in the questlines have constraints and none are met for a player, this last quest will be selected. This prevents your NPC from "doing nothing". Examples are explained below under their respective NPC type.
+The building blocks of Quest NPCs is the list of "quests". The list of quests for your NPC will try to complete in the order they are defined. Only one quest can be active on an NPC at a time for a player. I recommend the last quest in the questline to be a "default text" (with no defined constraints) you want your NPC to say. This last quest will be selected if all of the other quests in the questlines have constraints and none are met for a player. This prevents your NPC from "doing nothing". Examples are explained below under their respective NPC type.
 
-Simple is key. If your quests become extremely long and complex this can introduce lag as data is sent from the server and the client selects the current available quest. The more NPCs you have in an area the worst this lag can get. If you experience issues try spreading your NPCs out to different areas or split quests between other NPCs.
+Simple is key. If your quests become extremely long and complex on a single NPC this can introduce lag as data is sent from the server and the client selects the current available quest. The more NPCs you have in an area the worst this lag can get. If you experience issues try spreading your NPCs out to different areas or split quests between other NPCs.
 
 #### Example 1: Ragnarpocalypse
 
 Here is an example of a pair of NPCs. Ragnar1 will give the key "ragnarbrave" when interacting with them, which Ragnar2 requires to tell you a secret. Ragnar1 will only tell you their secret once, so you better pay attention! The notRequiredKeys field is used to "skip" quests, once this key is present the quest will be non-qualifying and will try to select the next quest in the list. These keys are set to "Global" so only the first player to access the quest will be able to see the interactText for Ragnar1 and the rewardText for Ragnar2 (Unless you have another mod that changes this behavior).
 
-Note both of these are set to stand still on spawn, which can be very helpful when setting things up.
+Note that both of these are set to stand still on spawn, which can be very helpful when setting things up.
 
 ```yaml
 npcs:
@@ -104,7 +118,9 @@ npcs:
 
 #### Example 2: A Small Village
 
-Here's an example of four NPCs that require you speak to them and complete their quests in order. TLDR: Liv will give out a reward of a 2 star Flint Knife, which Vivica will accept and give the Rahshahs quest to bring him Deer Stew in exchange for Coins. The Jarl then rewards you for helping them all with an Iron Sword.
+Here's an example of four NPCs that require you speak to them and complete their quests in order.
+
+TLDR: Liv will give out a reward of a 2 star Flint Knife, which Vivica will accept and give the Rahshahs quest to bring him Deer Stew in exchange for Coins. The Jarl then rewards you for helping them all with an Iron Sword.
 
 Liv is set up to give the player a knife when spoken to for the first time. Then this NPC will ask if you have completed the task until you receive the quest reward key "vivica2". Once both stages are completed Liv defaults to saying the last quest text. Since the ``interactKeyType`` is not specified here it will default to "Player". This means every player will be able to complete the quest.
 
@@ -296,7 +312,7 @@ By default the health of an NPC will mirror its vanilla counterpart. Use the ``m
 
 ### GiveDefaultItems
 
-By default NPCs will be given a random default item set similar to their vanilla counterpart. If you would like the NPC to have no items, armor, or attacks set ``giveDefaultItems`` to false.
+By default NPCs will be given a random default item set similar to their vanilla counterpart. If you would like the NPC to have no items, armor, or attacks set ``giveDefaultItems`` to false. (Khordus - This is how you make Candy)
 
 ### TrueDeath
 
@@ -318,7 +334,7 @@ Improvements to this system are planned for a future update.
 
 There are fields for setting the NPC appearance using item prefab names. Anything not specified will be left blank or randomized. Skin and Hair color require all r,g,b values to be defined to override; they are float values between 0 and 1. Overriding colors can allow you to make some very strange characters. When left blank these colors will be randomized to any possible vanilla customization value. There are commands to get these values from existing NPCs, so you can spawn a group of randomly generated ones to find possible vanilla values rather quickly.
 
-When spawning an npc from the yaml file it will automatically clear all usual default items that exists on the original prefab. This can cause them sometimes to not have attacks. To allow npcs to keep their original items and attacks you can use the ``GiveDefaultItems`` set to true. (This feature will get more attention and better support in the future).
+When spawning an npc from the yaml file it will automatically keep the usual default items that exists on the original prefab (including their unarmed attacks). To remove default attacks, weapons, clothes, and other items set ``GiveDefaultItems`` to false. This can then let you fully customize your NPC.
 
 ```yaml
 npcs:
@@ -359,8 +375,8 @@ npcs:
     id: Boar
     name: An Exquisite Specimen
     model: Boar
-    giveDefaultItems: true
-    type: Information
+    giveDefaultItems: false
+    type: Quest
     interactText: "Feed me human!"
 
 ```
@@ -420,6 +436,7 @@ You can spawn a random NPC on a chair or bed with **RightCtrl + E** (Subject to 
 * More NPC model options.
 * Graves with signs so you can properly mourn your fallen NPCs.
 * Cooldown timer on completing quests.
+* Ability to remove keys from the player for completeing actions.
 * Player quest tracker in the UI.
 * Easier ways to list/save/change/copy NPC information.
 * Necromancy options for fallen NPCs.
