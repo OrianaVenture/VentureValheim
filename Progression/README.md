@@ -118,7 +118,7 @@ The ability to use portals can be locked behind one specified key with the LockP
 
 #### Locking Everything Else
 
-Using equipment, crafting, building, and cooking can all be locked with individual settings. The materials are categorized by the biome they and their crafting ingredients are naturally found in. For example, if you lock all these features, if you have not defeated any bosses then you cannot use or craft the antler pickaxe, place a forge, make deer stew, or unlock swamp crypts. When paired with private keys, these features force new players joining your server to follow the progression of the game in order to advance. This will apply to all game items that use vanilla crafting materials.
+Using equipment, crafting, building, cooking, and eating can all be locked with individual settings. The materials are categorized by the biome they and their crafting ingredients are naturally found in. For example, if you lock all these features, if you have not defeated any bosses then you cannot use or craft the antler pickaxe, place a forge, make deer stew, or unlock swamp crypts. When paired with private keys, these features force new players joining your server to follow the progression of the game in order to advance. This will apply to all game items that use vanilla crafting materials.
 
 #### Locking Configuration Options
 

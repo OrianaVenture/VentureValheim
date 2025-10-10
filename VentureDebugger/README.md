@@ -28,6 +28,10 @@ This mod is client side only and has no configuration options. Does not need to 
 
 ## Changelog
 
+### 0.0.4
+
+* Update for game version 0.221.4.
+
 ### 0.0.3
 
 * Added corruption fix for world modifiers, previously included in World Advancement & Progression.

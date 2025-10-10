@@ -4,268 +4,267 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace VentureValheim.Progression
+namespace VentureValheim.Progression;
+
+public interface IProgressionAPI
 {
-    public interface IProgressionAPI
+}
+
+[PublicAPI]
+public class ProgressionAPI : IProgressionAPI
+{
+    static ProgressionAPI() { }
+    protected ProgressionAPI() { }
+    private static readonly ProgressionAPI _instance = new ProgressionAPI();
+
+    public static ProgressionAPI Instance
     {
+        get => _instance;
     }
 
-    [PublicAPI]
-    public class ProgressionAPI : IProgressionAPI
+    public static bool IsInTheMainScene()
     {
-        static ProgressionAPI() { }
-        protected ProgressionAPI() { }
-        private static readonly ProgressionAPI _instance = new ProgressionAPI();
+        return SceneManager.GetActiveScene().name.Equals("main");
+    }
 
-        public static ProgressionAPI Instance
+    /// <summary>
+    /// Converts a comma separated string to a HashSet of lowercase strings.
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static HashSet<string> StringToSet(string str)
+    {
+        var set = new HashSet<string>();
+
+        if (!str.IsNullOrWhiteSpace())
         {
-            get => _instance;
-        }
-
-        public static bool IsInTheMainScene()
-        {
-            return SceneManager.GetActiveScene().name.Equals("main");
-        }
-
-        /// <summary>
-        /// Converts a comma separated string to a HashSet of lowercase strings.
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public static HashSet<string> StringToSet(string str)
-        {
-            var set = new HashSet<string>();
-
-            if (!str.IsNullOrWhiteSpace())
+            List<string> keys = str.Split(',').ToList();
+            for (var lcv = 0; lcv < keys.Count; lcv++)
             {
-                List<string> keys = str.Split(',').ToList();
-                for (var lcv = 0; lcv < keys.Count; lcv++)
+                set.Add(keys[lcv].Trim().ToLower());
+            }
+        }
+
+        return set;
+    }
+
+    /// <summary>
+    /// Converts a comma separated string to a Dictionary of strings.
+    /// If odd number of items ignores the last item.
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static Dictionary<string, string> StringToDictionary(string str)
+    {
+        var dict = new Dictionary<string, string>();
+
+        if (!str.IsNullOrWhiteSpace())
+        {
+            List<string> keys = str.Split(',').ToList();
+            for (var lcv = 0; lcv < keys.Count - 1; lcv += 2)
+            {
+                var key = keys[lcv].Trim();
+                if (!dict.ContainsKey(key))
                 {
-                    set.Add(keys[lcv].Trim().ToLower());
+                    dict.Add(key, keys[lcv + 1].Trim());
                 }
             }
-
-            return set;
         }
 
-        /// <summary>
-        /// Converts a comma separated string to a Dictionary of strings.
-        /// If odd number of items ignores the last item.
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public static Dictionary<string, string> StringToDictionary(string str)
-        {
-            var dict = new Dictionary<string, string>();
+        return dict;
+    }
 
-            if (!str.IsNullOrWhiteSpace())
+    /// <summary>
+    /// Merges two lists together on unique entries.
+    /// </summary>
+    /// <param name="list1"></param>
+    /// <param name="list2"></param>
+    /// <returns></returns>
+    public static List<string> MergeLists(List<string> list1, List<string> list2)
+    {
+        return list1.Union(list2).ToList();
+    }
+
+    /// <summary>
+    /// Method to determine if a Global Key exists to bypass patches.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public static bool GetGlobalKey(string key)
+    {
+        if (ZoneSystem.instance != null && ZoneSystem.instance.m_globalKeys != null)
+        {
+            return ZoneSystem.instance.m_globalKeys.Contains(key);
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Method to get the global keys list to bypass patches.
+    /// </summary>
+    /// <returns></returns>
+    public static HashSet<string> GetGlobalKeys()
+    {
+        return ZoneSystem.instance.m_globalKeys;
+    }
+
+    /// <summary>
+    /// Method to add a global key to bypass patches.
+    /// </summary>
+    /// <param name="key"></param>
+    public static void AddGlobalKey(string key)
+    {
+        if (key.IsNullOrWhiteSpace())
+        {
+            return;
+        }
+
+        key = key.ToLower();
+        if (!ZoneSystem.instance.m_globalKeys.Contains(key))
+        {
+            ZoneSystem.instance.m_globalKeys.Add(key);
+            ZoneSystem.instance.SendGlobalKeys(ZRoutedRpc.Everybody);
+        }
+    }
+
+    /// <summary>
+    /// Method to remove a global key to bypass patches.
+    /// </summary>
+    /// <param name="key"></param>
+    public static void RemoveGlobalKey(string key)
+    {
+        if (key.IsNullOrWhiteSpace())
+        {
+            return;
+        }
+
+        key = key.ToLower();
+        if (ZoneSystem.instance.m_globalKeys.Remove(key))
+        {
+            ZoneSystem.instance.SendGlobalKeys(ZRoutedRpc.Everybody);
+        }
+    }
+
+    /// <summary>
+    /// Attempts to find the persistent player id from the given ZDOID.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public static long GetPersistentPlayerID(ZDOID id)
+    {
+        var playerZDO = ZDOMan.instance.GetZDO(id);
+
+        if (playerZDO != null)
+        {
+            return playerZDO.GetLong(ZDOVars.s_playerID, 0L);
+        }
+
+        return 0L;
+    }
+
+    /// <summary>
+    /// Attempts to find the player zdo id with the given name.
+    /// Case-insensitive, ignores whitespace.
+    /// </summary>
+    /// <param name="playerName"></param>
+    /// <returns></returns>
+    public static long GetPlayerZDOID(string playerName)
+    {
+        var nameSimple = playerName.Trim().ToLower();
+        var players = ZNet.instance.GetPlayerList();
+
+        for (int lcv = 0; lcv < players.Count; lcv++)
+        {
+            var player = players[lcv].m_name.Trim().ToLower();
+            if (player.Equals(nameSimple))
             {
-                List<string> keys = str.Split(',').ToList();
-                for (var lcv = 0; lcv < keys.Count - 1; lcv += 2)
-                {
-                    var key = keys[lcv].Trim();
-                    if (!dict.ContainsKey(key))
-                    {
-                        dict.Add(key, keys[lcv + 1].Trim());
-                    }
-                }
-            }
-
-            return dict;
-        }
-
-        /// <summary>
-        /// Merges two lists together on unique entries.
-        /// </summary>
-        /// <param name="list1"></param>
-        /// <param name="list2"></param>
-        /// <returns></returns>
-        public static List<string> MergeLists(List<string> list1, List<string> list2)
-        {
-            return list1.Union(list2).ToList();
-        }
-
-        /// <summary>
-        /// Method to determine if a Global Key exists to bypass patches.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static bool GetGlobalKey(string key)
-        {
-            if (ZoneSystem.instance != null && ZoneSystem.instance.m_globalKeys != null)
-            {
-                return ZoneSystem.instance.m_globalKeys.Contains(key);
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Method to get the global keys list to bypass patches.
-        /// </summary>
-        /// <returns></returns>
-        public static HashSet<string> GetGlobalKeys()
-        {
-            return ZoneSystem.instance.m_globalKeys;
-        }
-
-        /// <summary>
-        /// Method to add a global key to bypass patches.
-        /// </summary>
-        /// <param name="key"></param>
-        public static void AddGlobalKey(string key)
-        {
-            if (key.IsNullOrWhiteSpace())
-            {
-                return;
-            }
-
-            key = key.ToLower();
-            if (!ZoneSystem.instance.m_globalKeys.Contains(key))
-            {
-                ZoneSystem.instance.m_globalKeys.Add(key);
-                ZoneSystem.instance.SendGlobalKeys(ZRoutedRpc.Everybody);
+                return players[lcv].m_characterID.UserID;
             }
         }
 
-        /// <summary>
-        /// Method to remove a global key to bypass patches.
-        /// </summary>
-        /// <param name="key"></param>
-        public static void RemoveGlobalKey(string key)
-        {
-            if (key.IsNullOrWhiteSpace())
-            {
-                return;
-            }
+        return 0L;
+    }
 
-            key = key.ToLower();
-            if (ZoneSystem.instance.m_globalKeys.Remove(key))
-            {
-                ZoneSystem.instance.SendGlobalKeys(ZRoutedRpc.Everybody);
-            }
+    /// <summary>
+    /// Attempts to find the player name with the given id.
+    /// </summary>
+    /// <param name="playerID"></param>
+    /// <returns></returns>
+    public static string GetPlayerName(long playerID)
+    {
+        if (!ZNet.instance.IsDedicated() && ZNet.instance.IsServer())
+        {
+            // In singleplayer the player list may not be populated
+            return GetLocalPlayerName();
         }
 
-        /// <summary>
-        /// Attempts to find the persistent player id from the given ZDOID.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public static long GetPersistentPlayerID(ZDOID id)
+        var players = ZNet.instance.GetPlayerList();
+
+        for (int lcv = 0; lcv < players.Count; lcv++)
         {
-            var playerZDO = ZDOMan.instance.GetZDO(id);
+            var playerZDO = ZDOMan.instance.GetZDO(players[lcv].m_characterID);
 
             if (playerZDO != null)
             {
-                return playerZDO.GetLong(ZDOVars.s_playerID, 0L);
-            }
-
-            return 0L;
-        }
-
-        /// <summary>
-        /// Attempts to find the player zdo id with the given name.
-        /// Case-insensitive, ignores whitespace.
-        /// </summary>
-        /// <param name="playerName"></param>
-        /// <returns></returns>
-        public static long GetPlayerZDOID(string playerName)
-        {
-            var nameSimple = playerName.Trim().ToLower();
-            var players = ZNet.instance.GetPlayerList();
-
-            for (int lcv = 0; lcv < players.Count; lcv++)
-            {
-                var player = players[lcv].m_name.Trim().ToLower();
-                if (player.Equals(nameSimple))
+                long currentPlayerID = playerZDO.GetLong(ZDOVars.s_playerID, 0L);
+                if (currentPlayerID == playerID)
                 {
-                    return players[lcv].m_characterID.UserID;
+                    return playerZDO.GetString(ZDOVars.s_playerName, "IssueRetrievingPlayerName");
                 }
             }
-
-            return 0L;
         }
 
-        /// <summary>
-        /// Attempts to find the player name with the given id.
-        /// </summary>
-        /// <param name="playerID"></param>
-        /// <returns></returns>
-        public static string GetPlayerName(long playerID)
+        return playerID.ToString();
+    }
+
+    /// <summary>
+    /// Returns the player name of the client player if exists.
+    /// </summary>
+    /// <returns></returns>
+    public static string GetLocalPlayerName()
+    {
+        var profile = Game.instance.GetPlayerProfile();
+        if (profile != null)
         {
-            if (!ZNet.instance.IsDedicated() && ZNet.instance.IsServer())
-            {
-                // In singleplayer the player list may not be populated
-                return GetLocalPlayerName();
-            }
-
-            var players = ZNet.instance.GetPlayerList();
-
-            for (int lcv = 0; lcv < players.Count; lcv++)
-            {
-                var playerZDO = ZDOMan.instance.GetZDO(players[lcv].m_characterID);
-
-                if (playerZDO != null)
-                {
-                    long currentPlayerID = playerZDO.GetLong(ZDOVars.s_playerID, 0L);
-                    if (currentPlayerID == playerID)
-                    {
-                        return playerZDO.GetString(ZDOVars.s_playerName, "IssueRetrievingPlayerName");
-                    }
-                }
-            }
-
-            return playerID.ToString();
+            return profile.m_playerName;
         }
 
-        /// <summary>
-        /// Returns the player name of the client player if exists.
-        /// </summary>
-        /// <returns></returns>
-        public static string GetLocalPlayerName()
+        return "";
+    }
+
+    /// <summary>
+    /// Returns the player ID of the client player if exists.
+    /// </summary>
+    /// <returns></returns>
+    public static long GetLocalPlayerID()
+    {
+        var profile = Game.instance.GetPlayerProfile();
+        if (profile != null)
         {
-            var profile = Game.instance.GetPlayerProfile();
-            if (profile != null)
-            {
-                return profile.m_playerName;
-            }
-
-            return "";
+            return profile.m_playerID;
         }
 
-        /// <summary>
-        /// Returns the player ID of the client player if exists.
-        /// </summary>
-        /// <returns></returns>
-        public static long GetLocalPlayerID()
-        {
-            var profile = Game.instance.GetPlayerProfile();
-            if (profile != null)
-            {
-                return profile.m_playerID;
-            }
+        return 0L;
+    }
 
-            return 0L;
-        }
+    /// <summary>
+    /// Returns the current in-game day.
+    /// </summary>
+    /// <returns></returns>
+    public static int GetGameDay()
+    {
+        return EnvMan.instance.GetCurrentDay();
+    }
 
-        /// <summary>
-        /// Returns the current in-game day.
-        /// </summary>
-        /// <returns></returns>
-        public static int GetGameDay()
-        {
-            return EnvMan.instance.GetCurrentDay();
-        }
-
-        /// <summary>
-        /// Returns the quality of an item based off the given upgrade
-        /// for that item.
-        /// </summary>
-        /// <param name="item">The crafting upgrade item</param>
-        /// <returns></returns>
-        public static int GetQualityLevel(ItemDrop.ItemData item)
-        {
-            return (item == null) ? 1 : (item.m_quality + 1);
-        }
+    /// <summary>
+    /// Returns the quality of an item based off the given upgrade
+    /// for that item.
+    /// </summary>
+    /// <param name="item">The crafting upgrade item</param>
+    /// <returns></returns>
+    public static int GetQualityLevel(ItemDrop.ItemData item)
+    {
+        return (item == null) ? 1 : (item.m_quality + 1);
     }
 }
