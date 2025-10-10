@@ -74,15 +74,11 @@ public static class NPCZDOUtils
 
         string[] fields = zdoVar.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
 
-        NPCSPlugin.NPCSLogger.LogDebug($"GetNPCQuest {index} has length {fields.Length}: {zdoVar}");
-
         if (fields.Length >= 9)
         {
             quest = new NPCQuest(fields);
 
             var give = GetNPCQuestGive(zdo, index);
-
-            NPCSPlugin.NPCSLogger.LogDebug($"GetNPCQuest give: {give}");
             if (!give.IsNullOrWhiteSpace())
             {
                 var gives = give.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
@@ -93,7 +89,6 @@ public static class NPCZDOUtils
             }
 
             var reward = GetNPCQuestReward(zdo, index);
-            NPCSPlugin.NPCSLogger.LogDebug($"GetNPCQuest reward: {reward}");
             if (!reward.IsNullOrWhiteSpace())
             {
                 var rewards = reward.Split(PipeSeparatorList, int.MaxValue, StringSplitOptions.None);
@@ -113,7 +108,7 @@ public static class NPCZDOUtils
             return true;
         }
 
-        NPCSPlugin.NPCSLogger.LogDebug($"GetNPCQuest failed!!");
+        NPCSPlugin.NPCSLogger.LogWarning($"GetNPCQuest failed!! Data format incorrect.");
 
         quest = null;
         return false;
@@ -131,7 +126,6 @@ public static class NPCZDOUtils
         SetNPCQuestString(ref zdo, index, Utility.GetString(quest));
         if (quest == null)
         {
-            NPCSPlugin.NPCSLogger.LogDebug($"SetNPCQuest, quest null! Setting blank data.");
             SetNPCQuestGive(ref zdo, index, "");
             SetNPCQuestReward(ref zdo, index, "");
         }
@@ -144,19 +138,16 @@ public static class NPCZDOUtils
 
     public static void SetNPCQuestString(ref ZDO zdo, int index, string quest)
     {
-        NPCSPlugin.NPCSLogger.LogDebug($"Setting Quest String: {quest}");
         zdo.Set($"{ZDOVar_QUESTS}{index}", quest);
     }
 
     public static void SetNPCQuestGive(ref ZDO zdo, int index, string give)
     {
-        NPCSPlugin.NPCSLogger.LogDebug($"Setting Quest Give: {give}");
         zdo.Set($"{ZDOVar_QUESTS}{index}GIVE", give);
     }
 
     public static void SetNPCQuestReward(ref ZDO zdo, int index, string reward)
     {
-        NPCSPlugin.NPCSLogger.LogDebug($"Setting Quest Reward: {reward}");
         zdo.Set($"{ZDOVar_QUESTS}{index}REWARD", reward);
     }
 
@@ -187,7 +178,6 @@ public static class NPCZDOUtils
                 list.Add(item);
             }
         }
-        NPCSPlugin.NPCSLogger.LogDebug($"GetTradeItems: {list.Count}, from fields {fields.Length}: {config}");
 
         return list;
     }
@@ -246,7 +236,6 @@ public static class NPCZDOUtils
                 }
             }
         }
-        NPCSPlugin.NPCSLogger.LogDebug($"GetTraderUseItems: {list.Count}");
 
         return list;
     }
@@ -447,7 +436,6 @@ public static class NPCZDOUtils
     private static void SetQuestData(ref ZDO zdo, List<NPCQuest> quests)
     {
         int oldCount = GetNPCQuestCount(zdo);
-        NPCSPlugin.NPCSLogger.LogDebug($"Setting quest data, {oldCount} old quests found");
         if (oldCount > 0)
         {
             // Clean up old data
@@ -469,8 +457,8 @@ public static class NPCZDOUtils
     {
         if (GetVersion(zdo) < 2)
         {
-            NPCSPlugin.NPCSLogger.LogDebug($"Upgrading version....");
             // Upgrade from unversioned
+            NPCSPlugin.NPCSLogger.LogWarning($"Upgrading npc version for {GetTamedName(zdo)}...");
             NPCData.NPCType type = (NPCData.NPCType)GetType(zdo);
 
             if (type == NPCData.NPCType.Information || type == NPCData.NPCType.Reward)
@@ -478,19 +466,33 @@ public static class NPCZDOUtils
                 SetType(ref zdo, (int)NPCData.NPCType.Quest);
 
                 NPCQuest firstQuest = new NPCQuest();
-                // TODO text cases for InteractText
-                firstQuest.Text = GetLegacyNPCDefaultText(zdo); //GetLegacyNPCInteractText(zdo);
+                NPCQuest secondQuest = new NPCQuest();
+                bool useSecondQuest = false;
+                string interactText = GetLegacyNPCInteractText(zdo);
+
+                if (!interactText.IsNullOrWhiteSpace())
+                {
+                    firstQuest.Text = interactText;
+
+                    secondQuest.Text = GetLegacyNPCDefaultText(zdo);
+                    useSecondQuest = true;
+                }
+                else
+                {
+                    firstQuest.Text = GetLegacyNPCDefaultText(zdo);
+                }
+
                 firstQuest.RewardText = GetLegacyNPCRewardText(zdo);
 
                 firstQuest.NotRequiredKeys = GetLegacyNPCNotRequiredKeys(zdo);
                 firstQuest.RequiredKeys = GetLegacyNPCRequiredKeys(zdo);
                 firstQuest.InteractKey = GetLegacyNPCInteractKey(zdo);
-                firstQuest.InteractKeyType = GetLegacyNPCInteractKeyType(zdo) ? NPCData.NPCKeyType.Player : NPCData.NPCKeyType.Global; // TODO check
+                firstQuest.InteractKeyType = GetLegacyNPCInteractKeyType(zdo) ? NPCData.NPCKeyType.Global : NPCData.NPCKeyType.Player; // TODO check
                 firstQuest.RewardKey = GetLegacyNPCRewardKey(zdo);
-                firstQuest.RewardKeyType = GetLegacyNPCRewardKeyType(zdo) ? NPCData.NPCKeyType.Player : NPCData.NPCKeyType.Global; // TODO check
+                firstQuest.RewardKeyType = GetLegacyNPCRewardKeyType(zdo) ? NPCData.NPCKeyType.Global : NPCData.NPCKeyType.Player; // TODO check
                 firstQuest.RewardLimit = GetLegacyNPCRewardLimit(zdo);
 
-                var reward = GetLegacyNPCRewardItem(zdo);
+                string reward = GetLegacyNPCRewardItem(zdo);
                 if (!reward.IsNullOrWhiteSpace())
                 {
                     firstQuest.RewardItems = new List<NPCItem>();
@@ -502,7 +504,7 @@ public static class NPCZDOUtils
                     firstQuest.RewardItems.Add(item);
                 }
 
-                var give = GetLegacyNPCGiveItem(zdo);
+                string give = GetLegacyNPCGiveItem(zdo);
                 if (!give.IsNullOrWhiteSpace())
                 {
                     firstQuest.GiveItem = new NPCItem();
@@ -512,12 +514,18 @@ public static class NPCZDOUtils
                     firstQuest.GiveItem.RemoveItem = true;
                 }
 
-                SetQuestData(ref zdo, new List<NPCQuest> { firstQuest });
+                List<NPCQuest> quests = new List<NPCQuest> { firstQuest };
+                if (useSecondQuest)
+                {
+                    quests.Add(secondQuest);
+                }
+
+                SetQuestData(ref zdo, quests);
 
                 if (GetLegacyNPCSitting(zdo))
                 {
                     SetAttached(ref zdo, true);
-                    SetAnimation(ref zdo, "attach_chair");
+                    SetAnimation(ref zdo, "attach_chair"); // TODO test for thrones
                 }
 
                 ResetLegacyNPCData(ref zdo);

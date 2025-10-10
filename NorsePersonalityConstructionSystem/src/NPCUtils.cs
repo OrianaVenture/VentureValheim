@@ -102,14 +102,12 @@ public static class NPCUtils
 
     public static void GiveReward(ref ZNetView nview, ref Character character, NPCQuest quest)
     {
-        NPCSPlugin.NPCSLogger.LogDebug($"Trying giving reward items! {quest.RewardItems == null}");
         if (quest.RewardItems != null)
         {
             foreach (var item in quest.RewardItems)
             {
                 if (Utility.GetItemPrefab(item.PrefabName.GetStableHashCode(), out GameObject reward))
                 {
-                    NPCSPlugin.NPCSLogger.LogDebug("Giving reward item!");
                     var go = GameObject.Instantiate(reward,
                         character.transform.position + new Vector3(0, 0.75f, 0) + (character.transform.rotation * Vector3.forward),
                         character.transform.rotation);
@@ -117,7 +115,7 @@ public static class NPCUtils
                     var itemdrop = go.GetComponent<ItemDrop>();
                     itemdrop.SetStack(item.Amount.Value);
                     itemdrop.SetQuality(item.Quality.Value);
-                    itemdrop.GetComponent<Rigidbody>().velocity = (character.transform.forward + Vector3.up) * 1f;
+                    itemdrop.GetComponent<Rigidbody>().linearVelocity = (character.transform.forward + Vector3.up) * 1f;
                 }
             }
 
@@ -127,7 +125,6 @@ public static class NPCUtils
         int rewardLimit = quest.RewardLimit.Value;
         if (rewardLimit > 0)
         {
-            // TODO evaluate if this cna be broken into a seperate zdo variable to minimize setting stuff
             nview.ClaimOwnership();
             quest.RewardLimit -= 1;
             ZDO zdo = nview.GetZDO();
@@ -169,7 +166,6 @@ public static class NPCUtils
         NPCQuest quest = npcComponent.Data.GetCurrentQuest();
         if (quest == null)
         {
-            NPCSPlugin.NPCSLogger.LogDebug("TryUseItem: Quest is null!");
             return false;
         }
 
@@ -195,6 +191,7 @@ public static class NPCUtils
                 }
                 else
                 {
+                    // TODO: Localize these.
                     Talk(npc, name, "Hmmm that's not enough... " + text, quest);
                     return false;
                 }
@@ -215,8 +212,6 @@ public static class NPCUtils
         }
 
         Talk(npc, name, text, quest);
-
-        npcComponent.Data.UpdateQuest(false); //todo, test validity
         return true;
     }
 
@@ -249,7 +244,6 @@ public static class NPCUtils
         NPCQuest quest = npcComponent.Data.GetCurrentQuest();
         if (quest == null)
         {
-            NPCSPlugin.NPCSLogger.LogDebug("TryUseItem: Quest is null!");
             return false;
         }
 
@@ -274,8 +268,6 @@ public static class NPCUtils
 
         var name = NPCZDOUtils.GetTamedName(zNetView.GetZDO());
         Talk(npc, name, text, quest); // TODO disable talking as needed
-
-        npcComponent.Data.UpdateQuest(false); //todo, test validity
         return false;
     }
 
@@ -290,6 +282,7 @@ public static class NPCUtils
         return false;
     }
 
+    // TODO: This is run on a continuous loop, make more efficient
     public static string GetHoverText(Character npc, BaseAI baseAI)
     {
         if (npc == null || npc.m_nview.GetZDO() == null || (baseAI != null && baseAI.m_aggravated))
@@ -303,7 +296,7 @@ public static class NPCUtils
         if (type != (int)NPCData.NPCType.None)
         {
             var npcComponent = npc.GetComponent<INPC>();
-            var quest = npcComponent.Data.GetCurrentQuest();
+            var quest = npcComponent.Data.GetCurrentQuest(false);
 
             if (type == (int)NPCData.NPCType.Trader || quest != null)
             {

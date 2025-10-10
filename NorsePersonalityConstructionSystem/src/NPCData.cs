@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using System;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace VentureValheim.NPCS;
 
@@ -15,7 +16,7 @@ public class NPCData
 
     private NPCQuest _currentQuest = null;
 
-    public bool HasAttach = false; // TODO fix zdo syncing for this?
+    public bool HasAttach = false;
     public Vector3 AttachPosition = Vector3.zero;
     public Quaternion AttachRotation = Quaternion.identity;
     public string AttachAnimation = "";
@@ -99,7 +100,7 @@ public class NPCData
         }
     }
 
-    public bool UpdateTrader()
+    protected bool UpdateTrader()
     {
         ZDO zdo = _character.m_nview.GetZDO();
         if (NPCZDOUtils.GetType(zdo) == (int)NPCType.Trader)
@@ -116,12 +117,11 @@ public class NPCData
         return false;
     }
 
-    public bool UpdateTalker()
+    protected bool UpdateTalker()
     {
         var talker = _character.gameObject.GetComponent<NpcTalk>();
         if (talker != null)
         {
-            NPCSPlugin.NPCSLogger.LogDebug($"Setting the NpcTalk data");
             ZDO zdo = _character.m_nview.GetZDO();
             talker.m_randomTalk = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_TALKTEXTS, zdo);
             talker.m_randomGreets = NPCZDOUtils.GetNPCTexts(NPCZDOUtils.ZDOVar_GREETTEXTS, zdo);
@@ -134,13 +134,12 @@ public class NPCData
         return false;
     }
 
-    public void RefreshQuestList(bool forceReset = false)
+    protected void RefreshQuestList(bool forceReset = false)
     {
         // TODO: Optimize only to load quest at index when ready
         if (_quests == null || forceReset)
         {
             ZDO zdo = _character.m_nview.GetZDO();
-            NPCSPlugin.NPCSLogger.LogDebug($"Refreshing quests list");
             int count = NPCZDOUtils.GetNPCQuestCount(zdo);
             if (count > 0)
             {
@@ -158,55 +157,56 @@ public class NPCData
         _questIndex = 0;
     }
 
-    public void UpdateQuest(bool forceReset = false)
+    // TODO: When removing keys is implemented a force reset must be used here.
+    protected void UpdateQuest(bool forceReset = false)
     {
         if (!_questsInitialized)
         {
-            NPCSPlugin.NPCSLogger.LogDebug("Updating Quest: refreshing quest list because not init");
             RefreshQuestList(false);
         }
 
-        if (forceReset)
+        if (forceReset || _questIndex < 0)
         {
             _questIndex = 0;
         }
 
-        if (_quests != null)
+        if (_quests == null)
         {
-            for (int lcv = _questIndex; lcv < _quests.Length; lcv++)
-            {
-                // TODO, decide how this will work
-                if (_quests[lcv] == null ||
-                    _quests[lcv].RewardLimit.Value == 0 ||
-                    !NPCUtils.HasCorrectNotReqiuredKeys(_quests[lcv].NotRequiredKeysSet))
-                {
-                    continue;
-                }
+            return;
+        }
 
-                _questIndex = lcv;
-                break;
+        for (int lcv = _questIndex; lcv < _quests.Length; lcv++)
+        {
+            if (_quests[lcv] == null ||
+                _quests[lcv].RewardLimit.Value == 0 ||
+                !NPCUtils.HasCorrectNotReqiuredKeys(_quests[lcv].NotRequiredKeysSet))
+            {
+                continue;
             }
 
-            if (_questIndex >= 0 && _questIndex < _quests.Length)
-            {
-                _currentQuest = _quests[_questIndex];
-            }
-            else
-            {
-                _currentQuest = null;
-            }
+            _questIndex = lcv;
+            break;
+        }
 
-            NPCSPlugin.NPCSLogger.LogDebug($"Selecting quest at index: {_questIndex}, out of {_quests.Length} total");
+        if (_questIndex >= 0 && _questIndex < _quests.Length)
+        {
+            _currentQuest = _quests[_questIndex];
+        }
+        else
+        {
+            _currentQuest = null;
         }
     }
 
-    public NPCQuest GetCurrentQuest()
+    public NPCQuest GetCurrentQuest(bool update = true)
     {
         if (!_questsInitialized)
         {
-            NPCSPlugin.NPCSLogger.LogDebug("Updating Quest: refreshing quest list because not init");
-            RefreshQuestList(false);
             UpdateQuest(true);
+        }
+        else if (update)
+        {
+            UpdateQuest(false);
         }
 
         return _currentQuest;
@@ -229,7 +229,7 @@ public class NPCData
                     velocity = componentInParent.GetPointVelocity(_character.transform.position);
                 }
             }
-            _character.m_body.velocity = velocity;
+            _character.m_body.linearVelocity = velocity;
             _character.m_body.useGravity = false;
             _character.m_body.angularVelocity = Vector3.zero;
             _character.m_maxAirAltitude = _character.transform.position.y;
@@ -326,7 +326,7 @@ public class NPCData
             }
         }
 
-        _character.m_body.velocity = velocity;
+        _character.m_body.linearVelocity = velocity;
         _character.m_body.mass = 1000f;
         _character.m_body.useGravity = false;
         _character.m_body.angularVelocity = Vector3.zero;

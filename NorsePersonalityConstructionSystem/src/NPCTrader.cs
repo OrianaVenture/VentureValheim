@@ -4,8 +4,6 @@ public class NPCTrader : Trader
 {
     public void Setup()
     {
-        // TODO: random talking only works when animator is checking standing
-        NPCSPlugin.NPCSLogger.LogWarning($"Trader Setup!");
         var zdo = gameObject.GetComponent<ZNetView>().GetZDO();
         if (!TryGetComponent<LookAt>(out var trader))
         {

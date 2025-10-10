@@ -437,6 +437,7 @@ You can spawn a random NPC on a chair or bed with **RightCtrl + E** (Subject to 
 * Graves with signs so you can properly mourn your fallen NPCs.
 * Cooldown timer on completing quests.
 * Ability to remove keys from the player for completeing actions.
+* Allow changing/setting npc factions and groups.
 * Player quest tracker in the UI.
 * Easier ways to list/save/change/copy NPC information.
 * Necromancy options for fallen NPCs.

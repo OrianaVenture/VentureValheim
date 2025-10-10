@@ -68,7 +68,6 @@ public class Utility
 
     public static HashSet<string> StringToSet(string str)
     {
-        NPCSPlugin.NPCSLogger.LogDebug($"Creating new set...");
         var set = new HashSet<string>();
 
         if (!str.IsNullOrWhiteSpace())
@@ -76,7 +75,6 @@ public class Utility
             var keys = str.Split(NPCZDOUtils.CommaSeparatorList, int.MaxValue, System.StringSplitOptions.RemoveEmptyEntries);
             for (var lcv = 0; lcv < keys.Length; lcv++)
             {
-                NPCSPlugin.NPCSLogger.LogDebug($"Added to set: {keys[lcv].Trim().ToLower()}");
                 set.Add(keys[lcv].Trim().ToLower());
             }
         }
