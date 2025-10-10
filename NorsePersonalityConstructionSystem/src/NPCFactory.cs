@@ -12,8 +12,8 @@ public class NPCFactory
         typeof(Talker),
         typeof(Skills),
         typeof(CharacterDrop),
-        typeof(NpcTalk),
-        typeof(Tameable)
+        typeof(Tameable),
+        typeof(Procreation)
     };
 
     public static GameObject SpawnNPC(Vector3 position, Quaternion rotation, string name = "Ragnar", string model = "Player")
@@ -33,11 +33,11 @@ public class NPCFactory
         {
             if (model.Equals("Player"))
             {
-                npcComponent.SetRandom();
+                npcComponent.Data.SetRandom();
             }
 
-            npcComponent.SetName(name);
-            npcComponent.SetSpawnPoint(position);
+            npcComponent.Data.SetName(name);
+            npcComponent.Data.SetSpawnPoint(position);
         }
         
         return npc;
@@ -64,60 +64,52 @@ public class NPCFactory
         var npcComponent = npc.GetComponent<INPC>();
         if (npcComponent != null)
         {
-            npcComponent.SetFromConfig(config, true);
-            npcComponent.SetSpawnPoint(position);
+            npcComponent.Data.SetFromConfig(config, true);
+            npcComponent.Data.SetSpawnPoint(position);
         }
 
         return npc;
     }
 
-    public static GameObject RespawnNPC(GameObject original)
+    public static GameObject RespawnNPC(ZPackage original)
     {
-        ZNetView originalZNetView = original.GetComponent<ZNetView>();
-        if (originalZNetView == null)
+        NPCSPlugin.NPCSLogger.LogDebug($"Trying RespawnNPC...");
+        // TODO clean up, do not want to Deserialize twice
+        ZDO copy = new ZDO();
+        original.m_stream.Position = 0L;
+        copy.Deserialize(original);
+        var respawn = NPCZDOUtils.GetSpawnPoint(copy);
+
+        if (respawn == Vector3.zero)
         {
+            NPCSPlugin.NPCSLogger.LogDebug("No spawn point found!");
             return null;
         }
 
-        var respawn = NPCUtils.GetSpawnPoint(originalZNetView);
-        if (respawn != Vector3.zero)
+        var prefab = ZNetScene.instance.GetPrefab(copy.m_prefab);
+
+        if (prefab == null)
         {
-            var prefabName = Utils.GetPrefabName(original.name);
-            var prefab = ZNetScene.instance.GetPrefab(prefabName.GetStableHashCode());
-
-            if (prefab == null)
-            {
-                NPCSPlugin.NPCSLogger.LogDebug("Issue finding prefab!");
-                return null;
-            }
-
-            var gameobject = GameObject.Instantiate(prefab, respawn, Quaternion.identity);
-            ZNetView newZNetView = gameobject.GetComponent<ZNetView>();
-
-            if (newZNetView == null)
-            {
-                NPCSPlugin.NPCSLogger.LogDebug("Issue instantiating prefab!");
-                return null;
-            }
-
-            NPCUtils.CopyZDO(ref newZNetView, originalZNetView);
-
-            VisEquipment originalVisEquipment = original.GetComponent<VisEquipment>();
-            VisEquipment newVisEquipment = gameobject.GetComponent<VisEquipment>();
-
-            if (originalVisEquipment != null && newVisEquipment != null)
-            {
-                NPCUtils.CopyVisEquipment(ref newVisEquipment, originalVisEquipment);
-            }
-
-            return gameobject;
-        }
-        else
-        {
-            NPCSPlugin.NPCSLogger.LogDebug("No spawn point found!");
+            NPCSPlugin.NPCSLogger.LogDebug("Issue finding prefab!");
+            return null;
         }
 
-        return null;
+        var gameobject = GameObject.Instantiate(prefab, respawn, Quaternion.identity);
+        ZNetView newZNetView = gameobject.GetComponent<ZNetView>();
+
+        if (newZNetView == null)
+        {
+            NPCSPlugin.NPCSLogger.LogDebug("Issue instantiating prefab!");
+            ZNetScene.instance.Destroy(gameobject);
+            return null;
+        }
+
+        ZDO zdo = newZNetView.GetZDO();
+        original.m_stream.Position = 0L;
+        zdo.Deserialize(original);
+        zdo.Set(ZDOVars.s_health, gameobject.GetComponent<Character>().GetMaxHealth());
+
+        return gameobject;
     }
 
     public static void AddNPCS()
@@ -163,7 +155,7 @@ public class NPCFactory
         var prefabActive = prefab.activeSelf;
         prefab.SetActive(false);
 
-        GameObject npc = NPCUtils.CreateGameObject(prefab, model);
+        GameObject npc = Utility.CreateGameObject(prefab, model);
 
         foreach (var remove in RemoveComponents)
         {
@@ -203,6 +195,9 @@ public class NPCFactory
             npcCharacter.m_speed = 2f;
             npcCharacter.m_runSpeed = 4f;
             npcCharacter.m_health = 200f;
+
+            Utility.GetItemPrefab("PlayerUnarmed".GetStableHashCode(), out var fists);
+            (npcCharacter as NPCHumanoid).m_unarmedWeapon = fists.GetComponent<ItemDrop>();
         }
 
         // Make sure to set this to the new object component, otherwise attacks are broken
@@ -213,7 +208,7 @@ public class NPCFactory
         // Allow tamable behavior when hiring NPCs as bodyguards
         npcCharacter.m_faction = Character.Faction.Dverger;
         npcCharacter.m_tamed = false;
-        npcCharacter.m_group = NPCUtils.NPCGROUP;
+        npcCharacter.m_group = NPCData.NPCGROUP;
 
         /*var tamable = npc.GetComponent<Tameable>();
         if (tamable == null)
@@ -225,7 +220,8 @@ public class NPCFactory
         var baseAI = npc.GetComponent<BaseAI>();
         if (baseAI == null)
         {
-            npc.AddComponent<NPCAI>();
+            // This is likely only applied to the "Player" npc
+            baseAI = npc.AddComponent<NPCAI>();
         }
         else if (baseAI is MonsterAI)
         {
@@ -244,6 +240,16 @@ public class NPCFactory
             SetupAnimalAI(ref npcAI, originalAI);
         }
 
+        // Only add talker if has a MonsterAI
+        if (baseAI is MonsterAI)
+        {
+            var talker = npc.GetComponent<NpcTalk>();
+            if (talker == null)
+            {
+                talker = npc.AddComponent<NpcTalk>();
+            }
+        }
+
         var znetview = npc.GetComponent<ZNetView>();
         znetview.m_persistent = true;
         znetview.m_type = ZDO.ObjectType.Default;
@@ -259,7 +265,7 @@ public class NPCFactory
         npc.SetActive(prefabActive);
 
         // Register prefab
-        NPCUtils.RegisterGameObject(npc);
+        Utility.RegisterGameObject(npc);
 
         return npc;
     }
@@ -291,7 +297,7 @@ public class NPCFactory
         var ragdollActive = original.activeSelf;
         original.SetActive(false);
 
-        GameObject npcRagdoll = NPCUtils.CreateGameObject(original, original.name);
+        GameObject npcRagdoll = Utility.CreateGameObject(original, original.name);
 
         var originalRagdollComponent = original.GetComponent<Ragdoll>();
         var ragdollComponent = npcRagdoll.GetComponent<Ragdoll>();
@@ -328,7 +334,7 @@ public class NPCFactory
         npcRagdoll.SetActive(ragdollActive);
 
         // Register prefab
-        NPCUtils.RegisterGameObject(npcRagdoll);
+        Utility.RegisterGameObject(npcRagdoll);
 
         return npcRagdoll;
     }

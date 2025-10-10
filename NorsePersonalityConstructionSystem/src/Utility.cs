@@ -72,8 +72,8 @@ public class Utility
 
         if (!str.IsNullOrWhiteSpace())
         {
-            List<string> keys = str.Split(',').ToList();
-            for (var lcv = 0; lcv < keys.Count; lcv++)
+            var keys = str.Split(NPCZDOUtils.CommaSeparatorList, int.MaxValue, System.StringSplitOptions.RemoveEmptyEntries);
+            for (var lcv = 0; lcv < keys.Length; lcv++)
             {
                 set.Add(keys[lcv].Trim().ToLower());
             }
@@ -82,20 +82,22 @@ public class Utility
         return set;
     }
 
-    public static INPC GetClosestNPC(Vector3 position)
+    public static INPC GetClosestNPC(Vector3 position, out float distance)
     {
         Collider[] hits = Physics.OverlapBox(position, Vector3.one * 3, Quaternion.identity);
         GameObject closestnpc = null;
+        distance = 1000;
 
         foreach (var hit in hits)
         {
             var go = hit.transform.root.gameObject;
             if (go != null && go.GetComponentInChildren<INPC>() != null)
             {
-                if (closestnpc == null || (Vector3.Distance(position, go.transform.position) <
-                        Vector3.Distance(position, closestnpc.transform.position)))
+                var newDistance = Vector3.Distance(position, go.transform.position);
+                if (closestnpc == null || (newDistance < distance))
                 {
                     closestnpc = go;
+                    distance = newDistance;
                 }
             }
         }
@@ -108,14 +110,14 @@ public class Utility
         return null;
     }
 
-    public static List<NPCHumanoid> GetAllNPCS(Vector3 position, float range)
+    public static List<INPC> GetAllNPCS(Vector3 position, float range)
     {
         Collider[] hits = Physics.OverlapBox(position, Vector3.one * range, Quaternion.identity);
-        List<NPCHumanoid> npcs = new List<NPCHumanoid>();
+        List<INPC> npcs = new List<INPC>();
 
         foreach (var hit in hits)
         {
-            var npc = hit.transform.root.gameObject.GetComponentInChildren<NPCHumanoid>();
+            var npc = hit.transform.root.gameObject.GetComponentInChildren<INPC>();
             if (npc != null)
             {
                 npcs.Add(npc);
@@ -150,11 +152,11 @@ public class Utility
         return closestChair;
     }
 
-    public static void SetKey(string key, bool global)
+    public static void SetKey(string key, NPCData.NPCKeyType type)
     {
         if (!string.IsNullOrEmpty(key))
         {
-            if (global)
+            if (type == NPCData.NPCKeyType.Global)
             {
                 ZoneSystem.instance.SetGlobalKey(key);
             }
@@ -175,5 +177,46 @@ public class Utility
         key = key.ToLower();
 
         return ZoneSystem.instance.GetGlobalKey(key) || Player.m_localPlayer.HaveUniqueKey(key);
+    }
+
+    public static GameObject CreateGameObject(GameObject original, string name)
+    {
+        GameObject go = GameObject.Instantiate(original, NPCSPlugin.Root.transform, false);
+        go.name = NPCSPlugin.MOD_PREFIX + name;
+        go.transform.SetParent(NPCSPlugin.Root.transform, false);
+
+        return go;
+    }
+
+    public static void RegisterGameObject(GameObject obj)
+    {
+        ZNetScene.instance.m_prefabs.Add(obj);
+        ZNetScene.instance.m_namedPrefabs.Add(obj.name.GetStableHashCode(), obj);
+        NPCSPlugin.NPCSLogger.LogDebug($"Adding object to prefabs {obj.name}");
+    }
+
+    public static string GetString<T>(T item)
+    {
+        string result = "";
+        if (item != null)
+        {
+            result = item.ToString();
+        }
+        return result;
+    }
+
+    public static string GetStringFromList<T>(List<T> items)
+    {
+        string result = "";
+        if (items != null)
+        {
+            foreach (T item in items)
+            {
+                result += $"{item.ToString()}{NPCZDOUtils.PipeSeparator}";
+            }
+        }
+
+        NPCSPlugin.NPCSLogger.LogInfo($"GetStringFromList: {result}");
+        return result;
     }
 }
