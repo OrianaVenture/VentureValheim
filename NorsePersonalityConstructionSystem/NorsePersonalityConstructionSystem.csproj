@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VentureValheim.NPCS</RootNamespace>
     <AssemblyName>VentureValheim.NPCS</AssemblyName>
-    <Version>0.0.8</Version>
+    <Version>0.1.0</Version>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>
