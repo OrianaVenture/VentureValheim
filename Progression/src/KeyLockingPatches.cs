@@ -343,4 +343,25 @@ public partial class KeyManager
             return false;
         }
     }
+
+    // Helper function to find non-teleportable items
+    /*private static void ListNonteleportableItems()
+    {
+        ProgressionPlugin.VentureProgressionLogger.LogDebug($"Finding all non-tele....");
+        foreach (var obj in ObjectDB.instance.m_items)
+        {
+            if (obj == null) continue;
+
+            var component = obj.GetComponent<ItemDrop>();
+            if (component != null)
+            {
+                var teleportable = component.m_itemData.m_shared.m_teleportable;
+
+                if (!teleportable)
+                {
+                    ProgressionPlugin.VentureProgressionLogger.LogDebug($"Found non-tele: {obj.name}");
+                }
+            }
+        }
+    }*/
 }

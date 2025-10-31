@@ -1,3 +1,10 @@
+## 0.3.8
+
+* Added missing items to teleport configurations:
+  * MechanicalSpring and DvergrNeedle use UnlockPortalMistlandsKey config
+  * CharredCogwheel use UnlockPortalAshlandsKey config
+  * Hildir chests use UnlockPortalHildirChestsKey config
+
 ## 0.3.7
 
 * Added new Call To Arms (0.221.4 update) items to locking system. This patch should be backwards compatible with previous game versions.

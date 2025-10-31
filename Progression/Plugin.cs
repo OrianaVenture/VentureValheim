@@ -23,7 +23,7 @@ public class ProgressionPlugin : BaseUnityPlugin
     }
 
     private const string ModName = "WorldAdvancementProgression";
-    private const string ModVersion = "0.3.7";
+    private const string ModVersion = "0.3.8";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -71,6 +71,9 @@ public class ProgressionPlugin : BaseUnityPlugin
     public static ConfigEntry<string> CE_UnlockPortalBlackMetalKey = null!;
     public static ConfigEntry<string> CE_UnlockPortalFlametalKey = null!;
     public static ConfigEntry<string> CE_UnlockPortalDragonEggKey = null!;
+    public static ConfigEntry<string> CE_UnlockPortalMistlandsKey = null!;
+    public static ConfigEntry<string> CE_UnlockPortalAshlandsKey = null!;
+    public static ConfigEntry<string> CE_UnlockPortalHildirChestsKey = null!;
 
     // Skills Manager
     public static ConfigEntry<bool> CE_EnableSkillManager = null!;
@@ -240,6 +243,15 @@ public class ProgressionPlugin : BaseUnityPlugin
         AddConfig("UnlockPortalDragonEggKey", portal,
             "Use this key to control player ability to teleport dragon eggs. Leave blank to allow vanilla portal behavior (string).",
             true, "", ref CE_UnlockPortalDragonEggKey);
+        AddConfig("UnlockPortalMistlandsKey", portal,
+            "Use this key to control player ability to teleport MechanicalSpring and DvergrNeedle. Leave blank to allow vanilla portal behavior (string).",
+            true, "", ref CE_UnlockPortalMistlandsKey);
+        AddConfig("UnlockPortalAshlandsKey", portal,
+            "Use this key to control player ability to teleport CharredCogwheel. Leave blank to allow vanilla portal behavior (string).",
+            true, "", ref CE_UnlockPortalAshlandsKey);
+        AddConfig("UnlockPortalHildirChestsKey", portal,
+            "Use this key to control player ability to teleport Hildir's stolen chests. Leave blank to allow vanilla portal behavior (string).",
+            true, "", ref CE_UnlockPortalHildirChestsKey);
 
         // Skills
         AddConfig("EnableSkillManager", skills,
@@ -426,6 +438,9 @@ public interface IProgressionConfiguration
     public string GetUnlockPortalBlackMetalKey();
     public string GetUnlockPortalFlametalKey();
     public string GetUnlockPortalDragonEggKey();
+    public string GetUnlockPortalMistlandsKey();
+    public string GetUnlockPortalAshlandsKey();
+    public string GetUnlockPortalHildirChestsKey();
 
     // Skills Manager
     public bool GetEnableSkillManager();
@@ -598,6 +613,9 @@ public class ProgressionConfiguration : IProgressionConfiguration
     public string GetUnlockPortalBlackMetalKey() => ProgressionPlugin.CE_UnlockPortalBlackMetalKey.Value;
     public string GetUnlockPortalFlametalKey() => ProgressionPlugin.CE_UnlockPortalFlametalKey.Value;
     public string GetUnlockPortalDragonEggKey() => ProgressionPlugin.CE_UnlockPortalDragonEggKey.Value;
+    public string GetUnlockPortalMistlandsKey() => ProgressionPlugin.CE_UnlockPortalMistlandsKey.Value;
+    public string GetUnlockPortalAshlandsKey() => ProgressionPlugin.CE_UnlockPortalAshlandsKey.Value;
+    public string GetUnlockPortalHildirChestsKey() => ProgressionPlugin.CE_UnlockPortalHildirChestsKey.Value;
 
     // Skills
     public bool GetEnableSkillManager() => ProgressionPlugin.CE_EnableSkillManager.Value;

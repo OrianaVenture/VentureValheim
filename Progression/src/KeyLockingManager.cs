@@ -504,6 +504,18 @@ public partial class KeyManager
             case "DragonEgg":
                 key = ProgressionConfiguration.Instance.GetUnlockPortalDragonEggKey();
                 break;
+            case "MechanicalSpring":
+            case "DvergrNeedle":
+                key = ProgressionConfiguration.Instance.GetUnlockPortalMistlandsKey();
+                break;
+            case "chest_hildir1":
+            case "chest_hildir2":
+            case "chest_hildir3":
+                key = ProgressionConfiguration.Instance.GetUnlockPortalHildirChestsKey();
+                break;
+            case "CharredCogwheel":
+                key = ProgressionConfiguration.Instance.GetUnlockPortalAshlandsKey();
+                break;
             default:
                 break;
         }
