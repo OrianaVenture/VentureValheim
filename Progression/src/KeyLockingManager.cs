@@ -447,7 +447,7 @@ public partial class KeyManager
     /// <param name="player"></param>
     private void ApplyBlockedActionEffects(Player player)
     {
-        if (player != null)
+        if (player != null && player.GetSEMan()?.m_nview != null && player.GetSEMan().m_nview.m_zdo != null)
         {
             if (ProgressionConfiguration.Instance.GetUseBlockedActionEffect())
             {

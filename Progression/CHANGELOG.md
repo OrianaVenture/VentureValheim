@@ -1,3 +1,7 @@
+## 0.3.9
+
+* Added more error checking to prevent compatibility issues with other mods.
+
 ## 0.3.8
 
 * Added missing items to teleport configurations:

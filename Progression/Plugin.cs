@@ -23,7 +23,7 @@ public class ProgressionPlugin : BaseUnityPlugin
     }
 
     private const string ModName = "WorldAdvancementProgression";
-    private const string ModVersion = "0.3.8";
+    private const string ModVersion = "0.3.9";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";

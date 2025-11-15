@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VentureValheim.Progression</RootNamespace>
     <AssemblyName>VentureValheim.Progression</AssemblyName>
-    <Version>0.3.8</Version>
+    <Version>0.3.9</Version>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>
