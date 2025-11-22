@@ -1,3 +1,7 @@
+## 0.3.10
+
+* New configuration LockBoatsKey for locking usage of boats.
+
 ## 0.3.9
 
 * Added more error checking to prevent compatibility issues with other mods.

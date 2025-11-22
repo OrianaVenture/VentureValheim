@@ -293,6 +293,24 @@ public partial class KeyManager
     }
 
     /// <summary>
+    /// Block interacting with ship controls without proper keys.
+    /// </summary>
+    [HarmonyPatch(typeof(ShipControlls), nameof(ShipControlls.Interact))]
+    public static class Patch_ShipControlls_Interact
+    {
+        private static bool Prefix()
+        {
+            if (!Instance.HasKey(ProgressionConfiguration.Instance.GetLockBoatsKey()))
+            {
+                Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                return false; // Do not allow interact
+            }
+
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Block portal usage without the proper keys.
     /// </summary>
     [HarmonyPatch(typeof(TeleportWorld), nameof(TeleportWorld.Teleport))]
@@ -324,7 +342,7 @@ public partial class KeyManager
                 __result = true;
                 return false;
             }
-
+            
             foreach (ItemDrop.ItemData item in __instance.m_inventory)
             {
                 if (item.m_dropPrefab == null)

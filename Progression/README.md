@@ -135,6 +135,7 @@ Using equipment, crafting, building, cooking, and eating can all be locked with 
 | LockCrafting | If true you can only craft items made from boss items or biome metals/materials if you have the required key. |
 | LockBuilding | If true you can only build pieces made from boss items or biome metals/materials if you have the required key. |
 | LockCooking | If true you can only cook items made from biome materials if you have the required key. |
+| LockBoatsKey | Define your own required key to control player ability to use boats. Leave blank to allow vanilla boats behavior. |
 | LockPortalsKey | Define your own required key to control player ability to use portals. Leave blank to allow vanilla portal behavior. |
 
 ### Trader Configuration Options
