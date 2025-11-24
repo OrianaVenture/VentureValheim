@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VentureValheim.LocationReset</RootNamespace>
     <AssemblyName>VentureValheim.LocationReset</AssemblyName>
-    <Version>0.10.6</Version>
+    <Version>0.10.7</Version>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>

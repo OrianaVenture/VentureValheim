@@ -1,3 +1,8 @@
+## 0.10.7
+
+* Added more error checking to prevent exceptions.
+* Added code to load/release the SoftReference location asset to hopeful fix an issue with the More_World_Locations_AIO mod not resetting correctly.
+
 ## 0.10.6
 
 * Added new configuration AllowList to specify locations to reset regardless of other settings.

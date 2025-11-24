@@ -508,20 +508,26 @@ public class LocationReset
         }
 
         ZoneSystem.ZoneLocation zone = ZoneSystem.instance.GetLocation(hash);
-        if (zone == null)
+        if (zone == null || zone.m_prefab == null)
         {
             LocationResetPlugin.LocationResetLogger.LogDebug(
-                $"There was an issue getting the zone location, abort.");
+                $"There was an issue getting the zone location or prefab, abort.");
             return;
         }
 
-        // Load and Release not needed?
-        //zone.m_prefab.Load();
+        // Load and Release seems to not be needed in most cases.
+        // However, using it fixes an issue with More_World_Locations_AIO with the zone.m_prefab.Asset being null.
+        zone.m_prefab.Load();
+        if (zone.m_prefab.Asset == null)
+        {
+            LocationResetPlugin.LocationResetLogger.LogDebug(
+                $"There was an issue getting the zone location prefab asset, abort.");
+            return;
+        }
+
         Location location = zone.m_prefab.Asset.GetComponent<Location>();
-
         TryResetAfterLoadPrefab(loc, zone, location, hash, seed, force);
-
-        //zone.m_prefab.Release();
+        zone.m_prefab.Release();
     }
 
     private void TryResetAfterLoadPrefab(LocationProxy loc, ZoneSystem.ZoneLocation zone,
