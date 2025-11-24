@@ -469,7 +469,7 @@ public partial class KeyManager
             return true;
         }
 
-        string key = "";
+        string key = null;
         switch (name)
         {
             case "Copper":

@@ -1,3 +1,7 @@
+## 0.3.11
+
+* Changed portals metal check patch to better respect other mods including Advanced Portals.
+
 ## 0.3.10
 
 * New configuration LockBoatsKey for locking usage of boats.

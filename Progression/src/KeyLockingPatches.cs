@@ -331,18 +331,19 @@ public partial class KeyManager
 
     /// <summary>
     /// Unblock portal usage for metals with proper keys.
+    /// Priority high to run before other mods.
     /// </summary>
+    [HarmonyPriority(Priority.High)]
     [HarmonyPatch(typeof(Inventory), nameof(Inventory.IsTeleportable))]
     public static class Patch_Inventory_IsTeleportable
     {
-        private static bool Prefix(Inventory __instance, ref bool __result)
+        private static void Postfix(Inventory __instance, ref bool __result)
         {
-            if (ZoneSystem.instance.GetGlobalKey(GlobalKeys.TeleportAll))
+            if (__result == true)
             {
-                __result = true;
-                return false;
+                return;
             }
-            
+
             foreach (ItemDrop.ItemData item in __instance.m_inventory)
             {
                 if (item.m_dropPrefab == null)
@@ -352,13 +353,11 @@ public partial class KeyManager
 
                 if (!Instance.IsTeleportable(item.m_dropPrefab.name, item.m_shared.m_teleportable))
                 {
-                    __result = false;
-                    return false;
+                    return;
                 }
             }
 
             __result = true;
-            return false;
         }
     }
 
