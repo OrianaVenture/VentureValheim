@@ -11,8 +11,8 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.NoGrass</RootNamespace>
         <AssemblyName>VentureValheim.NoGrass</AssemblyName>
-        <Version>0.1.4</Version>
-        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <Version>0.1.5</Version>
+        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>
         <Nullable>enable</Nullable>

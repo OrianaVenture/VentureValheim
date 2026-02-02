@@ -11,7 +11,7 @@ namespace VentureValheim.NoGrass;
 public class NoGrassPlugin : BaseUnityPlugin
 {
     private const string ModName = "NoGrass";
-    private const string ModVersion = "0.1.4";
+    private const string ModVersion = "0.1.5";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
@@ -26,38 +26,37 @@ public class NoGrassPlugin : BaseUnityPlugin
     /// <summary>
     /// Increase slider options to include 0.
     /// </summary>
-    [HarmonyPatch(typeof(Valheim.SettingsGui.GraphicsSettings), nameof(Valheim.SettingsGui.GraphicsSettings.Awake))]
-    public static class Patch_GraphicsSettings_Awake
+    [HarmonyPatch(typeof(Valheim.SettingsGui.GraphicsSettings), nameof(Valheim.SettingsGui.GraphicsSettings.Initialize))]
+    public static class Patch_GraphicsSettings_Initialize
     {
-        private static void Prefix(Valheim.SettingsGui.GraphicsSettings __instance)
+        private static void Postfix(Valheim.SettingsGui.GraphicsSettings __instance)
         {
-            __instance.m_vegetationSlider.minValue = 0f;
-            __instance.m_vegetationSlider.value = PlatformPrefs.GetInt("ClutterQuality");
+            QualitySliderData slider = __instance.m_qualitySliders.Where(x => x.m_setting == GraphicsSettingInt.Vegetation).FirstOrDefault();
+
+            if (slider.m_slider != null)
+            {
+                slider.m_slider.minValue = 0f;
+                slider.m_slider.value = PlatformPrefs.GetInt("ClutterQuality");
+            }
         }
     }
 
     /// <summary>
     /// Remove the subtraction from the vegetation setting to fix localization.
     /// </summary>
-    [HarmonyPatch(typeof(Valheim.SettingsGui.GraphicsSettings), nameof(Valheim.SettingsGui.GraphicsSettings.OnQualityChanged))]
-    public static class Patch_GraphicsSettings_OnQualityChanged
+    [HarmonyPatch(typeof(Valheim.SettingsGui.GraphicsSettings), nameof(Valheim.SettingsGui.GraphicsSettings.GetDisplayValue))]
+    public static class Patch_GraphicsSettings_GetDisplayValue
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var codes = new List<CodeInstruction>(instructions);
-            for (var lcv = 0; lcv < codes.Count - 4; lcv++)
-            {
-                if (codes[lcv].opcode == OpCodes.Ldfld &&
-                    codes[lcv].operand.ToString() == "UnityEngine.UI.Slider m_vegetationSlider" &&
-                    codes[lcv + 4].opcode == OpCodes.Sub)
-                {
-                    codes[lcv + 3].opcode = OpCodes.Nop; //ldc.i4.1
-                    codes[lcv + 4].opcode = OpCodes.Nop; //sub
-                    break;
-                }
-            }
-
-            return codes.AsEnumerable();
+            return new CodeMatcher(instructions)
+                .MatchForward(
+                    useEnd: false,
+                    new CodeMatch(OpCodes.Ldc_I4_1),
+                    new CodeMatch(OpCodes.Sub))
+                .ThrowIfInvalid($"Could not patch GraphicsSettings.GetDisplayValue")
+                .RemoveInstructions(2)
+                .InstructionEnumeration();
         }
     }
 }
