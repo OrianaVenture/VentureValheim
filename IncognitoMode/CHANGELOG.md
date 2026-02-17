@@ -1,3 +1,8 @@
+## 0.5.0
+
+* New configuration HideHud that will completely hide the hud rather than change the hover display name (like the character is sneaking).
+* Added support for trinkets to hide the name.
+
 ## 0.4.2
 
 * Bug fix for name not hiding in chat after the 0.220.X game updates.

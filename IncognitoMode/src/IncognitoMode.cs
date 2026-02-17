@@ -25,6 +25,11 @@ public class IncognitoMode
         return IncognitoModePlugin.GetHiddenDisplayName() ?? "???";
     }
 
+    public static bool ItemSetsHidden(ItemDrop.ItemData item)
+    {
+        return item != null && item.m_dropPrefab != null && Instance.ItemPrefabs.Contains(item.m_dropPrefab.name);
+    }
+
     public void Update()
     {
         if (!IncognitoModePlugin.GetHiddenByItems().Equals(Instance.ItemPrefabsString))
@@ -44,6 +49,27 @@ public class IncognitoMode
     }
 
     /// <summary>
+    /// Check if the display needs to be completely hidden.
+    /// </summary>
+    [HarmonyPatch(typeof(EnemyHud), nameof(EnemyHud.TestShow))]
+    public static class Patch_EnemyHud_TestShow
+    {
+        private static void Postfix(EnemyHud __instance, Character c, ref bool __result)
+        {
+            if (__result == false || !IncognitoModePlugin.GetHideHud() || !c.IsPlayer() || c.m_nview == null)
+            {
+                return;
+            }
+
+            ZDO zdo = c.m_nview.GetZDO();
+            if (zdo != null && zdo.GetBool(NAME_HIDDEN))
+            {
+                __result = false;
+            }
+        }
+    }
+
+    /// <summary>
     /// Check if the display name needs to be hidden.
     /// </summary>
     [HarmonyPatch(typeof(Player), nameof(Player.GetHoverName))]
@@ -51,7 +77,7 @@ public class IncognitoMode
     {
         private static void Postfix(Player __instance, ref string __result)
         {
-            if (__instance.m_nview == null)
+            if (IncognitoModePlugin.GetHideHud() || __instance.m_nview == null)
             {
                 return;
             }
@@ -82,23 +108,10 @@ public class IncognitoMode
             {
                 Instance.Update();
 
-                bool hidden = false;
-                ItemDrop.ItemData helmet = __instance.m_helmetItem;
-                ItemDrop.ItemData back = __instance.m_shoulderItem;
-                ItemDrop.ItemData utility = __instance.m_utilityItem;
-
-                if (helmet != null && helmet.m_dropPrefab != null && Instance.ItemPrefabs.Contains(helmet.m_dropPrefab.name))
-                {
-                    hidden = true;
-                }
-                else if (back != null && back.m_dropPrefab != null && Instance.ItemPrefabs.Contains(back.m_dropPrefab.name))
-                {
-                    hidden = true;
-                }
-                else if (utility != null && utility.m_dropPrefab != null && Instance.ItemPrefabs.Contains(utility.m_dropPrefab.name))
-                {
-                    hidden = true;
-                }
+                bool hidden = ItemSetsHidden(__instance.m_helmetItem) ||
+                    ItemSetsHidden(__instance.m_shoulderItem) ||
+                    ItemSetsHidden(__instance.m_utilityItem) ||
+                    ItemSetsHidden(__instance.m_trinketItem);
 
                 zdo.Set(NAME_HIDDEN, hidden);
             }

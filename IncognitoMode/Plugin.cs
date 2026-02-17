@@ -12,7 +12,7 @@ namespace VentureValheim.IncognitoMode;
 public class IncognitoModePlugin : BaseUnityPlugin
 {
     private const string ModName = "IncognitoMode";
-    private const string ModVersion = "0.4.2";
+    private const string ModVersion = "0.5.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -27,12 +27,14 @@ public class IncognitoModePlugin : BaseUnityPlugin
     internal static ConfigEntry<string> CE_HiddenByItems = null!;
     internal static ConfigEntry<string> CE_HiddenDisplayName = null!;
     internal static ConfigEntry<bool> CE_HideNameInChat = null!;
-    internal static ConfigEntry<bool> CE_HidePlatformTag = null!; // TODO: Fix this feature
+    internal static ConfigEntry<bool> CE_HidePlatformTag = null!; // TODO: Fix this feature?
+    internal static ConfigEntry<bool> CE_HideHud = null!;
 
     public static string GetHiddenByItems() => CE_HiddenByItems.Value;
     public static string GetHiddenDisplayName() => CE_HiddenDisplayName.Value;
     public static bool GetHideNameInChat() => CE_HideNameInChat.Value;
     public static bool GetHidePlatformTag() => CE_HidePlatformTag.Value;
+    public static bool GetHideHud() => CE_HideHud.Value;
 
     private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
     private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
@@ -65,6 +67,8 @@ public class IncognitoModePlugin : BaseUnityPlugin
             true, true, ref CE_HideNameInChat);
         AddConfig("HidePlatformTag", general, "When hidden also hides steam/xbox platform tags (boolean).",
             true, false, ref CE_HidePlatformTag);
+        AddConfig("HideHud", general, "When hidden completely hides the hud as if the player is sneaking (boolean).",
+            true, false, ref CE_HideHud);
 
         #endregion
 

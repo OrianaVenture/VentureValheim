@@ -11,7 +11,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.IncognitoMode</RootNamespace>
         <AssemblyName>VentureValheim.IncognitoMode</AssemblyName>
-        <Version>0.4.2</Version>
+        <Version>0.5.0</Version>
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>

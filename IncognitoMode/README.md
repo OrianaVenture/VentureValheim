@@ -4,24 +4,28 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Roleplaying mod that changes the Player display name if their face is hidden by certain helmet, shoulder, or utility items. Configurable.
+Roleplaying mod that changes the Player display name if their face is hidden by certain helmet, shoulder, utility, or trinket items. Configurable.
 
 ## Features
 
 This is a roleplaying mod aimed at making in-game experiences more realistic. Come across a player in a full padded armor set? Well I wouldn't be able to tell who they are either! Configure the display name of these mystery characters with the HiddenDisplayName config, and pick which items can hide a player name with HiddenByItems config. Players will have to take off their items to reveal their identities! Good luck knowing who robbed you!
 
-Currently, equipped helmet, shoulder, and utility items are supported. Will work with custom items added by other mods given they are of one of these categories.
+If you wish to hide the entire player hud (as if that player is sneaking) set the HideHud configuration to True.
 
-### Vanilla Helmet Prefabs
+Currently, equipped helmet, shoulder, utility, and trinket items are supported. Will work with custom items added by other mods given they are of one of these categories.
+
+### Vanilla Helmet Prefabs (Not complete)
 
 * HelmetLeather
 * HelmetBronze
 * HelmetTrollLeather
+* HelmetBerserkerHood
 * HelmetIron
 * HelmetRoot
 * HelmetFenring
 * HelmetDrake
 * HelmetPadded
+* HelmetBerserkerUndead
 * HelmetMage
 * HelmetCarapace
 * HelmetFlametal
