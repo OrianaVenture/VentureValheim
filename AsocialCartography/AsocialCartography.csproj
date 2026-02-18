@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VentureValheim.AsocialCartography</RootNamespace>
     <AssemblyName>VentureValheim.AsocialCartography</AssemblyName>
-    <Version>0.2.3</Version>
+    <Version>0.3.0</Version>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>

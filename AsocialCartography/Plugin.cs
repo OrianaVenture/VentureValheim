@@ -11,7 +11,7 @@ namespace VentureValheim.AsocialCartography;
 public class AsocialCartographyPlugin : BaseUnityPlugin
 {
     private const string ModName = "AsocialCartography";
-    private const string ModVersion = "0.2.3";
+    private const string ModVersion = "0.3.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -27,11 +27,13 @@ public class AsocialCartographyPlugin : BaseUnityPlugin
     private static ConfigEntry<bool> CE_ReceivePins = null!;
     private static ConfigEntry<bool> CE_IgnoreBossPins = null!;
     private static ConfigEntry<bool> CE_IgnoreHildirPins = null!;
+    private static ConfigEntry<float> CE_ReceivePinRadius = null!;
 
     public static bool GetAddPins() => CE_AddPins.Value;
     public static bool GetIgnoreBossPins() => CE_IgnoreBossPins.Value;
     public static bool GetIgnoreHildirPins() => CE_IgnoreHildirPins.Value;
     public static bool GetReceivePins() => CE_ReceivePins.Value;
+    public static float GetReceivePinRadius() => CE_ReceivePinRadius.Value;
 
     private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
     {
@@ -60,6 +62,8 @@ public class AsocialCartographyPlugin : BaseUnityPlugin
             false, true, ref CE_IgnoreBossPins);
         AddConfig("IgnoreHildirPins", general, "False to include hildir map pins in the above configs (boolean).",
             false, true, ref CE_IgnoreHildirPins);
+        AddConfig("ReceivePinRadius", general, "Overlap radius that must be exceeded to receive a pin from the map table. Default in vanilla is 1 (float).",
+            false, 50f, ref CE_ReceivePinRadius);
 
         #endregion
 

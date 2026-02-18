@@ -4,7 +4,7 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Improved multiplayer Cartography Table handling. Toggle ability to share and receive player placed map pins at the table. The table will now remember all pins shared to it.
+Improved multiplayer Cartography Table handling. Toggle ability to share and receive player placed map pins at the table. Configure an overlap radius requirement for receiving map pins from the cartography table.
 
 ## Features
 
@@ -18,11 +18,15 @@ These toggles only apply to the 5 placable pins in vanilla by default. All disco
 
 ### Map Merging
 
-In vanilla the last person to write to a cartography table will erase the existing stored data. Usually you must first read the cartography table before writing to it to preserve the old pins. This mod changes the behavior to merge the existing data on the table with your valid entries before saving it to the table. If you desire to reset the cartography table with this mod installed you must delete it and rebuild.
+In Valheim versions before 0.217.46 using the cartography table would overwrite the pins with your own when writing to the table. This mod historically merged map table pins but this feature is no longer required so was removed.
 
-### Vanilla Commands
+### Allowed Pin Radius
 
-If you are adding this mod mid-game and need to clean up your existing map pins the vanilla command "resetsharedmap" will remove shared cartography data for you.
+There is a configuration ReceivePinRadius to control how close pins are allowed to be in order to receive them when reading from the cartography table. This setting alone can greatly decrease clutter. Vanilla by default uses a value of 1. Recommended values are between 50 and 200.
+
+### Adding To Existing Games
+
+If you are adding this mod mid-game and need to clean up your existing map pins the vanilla command ``resetsharedmap`` will remove shared cartography data for you. If you desire to reset existing cartography tables you must destroy them and rebuild.
 
 ## Installation
 
@@ -30,25 +34,7 @@ This mod is client side only and changes made to the configurations will only af
 
 ## Changelog
 
-### 0.2.3
-
-* Update for game version 0.221.4.
-
-### 0.2.2
-
-* Update for game version 0.220.3.
-
-### 0.2.1
-
-* Courtesy update for Ashlands, new logo. No feature changes.
-
-### 0.2.0
-
-* Added new configs to block adding/receiving boss and hildir map pins.
-
-### 0.1.0
-
-* First release.
+Moved to new file, it will appear as a new tab on the thunderstore page.
 
 ## Contributing
 

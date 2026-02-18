@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
 using HarmonyLib;
 using Splatform;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
 using UnityEngine;
 
 namespace VentureValheim.AsocialCartography;
@@ -28,7 +26,7 @@ public class AsocialCartography
             return false;
         }
 
-        if (!AsocialCartographyPlugin.GetIgnoreHildirPins() && 
+        if (!AsocialCartographyPlugin.GetIgnoreHildirPins() &&
             (pin == Minimap.PinType.Hildir1 ||
              pin == Minimap.PinType.Hildir2 ||
              pin == Minimap.PinType.Hildir3))
@@ -40,69 +38,7 @@ public class AsocialCartography
     }
 
     /// <summary>
-    /// Gets all the existing pins from the map data that are not already present
-    /// on the player's current minimap instance.
-    /// </summary>
-    /// <param name="minimap">Player minimap instance</param>
-    /// <param name="mapData">Cartography table data</param>
-    /// <returns></returns>
-    private static List<Minimap.PinData> GetMapPins(Minimap minimap, byte[] mapData)
-    {
-        List<Minimap.PinData> existingPins = new List<Minimap.PinData>();
-        if (mapData != null)
-        {
-            try
-            {
-                ZPackage zPackage = new ZPackage(mapData);
-                int version = zPackage.ReadInt();
-
-                // Advance the ZPackage pointer to map pin data
-                // Could write custom code for this but more prone to breaking
-                if (minimap.ReadExploredArray(zPackage, version) != null)
-                {
-                    // Map version 2 last suppported in 217.14
-                    // Map version 3 implemented in 217.22
-                    if (version >= 2)
-                    {
-                        int total = zPackage.ReadInt();
-                        for (int lcv = 0; lcv < total; lcv++)
-                        {
-                            long playerID = zPackage.ReadLong();
-                            string name = zPackage.ReadString();
-                            Vector3 pos = zPackage.ReadVector3();
-                            Minimap.PinType type = (Minimap.PinType)zPackage.ReadInt();
-                            bool isChecked = zPackage.ReadBool();
-                            string author = ((version >= 3) ? zPackage.ReadString() : "");
-
-                            if (!minimap.HavePinInRange(pos, 1f))
-                            {
-                                var pin = new Minimap.PinData();
-                                pin.m_type = type;
-                                pin.m_name = name;
-                                pin.m_pos = pos;
-                                pin.m_save = true;
-                                pin.m_checked = isChecked;
-                                pin.m_ownerID = playerID;
-                                pin.m_author = new PlatformUserID(author);
-                                existingPins.Add(pin);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                AsocialCartographyPlugin.AsocialCartographyLogger.LogError("Caught an exception while parsing map data:");
-                AsocialCartographyPlugin.AsocialCartographyLogger.LogWarning(e);
-            }
-        }
-
-        return existingPins;
-    }
-
-    /// <summary>
     /// Prevent player pins from being added to the table when config enabled.
-    /// Merge existing pins from the table to the map data.
     /// </summary>
     [HarmonyPatch(typeof(Minimap), nameof(Minimap.GetSharedMapData))]
     public static class Patch_Minimap_GetSharedMapData
@@ -124,10 +60,6 @@ public class AsocialCartography
                     }
                 }
             }
-
-            // Add existing pins after player pins are cleaned
-            var pins = GetMapPins(__instance, oldMapData);
-            __instance.m_pins.AddRange(pins);
         }
 
         private static void Postfix(Minimap __instance, List<Minimap.PinData> __state)
@@ -145,33 +77,37 @@ public class AsocialCartography
     [HarmonyPatch(typeof(Minimap), nameof(Minimap.AddSharedMapData))]
     public static class Patch_Minimap_AddSharedMapData
     {
-        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            var codes = new List<CodeInstruction>(instructions);
-            MethodInfo method = AccessTools.Method(typeof(Minimap), nameof(Minimap.AddPin));
-            for (var lcv = 0; lcv < codes.Count; lcv++)
-            {
-                if (codes[lcv].opcode == OpCodes.Call)
-                {
-                    if (codes[lcv].operand?.Equals(method) ?? false)
-                    {
-                        MethodInfo methodCall = AccessTools.Method(typeof(AsocialCartography), nameof(AddPinReplacement));
-                        List<Label> lables = codes[lcv].labels;
-                        codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
-                        codes[lcv].labels = lables;
-                        break;
-                    }
-                }
-            }
-
-            return codes.AsEnumerable();
+            return new CodeMatcher(instructions, generator)
+                .Start()
+                .MatchStartForward(
+                    new CodeMatch(OpCodes.Ldc_R4),
+                    new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Minimap), nameof(Minimap.HavePinInRange))))
+                .ThrowIfInvalid($"Could not patch Minimap.AddSharedMapData! (HavePinInRange not found)")
+                .SetInstruction(Transpilers.EmitDelegate(AsocialCartographyPlugin.GetReceivePinRadius))
+                .MatchStartForward(
+                    new CodeMatch(OpCodes.Ldc_R4),
+                    new CodeMatch(OpCodes.Ldc_I4_0),
+                    new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Minimap), nameof(Minimap.GetClosestPin))))
+                .ThrowIfInvalid($"Could not patch Minimap.AddSharedMapData! (GetClosestPin not found)")
+                .SetInstruction(Transpilers.EmitDelegate(AsocialCartographyPlugin.GetReceivePinRadius))
+                .MatchStartForward(
+                    new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Minimap), nameof(Minimap.AddPin))))
+                .ThrowIfInvalid("Could not patch Minimap.AddSharedMapData! (AddPin not found)")
+                .ExtractLabels(out List<Label> lables)
+                .SetInstruction(new CodeInstruction(OpCodes.Call,
+                    AccessTools.Method(typeof(AsocialCartography), nameof(AddPinReplacement))))
+                .AddLabels(lables)
+                .InstructionEnumeration();
         }
     }
 
     /// <summary>
     /// Minimap.AddPin replacement: Skip add pins when config disabled.
     /// </summary>
-    public Minimap.PinData AddPinReplacement(Vector3 pos, Minimap.PinType type, string name, bool save, bool isChecked, long ownerID, PlatformUserID author)
+    public Minimap.PinData AddPinReplacement(Vector3 pos, Minimap.PinType type, string name, bool save,
+        bool isChecked, long ownerID, PlatformUserID author)
     {
         if (AsocialCartographyPlugin.GetReceivePins() || AllowedPin(type))
         {
