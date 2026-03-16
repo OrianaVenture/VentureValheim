@@ -1,74 +1,9 @@
-﻿using BepInEx;
-using HarmonyLib;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using HarmonyLib;
 
 namespace VentureValheim.MultiplayerTweaks;
 
 public class MapTweaks
 {
-    /// <summary>
-    /// Removes any Haldor/Hildir locations from the icons list for a zone.
-    /// This ensures they are not added to the player minimap.
-    /// </summary>
-    [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.GetLocationIcons))]
-    public static class Patch_ZoneSystem_GetLocationIcons
-    {
-        private static void Postfix(ref Dictionary<Vector3, string> icons)
-        {
-            bool fixSpawn = !MultiplayerTweaksPlugin.GetEnableTempleMapPin() &&
-                MultiplayerTweaksPlugin.GetPlayerDefaultSpawnPoint().IsNullOrWhiteSpace();
-
-            if (!fixSpawn &&
-                MultiplayerTweaksPlugin.GetEnableTempleMapPin() &&
-                MultiplayerTweaksPlugin.GetEnableHaldorMapPin() &&
-                MultiplayerTweaksPlugin.GetEnableHildirMapPin() &&
-                MultiplayerTweaksPlugin.GetEnableBogWitchMapPin())
-            {
-                return;
-            }
-
-            var list = new List<Vector3>();
-            foreach (var item in icons)
-            {
-                switch (item.Value)
-                {
-                    case "StartTemple":
-                        if (!MultiplayerTweaksPlugin.GetEnableTempleMapPin() && !fixSpawn)
-                        {
-                            list.Add(item.Key);
-                        }
-                        break;
-                    case "Vendor_BlackForest":
-                        if (!MultiplayerTweaksPlugin.GetEnableHaldorMapPin())
-                        {
-                            list.Add(item.Key);
-                        }
-                        break;
-                    case "Hildir_camp":
-                        if (!MultiplayerTweaksPlugin.GetEnableHildirMapPin())
-                        {
-                            list.Add(item.Key);
-                        }
-                        break;
-                    case "BogWitch_Camp":
-                        if (!MultiplayerTweaksPlugin.GetEnableBogWitchMapPin())
-                        {
-                            list.Add(item.Key);
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            foreach (var item in list)
-            {
-                icons.Remove(item);
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
     public static class Patch_Player_OnSpawned
     {

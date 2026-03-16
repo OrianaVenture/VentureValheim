@@ -1,3 +1,7 @@
+## 0.11.8
+
+* New feature: Adds small custom map icons when interacting with traders.
+
 ## 0.11.7
 
 * Small optimization to help with FPS issues.

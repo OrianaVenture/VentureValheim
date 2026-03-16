@@ -13,6 +13,7 @@ Commonly requested tweaks for servers and single player modes. Toggle the Valkyr
 * Add Hugin tutorials to the seen list when tutorials are turned off.
 * Toggle or customize the "I have arrived!" message on new player connection.
 * Toggle the visibility of the Haldor, Hildir, Bog Witch, and Start Temple Map Pins.
+  * This mods also adds smaller versions of the trader pins when interacting with each vanilla trader. (These have an m_type value of 123, 124, 125)
 * Toggle player Map Position Icons always on or off.
 * Toggle PVP always on or off.
 * Toggle teleporting on death, or only on PVP deaths.
@@ -47,7 +48,9 @@ When a boss is summoned, alerted, and/or killed there is a server-wide message b
 
 This mod gives you the ability to block the temple and trader map pins from showing on the map. This feature is flexible and can be disabled or enabled at any time. If you disable the temple map pin you must also specify a default spawn point since the game usually uses this map pin to find a spawn point for players.
 
-For example, when using ``EnableHaldorMapPin = false`` the pin will not show for all players when the Haldor trader is discovered. Useful for keeping the location of Haldor a secret until you choose to reveal it!
+For example, when using ``EnableHaldorMapPin = false`` the pin will not show for all players when the Haldor trader is discovered. Useful for keeping the location of Haldor a secret unless the player finds these locations or until you choose to globally reveal it! 
+
+New smaller versions of the trader map pins will be added to a player's minimap when interacting with the traders so they do not have to add their own manual map pins upon discovery. These are sharable pins at the cartography table.
 
 Admins are able to bypass these settings.
 
