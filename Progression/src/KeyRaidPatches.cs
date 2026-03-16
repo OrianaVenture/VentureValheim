@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 
 namespace VentureValheim.Progression;
@@ -39,7 +40,7 @@ public partial class KeyManager
     {
         foreach (string requiredGlobalKey in randEvent.m_requiredGlobalKeys)
         {
-            if (!playerKeys.Contains(requiredGlobalKey))
+            if (!playerKeys.Contains(requiredGlobalKey.ToLower()))
             {
                 return false;
             }
@@ -47,7 +48,7 @@ public partial class KeyManager
 
         foreach (string notRequiredGlobalKey in randEvent.m_notRequiredGlobalKeys)
         {
-            if (playerKeys.Contains(notRequiredGlobalKey))
+            if (playerKeys.Contains(notRequiredGlobalKey.ToLower()))
             {
                 return false;
             }

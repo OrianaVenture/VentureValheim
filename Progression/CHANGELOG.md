@@ -1,3 +1,7 @@
+## 0.3.12
+
+* Fixed an issue that prevent Troll and Bat raids from being selected as valid events (sorry, or I guess not sorry? Enjoy hard mode again)
+
 ## 0.3.11
 
 * Changed portals metal check patch to better respect other mods including Advanced Portals.
