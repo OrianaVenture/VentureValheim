@@ -28,6 +28,10 @@ There is a configuration ReceivePinRadius to control how close pins are allowed 
 
 If you are adding this mod mid-game and need to clean up your existing map pins the vanilla command ``resetsharedmap`` will remove shared cartography data for you. If you desire to reset existing cartography tables you must destroy them and rebuild.
 
+### Other Mod Support
+
+The IgnoredCustomPins configuration will allow you to add the integer id of custom map pins to be ignored in this mod. For example, Multiplayer Tweaks adds three new custom map pins of the ids ``123, 124, 125`` for the traders.
+
 ## Installation
 
 This mod is client side only and changes made to the configurations will only affect your client. Live updates to the configs will take immediate effect.

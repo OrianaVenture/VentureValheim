@@ -1,3 +1,4 @@
+using BepInEx;
 using HarmonyLib;
 using Splatform;
 using System.Collections.Generic;
@@ -9,6 +10,40 @@ namespace VentureValheim.AsocialCartography;
 
 public class AsocialCartography
 {
+    private static HashSet<int> customIgnoredPins;
+
+    /// <summary>
+    /// Converts a comma separated string to a HashSet<int>.
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static HashSet<int> StringToIntHash(string str)
+    {
+        if (!str.IsNullOrWhiteSpace())
+        {
+            var list = str.Split(',');
+            HashSet<int> nums = new HashSet<int>();
+            for (var lcv = 0; lcv < list.Length; lcv++)
+            {
+                nums.Add(int.Parse(list[lcv].Trim()));
+            }
+
+            return nums;
+        }
+
+        return null;
+    }
+
+    public static void UpdateConfigurations()
+    {
+        if (customIgnoredPins != null)
+        {
+            customIgnoredPins.Clear();
+        }
+
+        customIgnoredPins = StringToIntHash(AsocialCartographyPlugin.GetIgnoredCustomPins());
+    }
+
     private static bool AllowedPin(Minimap.PinType pin)
     {
         if (pin == Minimap.PinType.Icon0 ||
@@ -30,6 +65,11 @@ public class AsocialCartography
             (pin == Minimap.PinType.Hildir1 ||
              pin == Minimap.PinType.Hildir2 ||
              pin == Minimap.PinType.Hildir3))
+        {
+            return false;
+        }
+
+        if (customIgnoredPins != null && customIgnoredPins.Contains((int)pin))
         {
             return false;
         }

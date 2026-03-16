@@ -1,6 +1,10 @@
+## 0.3.1
+
+* Added new configuration IgnoredCustomPins to allow blocking custom pins from other mods.
+
 ## 0.3.0
 
-* Add new configuration AllowedPinRadius to prevent overlapping pins to be added to the player map from the cartography table.
+* Added new configuration AllowedPinRadius to prevent overlapping pins to be added to the player map from the cartography table.
 * Removed legacy map pin merging code for the table, was fixed in valheim version 0.217.46.
 
 ## 0.2.3
