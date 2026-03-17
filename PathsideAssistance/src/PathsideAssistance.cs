@@ -24,30 +24,36 @@ public class PathsideAssistance
     /// <param name="piece"></param>
     private static void UpdatePieceTable(GameObject piece)
     {
-        if (piece != null)
+        if (piece == null)
         {
-            var itemDrop = piece.GetComponent<ItemDrop>();
-            if (itemDrop != null)
-            {
-                var pieceTable = itemDrop.m_itemData.m_shared.m_buildPieces;
-                if (pieceTable != null)
-                {
-                    List<GameObject> newPieceTable = new List<GameObject>();
-                    foreach (var item in pieceTable.m_pieces)
-                    {
-                        newPieceTable.Add(item); // Add original
-                        var copy = GetPaintOnlyCopy(item);
-                        if (copy != null)
-                        {
-                            IconMerge.AddSpriteOverlay(ref copy);
-                            newPieceTable.Add(copy); // Add modified
-                        }
-                    }
+            return;
+        }
 
-                    itemDrop.m_itemData.m_shared.m_buildPieces.m_pieces = newPieceTable;
-                }
+        ItemDrop itemDrop = piece.GetComponent<ItemDrop>();
+        if (itemDrop == null)
+        {
+            return;
+        }
+
+        PieceTable pieceTable = itemDrop.m_itemData.m_shared.m_buildPieces;
+        if (pieceTable == null)
+        {
+            return;
+        }
+
+        List<GameObject> newPieceTable = new List<GameObject>();
+        foreach (GameObject item in pieceTable.m_pieces)
+        {
+            newPieceTable.Add(item); // Add original
+            GameObject copy = GetPaintOnlyCopy(item);
+            if (copy != null)
+            {
+                IconMerge.AddSpriteOverlay(ref copy);
+                newPieceTable.Add(copy); // Add modified
             }
         }
+
+        itemDrop.m_itemData.m_shared.m_buildPieces.m_pieces = newPieceTable;
     }
 
     /// <summary>
@@ -59,47 +65,47 @@ public class PathsideAssistance
     /// <returns></returns>
     private static GameObject GetPaintOnlyCopy(GameObject piece)
     {
-        if (piece.GetComponent<TerrainOp>() != null)
+        if (piece.GetComponent<TerrainOp>() == null)
         {
-            var copy = GameObject.Instantiate(piece, PathsideAssistancePlugin.Root.transform, false);
-            copy.name = Utils.GetPrefabName(copy) + "_ALT";
-
-            // Change name
-            var pieceComp = copy.GetComponent<Piece>();
-            if (pieceComp != null)
-            {
-                pieceComp.m_name = Localization.instance.Localize($"{pieceComp.m_name}") + " ALT";
-            }
-
-            // Change TerrainOp
-            var terrainComp = copy.GetComponent<TerrainOp>();
-            if (terrainComp.m_settings.m_raise != true &&
-                (terrainComp.m_settings.m_level == true || terrainComp.m_settings.m_smooth == true))
-            {
-                terrainComp.m_settings.m_raise = false;
-                terrainComp.m_settings.m_level = false;
-                terrainComp.m_settings.m_smooth = false;
-            }
-            else
-            {
-                terrainComp.m_settings.m_raiseRadius *= 2;
-                terrainComp.m_settings.m_levelRadius *= 2;
-                terrainComp.m_settings.m_smoothRadius *= 2;
-                terrainComp.m_settings.m_paintRadius *= 2;
-
-                if (pieceComp.m_resources != null)
-                {
-                    for (int lcv = 0; lcv < pieceComp.m_resources.Length; lcv++)
-                    {
-                        pieceComp.m_resources[lcv].m_amount *= 4;
-                    }
-                }
-            }
-
-            return copy;
+            return null;
         }
 
-        return null;
+        GameObject copy = GameObject.Instantiate(piece, PathsideAssistancePlugin.Root.transform, false);
+        copy.name = Utils.GetPrefabName(copy) + "_ALT";
+
+        // Change name
+        Piece pieceComp = copy.GetComponent<Piece>();
+        if (pieceComp != null)
+        {
+            pieceComp.m_name = $"{pieceComp.m_name} ALT";
+        }
+
+        // Change TerrainOp
+        TerrainOp terrainComp = copy.GetComponent<TerrainOp>();
+        if (terrainComp.m_settings.m_raise != true &&
+            (terrainComp.m_settings.m_level == true || terrainComp.m_settings.m_smooth == true))
+        {
+            terrainComp.m_settings.m_raise = false;
+            terrainComp.m_settings.m_level = false;
+            terrainComp.m_settings.m_smooth = false;
+        }
+        else
+        {
+            terrainComp.m_settings.m_raiseRadius *= 2;
+            terrainComp.m_settings.m_levelRadius *= 2;
+            terrainComp.m_settings.m_smoothRadius *= 2;
+            terrainComp.m_settings.m_paintRadius *= 2;
+
+            if (pieceComp.m_resources != null)
+            {
+                for (int lcv = 0; lcv < pieceComp.m_resources.Length; lcv++)
+                {
+                    pieceComp.m_resources[lcv].m_amount *= 4;
+                }
+            }
+        }
+
+        return copy;
     }
 
     /// <summary>
@@ -113,10 +119,10 @@ public class PathsideAssistance
         {
             if (!Configured && SceneManager.GetActiveScene().name.Equals("main"))
             {
-                var hoe = __instance.GetItemPrefab("Hoe".GetStableHashCode());
+                GameObject hoe = __instance.GetItemPrefab("Hoe".GetStableHashCode());
                 UpdatePieceTable(hoe);
 
-                var cultivator = __instance.GetItemPrefab("Cultivator".GetStableHashCode());
+                GameObject cultivator = __instance.GetItemPrefab("Cultivator".GetStableHashCode());
                 UpdatePieceTable(cultivator);
 
                 PathsideAssistancePlugin.PathsideAssistanceLogger.LogInfo("Done adding additional options.");

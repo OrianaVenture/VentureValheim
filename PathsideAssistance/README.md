@@ -20,6 +20,10 @@ This mod is client side and has no configuration options.
 
 ## Changelog
 
+### 0.2.4
+
+* Fixed localization for added pieces being performed too soon.
+
 ### 0.2.3
 
 * Update for game version 0.219.13.
