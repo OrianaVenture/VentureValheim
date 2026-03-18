@@ -67,6 +67,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MutedMist", "MutedMist\Mute
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPCSTests", "NPCSTests\NPCSTests.csproj", "{E8A80C93-C624-49B1-B784-59BE199229D6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MutedSails", "MutedSails\MutedSails.csproj", "{E1AE7638-9DC5-41AF-86E5-BBC015CD89A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -201,6 +203,10 @@ Global
 		{E8A80C93-C624-49B1-B784-59BE199229D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8A80C93-C624-49B1-B784-59BE199229D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8A80C93-C624-49B1-B784-59BE199229D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1AE7638-9DC5-41AF-86E5-BBC015CD89A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1AE7638-9DC5-41AF-86E5-BBC015CD89A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1AE7638-9DC5-41AF-86E5-BBC015CD89A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1AE7638-9DC5-41AF-86E5-BBC015CD89A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
