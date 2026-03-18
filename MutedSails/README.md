@@ -6,6 +6,16 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 This mod increases the transparency of ship sails when on board making them see through. Happy Sailing!
 
+## Candid Shots
+
+<br>
+<img alt="Ship1" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MutedSails/images/Ship1.png?raw=true" />
+<img alt="Ship2" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MutedSails/images/Ship2.png?raw=true" />
+
+<br>
+<img alt="Ship3" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MutedSails/images/Ship3.png?raw=true" />
+<img alt="Ship4" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MutedSails/images/Ship4.png?raw=true" />
+
 ## Installation
 
 This mod is client side and has no configuration options. Must have Jotunn installed for this mod to work.
