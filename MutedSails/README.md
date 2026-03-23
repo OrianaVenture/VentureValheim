@@ -6,6 +6,10 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 This mod increases the transparency of ship sails when on board making them see through. Happy Sailing!
 
+## Features
+
+Automatic sail transparency when sails are deployed applying for any boats with players on board. Toggle the transparency on and off with a configurable hot key (default ``Y``).
+
 ## Candid Shots
 
 <br>
@@ -18,9 +22,14 @@ This mod increases the transparency of ship sails when on board making them see 
 
 ## Installation
 
-This mod is client side and has no configuration options. Must have Jotunn installed for this mod to work.
+This mod is client side and changes made to the configurations will only affect your client. Live updates to the configs will take immediate effect. Must have Jotunn installed for this mod to work.
 
 ## Changelog
+
+
+### 0.1.1
+
+* Added configurations and a hotkey to toggle sail transparency live (Default Y)
 
 ### 0.1.0
 

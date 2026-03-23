@@ -7,6 +7,8 @@ namespace VentureValheim.MutedSails;
 
 public class MutedSails
 {
+    public static bool ConfigurationDirty = false;
+
     public class MutedSailTracker : MonoBehaviour
     {
         public Material TransparentSailMaterial;
@@ -83,11 +85,12 @@ public class MutedSails
 
         private static void Postfix(Ship __instance, bool __state)
         {
-            if (__state || __instance.m_sailCloth == null || Player.m_localPlayer == null)
+            if ((__state && !ConfigurationDirty) || __instance.m_sailCloth == null || Player.m_localPlayer == null)
             {
                 return;
             }
 
+            ConfigurationDirty = false;
             SkinnedMeshRenderer sail = __instance.m_sailCloth.GetComponent<SkinnedMeshRenderer>();
             MutedSailTracker mutedSail = __instance.gameObject.GetComponent<MutedSailTracker>();
 
@@ -96,13 +99,17 @@ public class MutedSails
                 return;
             }
 
-            if (__instance.HasPlayerOnboard())
+            bool shouldBeTransparent = MutedSailsPlugin.GetTransparencyEnabled() && __instance.HasPlayerOnboard();
+
+            if (shouldBeTransparent && !mutedSail.IsTransparent)
             {
                 sail.material = mutedSail.TransparentSailMaterial;
+                mutedSail.IsTransparent = true;
             }
-            else
+            else if (!shouldBeTransparent && mutedSail.IsTransparent)
             {
                 sail.material = mutedSail.OriginalSailMaterial;
+                mutedSail.IsTransparent = false;
             }
         }
     }
@@ -116,6 +123,19 @@ public class MutedSails
             if (SceneManager.GetActiveScene().name.Equals("main"))
             {
                 UpdateSails();
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.Update))]
+    public static class Patch_Player_Update
+    {
+        private static void Postfix(Player __instance)
+        {
+            if (__instance.TakeInput() && ZInput.GetKeyDown(MutedSailsPlugin.GetToggleKey()))
+            {
+                MutedSailsPlugin.CE_TransparencyEnabled.BoxedValue = !MutedSailsPlugin.CE_TransparencyEnabled.Value;
+                ConfigurationDirty = true;
             }
         }
     }

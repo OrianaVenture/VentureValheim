@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VentureValheim.MutedSails</RootNamespace>
     <AssemblyName>VentureValheim.MutedSails</AssemblyName>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>
