@@ -17,7 +17,7 @@ namespace VentureValheim.MiningCaves;
 public class MiningCavesPlugin : BaseUnityPlugin
 {
     private const string ModName = "MiningCaves";
-    private const string ModVersion = "0.2.0";
+    private const string ModVersion = "0.2.1";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
@@ -33,6 +33,8 @@ public class MiningCavesPlugin : BaseUnityPlugin
     public static ConfigEntry<bool> CE_LockTerrain = null!;
     public static ConfigEntry<string> CE_LockTerrainIgnoreItems = null!;
     public static ConfigEntry<bool> CE_RemoveSilverWishbonePing = null!;
+
+    internal static AssetBundle CavesBundle;
 
     public static bool GetLockTerrain()
     {
@@ -82,6 +84,7 @@ public class MiningCavesPlugin : BaseUnityPlugin
             true, false, ref CE_RemoveSilverWishbonePing);
 
         ZoneManager.OnVanillaLocationsAvailable += CaveManager.AddMiningCaves;
+        PrefabManager.OnVanillaPrefabsAvailable += CaveManager.AddPrefabs;
 
         // Create a dummy root object to reference
         Root = new GameObject("MiningCavesRoot");
@@ -92,6 +95,8 @@ public class MiningCavesPlugin : BaseUnityPlugin
         Assembly assembly = Assembly.GetExecutingAssembly();
         HarmonyInstance.PatchAll(assembly);
         SetupWatcher();
+
+        CavesBundle = AssetUtils.LoadAssetBundleFromResources("vv_miningcaves", Assembly.GetExecutingAssembly());
     }
 
     private void OnDestroy()

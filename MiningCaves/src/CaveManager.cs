@@ -1,21 +1,16 @@
-﻿using HarmonyLib;
-using Jotunn.Configs;
+﻿using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
-using Jotunn.Utils;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace VentureValheim.MiningCaves;
 
 public class CaveManager
 {
-    public static void AddMiningCaves()
+    public static void AddPrefabs()
     {
         // Disable the terrain modifiers located on the copper node frac
-        var frac = PrefabManager.Instance.GetPrefab("rock4_copper_frac");
+        GameObject frac = PrefabManager.Instance.GetPrefab("rock4_copper_frac");
         if (frac != null)
         {
             var modifiers = frac.gameObject.GetComponentsInChildren<TerrainModifier>();
@@ -25,11 +20,19 @@ public class CaveManager
             }
         }
 
-        AssetBundle bundle = AssetUtils.LoadAssetBundleFromResources("vv_miningcaves", Assembly.GetExecutingAssembly());
+        PrefabManager.Instance.AddPrefab(new CustomPrefab(MiningCavesPlugin.CavesBundle, "VV_rock4_copper", true)); // Legacy Copper Ore
+        PrefabManager.Instance.AddPrefab(new CustomPrefab(MiningCavesPlugin.CavesBundle, "VV_MineRock_Copper", true));
+        PrefabManager.Instance.AddPrefab(new CustomPrefab(MiningCavesPlugin.CavesBundle, "VV_MineRock_Tin", true));
+        PrefabManager.Instance.AddPrefab(new CustomPrefab(MiningCavesPlugin.CavesBundle, "VV_MineRock_Iron", true));
 
+        PrefabManager.OnVanillaPrefabsAvailable -= AddPrefabs;
+    }
+
+    public static void AddMiningCaves()
+    {
         // Copper & Tin Cave
         var copperTinCaveName = "VV_CopperTinCave";
-        GameObject copperTinCave = ZoneManager.Instance.CreateLocationContainer(bundle, copperTinCaveName);
+        GameObject copperTinCave = ZoneManager.Instance.CreateLocationContainer(MiningCavesPlugin.CavesBundle, copperTinCaveName);
         LocationConfig copperTinCaveLocConfig = new LocationConfig();
         copperTinCaveLocConfig.Biome = Heightmap.Biome.BlackForest;
         copperTinCaveLocConfig.Quantity = 50;
@@ -45,7 +48,7 @@ public class CaveManager
 
         // Silver Cave
         var silverCaveName = "VV_SilverCave";
-        GameObject silverCave = ZoneManager.Instance.CreateLocationContainer(bundle, silverCaveName);
+        GameObject silverCave = ZoneManager.Instance.CreateLocationContainer(MiningCavesPlugin.CavesBundle, silverCaveName);
         LocationConfig silverCaveLocConfig = new LocationConfig();
         silverCaveLocConfig.Biome = Heightmap.Biome.Mountain;
         silverCaveLocConfig.Quantity = 50;
@@ -55,6 +58,7 @@ public class CaveManager
         silverCaveLocConfig.MinAltitude = 90;
         silverCaveLocConfig.MaxAltitude = 2000;
         silverCaveLocConfig.Priotized = true;
+        silverCaveLocConfig.ClearArea = true;
 
         CustomLocation silverCaveLoc = new CustomLocation(silverCave, true, silverCaveLocConfig);
         ZoneManager.Instance.AddCustomLocation(silverCaveLoc);
