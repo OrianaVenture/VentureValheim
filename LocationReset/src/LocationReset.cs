@@ -342,7 +342,8 @@ public class LocationReset
             obj.GetComponent<CreatureSpawner>() ||
             obj.GetComponent<WearNTear>() ||
             obj.GetComponent<SpawnArea>() ||
-            obj.GetComponent<RandomSpawn>();
+            obj.GetComponent<RandomSpawn>() ||
+            obj.GetComponent<LiquidVolume>();
     }
 
     /// <summary>

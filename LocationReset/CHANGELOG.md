@@ -1,3 +1,7 @@
+## 0.10.8
+
+* Added LiquidVolume (includes tar liquid) to allowed reset components.
+
 ## 0.10.7
 
 * Added more error checking to prevent exceptions.
