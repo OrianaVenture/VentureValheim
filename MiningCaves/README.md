@@ -4,7 +4,7 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Adds two new caves to the world containing ore for mining. Adds the ability to disable terrain changes caused by tools.
+Adds three new caves to the world containing ore for mining. Adds the ability to disable terrain changes caused by tools.
 
 ## Features
 
@@ -19,12 +19,17 @@ Adds two new caves to the world containing ore for mining. Adds the ability to d
 <img alt="Caves" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MiningCaves/pictures/MiningCaves-Silver-Outer.png?raw=true" />
 <img alt="Caves" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MiningCaves/pictures/MiningCaves-Silver-Inter.png?raw=true" />
 
+* Adds a cave for mining Copper and Iron in the Plains (prefab name VV_TarCave)
+<br>
+<img alt="Caves" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MiningCaves/pictures/MiningCaves-Tar-Outer.png?raw=true" />
+<img alt="Caves" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MiningCaves/pictures/MiningCaves-Tar-Inter.png?raw=true" />
+
 * Adds the ability to prevent player terrain changes from tools
 
 ### Adding Caves
 
 * If creating a new world with this mod installed the caves will be added automatically on world generation.
-* If you are adding this to an existing world you can run the vanilla "genloc" command to add caves to unexplored areas of the map. Be aware this can change the positions of boss locations and can make your map pins inaccurate.
+* If you are adding this to an existing world you can run the vanilla "genloc" command to add caves to unexplored areas of the map. Be aware this can change the positions of unexplored boss locations and can make your map pins inaccurate.
 * If your map is heavily explored you will need to use another mod to automatically add the locations to explored areas.
 
 Use the find command such as "find VV_SilverCave 50" in game after creating a world to have all these locations added to your map as pins. This will help you ensure the world had a good spawn. Example of the warning message displayed in your log file on a bad spawn after initial world generation:
@@ -56,6 +61,14 @@ If you do not wish to disable terrain changes entirely but want the option to cr
 ### Possible Future Improvements
 
 * World generation option to not place silver nodes.
+
+### Note On Mod Compatibility
+
+This mod changes the WaterVolume script to use the GetLiquidType method rather than a hard coded value. This was necessary to reuse the script with other LiquidType (Tar). This should not affect other mods unless they contain conflicting transpilers.
+
+This mod also adds a new component VV_VariableLiquidVolume to perform additional effects on custom WaterVolume game objects.
+
+If there are compatibility issues, or if you are interesting in replicating the effect for your mod, please reach out and we can discuss how to create a library feature for all mods to reuse.
 
 ## Installation
 

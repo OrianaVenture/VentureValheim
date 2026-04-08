@@ -17,7 +17,7 @@ namespace VentureValheim.MiningCaves;
 public class MiningCavesPlugin : BaseUnityPlugin
 {
     private const string ModName = "MiningCaves";
-    private const string ModVersion = "0.2.1";
+    private const string ModVersion = "0.3.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 

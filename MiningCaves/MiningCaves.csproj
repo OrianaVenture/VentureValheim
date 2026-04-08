@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VentureValheim.MiningCaves</RootNamespace>
     <AssemblyName>VentureValheim.MiningCaves</AssemblyName>
-    <Version>0.2.1</Version>
+    <Version>0.3.0</Version>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>

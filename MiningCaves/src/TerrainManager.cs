@@ -35,12 +35,12 @@ public class TerrainManager
     /// <returns></returns>
     public static HashSet<string> StringToSet(string str)
     {
-        var set = new HashSet<string>();
+        HashSet<string> set = new HashSet<string>();
 
         if (!str.IsNullOrWhiteSpace())
         {
             List<string> keys = str.Split(',').ToList();
-            for (var lcv = 0; lcv < keys.Count; lcv++)
+            for (int lcv = 0; lcv < keys.Count; lcv++)
             {
                 set.Add(keys[lcv].Trim());
             }
@@ -62,7 +62,7 @@ public class TerrainManager
         if (!name.IsNullOrWhiteSpace())
         {
             // Try hash code
-            var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
+            GameObject prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
             if (prefab == null)
             {
                 // Failed, try slow search
@@ -87,7 +87,7 @@ public class TerrainManager
     /// </summary>
     private static void RestoreOriginalValues()
     {
-        foreach (var original in _originalTerrainCompList)
+        foreach (OriginalTerrainComp original in _originalTerrainCompList)
         {
             if (!GetItemDrop(original.Name, out ItemDrop item))
             {
@@ -126,9 +126,9 @@ public class TerrainManager
                     if (terrainOp.m_settings.m_level != false || terrainOp.m_settings.m_smooth != false)
                     {
                         // Replace pieces that flatten or level
-                        var copy = GameObject.Instantiate(piece, MiningCavesPlugin.Root.transform, false);
+                        GameObject copy = GameObject.Instantiate(piece, MiningCavesPlugin.Root.transform, false);
                         copy.name = Utils.GetPrefabName(copy) + SUFFIX;
-                        var terrainOpCopy = copy.GetComponent<TerrainOp>();
+                        TerrainOp terrainOpCopy = copy.GetComponent<TerrainOp>();
                         terrainOpCopy.m_settings.m_level = false;
                         terrainOpCopy.m_settings.m_smooth = false;
 
@@ -162,13 +162,13 @@ public class TerrainManager
         original = itemDrop.m_itemData.m_shared.m_spawnOnHitTerrain;
         if (original != null)
         {
-            var terrainOp = original.GetComponent<TerrainOp>();
+            TerrainOp terrainOp = original.GetComponent<TerrainOp>();
             if (terrainOp != null &&
                 (terrainOp.m_settings.m_raise != false || terrainOp.m_spawnOnPlaced != null))
             {
-                var copy = GameObject.Instantiate(original, MiningCavesPlugin.Root.transform, false);
+                GameObject copy = GameObject.Instantiate(original, MiningCavesPlugin.Root.transform, false);
                 copy.name = Utils.GetPrefabName(copy) + SUFFIX;
-                var terrainOpCopy = copy.GetComponent<TerrainOp>();
+                TerrainOp terrainOpCopy = copy.GetComponent<TerrainOp>();
                 terrainOpCopy.m_settings.m_raise = false;
                 terrainOpCopy.m_spawnOnPlaced = null;
                 itemDrop.m_itemData.m_shared.m_spawnOnHitTerrain = copy;
@@ -206,7 +206,7 @@ public class TerrainManager
 
     private static void RemoveToolTerrainChanges()
     {
-        var ignoreItems = StringToSet(MiningCavesPlugin.GetLockTerrainIgnoreItems());
+        HashSet<string> ignoreItems = StringToSet(MiningCavesPlugin.GetLockTerrainIgnoreItems());
 
         foreach (GameObject item in ObjectDB.instance.m_items)
         {
@@ -238,7 +238,7 @@ public class TerrainManager
         GameObject silver = ZNetScene.instance.GetPrefab("silvervein");
         if (silver != null)
         {
-            var beacon = silver.GetComponentInChildren<Beacon>();
+            Beacon beacon = silver.GetComponentInChildren<Beacon>();
             if (beacon != null)
             {
                 GameObject.Destroy(beacon);

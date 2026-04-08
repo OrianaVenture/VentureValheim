@@ -13,8 +13,8 @@ public class CaveManager
         GameObject frac = PrefabManager.Instance.GetPrefab("rock4_copper_frac");
         if (frac != null)
         {
-            var modifiers = frac.gameObject.GetComponentsInChildren<TerrainModifier>();
-            foreach (var modifier in modifiers)
+            TerrainModifier[] modifiers = frac.gameObject.GetComponentsInChildren<TerrainModifier>();
+            foreach (TerrainModifier modifier in modifiers)
             {
                 modifier.enabled = false;
             }
@@ -31,7 +31,7 @@ public class CaveManager
     public static void AddMiningCaves()
     {
         // Copper & Tin Cave
-        var copperTinCaveName = "VV_CopperTinCave";
+        string copperTinCaveName = "VV_CopperTinCave";
         GameObject copperTinCave = ZoneManager.Instance.CreateLocationContainer(MiningCavesPlugin.CavesBundle, copperTinCaveName);
         LocationConfig copperTinCaveLocConfig = new LocationConfig();
         copperTinCaveLocConfig.Biome = Heightmap.Biome.BlackForest;
@@ -47,7 +47,7 @@ public class CaveManager
         ZoneManager.Instance.AddCustomLocation(copperTinCaveLoc);
 
         // Silver Cave
-        var silverCaveName = "VV_SilverCave";
+        string silverCaveName = "VV_SilverCave";
         GameObject silverCave = ZoneManager.Instance.CreateLocationContainer(MiningCavesPlugin.CavesBundle, silverCaveName);
         LocationConfig silverCaveLocConfig = new LocationConfig();
         silverCaveLocConfig.Biome = Heightmap.Biome.Mountain;
@@ -62,6 +62,24 @@ public class CaveManager
 
         CustomLocation silverCaveLoc = new CustomLocation(silverCave, true, silverCaveLocConfig);
         ZoneManager.Instance.AddCustomLocation(silverCaveLoc);
+
+        // Tar Cave
+        string tarCaveName = "VV_TarCave";
+        GameObject tarCave = ZoneManager.Instance.CreateLocationContainer(MiningCavesPlugin.CavesBundle, tarCaveName);
+        LocationConfig tarCaveLocConfig = new LocationConfig();
+        tarCaveLocConfig.Biome = Heightmap.Biome.Plains;
+        tarCaveLocConfig.Quantity = 50;
+        tarCaveLocConfig.ExteriorRadius = 25;
+        tarCaveLocConfig.HasInterior = true;
+        tarCaveLocConfig.InteriorRadius = 50;
+        tarCaveLocConfig.MinAltitude = 10;
+        tarCaveLocConfig.MaxAltitude = 2000;
+        tarCaveLocConfig.Priotized = true;
+        tarCaveLocConfig.MinDistanceFromSimilar = 300f;
+        tarCaveLocConfig.ClearArea = true;
+
+        CustomLocation tarCaveLoc = new CustomLocation(tarCave, true, tarCaveLocConfig);
+        ZoneManager.Instance.AddCustomLocation(tarCaveLoc);
 
         ZoneManager.OnVanillaLocationsAvailable -= AddMiningCaves;
     }

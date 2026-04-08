@@ -1,3 +1,7 @@
+## 0.3.0
+
+* Added a new Tar Cave in the Plains! (Version 0.2.1 still works fine if you do not want the new cave!)
+
 ## 0.2.1
 
 * Changed the Copper/Tin Cave large copper node to many smaller nodes, will take effect only on freshly generated (or reset) caves, backwards compatible.
