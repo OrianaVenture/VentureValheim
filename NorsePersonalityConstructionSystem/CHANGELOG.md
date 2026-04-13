@@ -1,3 +1,14 @@
+## 0.1.1
+
+* Added improved item randomization when spawning from the yaml file. If your NPCs had intentional missing armor slots, hair, or beards you will now need to specify those in the yaml file with blank strings when spawning or updating from the file.
+* NPCs can now randomize with meadows level weapons and newer clothes, hair, and beard options.
+* Trinkets are now supported.
+* The npcs_randomize command now takes an optional item field to specify one feature to randomize if supported (skincolor, hair, haircolor, beard, helmet, chest, legs, righthand, lefthand)
+* Added safety check to make sure NPCs do not spawn with negative health.
+* Enemy Huds now update when updating npc information, useful when performing name changes.
+* Fixed an issue where non-human npcs do not spawn with with their default items.
+* Other code and logging cleanup.
+
 ## 0.1.0
 
 IF YOU HAVE A WORLD WITH VERSION 0.0.7 - UPDATING MAY BREAK YOUR CURRENT NPCS!!!!!!
@@ -7,7 +18,7 @@ This is the warning. You have been warned.
 I did my best to make a smooth transition, but it is not perfect.
 
 * Overhauled the configuration system!!! Readme has been updated, please read it again if you have questions!
-    * Automatic upgrade of existing NPCs to the new system as they are loaded in game (old information/reward npcs may need manual fixes for quests).
+    * Automatic upgrade of existing NPCs to the new system as they are loaded in game (old information/reward NPCs may need manual fixes for quests).
     * NPC types Information and Reward are now under the "Quest" type
     * Can now add multiple quest stages on one NPC.
     * Can now set multiple rewards for a quest.

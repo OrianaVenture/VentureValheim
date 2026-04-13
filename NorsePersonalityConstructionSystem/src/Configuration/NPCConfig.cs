@@ -7,6 +7,7 @@ namespace VentureValheim.NPCS;
 [Serializable]
 public class NPCConfig
 {
+    public const string RANDOM = "RANDOM";
     public string? Id { get; set; }
     public string? Name { get; set; }
     public NPCData.NPCType Type { get; set; }
@@ -47,6 +48,7 @@ public class NPCConfig
     public string? Shoulder { get; set; }
     public int? ShoulderVariant { get; set; }
     public string? Utility { get; set; }
+    public string? Trinket { get; set; }
     public string? RightHand { get; set; }
     public string? LeftHand { get; set; }
     public int? LeftHandVariant { get; set; }
@@ -98,14 +100,15 @@ public class NPCConfig
         NPCConfiguration.ReplaceReservedCharacters(NotAvailableTexts);
 
         Model ??= "Player";
-        Hair ??= "";
-        Beard ??= "";
-        Helmet ??= "";
-        Chest ??= "";
-        Legs ??= "";
+        Hair ??= RANDOM;
+        Beard ??= RANDOM;
+        Helmet ??= RANDOM;
+        Chest ??= RANDOM;
+        Legs ??= RANDOM;
         Shoulder ??= "";
         ShoulderVariant ??= 0;
         Utility ??= "";
+        Trinket ??= "";
         RightHand ??= "";
         LeftHand ??= "";
         LeftHandVariant ??= 0;

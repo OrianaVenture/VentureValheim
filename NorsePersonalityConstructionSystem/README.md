@@ -336,6 +336,8 @@ There are fields for setting the NPC appearance using item prefab names. Anythin
 
 When spawning an npc from the yaml file it will automatically keep the usual default items that exists on the original prefab (including their unarmed attacks). To remove default attacks, weapons, clothes, and other items set ``GiveDefaultItems`` to false. This can then let you fully customize your NPC.
 
+If you wish to leave certain fields intentionally blank (like chest armor, hey I don't judge) you must specify these values with an empty string such as ``chest: ""`` to prevent some fields from randomizing.
+
 ```yaml
 npcs:
   -
@@ -362,6 +364,7 @@ npcs:
     model: Player
     modelIndex: 0
     hair: Hair19
+    helmet: ""
     chest: ArmorTunic6
     legs: ArmorRagsLegs
     skinColorR: 0.9
@@ -416,7 +419,7 @@ You can spawn a random NPC on a chair or bed with **RightCtrl + E** (Subject to 
 | npcs_spawnsaved    | \[id\]     | Spawns an NPC from the yaml config |
 | npcs_remove        |            | Deletes the closest NPC, use with caution! |
 | npcs_info          |            | Lists the closest NPC's items | 
-| npcs_randomize     |            | Randomizes the closest NPC |
+| npcs_randomize     | \[slot\]   | Randomizes the closest NPC entirely, or just the specified customization slot |
 | npcs_set           | \[id\]     | Updates the closest NPC from the yaml config |
 | npcs_set_move      | \[animation\] | Updates the closest NPC to walk around |
 | npcs_set_still     | \[animation\] | Updates the closest NPC to stand still |

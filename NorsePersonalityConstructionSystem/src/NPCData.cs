@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using System;
+using System.Xml.Linq;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace VentureValheim.NPCS;
 
@@ -406,6 +406,8 @@ public class NPCData
             return;
         }
 
+        ZDO zdo = _character.m_nview.GetZDO();
+
         _character.m_nview.ClaimOwnership();
 
         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
@@ -435,13 +437,16 @@ public class NPCData
 
         if (_character is Humanoid && (_character as Humanoid).m_visEquipment != null)
         {
+            bool isHuman = IsHuman();
+            bool isFemale = isHuman && zdo.GetInt(ZDOVars.s_modelIndex) == 1;
+
             if (config.SkinColorR.HasValue &&
                 config.SkinColorG.HasValue &&
                 config.SkinColorB.HasValue)
             {
                 SetSkinColor(config.SkinColorR.Value, config.SkinColorG.Value, config.SkinColorB.Value);
             }
-            else //if (config.Model.Equals("Player"))
+            else
             {
                 SetSkinColor(GetRandomSkinColor());
             }
@@ -452,23 +457,23 @@ public class NPCData
             {
                 SetHairColor(config.HairColorR.Value, config.HairColorG.Value, config.HairColorB.Value);
             }
-            else //if (config.Model.Equals("Player"))
+            else
             {
                 SetHairColor(GetRandomHairColor());
             }
 
-            SetNPCHair(config.Hair);
-            SetNPCBeard(config.Beard);
-            SetHelmet(config.Helmet);
-            SetChest(config.Chest);
-            SetLegs(config.Legs);
+            SetNPCHair(config.Hair, isHuman);
+            SetNPCBeard(config.Beard, isHuman, isFemale);
+            SetHelmet(config.Helmet, isHuman, isFemale);
+            SetChest(config.Chest, isHuman, isFemale);
+            SetLegs(config.Legs, isHuman, isFemale);
             SetUtility(config.Utility);
+            SetTrinket(config.Trinket);
             SetShoulder(config.Shoulder, config.ShoulderVariant.Value);
-            SetLeftHand(config.LeftHand, config.LeftHandVariant.Value);
-            SetRightHand(config.RightHand);
+            SetLeftHand(config.LeftHand, isHuman, config.LeftHandVariant.Value);
+            SetRightHand(config.RightHand, isHuman);
         }
 
-        ZDO zdo = _character.m_nview.GetZDO();
         NPCZDOUtils.SetZDOFromConfig(ref zdo, config);
         UpdateQuest(true);
         if (!UpdateTrader())
@@ -476,6 +481,10 @@ public class NPCData
             // TODO: Fix issues when changing NPC type, such as trader to non trader
             UpdateTalker();
         }
+
+        // Refresh Hud and name in case name updated
+        EnemyHud.instance.RemoveCharacterHud(_character);
+        _character.m_name = config.Name;
     }
 
     public void SetRotation(Quaternion rotation)
@@ -513,7 +522,7 @@ public class NPCData
         NPCZDOUtils.SetTrueDeath(ref zdo, death);
     }
 
-    public void SetRandom()
+    public void SetRandom(string item = null)
     {
         if (_character is not Humanoid)
         {
@@ -523,109 +532,221 @@ public class NPCData
         _character.m_nview.ClaimOwnership();
         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
 
-        // Model
-        var index = UnityEngine.Random.Range(0, 2);
-        SetModel(index);
+        bool isHuman = IsHuman();
+        bool isFemale = (_character as Humanoid).m_visEquipment.GetModelIndex() == 1;
 
-        // Skin
-        SetSkinColor(GetRandomSkinColor());
-
-        // Hair
-        var hair = UnityEngine.Random.Range(1, 32);
-        SetNPCHair("Hair" + hair);
-
-        SetHairColor(GetRandomHairColor());
-
-        if (index == 0)
+        if (item.IsNullOrWhiteSpace())
         {
-            // Male
-            SetRandomMale();
+            if (isHuman)
+            {
+                int index = UnityEngine.Random.Range(0, 2);
+                SetModel(index);
+                isFemale = index == 1;
+            }
+
+            ClearInventory(isHuman);
+            SetRandom(isHuman, isFemale);
         }
-        else if (index == 1)
+        else
         {
-            // Female
-            SetRandomFemale();
+            if (item == "skincolor")
+            {
+                SetSkinColor(GetRandomSkinColor());
+            }
+            else if (item == "hair")
+            {
+                SetNPCHair(NPCConfig.RANDOM, isHuman);
+            }
+            else if (item == "haircolor")
+            {
+                SetHairColor(GetRandomHairColor());
+            }
+            else if (item == "beard")
+            {
+                SetNPCBeard(NPCConfig.RANDOM, isHuman, isFemale);
+            }
+            else if (item == "helmet")
+            {
+                SetHelmet(NPCConfig.RANDOM, isHuman, isFemale);
+            }
+            else if (item == "chest")
+            {
+                SetChest(NPCConfig.RANDOM, isHuman, isFemale);
+            }
+            else if (item == "legs")
+            {
+                SetLegs(NPCConfig.RANDOM, isHuman, isFemale);
+            }
+            else if (item == "righthand")
+            {
+                SetRightHand(NPCConfig.RANDOM, isHuman);
+            }
+            else if (item == "lefthand")
+            {
+                SetLeftHand(NPCConfig.RANDOM, isHuman);
+            }
         }
+
+
+            ZDO zdo = _character.m_nview.GetZDO();
+        NPCZDOUtils.SetInitialized(ref zdo, true);
     }
 
-    protected void SetRandomMale()
+    protected string GetRandomBeard()
     {
-        var beard = UnityEngine.Random.Range(1, 30);
-        if (beard <= 21)
+        var beard = UnityEngine.Random.Range(1, 35);
+        if (beard <= 26)
         {
-            SetNPCBeard("Beard" + beard);
+            return "Beard" + beard;
         }
 
+        return "";
+    }
+
+    protected string GetRandomHairStyle()
+    {
+        var hair = UnityEngine.Random.Range(1, 37);
+        return "Hair" + hair;
+    }
+
+    protected string GetRandomHelmetMale()
+    {
         var helmet = UnityEngine.Random.Range(1, 25);
         if (helmet <= 10)
         {
-            SetHelmet("HelmetHat" + helmet);
+            return "HelmetHat" + helmet;
         }
         else if (helmet < 16)
         {
-            SetHelmet("HelmetLeather");
-        }
-
-        var chest = UnityEngine.Random.Range(1, 15);
-        if (chest > 10)
-        {
-            SetChest("ArmorLeatherChest");
+            return "HelmetLeather";
         }
         else
         {
-            SetChest("ArmorTunic" + chest);
+            return "";
         }
+    }
 
+    protected string GetRandomChestMale()
+    {
+        var chest = UnityEngine.Random.Range(1, 15);
+        if (chest > 11)
+        {
+            return "ArmorLeatherChest";
+        }
+        else if (chest == 11)
+        {
+            return "ArmorHarvester1";
+        }
+        else
+        {
+            return "ArmorTunic" + chest;
+        }
+    }
+
+    protected string GetRandomLegsMale()
+    {
         var legs = UnityEngine.Random.Range(0, 15);
         if (legs < 10)
         {
-            SetLegs("ArmorLeatherLegs");
+            return "ArmorLeatherLegs";
         }
         else
         {
-            SetLegs("ArmorRagsLegs");
+            return "ArmorRagsLegs";
         }
     }
 
-    protected void SetRandomFemale()
+    protected string GetRandomHelmetFemale()
     {
-        SetNPCBeard("");
         var helmet = UnityEngine.Random.Range(1, 25);
         if (helmet <= 10)
         {
-            SetHelmet("HelmetHat" + helmet);
+            return "HelmetHat" + helmet;
         }
         else if (helmet < 17)
         {
-            SetHelmet("HelmetMidsummerCrown");
-        }
-
-        var chest = UnityEngine.Random.Range(1, 15);
-        if (chest <= 10)
-        {
-            SetChest("ArmorDress" + chest);
+            return "HelmetMidsummerCrown";
         }
         else
         {
-            SetChest("ArmorLeatherChest");
-        }
-
-        var legs = UnityEngine.Random.Range(0, 15);
-        if (legs < 5)
-        {
-            SetLegs("ArmorLeatherLegs");
-        }
-        else if (legs < 8)
-        {
-            SetLegs("ArmorRagsLegs");
+            return "";
         }
     }
 
-    protected void SetNPCHair(string name)
+    protected string GetRandomChestFemale()
+    {
+        var chest = UnityEngine.Random.Range(1, 15);
+        if (chest <= 10)
+        {
+            return "ArmorDress" + chest;
+        }
+        else if (chest == 11)
+        {
+            return "ArmorHarvester2";
+        }
+        else
+        {
+            return "ArmorLeatherChest";
+        }
+    }
+
+    protected string GetRandomLegsFemale()
+    {
+        var legs = UnityEngine.Random.Range(0, 15);
+        if (legs < 8)
+        {
+            return "ArmorLeatherLegs";
+        }
+        else
+        {
+            return "ArmorRagsLegs";
+        }
+    }
+
+    protected void ClearInventory(bool isHuman)
+    {
+        if (_character is Humanoid humanoid)
+        {
+            humanoid.m_inventory.RemoveAll();
+
+            if (!isHuman)
+            {
+                // TODO: Implement randomizing default items by changing the seed
+                humanoid.GiveDefaultItems();
+            }
+        }
+    }
+
+    protected void SetRandom(bool isHuman, bool isFemale)
+    {
+        SetSkinColor(GetRandomSkinColor());
+        SetNPCHair(NPCConfig.RANDOM, isHuman);
+        SetHairColor(GetRandomHairColor());
+        SetNPCBeard(NPCConfig.RANDOM, isHuman, isFemale);
+
+        SetHelmet(NPCConfig.RANDOM, isHuman, isFemale);
+        SetChest(NPCConfig.RANDOM, isHuman, isFemale);
+        SetLegs(NPCConfig.RANDOM, isHuman, isFemale);
+        SetRightHand(NPCConfig.RANDOM, isHuman);
+    }
+
+    protected void SetNPCHair(string name, bool isHuman)
     {
         if (_character is not Humanoid)
         {
             return;
+        }
+
+        if (name == NPCConfig.RANDOM)
+        {
+            if (isHuman)
+            {
+                name = GetRandomHairStyle();
+            }
+            else
+            {
+                name = "";
+            }
         }
 
         (_character as Humanoid).m_hairItem = name;
@@ -664,11 +785,23 @@ public class NPCData
         (_character as Humanoid).m_visEquipment.SetSkinColor(color);
     }
 
-    protected void SetNPCBeard(string name)
+    protected void SetNPCBeard(string name, bool isHuman, bool female)
     {
         if (_character is not Humanoid)
         {
             return;
+        }
+
+        if (name == NPCConfig.RANDOM)
+        {
+            if (isHuman && !female)
+            {
+                name = GetRandomBeard();
+            }
+            else
+            {
+                name = "";
+            }
         }
 
         (_character as Humanoid).m_beardItem = name;
@@ -685,17 +818,31 @@ public class NPCData
         (_character as Humanoid).m_visEquipment.SetModel(index);
     }
 
-    private void SetItem(ref ItemDrop.ItemData slot, int hash, int variant = -1)
+    private bool SetItem(ref ItemDrop.ItemData slot, int hash, int variant = -1)
     {
-        if (_character is not Humanoid)
+        if (_character is not Humanoid || (_character as Humanoid).m_inventory == null)
         {
-            return;
+            return false;
         }
 
-        if ((_character as Humanoid).m_inventory == null || !Utility.GetItemPrefab(hash, out var item))
+        // Remove old item
+        if (slot != null && (_character as Humanoid).m_inventory.m_inventory.Contains(slot))
         {
+            (_character as Humanoid).m_inventory.RemoveItem(slot);
             slot = null;
-            return;
+        }
+
+        if (hash == 0 || hash == "".GetStableHashCode())
+        {
+            // Item is empty
+            return true;
+        }
+
+        // Check if new item exists
+        if (!Utility.GetItemPrefab(hash, out var item))
+        {
+            NPCSPlugin.NPCSLogger.LogDebug($"Item with hash {hash} not found! Skipping adding new item.");
+            return true;
         }
 
         ItemDrop.ItemData itemData = (_character as Humanoid).PickupPrefab(item, 0, autoequip: false);
@@ -708,69 +855,125 @@ public class NPCData
 
             (_character as Humanoid).EquipItem(itemData, triggerEquipEffects: false);
         }
+
+        return true;
     }
 
-    protected void SetHelmet(string name)
+    protected void SetHelmet(string name, bool isHuman, bool female)
     {
         if (_character is not Humanoid)
         {
             return;
         }
 
-        (_character as Humanoid).m_visEquipment.SetHelmetItem(name);
-        SetHelmet(name.GetStableHashCode());
+        if (name == NPCConfig.RANDOM)
+        {
+            if (!isHuman)
+            {
+                name = "";
+            }
+            else if (female)
+            {
+                name = GetRandomHelmetFemale();
+            }
+            else
+            {
+                name = GetRandomHelmetMale();
+            }
+        }
+
+        if (SetHelmet(name.GetStableHashCode()))
+        {
+            (_character as Humanoid).m_visEquipment.SetHelmetItem(name);
+        }
     }
 
-    protected void SetHelmet(int hash)
+    protected bool SetHelmet(int hash)
+    {
+        if (_character is not Humanoid)
+        {
+            return false;
+        }
+
+        return SetItem(ref (_character as Humanoid).m_helmetItem, hash);
+    }
+
+    protected void SetChest(string name, bool isHuman, bool female)
     {
         if (_character is not Humanoid)
         {
             return;
         }
 
-        SetItem(ref (_character as Humanoid).m_helmetItem, hash);
+        if (name == NPCConfig.RANDOM)
+        {
+            if (!isHuman)
+            {
+                name = "";
+            }
+            else if (female)
+            {
+                name = GetRandomChestFemale();
+            }
+            else
+            {
+                name = GetRandomChestMale();
+            }
+        }
+
+        if (SetChest(name.GetStableHashCode()))
+        {
+            (_character as Humanoid).m_visEquipment.SetChestItem(name);
+        }
     }
 
-    protected void SetChest(string name)
+    protected bool SetChest(int hash)
+    {
+        if (_character is not Humanoid)
+        {
+            return false;
+        }
+
+        return SetItem(ref (_character as Humanoid).m_chestItem, hash);
+    }
+
+    protected void SetLegs(string name, bool isHuman, bool female)
     {
         if (_character is not Humanoid)
         {
             return;
         }
 
-        (_character as Humanoid).m_visEquipment.SetChestItem(name);
-        SetChest(name.GetStableHashCode());
+        if (name == NPCConfig.RANDOM)
+        {
+            if (!isHuman)
+            {
+                name = "";
+            }
+            else if (female)
+            {
+                name = GetRandomLegsFemale();
+            }
+            else
+            {
+                name = GetRandomLegsMale();
+            }
+        }
+
+        if (SetLegs(name.GetStableHashCode()))
+        {
+            (_character as Humanoid).m_visEquipment.SetLegItem(name);
+        }
     }
 
-    protected void SetChest(int hash)
+    protected bool SetLegs(int hash)
     {
         if (_character is not Humanoid)
         {
-            return;
+            return false;
         }
 
-        SetItem(ref (_character as Humanoid).m_chestItem, hash);
-    }
-
-    protected void SetLegs(string name)
-    {
-        if (_character is not Humanoid)
-        {
-            return;
-        }
-
-        (_character as Humanoid).m_visEquipment.SetLegItem(name);
-        SetLegs(name.GetStableHashCode());
-    }
-
-    protected void SetLegs(int hash)
-    {
-        if (_character is not Humanoid)
-        {
-            return;
-        }
-
-        SetItem(ref (_character as Humanoid).m_legItem, hash);
+        return SetItem(ref (_character as Humanoid).m_legItem, hash);
     }
 
     protected void SetShoulder(string name, int variant = 0)
@@ -780,18 +983,20 @@ public class NPCData
             return;
         }
 
-        (_character as Humanoid).m_visEquipment.SetShoulderItem(name, variant);
-        SetShoulder(name.GetStableHashCode(), variant);
+        if (SetShoulder(name.GetStableHashCode(), variant))
+        {
+            (_character as Humanoid).m_visEquipment.SetShoulderItem(name, variant);
+        }
     }
 
-    protected void SetShoulder(int hash, int variant = 0)
+    protected bool SetShoulder(int hash, int variant = 0)
     {
         if (_character is not Humanoid)
         {
-            return;
+            return false;
         }
 
-        SetItem(ref (_character as Humanoid).m_shoulderItem, hash, variant);
+        return SetItem(ref (_character as Humanoid).m_shoulderItem, hash, variant);
     }
 
     protected void SetUtility(string name)
@@ -801,60 +1006,162 @@ public class NPCData
             return;
         }
 
-        (_character as Humanoid).m_visEquipment.SetUtilityItem(name);
-        SetUtility(name.GetStableHashCode());
+        if (SetUtility(name.GetStableHashCode()))
+        {
+            (_character as Humanoid).m_visEquipment.SetUtilityItem(name);
+        }
     }
 
-    protected void SetUtility(int hash)
+    protected bool SetUtility(int hash)
+    {
+        if (_character is not Humanoid)
+        {
+            return false;
+        }
+
+        return SetItem(ref (_character as Humanoid).m_utilityItem, hash);
+    }
+
+    protected void SetTrinket(string name)
     {
         if (_character is not Humanoid)
         {
             return;
         }
 
-        SetItem(ref (_character as Humanoid).m_utilityItem, hash);
+        if (SetTrinket(name.GetStableHashCode()))
+        {
+            (_character as Humanoid).m_visEquipment.SetTrinketItem(name);
+        }
     }
 
-    protected void SetRightHand(string name)
+    protected bool SetTrinket(int hash)
+    {
+        if (_character is not Humanoid)
+        {
+            return false;
+        }
+
+        return SetItem(ref (_character as Humanoid).m_trinketItem, hash);
+    }
+
+    protected string GetRandomRightHand()
+    {
+        int weapon = UnityEngine.Random.Range(0, 30);
+        if (weapon == 0)
+        {
+            return "KnifeFlint";
+        }
+        else if (weapon == 1)
+        {
+            return "AxeFlint";
+        }
+        else if (weapon == 2)
+        {
+            return "SpearFlint";
+        }
+        else if (weapon == 3)
+        {
+            return "AxeStone";
+        }
+        else if (weapon == 4)
+        {
+            return "Club";
+        }
+        else if (weapon == 5)
+        {
+            return "Torch";
+        }
+
+        return "";
+    }
+
+    protected void SetRightHand(string name, bool isHuman)
     {
         if (_character is not Humanoid)
         {
             return;
         }
 
-        (_character as Humanoid).m_visEquipment.SetRightItem(name);
-        SetRightHand(name.GetStableHashCode());
+        if (name == NPCConfig.RANDOM)
+        {
+            if (!isHuman)
+            {
+                // Do not override default items
+                return;
+            }
+            else
+            {
+                name = GetRandomRightHand();
+            }
+        }
+
+        if (SetRightHand(name.GetStableHashCode()))
+        {
+            (_character as Humanoid).m_visEquipment.SetRightItem(name);
+        }
     }
 
-    protected void SetRightHand(int hash)
+    protected bool SetRightHand(int hash)
+    {
+        if (_character is not Humanoid)
+        {
+            return false;
+        }
+
+        // Add new item
+        return SetItem(ref (_character as Humanoid).m_rightItem, hash);
+    }
+
+    protected string GetRandomLeftHand()
+    {
+        int weapon = UnityEngine.Random.Range(0, 20);
+        if (weapon == 0)
+        {
+            return "ShieldWood";
+        }
+        else if (weapon == 1)
+        {
+            return "ShieldWoodTower";
+        }
+
+        return "";
+    }
+
+    protected void SetLeftHand(string name, bool isHuman, int variant = 0)
     {
         if (_character is not Humanoid)
         {
             return;
         }
 
-        SetItem(ref (_character as Humanoid).m_rightItem, hash);
+        if (name == NPCConfig.RANDOM)
+        {
+            if (!isHuman)
+            {
+                // Do not override default items
+                return;
+            }
+            else
+            {
+                name = GetRandomLeftHand();
+            }
+        }
+
+        if (SetLeftHand(name.GetStableHashCode(), variant))
+        {
+            (_character as Humanoid).m_visEquipment.SetLeftItem(name, variant);
+        }
     }
 
-    protected void SetLeftHand(string name, int variant = 0)
+    protected bool SetLeftHand(int hash, int variant = 0)
     {
         if (_character is not Humanoid)
         {
-            return;
+            return false;
         }
 
-        (_character as Humanoid).m_visEquipment.SetLeftItem(name, variant);
-        SetLeftHand(name.GetStableHashCode(), variant);
-    }
-
-    protected void SetLeftHand(int hash, int variant = 0)
-    {
-        if (_character is not Humanoid)
-        {
-            return;
-        }
-
-        SetItem(ref (_character as Humanoid).m_leftItem, hash, variant);
+        return SetItem(ref (_character as Humanoid).m_leftItem, hash, variant);
     }
 
     protected Color GetRandomSkinColor()
@@ -883,6 +1190,11 @@ public class NPCData
     {
         var color = NPCZDOUtils.GetHairColor(_character.m_nview.GetZDO());
         return $"Hair Color RGB: {color.x}, {color.y}, {color.z}";
+    }
+
+    public bool IsHuman()
+    {
+        return Utils.GetPrefabName(_character.gameObject).Equals($"{NPCSPlugin.MOD_PREFIX}Player");
     }
 
     #endregion

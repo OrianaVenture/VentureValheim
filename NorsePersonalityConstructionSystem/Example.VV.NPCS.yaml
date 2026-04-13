@@ -114,6 +114,7 @@ npcs:
     model: Player
     modelIndex: 0
     hair: Hair10
+    chest: ""
     legs: ArmorRagsLegs
 
   -
@@ -233,6 +234,7 @@ npcs:
         text: "Thanks for your help."
     model: Player
     modelIndex: 0
+    chest: ""
     legs: ArmorLeatherLegs
 
   -

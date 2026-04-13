@@ -332,7 +332,7 @@ public static class NPCUtils
 
             if (ragdoll != null)
             {
-                Vector3 velocity = character.m_body.velocity;
+                Vector3 velocity = character.m_body.linearVelocity;
                 if (character.m_pushForce.magnitude * 0.5f > velocity.magnitude)
                 {
                     velocity = character.m_pushForce * 0.5f;
@@ -361,7 +361,7 @@ public static class NPCUtils
 
         if (!NPCZDOUtils.GetTrueDeath(zdo))
         {
-            NPCSPlugin.NPCSLogger.LogWarning($"Adding new {character.name} to respawner!");
+            NPCSPlugin.NPCSLogger.LogDebug($"Adding new {character.name} to respawner!");
             NPCRespawner.Instance.AddZdo(Utils.GetPrefabName(character.name), zdo);
         }
 

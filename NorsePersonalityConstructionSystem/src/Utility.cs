@@ -1,6 +1,5 @@
 ﻿using BepInEx;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -190,9 +189,16 @@ public class Utility
 
     public static void RegisterGameObject(GameObject obj)
     {
-        ZNetScene.instance.m_prefabs.Add(obj);
-        ZNetScene.instance.m_namedPrefabs.Add(obj.name.GetStableHashCode(), obj);
-        NPCSPlugin.NPCSLogger.LogDebug($"Adding object to prefabs {obj.name}");
+        NPCSPlugin.NPCSLogger.LogDebug($"Trying to add object to prefabs {obj.name}");
+        if (!ZNetScene.instance.m_prefabs.Contains(obj))
+        {
+            ZNetScene.instance.m_prefabs.Add(obj);
+        }
+
+        if (!ZNetScene.instance.m_namedPrefabs.ContainsKey(obj.name.GetStableHashCode()))
+        {
+            ZNetScene.instance.m_namedPrefabs.Add(obj.name.GetStableHashCode(), obj);
+        }
     }
 
     public static string GetString<T>(T item)
@@ -216,7 +222,6 @@ public class Utility
             }
         }
 
-        NPCSPlugin.NPCSLogger.LogInfo($"GetStringFromList: {result}");
         return result;
     }
 }

@@ -458,11 +458,11 @@ public static class NPCZDOUtils
         if (GetVersion(zdo) < 2)
         {
             // Upgrade from unversioned
-            NPCSPlugin.NPCSLogger.LogWarning($"Upgrading npc version for {GetTamedName(zdo)}...");
             NPCData.NPCType type = (NPCData.NPCType)GetType(zdo);
 
             if (type == NPCData.NPCType.Information || type == NPCData.NPCType.Reward)
             {
+                NPCSPlugin.NPCSLogger.LogWarning($"Upgrading npc version for {GetTamedName(zdo)}...");
                 SetType(ref zdo, (int)NPCData.NPCType.Quest);
 
                 NPCQuest firstQuest = new NPCQuest();

@@ -248,6 +248,13 @@ public class Patches
                 else
                 {
                     INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
+
+                    if (npc == null)
+                    {
+                        args.Context.AddString("No npc found.");
+                        return;
+                    }
+
                     npcs = new List<INPC>()
                     {
                         npc
@@ -257,10 +264,10 @@ public class Patches
                 for (int lcv = 0; lcv < npcs.Count; lcv++)
                 {
                     INPC npc = npcs[lcv];
-                    if (npc == null)
+                    if (npc == null || !(npc as Character).m_nview.IsValid())
                     {
-                        args.Context.AddString("No npc found.");
-                        return;
+                        args.Context.AddString("Issue with deleting an npc!");
+                        continue;
                     }
 
                     (npc as Character).m_nview.ClaimOwnership();
@@ -269,7 +276,7 @@ public class Patches
 
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
-            new Terminal.ConsoleCommand("npcs_randomize", "", delegate (Terminal.ConsoleEventArgs args)
+            new Terminal.ConsoleCommand("npcs_randomize", "[slot]", delegate (Terminal.ConsoleEventArgs args)
             {
                 Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
                 INPC npc = Utility.GetClosestNPC(playerPosition, out float _);
@@ -279,7 +286,15 @@ public class Patches
                     return;
                 }
 
-                npc.Data.SetRandom();
+                if (args.Length >= 2)
+                {
+                    string field = args[1].ToLower();
+                    npc.Data.SetRandom(field);
+                }
+                else
+                {
+                    npc.Data.SetRandom();
+                }
             }, isCheat: true, isNetwork: false, onlyServer: false);
 
             new Terminal.ConsoleCommand("npcs_info", "", delegate (Terminal.ConsoleEventArgs args)
@@ -437,7 +452,7 @@ public class Patches
     {
         private static void Prefix(Inventory __instance, ItemDrop.ItemData item)
         {
-            if (__instance == Player.m_localPlayer.m_inventory)
+            if (Player.m_localPlayer != null && __instance == Player.m_localPlayer.m_inventory)
             {
                 Player.m_localPlayer.UnequipItem(item);
             }

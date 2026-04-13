@@ -1,5 +1,7 @@
+using Jotunn.Managers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace VentureValheim.NPCS;
@@ -107,7 +109,16 @@ public class NPCFactory
         ZDO zdo = newZNetView.GetZDO();
         original.m_stream.Position = 0L;
         zdo.Deserialize(original);
-        zdo.Set(ZDOVars.s_health, gameobject.GetComponent<Character>().GetMaxHealth());
+        float health = gameobject.GetComponent<Character>().GetMaxHealth();
+
+        // Prevent negative health npcs from spawning.
+        if (health < 0)
+        {
+            NPCSPlugin.NPCSLogger.LogWarning("NPC tried to respawn with negative health! Was this intentional? Report to the author for a fix.");
+            health = 1;
+        }
+
+        zdo.Set(ZDOVars.s_health, health);
 
         return gameobject;
     }
@@ -134,6 +145,9 @@ public class NPCFactory
         CreateNPC("Skeleton");
         CreateNPC("Troll");
         CreateNPC("Wolf");
+
+        // Jotunn does not add prefabs when this is called so adding manually each time if does not exist.
+        //PrefabManager.OnPrefabsRegistered -= NPCFactory.AddNPCS;
     }
 
     public static GameObject CreateNPC(string model)
@@ -147,8 +161,15 @@ public class NPCFactory
         var prefab = ZNetScene.instance.GetPrefab(model.GetStableHashCode());
         if (prefab == null)
         {
-            NPCSPlugin.NPCSLogger.LogError("No prefab found");
+            NPCSPlugin.NPCSLogger.LogError("Target prefab not found, cannot create npc!");
             return null;
+        }
+
+        var existing = ZNetScene.instance.GetPrefab((NPCSPlugin.MOD_PREFIX + model).GetStableHashCode());
+        if (existing != null)
+        {
+            NPCSPlugin.NPCSLogger.LogWarning("Prefab already created, returning existing!");
+            return existing;
         }
 
         // Set up copy of prefab
@@ -274,6 +295,18 @@ public class NPCFactory
     {
         Utility.CopyFields(original, ref npc);
 
+        // Fix up arrays
+        if (original is Humanoid humanoid)
+        {
+            var npcHumanoid = npc as Humanoid;
+            npcHumanoid.m_defaultItems = humanoid.m_defaultItems?.ToArray();
+            npcHumanoid.m_randomWeapon = humanoid.m_randomWeapon?.ToArray();
+            npcHumanoid.m_randomArmor = humanoid.m_randomArmor?.ToArray();
+            npcHumanoid.m_randomShield = humanoid.m_randomShield?.ToArray();
+            npcHumanoid.m_randomSets = humanoid.m_randomSets?.ToArray();
+            npcHumanoid.m_randomItems = humanoid.m_randomItems?.ToArray();
+        }
+
         // Setup Ragdolls
         var effectList = original.m_deathEffects.m_effectPrefabs;
         EffectList.EffectData[] newEffects = new EffectList.EffectData[effectList.Length];
@@ -305,7 +338,7 @@ public class NPCFactory
         var npcRagdollComponent = npcRagdoll.AddComponent<NPCRagdoll>();
 
         Utility.CopyFields(originalRagdollComponent, ref npcRagdollComponent);
-        
+
         if (npcRagdollComponent.m_removeEffect.m_effectPrefabs.Length == 0)
         {
             npcRagdollComponent.m_removeEffect = new EffectList();

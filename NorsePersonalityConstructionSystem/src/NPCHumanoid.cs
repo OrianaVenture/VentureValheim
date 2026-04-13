@@ -19,9 +19,12 @@ public class NPCHumanoid : Humanoid, Interactable, Hoverable, INPC
     public override void Start()
     {
         // Prevent giving default items if initialized
-        if (!NPCZDOUtils.GetInitialized(m_nview.GetZDO()))
+        ZDO zdo = m_nview.GetZDO();
+
+        if (!NPCZDOUtils.GetInitialized(zdo))
         {
             base.Start();
+            NPCZDOUtils.SetInitialized(ref zdo, true);
         }
     }
 
