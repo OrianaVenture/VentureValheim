@@ -2,22 +2,21 @@ using System;
 using HarmonyLib;
 using UnityEngine;
 
-namespace VentureValheim.Template
+namespace VentureValheim.Template;
+
+public class Template
 {
-    public class Template
+    private Template()
     {
-        private Template()
-        {
-        }
-        private static readonly Template _instance = new Template();
+    }
+    private static readonly Template _instance = new Template();
 
-        public static Template Instance
-        {
-            get => _instance;
-        }
+    public static Template Instance
+    {
+        get => _instance;
+    }
 
-        public void Initialize()
-        {
-        }
+    public void Initialize()
+    {
     }
 }

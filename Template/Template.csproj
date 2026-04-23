@@ -12,7 +12,7 @@
         <RootNamespace>VentureValheim.Template</RootNamespace>
         <AssemblyName>VentureValheim.Template</AssemblyName>
         <Version>0.1.0</Version>
-        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>
         <Nullable>enable</Nullable>
