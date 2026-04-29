@@ -215,8 +215,6 @@ public partial class KeyManager
     /// Returns whether the Player contains the necessary key for taming the specified creature,
     /// or true if the configuration does not exist for the creature.
     /// </summary>
-    /// <param name="creature"></param>
-    /// <returns></returns>
     private bool HasTamingKey(string creature)
     {
         if (creature.IsNullOrWhiteSpace())
@@ -236,8 +234,6 @@ public partial class KeyManager
     /// Returns whether the Player contains the necessary key for summoning the specified creature,
     /// or true if the configuration does not exist for the creature.
     /// </summary>
-    /// <param name="creature"></param>
-    /// <returns></returns>
     private bool HasSummoningKey(string creature)
     {
         if (creature.IsNullOrWhiteSpace())
@@ -269,8 +265,6 @@ public partial class KeyManager
     /// True if the in-game days passed allows for the creature to be summoned
     /// or true if the configuration does not exist for the creature.
     /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
     protected bool SummoningTimeReached(string key, int gameDay)
     {
         if (BossKeyOrderList.ContainsKey(key))
@@ -286,8 +280,6 @@ public partial class KeyManager
     /// Returns whether the Player contains the necessary key for accepting a boss power
     /// or true if the configuration does not exist for the power.
     /// </summary>
-    /// <param name="guardianPower"></param>
-    /// <returns></returns>
     protected bool HasGuardianKey(string guardianPower)
     {
         if (guardianPower.IsNullOrWhiteSpace())
@@ -311,11 +303,6 @@ public partial class KeyManager
     /// <summary>
     /// Returns whether the Player contains the necessary key for handling the item.
     /// </summary>
-    /// <param name="item">Prefab name of the item<</param>
-    /// <param name="checkBossItems"></param>
-    /// <param name="checkMaterials"></param>
-    /// <param name="checkFood"></param>
-    /// <returns></returns>
     private bool HasItemKey(string item, bool checkBossItems, bool checkMaterials, bool checkFood)
     {
         if (item.IsNullOrWhiteSpace())
@@ -337,12 +324,6 @@ public partial class KeyManager
     /// Checks if an action is blocked based on prefab categories and keys.
     /// Checks the passed item and the item recipe.
     /// </summary>
-    /// <param name="item"></param>
-    /// <param name="quality"></param>
-    /// <param name="checkBossItems"></param>
-    /// <param name="checkMaterials"></param>
-    /// <param name="checkFood"></param>
-    /// <returns></returns>
     private bool IsActionBlocked(ItemDrop.ItemData item, int quality,
         bool checkBossItems, bool checkMaterials, bool checkFood)
     {
@@ -366,12 +347,6 @@ public partial class KeyManager
     /// Checks the passed recipe and accounts for both base requirements and
     /// all valid upgrades on an item.
     /// </summary>
-    /// <param name="recipe"></param>
-    /// <param name="quality"></param>
-    /// <param name="checkBossItems"></param>
-    /// <param name="checkMaterials"></param>
-    /// <param name="checkFood"></param>
-    /// <returns></returns>
     private bool IsActionBlocked(Recipe recipe, int quality,
         bool checkBossItems, bool checkMaterials, bool checkFood)
     {
@@ -435,6 +410,29 @@ public partial class KeyManager
                         break;
                     }
                 }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if an action is blocked based on prefab categories and keys.
+    /// Checks the passed piece build requirements.
+    /// </summary>
+    private bool IsActionBlocked(Piece piece)
+    {
+        if (piece == null || piece.m_resources == null)
+        {
+            return false;
+        }
+
+        for (int lcv = 0; lcv < piece.m_resources.Length; lcv++)
+        {
+            if (piece.m_resources[lcv]?.m_resItem != null &&
+                !Instance.HasItemKey(Utils.GetPrefabName(piece.m_resources[lcv].m_resItem.gameObject), true, true, true))
+            {
+                return true;
             }
         }
 

@@ -132,9 +132,12 @@ Using equipment, crafting, building, cooking, and eating can all be locked with 
 | UnlockBossSummonsOverTime | If true will additionally check the appropriate time has passed for unlocking the boss alters. This will still enforce the boss progression order unless overridden above. |
 | UnlockBossSummonsTime | Time for previous setting, default is 100. Example: Eikthyr wil be available on day 0, the Elder on 100, Bonemass on 200 etc. |
 | LockEquipment | If true you can only equip or use boss items or items made from biome metals/materials if you have the required key. |
+| LockEquipmentRepair | If true you can only repair items made from biome metals/materials if you have the required key. This setting does not play the blocked action effects on failure. |
 | LockCrafting | If true you can only craft items made from boss items or biome metals/materials if you have the required key. |
 | LockBuilding | If true you can only build pieces made from boss items or biome metals/materials if you have the required key. |
+| LockBuildingRepair | If true you can only repair pieces made from boss items or biome metals/materials if you have the required key. This setting does not play the blocked action effects on failure. |
 | LockCooking | If true you can only cook items made from biome materials if you have the required key. |
+| LockEating | If true you can only eat items made from biome materials if you have the required key. |
 | LockBoatsKey | Define your own required key to control player ability to use boats. Leave blank to allow vanilla boats behavior. |
 | LockPortalsKey | Define your own required key to control player ability to use portals. Leave blank to allow vanilla portal behavior. |
 

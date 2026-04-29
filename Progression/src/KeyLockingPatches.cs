@@ -183,8 +183,8 @@ public partial class KeyManager
                     station.Equals("piece_preptable") || station.Equals("piece_MeadCauldron");
             }
 
-            var lockCrafting = ProgressionConfiguration.Instance.GetLockCrafting() && !cookingStation;
-            var lockCooking = ProgressionConfiguration.Instance.GetLockCooking() && cookingStation;
+            bool lockCrafting = ProgressionConfiguration.Instance.GetLockCrafting() && !cookingStation;
+            bool lockCooking = ProgressionConfiguration.Instance.GetLockCooking() && cookingStation;
 
             int quality = ProgressionAPI.GetQualityLevel(__instance.m_craftUpgradeItem);
 
@@ -200,7 +200,29 @@ public partial class KeyManager
     }
 
     /// <summary>
-    /// Block placing items without the proper keys.
+    /// Block repairing items without the proper keys.
+    /// </summary>
+    [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.CanRepair))]
+    public static class Patch_InventoryGui_CanRepair
+    {
+        [HarmonyPriority(Priority.Low)]
+        private static void Postfix(InventoryGui __instance, ItemDrop.ItemData item, ref bool __result)
+        {
+            if (!__result)
+            {
+                return;
+            }
+
+            if (ProgressionConfiguration.Instance.GetLockEquipmentRepair() &&
+                Instance.IsActionBlocked(item, item.m_quality, true, true, false))
+            {
+                __result = false; // No repair
+            }
+        }
+    }
+
+    /// <summary>
+    /// Block placing pieces without the proper keys.
     /// </summary>
     [HarmonyPatch(typeof(Player), nameof(Player.TryPlacePiece))]
     public static class Patch_Player_TryPlacePiece
@@ -208,18 +230,30 @@ public partial class KeyManager
         [HarmonyPriority(Priority.Low)]
         private static bool Prefix(ref bool __result, Piece piece)
         {
-            if (ProgressionConfiguration.Instance.GetLockBuilding() && piece?.m_resources != null)
+            if (ProgressionConfiguration.Instance.GetLockBuilding() && Instance.IsActionBlocked(piece))
             {
-                for (int lcv = 0; lcv < piece.m_resources.Length; lcv++)
-                {
-                    if (piece.m_resources[lcv]?.m_resItem != null &&
-                        !Instance.HasItemKey(Utils.GetPrefabName(piece.m_resources[lcv].m_resItem.gameObject), true, true, false))
-                    {
-                        Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
-                        __result = false;
-                        return false; // Skip placing
-                    }
-                }
+                Instance.ApplyBlockedActionEffects(Player.m_localPlayer);
+                __result = false;
+                return false; // Skip placing
+            }
+
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Block repairing pieces without the proper keys.
+    /// </summary>
+    [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Repair))]
+    public static class Patch_WearNTear_Repair
+    {
+        [HarmonyPriority(Priority.Low)]
+        private static bool Prefix(ref bool __result, WearNTear __instance)
+        {
+            if (ProgressionConfiguration.Instance.GetLockBuildingRepair() && Instance.IsActionBlocked(__instance.m_piece))
+            {
+                __result = false;
+                return false; // Skip repair
             }
 
             return true;

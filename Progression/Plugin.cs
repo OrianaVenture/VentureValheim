@@ -23,7 +23,7 @@ public class ProgressionPlugin : BaseUnityPlugin
     }
 
     private const string ModName = "WorldAdvancementProgression";
-    private const string ModVersion = "0.3.12";
+    private const string ModVersion = "0.3.13";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -58,8 +58,10 @@ public class ProgressionPlugin : BaseUnityPlugin
     public static ConfigEntry<bool> CE_UnlockBossSummonsOverTime = null!;
     public static ConfigEntry<int> CE_UnlockBossSummonsTime = null!;
     public static ConfigEntry<bool> CE_LockEquipment = null!;
+    public static ConfigEntry<bool> CE_LockEquipmentRepair = null!;
     public static ConfigEntry<bool> CE_LockCrafting = null!;
     public static ConfigEntry<bool> CE_LockBuilding = null!;
+    public static ConfigEntry<bool> CE_LockBuildingRepair = null!;
     public static ConfigEntry<bool> CE_LockCooking = null!;
     public static ConfigEntry<bool> CE_LockEating = null!;
     public static ConfigEntry<string> CE_LockBoatsKey = null!;
@@ -185,16 +187,19 @@ public class ProgressionPlugin : BaseUnityPlugin
             "True to enable the blocked display effect (fire) used in this mod (string).",
             true, true, ref CE_UseBlockedActionEffect);
         AddConfig("LockTaming", locking,
-            "True to lock the ability to tame creatures based on keys. Uses private key if enabled, global key if not (boolean).",
+            "True to lock the ability to tame creatures based on keys. " +
+            "Uses private key if enabled, global key if not (boolean).",
             true, false, ref CE_LockTaming);
         AddConfig("OverrideLockTamingDefaults", locking,
             "Override keys needed to Tame creatures. Leave blank to use defaults (comma-separated prefab,key pairs).",
             true, "", ref CE_OverrideLockTamingDefaults);
         AddConfig("LockGuardianPower", locking,
-            "True to lock the ability to get and use guardian powers based on keys. Uses private key if enabled, global key if not (boolean).",
+            "True to lock the ability to get and use guardian powers based on keys. " +
+            "Uses private key if enabled, global key if not (boolean).",
             true, true, ref CE_LockGuardianPower);
         AddConfig("LockBossSummons", locking,
-            "True to lock the ability to spawn bosses based on keys. Uses private key if enabled, global key if not (boolean).",
+            "True to lock the ability to spawn bosses based on keys. " +
+            "Uses private key if enabled, global key if not (boolean).",
             true, true, ref CE_LockBossSummons);
         AddConfig("OverrideLockBossSummonsDefaults", locking,
             "Override keys needed to summon bosses. Leave blank to use defaults (comma-separated prefab,key pairs).",
@@ -206,25 +211,40 @@ public class ProgressionPlugin : BaseUnityPlugin
             "Number of in-game days required to unlock the next boss in the sequence when UnlockBossSummonsOverTime is True (int).",
             true, 100, ref CE_UnlockBossSummonsTime);
         AddConfig("LockEquipment", locking,
-            "True to lock the ability to equip or use boss items or items made from biome metals/materials based on keys. Uses private key if enabled, global key if not (boolean).",
+            "True to lock the ability to equip or use boss items or items made from biome metals/materials based on keys. " +
+            "Uses private key if enabled, global key if not (boolean).",
             true, true, ref CE_LockEquipment);
+        AddConfig("LockEquipmentRepair", locking,
+            "True to lock the ability to repair items based on boss items and biome metals/materials and keys. " +
+            "Uses private key if enabled, global key if not (boolean).",
+            true, true, ref CE_LockEquipmentRepair);
         AddConfig("LockCrafting", locking,
-            "True to lock the ability to craft items based on boss items and biome metals/materials and keys. Uses private key if enabled, global key if not (boolean).",
+            "True to lock the ability to craft items based on boss items and biome metals/materials and keys. " +
+            "Uses private key if enabled, global key if not (boolean).",
             true, true, ref CE_LockCrafting);
         AddConfig("LockBuilding", locking,
-            "True to lock the ability to build based on boss items and biome metals/materials and keys. Uses private key if enabled, global key if not (boolean).",
+            "True to lock the ability to build based on boss items and biome metals/materials and keys. " +
+            "Uses private key if enabled, global key if not (boolean).",
             true, true, ref CE_LockBuilding);
+        AddConfig("LockBuildingRepair", locking,
+            "True to lock the ability to repair build pieces based on boss items and biome metals/materials and keys. " +
+            "Uses private key if enabled, global key if not (boolean).",
+            true, true, ref CE_LockBuildingRepair);
         AddConfig("LockCooking", locking,
-            "True to lock the ability to cook with biome food materials based on keys. Uses private key if enabled, global key if not (boolean).",
+            "True to lock the ability to cook with biome food materials based on keys. " +
+            "Uses private key if enabled, global key if not (boolean).",
             true, true, ref CE_LockCooking);
         AddConfig("LockEating", locking,
-            "True to lock the ability to eat biome food materials based on keys. Uses private key if enabled, global key if not (boolean).",
+            "True to lock the ability to eat biome food materials based on keys. " +
+            "Uses private key if enabled, global key if not (boolean).",
             true, true, ref CE_LockEating);
         AddConfig("LockBoatsKey", locking,
-            "Use this key to control player ability to use boats (ex: defeated_eikthyr). Leave blank to allow vanilla boat behavior (string).",
+            "Use this key to control player ability to use boats (ex: defeated_eikthyr). " +
+            "Leave blank to allow vanilla boat behavior (string).",
             true, "", ref CE_LockBoatsKey);
         AddConfig("LockPortalsKey", locking,
-            "Use this key to control player ability to use portals (ex: defeated_eikthyr). Leave blank to allow vanilla portal behavior (string).",
+            "Use this key to control player ability to use portals (ex: defeated_eikthyr). " +
+            "Leave blank to allow vanilla portal behavior (string).",
             true, "", ref CE_LockPortalsKey);
 
         // Portal Unlocking
@@ -429,8 +449,10 @@ public interface IProgressionConfiguration
     public bool GetUnlockBossSummonsOverTime();
     public int GetUnlockBossSummonsTime();
     public bool GetLockEquipment();
+    public bool GetLockEquipmentRepair();
     public bool GetLockCrafting();
     public bool GetLockBuilding();
+    public bool GetLockBuildingRepair();
     public bool GetLockCooking();
     public bool GetLockEating();
     public string GetLockBoatsKey();
@@ -503,6 +525,26 @@ public class ProgressionConfiguration : IProgressionConfiguration
         get => _instance;
     }
 
+    private bool LockAdminCheck(bool configurationValue)
+    {
+        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+        {
+            return false;
+        }
+
+        return configurationValue;
+    }
+
+    private string LockAdminCheck(string configurationValue)
+    {
+        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
+        {
+            return "";
+        }
+
+        return configurationValue;
+    }
+
     // Keys
     public bool GetBlockAllGlobalKeys() => ProgressionPlugin.CE_BlockAllGlobalKeys.Value;
     public string GetBlockedGlobalKeys() => ProgressionPlugin.CE_BlockedGlobalKeys.Value;
@@ -520,31 +562,19 @@ public class ProgressionConfiguration : IProgressionConfiguration
     public bool GetUseBlockedActionEffect() => ProgressionPlugin.CE_UseBlockedActionEffect.Value;
     public bool GetLockTaming()
     {
-        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
-        {
-            return false;
-        }
-        return ProgressionPlugin.CE_LockTaming.Value;
+        return LockAdminCheck(ProgressionPlugin.CE_LockTaming.Value);
     }
 
     public string GetOverrideLockTamingDefaults() => ProgressionPlugin.CE_OverrideLockTamingDefaults.Value;
 
     public bool GetLockGuardianPower()
     {
-        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
-        {
-            return false;
-        }
-        return ProgressionPlugin.CE_LockGuardianPower.Value;
+        return LockAdminCheck(ProgressionPlugin.CE_LockGuardianPower.Value);
     }
 
     public bool GetLockBossSummons()
     {
-        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
-        {
-            return false;
-        }
-        return ProgressionPlugin.CE_LockBossSummons.Value;
+        return LockAdminCheck(ProgressionPlugin.CE_LockBossSummons.Value);
     }
 
     public string GetOverrideLockBossSummonsDefaults() => ProgressionPlugin.CE_OverrideLockBossSummonsDefaults.Value;
@@ -553,72 +583,47 @@ public class ProgressionConfiguration : IProgressionConfiguration
 
     public bool GetLockEquipment()
     {
-        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
-        {
-            return false;
-        }
+        return LockAdminCheck(ProgressionPlugin.CE_LockEquipment.Value);
+    }
 
-        return ProgressionPlugin.CE_LockEquipment.Value;
+    public bool GetLockEquipmentRepair()
+    {
+        return LockAdminCheck(ProgressionPlugin.CE_LockEquipmentRepair.Value);
     }
 
     public bool GetLockCrafting()
     {
-        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
-        {
-            return false;
-        }
-
-        return ProgressionPlugin.CE_LockCrafting.Value;
+        return LockAdminCheck(ProgressionPlugin.CE_LockCrafting.Value);
     }
 
     public bool GetLockBuilding()
     {
-        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
-        {
-            return false;
-        }
+        return LockAdminCheck(ProgressionPlugin.CE_LockBuilding.Value);
+    }
 
-        return ProgressionPlugin.CE_LockBuilding.Value;
+    public bool GetLockBuildingRepair()
+    {
+        return LockAdminCheck(ProgressionPlugin.CE_LockBuildingRepair.Value);
     }
 
     public bool GetLockCooking()
     {
-        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
-        {
-            return false;
-        }
-
-        return ProgressionPlugin.CE_LockCooking.Value;
+        return LockAdminCheck(ProgressionPlugin.CE_LockCooking.Value);
     }
 
     public bool GetLockEating()
     {
-        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
-        {
-            return false;
-        }
-
-        return ProgressionPlugin.CE_LockEating.Value;
+        return LockAdminCheck(ProgressionPlugin.CE_LockEating.Value);
     }
 
     public string GetLockBoatsKey()
     {
-        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
-        {
-            return "";
-        }
-
-        return ProgressionPlugin.CE_LockBoatsKey.Value;
+        return LockAdminCheck(ProgressionPlugin.CE_LockBoatsKey.Value);
     }
 
     public string GetLockPortalsKey()
     {
-        if (Instance.GetAdminBypass() && SynchronizationManager.Instance.PlayerIsAdmin)
-        {
-            return "";
-        }
-
-        return ProgressionPlugin.CE_LockPortalsKey.Value;
+        return LockAdminCheck(ProgressionPlugin.CE_LockPortalsKey.Value);
     }
 
     // Portal Unlocking

@@ -1,3 +1,8 @@
+## 0.3.13
+
+* Added two new configurations: LockEquipmentRepair and LockBuildingRepair. These features do not apply blocked actions effects (no fire burning on the dance floor).
+* Changed the lock building check to also include items from the food items list. This will lock the building of the spice rack appropriately now.
+
 ## 0.3.12
 
 * Fixed an issue that prevent Troll and Bat raids from being selected as valid events (sorry, or I guess not sorry? Enjoy hard mode again)
