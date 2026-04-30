@@ -20,7 +20,7 @@ What is a key and what is controlled by them? In vanilla Valheim there exists a 
 
 When enabled, private keys will be added to any player within a 100 meter range of the hosting player when the action occurs. For example, when a boss dies any player close enough to the chunk-hosting player should also get the private key, but a player online on the other side of the map will not get it.
 
-The player that is hosting a loaded "chunk" will control the worldly spawns. For example, a player A with no keys joins player B with all the boss keys and starts seeing Fuling night spawns, but if player A is alone they should not get higher level spawns. If player A loads and hosts an area and is later joined by player B, the area should not spawn the higher level monsters that become unlocked with keys.
+The player that is hosting a loaded "chunk" will control the worldly spawns. For example, a low level player (LLP) with no keys joins a high level player (HLP) with all the boss keys and starts seeing Fuling night spawns, but if LLP is alone they should not get higher level spawns. If LLP loads and hosts an area and is later joined by HLP, the area should not spawn the higher level monsters that become unlocked with keys. There is a built in feature to clean up high level spawns when LLP loads an area with these spawns already in the world from a HLP passing through.
 
 Hildir keys for unlocking store content are applied when the chests are turned in. Make sure all participating players are present when the chest is turned in to get credit. (Hildir wants to thank you personally!)
 

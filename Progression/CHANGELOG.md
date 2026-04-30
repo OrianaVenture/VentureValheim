@@ -1,3 +1,7 @@
+## 0.3.14
+
+* Existing high level night spawns will now despawn upon loading when a low level player is the first to enter an area.
+
 ## 0.3.13
 
 * Added two new configurations: LockEquipmentRepair and LockBuildingRepair. These features do not apply blocked actions effects (no fire burning on the dance floor).
