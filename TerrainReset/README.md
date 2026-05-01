@@ -30,6 +30,10 @@ This mod is client side only and changes made to the configurations will only af
 
 ## Changelog
 
+### 0.1.2
+
+* Adds a private area check to all operations so you cannot reset protected areas or inside unauthorized wards.
+
 ### 0.1.1
 
 * Update for Ashlands game version 0.218.15.

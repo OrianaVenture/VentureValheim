@@ -19,11 +19,11 @@ public class TerrainReset
 
     public static bool IgnoreKeyPresses()
     {
-        return ZNetScene.instance == null || Player.m_localPlayer == null || 
-            Minimap.IsOpen() || Console.IsVisible() || TextInput.IsVisible() || 
-            ZNet.instance.InPasswordDialog() || 
-            (Chat.instance != null && Chat.instance.HasFocus() == true) || 
-            StoreGui.IsVisible() || InventoryGui.IsVisible() || Menu.IsVisible() || 
+        return ZNetScene.instance == null || Player.m_localPlayer == null ||
+            Minimap.IsOpen() || Console.IsVisible() || TextInput.IsVisible() ||
+            ZNet.instance.InPasswordDialog() ||
+            (Chat.instance != null && Chat.instance.HasFocus() == true) ||
+            StoreGui.IsVisible() || InventoryGui.IsVisible() || Menu.IsVisible() ||
             (TextViewer.instance != null && TextViewer.instance.IsVisible() == true);
     }
 
@@ -40,6 +40,16 @@ public class TerrainReset
     public static int ResetTerrain(Vector3 center, float radius)
     {
         int resets = 0;
+
+        // Check area permissions
+        if (!PrivateArea.CheckAccess(center, radius) ||
+            Location.IsInsideNoBuildLocation(center))
+        {
+            TerrainResetPlugin.TerrainResetLogger.LogDebug("No access!");
+
+            return resets;
+        }
+
         List<Heightmap> list = new List<Heightmap>();
 
         Heightmap.FindHeightmap(center, radius + 100, list);
@@ -64,11 +74,15 @@ public class TerrainReset
                 }
 
                 resets++;
+
                 foreach (Heightmap heightmap in list)
                 {
                     if (heightmap.TerrainVSModifier(terrainModifier))
+                    {
                         heightmap.Poke(true);
+                    }
                 }
+
                 nview.Destroy();
             }
         }
@@ -80,7 +94,9 @@ public class TerrainReset
             {
                 TerrainComp terrainComp = TerrainComp.FindTerrainCompiler(enumerator.Current.transform.position);
                 if (!terrainComp)
+                {
                     continue;
+                }
 
                 if (!terrainComp.m_nview.IsOwner())
                 {
@@ -121,6 +137,7 @@ public class TerrainReset
 
                         if (disMask <= radius && terrainComp.m_modifiedPaint[idx])
                         {
+                            resets++;
                             thisReset = true;
                             terrainComp.m_modifiedPaint[idx] = false;
                             terrainComp.m_paintMask[idx] = Color.clear;
