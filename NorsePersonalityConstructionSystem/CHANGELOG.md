@@ -1,3 +1,11 @@
+## 0.1.2
+
+* New boolean configuration field ``updateStyle`` for yaml file. Set to false to prevent randomization/updating NPC equipment on update.
+* NPCs will now equip their weapon if they have one upon loading in.
+* Fixed a null reference exception when trying to set items on NPCs that do not support it.
+* Fixed live updating animations not taking effect when setting NPC data.
+* Fixed live updating quests not always refreshing correctly.
+
 ## 0.1.1
 
 * Added improved item randomization when spawning from the yaml file. If your NPCs had intentional missing armor slots, hair, or beards you will now need to specify those in the yaml file with blank strings when spawning or updating from the file.

@@ -405,10 +405,7 @@ public static class NPCZDOUtils
                 SetMaxHealth(ref zdo, config.MaxHealth.Value);
             }
 
-            if (config.Quests != null)
-            {
-                SetQuestData(ref zdo, config.Quests);
-            }
+            SetQuestData(ref zdo, config.Quests);
 
             SetNPCTradeItems(ref zdo, config.TradeItems);
             SetNPCTraderUseItems(ref zdo, config.TraderUseItems);
@@ -436,21 +433,21 @@ public static class NPCZDOUtils
     private static void SetQuestData(ref ZDO zdo, List<NPCQuest> quests)
     {
         int oldCount = GetNPCQuestCount(zdo);
-        if (oldCount > 0)
-        {
-            // Clean up old data
-            for (int lcv = 0; lcv < oldCount; lcv++)
-            {
-                SetNPCQuest(ref zdo, lcv, null);
-            }
-        }
+        int count = quests != null ? quests.Count : 0;
 
-        for (int lcv = 0; lcv < quests.Count; lcv++)
+        // Set new data
+        for (int lcv = 0; lcv < count; lcv++)
         {
             SetNPCQuest(ref zdo, lcv, quests[lcv]);
         }
 
-        SetNPCQuestCount(ref zdo, quests.Count);
+        // Clear old data
+        for (int lcv = count; lcv < oldCount; lcv++)
+        {
+            SetNPCQuest(ref zdo, lcv, null);
+        }
+
+        SetNPCQuestCount(ref zdo, count);
     }
 
     public static void UpgradeVersion(ref ZDO zdo)

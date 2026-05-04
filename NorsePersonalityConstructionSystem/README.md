@@ -314,6 +314,12 @@ By default the health of an NPC will mirror its vanilla counterpart. Use the ``m
 
 By default NPCs will be given a random default item set similar to their vanilla counterpart. If you would like the NPC to have no items, armor, or attacks set ``giveDefaultItems`` to false. (Khordus - This is how you make Candy)
 
+### UpdateStyle (Equipment Randomization)
+
+By default NPCs will be randomized when spawned and each time they are updated if certain fields are excluded from the yaml file. If you do not want the equipment to refresh or randomize when updating set ``updateStyle`` to false. This is useful if you make changes to your NPCs after placing them, but need to change their quests or store items later.
+
+Read more about styling below.
+
 ### TrueDeath
 
 Set ``trueDeath`` to true to have the NPC die when defeated, causing it to never respawn. By default all NPCs wil respawn in the same location they were initially spawned.
@@ -332,7 +338,7 @@ Improvements to this system are planned for a future update.
 
 ## NPC Style
 
-There are fields for setting the NPC appearance using item prefab names. Anything not specified will be left blank or randomized. Skin and Hair color require all r,g,b values to be defined to override; they are float values between 0 and 1. Overriding colors can allow you to make some very strange characters. When left blank these colors will be randomized to any possible vanilla customization value. There are commands to get these values from existing NPCs, so you can spawn a group of randomly generated ones to find possible vanilla values rather quickly.
+There are fields for setting the NPC appearance using item prefab names. Anything not specified will be left blank or randomized. Skin and Hair color require all r,g,b values to be defined to override; they are float values between 0 and 1. Overriding colors can allow you to make some very strange characters. When excluded from the yaml these colors will be randomized to any possible vanilla customization value. There are commands to get these values from existing NPCs, so you can spawn a group of randomly generated ones to find possible vanilla values rather quickly.
 
 When spawning an npc from the yaml file it will automatically keep the usual default items that exists on the original prefab (including their unarmed attacks). To remove default attacks, weapons, clothes, and other items set ``GiveDefaultItems`` to false. This can then let you fully customize your NPC.
 

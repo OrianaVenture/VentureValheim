@@ -1,6 +1,5 @@
 ﻿using BepInEx;
 using System;
-using System.Xml.Linq;
 using UnityEngine;
 
 namespace VentureValheim.NPCS;
@@ -72,9 +71,10 @@ public class NPCData
 
         if (_character is NPCHumanoid)
         {
-            var humanoid = _character as Humanoid;
+            Humanoid humanoid = _character as Humanoid;
             if (!_newSpawn && humanoid.m_visEquipment != null && humanoid.m_visEquipment.m_nview != null)
             {
+                // Load the existing items and reinit inventory
                 SetHelmet(zdo.GetInt(ZDOVars.s_helmetItem));
                 SetChest(zdo.GetInt(ZDOVars.s_chestItem));
                 SetLegs(zdo.GetInt(ZDOVars.s_legItem));
@@ -85,9 +85,11 @@ public class NPCData
                     zdo.GetInt(ZDOVars.s_leftItemVariant));
                 SetRightHand(zdo.GetInt(ZDOVars.s_rightItem));
             }
+
+            humanoid.EquipBestWeapon(null, null, null, null);
         }
 
-        var rotation = NPCZDOUtils.GetRotation(zdo);
+        Quaternion rotation = NPCZDOUtils.GetRotation(zdo);
         if (rotation != Quaternion.identity)
         {
             _character.transform.rotation = rotation;
@@ -105,7 +107,7 @@ public class NPCData
         ZDO zdo = _character.m_nview.GetZDO();
         if (NPCZDOUtils.GetType(zdo) == (int)NPCType.Trader)
         {
-            if (!_character.TryGetComponent<NPCTrader>(out var trader))
+            if (!_character.TryGetComponent<NPCTrader>(out NPCTrader trader))
             {
                 trader = _character.gameObject.AddComponent<NPCTrader>();
             }
@@ -119,7 +121,7 @@ public class NPCData
 
     protected bool UpdateTalker()
     {
-        var talker = _character.gameObject.GetComponent<NpcTalk>();
+        NpcTalk talker = _character.gameObject.GetComponent<NpcTalk>();
         if (talker != null)
         {
             ZDO zdo = _character.m_nview.GetZDO();
@@ -137,7 +139,7 @@ public class NPCData
     protected void RefreshQuestList(bool forceReset = false)
     {
         // TODO: Optimize only to load quest at index when ready
-        if (_quests == null || forceReset)
+        if (!_questsInitialized || forceReset)
         {
             ZDO zdo = _character.m_nview.GetZDO();
             int count = NPCZDOUtils.GetNPCQuestCount(zdo);
@@ -151,26 +153,23 @@ public class NPCData
                     _quests[lcv] = quest;
                 }
             }
+            else
+            {
+                _quests = null;
+            }
         }
 
+        _currentQuest = null;
         _questsInitialized = true;
         _questIndex = 0;
     }
 
-    // TODO: When removing keys is implemented a force reset must be used here.
+    // TODO: When removing keys via NPC is implemented check this behaves correctly
     protected void UpdateQuest(bool forceReset = false)
     {
-        if (!_questsInitialized)
-        {
-            RefreshQuestList(false);
-        }
+        RefreshQuestList(forceReset);
 
-        if (forceReset || _questIndex < 0)
-        {
-            _questIndex = 0;
-        }
-
-        if (_quests == null)
+        if (_quests == null || _quests.Length == 0)
         {
             return;
         }
@@ -185,26 +184,14 @@ public class NPCData
             }
 
             _questIndex = lcv;
-            break;
-        }
-
-        if (_questIndex >= 0 && _questIndex < _quests.Length)
-        {
             _currentQuest = _quests[_questIndex];
-        }
-        else
-        {
-            _currentQuest = null;
+            return;
         }
     }
 
     public NPCQuest GetCurrentQuest(bool update = true)
     {
-        if (!_questsInitialized)
-        {
-            UpdateQuest(true);
-        }
-        else if (update)
+        if (update || !_questsInitialized)
         {
             UpdateQuest(false);
         }
@@ -220,7 +207,7 @@ public class NPCData
         {
             _character.transform.position = AttachPosition;
             _character.transform.rotation = AttachRotation;
-            var velocity = Vector3.zero;
+            Vector3 velocity = Vector3.zero;
             if (AttachRoot)
             {
                 Rigidbody componentInParent = AttachRoot.GetComponentInParent<Rigidbody>();
@@ -286,6 +273,9 @@ public class NPCData
             _character.m_zanim.SetBool(AttachAnimation, value: false);
         }
 
+        // Force the animations to finish that have the emote_stop trigger
+        _character.m_animator.SetTrigger("emote_stop");
+
         if (chair)
         {
             AttachPosition = chair.m_attachPoint.position;
@@ -304,12 +294,13 @@ public class NPCData
         }
 
         // Set new animation state
-        if (!AttachAnimation.IsNullOrWhiteSpace()) //_character.m_zanim.IsOwner() todo: check needed
+        if (!AttachAnimation.IsNullOrWhiteSpace())
         {
             _character.m_zanim.SetBool(AttachAnimation, value: true);
+            _character.m_animator.ResetTrigger("emote_stop");
         }
 
-        var velocity = Vector3.zero;
+        Vector3 velocity = Vector3.zero;
         if (AttachRoot)
         {
             Rigidbody componentInParent = AttachRoot.GetComponentInParent<Rigidbody>();
@@ -341,11 +332,6 @@ public class NPCData
 
     public void SetAttachStop(string animation = "")
     {
-        if (!HasAttach)
-        {
-            return;
-        }
-
         _character.m_nview.ClaimOwnership();
 
         ZDO zdo = _character.m_nview.GetZDO();
@@ -369,10 +355,13 @@ public class NPCData
         HasAttach = false;
 
         // Reset previous animation state
-        if (!AttachAnimation.IsNullOrWhiteSpace()) //_character.m_zanim.IsOwner() todo: check needed
+        if (!AttachAnimation.IsNullOrWhiteSpace())
         {
             _character.m_zanim.SetBool(AttachAnimation, value: false);
         }
+
+        // Force the animations to finish that have the emote_stop trigger
+        _character.m_animator.SetTrigger("emote_stop");
 
         AttachAnimation = animation;
 
@@ -380,6 +369,7 @@ public class NPCData
         if (!AttachAnimation.IsNullOrWhiteSpace())
         {
             _character.m_zanim.SetBool(AttachAnimation, value: true);
+            _character.m_animator.ResetTrigger("emote_stop");
         }
 
         _character.m_body.useGravity = true;
@@ -407,71 +397,68 @@ public class NPCData
         }
 
         ZDO zdo = _character.m_nview.GetZDO();
-
         _character.m_nview.ClaimOwnership();
-
         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
 
-        // Clear previous inventory? TODO test
+        Attach(config.StandStill, config.Animation);
 
-        if (config.StandStill && !HasAttach)
-        {
-            SetAttachStart(config.Animation);
-        }
-        else if (!config.StandStill && HasAttach)
-        {
-            SetAttachStop(config.Animation);
-        }
-
-        if (config.ModelIndex.HasValue)
-        {
-            SetModel(config.ModelIndex.Value);
-        }
-
-        // Style
-        // TODO: check setting random skin/hair color here works for other models
-        if (_character is Humanoid && (_character as Humanoid).m_inventory != null)
-        {
-            (_character as Humanoid).m_inventory.RemoveAll();
-        }
-
-        if (_character is Humanoid && (_character as Humanoid).m_visEquipment != null)
+        if (config.UpdateStyle.Value == true)
         {
             bool isHuman = IsHuman();
-            bool isFemale = isHuman && zdo.GetInt(ZDOVars.s_modelIndex) == 1;
 
-            if (config.SkinColorR.HasValue &&
-                config.SkinColorG.HasValue &&
-                config.SkinColorB.HasValue)
+            if (config.ModelIndex.HasValue)
             {
-                SetSkinColor(config.SkinColorR.Value, config.SkinColorG.Value, config.SkinColorB.Value);
+                SetModel(config.ModelIndex.Value);
             }
-            else
+            else if (newSpawn)
             {
-                SetSkinColor(GetRandomSkinColor());
+                SetRandomModel(isHuman);
             }
 
-            if (config.HairColorR.HasValue &&
-                config.HairColorG.HasValue &&
-                config.HairColorB.HasValue)
+            // Style
+            // TODO: check setting random skin/hair color here works for other models
+            if (_character is Humanoid && (_character as Humanoid).m_inventory != null)
             {
-                SetHairColor(config.HairColorR.Value, config.HairColorG.Value, config.HairColorB.Value);
-            }
-            else
-            {
-                SetHairColor(GetRandomHairColor());
+                (_character as Humanoid).m_inventory.RemoveAll();
             }
 
-            SetNPCHair(config.Hair, isHuman);
-            SetNPCBeard(config.Beard, isHuman, isFemale);
-            SetHelmet(config.Helmet, isHuman, isFemale);
-            SetChest(config.Chest, isHuman, isFemale);
-            SetLegs(config.Legs, isHuman, isFemale);
-            SetUtility(config.Utility);
-            SetTrinket(config.Trinket);
-            SetShoulder(config.Shoulder, config.ShoulderVariant.Value);
-            SetLeftHand(config.LeftHand, isHuman, config.LeftHandVariant.Value);
-            SetRightHand(config.RightHand, isHuman);
+            if (_character is Humanoid && (_character as Humanoid).m_visEquipment != null)
+            {
+                bool isFemale = isHuman && zdo.GetInt(ZDOVars.s_modelIndex) == 1;
+
+                if (config.SkinColorR.HasValue &&
+                    config.SkinColorG.HasValue &&
+                    config.SkinColorB.HasValue)
+                {
+                    SetSkinColor(config.SkinColorR.Value, config.SkinColorG.Value, config.SkinColorB.Value);
+                }
+                else
+                {
+                    SetSkinColor(GetRandomSkinColor());
+                }
+
+                if (config.HairColorR.HasValue &&
+                    config.HairColorG.HasValue &&
+                    config.HairColorB.HasValue)
+                {
+                    SetHairColor(config.HairColorR.Value, config.HairColorG.Value, config.HairColorB.Value);
+                }
+                else
+                {
+                    SetHairColor(GetRandomHairColor());
+                }
+
+                SetNPCHair(config.Hair, isHuman);
+                SetNPCBeard(config.Beard, isHuman, isFemale);
+                SetHelmet(config.Helmet, isHuman, isFemale);
+                SetChest(config.Chest, isHuman, isFemale);
+                SetLegs(config.Legs, isHuman, isFemale);
+                SetUtility(config.Utility);
+                SetTrinket(config.Trinket);
+                SetShoulder(config.Shoulder, config.ShoulderVariant.Value);
+                SetLeftHand(config.LeftHand, isHuman, config.LeftHandVariant.Value);
+                SetRightHand(config.RightHand, isHuman);
+            }
         }
 
         NPCZDOUtils.SetZDOFromConfig(ref zdo, config);
@@ -524,7 +511,7 @@ public class NPCData
 
     public void SetRandom(string item = null)
     {
-        if (_character is not Humanoid)
+        if (_character is not Humanoid || (_character as Humanoid).m_visEquipment == null)
         {
             return;
         }
@@ -537,12 +524,8 @@ public class NPCData
 
         if (item.IsNullOrWhiteSpace())
         {
-            if (isHuman)
-            {
-                int index = UnityEngine.Random.Range(0, 2);
-                SetModel(index);
-                isFemale = index == 1;
-            }
+            int index = SetRandomModel(isHuman);
+            isFemale = index == 1;
 
             ClearInventory(isHuman);
             SetRandom(isHuman, isFemale);
@@ -587,14 +570,13 @@ public class NPCData
             }
         }
 
-
-            ZDO zdo = _character.m_nview.GetZDO();
+        ZDO zdo = _character.m_nview.GetZDO();
         NPCZDOUtils.SetInitialized(ref zdo, true);
     }
 
     protected string GetRandomBeard()
     {
-        var beard = UnityEngine.Random.Range(1, 35);
+        int beard = UnityEngine.Random.Range(1, 35);
         if (beard <= 26)
         {
             return "Beard" + beard;
@@ -605,13 +587,13 @@ public class NPCData
 
     protected string GetRandomHairStyle()
     {
-        var hair = UnityEngine.Random.Range(1, 37);
+        int hair = UnityEngine.Random.Range(1, 37);
         return "Hair" + hair;
     }
 
     protected string GetRandomHelmetMale()
     {
-        var helmet = UnityEngine.Random.Range(1, 25);
+        int helmet = UnityEngine.Random.Range(1, 25);
         if (helmet <= 10)
         {
             return "HelmetHat" + helmet;
@@ -628,7 +610,7 @@ public class NPCData
 
     protected string GetRandomChestMale()
     {
-        var chest = UnityEngine.Random.Range(1, 15);
+        int chest = UnityEngine.Random.Range(1, 15);
         if (chest > 11)
         {
             return "ArmorLeatherChest";
@@ -645,7 +627,7 @@ public class NPCData
 
     protected string GetRandomLegsMale()
     {
-        var legs = UnityEngine.Random.Range(0, 15);
+        int legs = UnityEngine.Random.Range(0, 15);
         if (legs < 10)
         {
             return "ArmorLeatherLegs";
@@ -658,7 +640,7 @@ public class NPCData
 
     protected string GetRandomHelmetFemale()
     {
-        var helmet = UnityEngine.Random.Range(1, 25);
+        int helmet = UnityEngine.Random.Range(1, 25);
         if (helmet <= 10)
         {
             return "HelmetHat" + helmet;
@@ -675,7 +657,7 @@ public class NPCData
 
     protected string GetRandomChestFemale()
     {
-        var chest = UnityEngine.Random.Range(1, 15);
+        int chest = UnityEngine.Random.Range(1, 15);
         if (chest <= 10)
         {
             return "ArmorDress" + chest;
@@ -692,7 +674,7 @@ public class NPCData
 
     protected string GetRandomLegsFemale()
     {
-        var legs = UnityEngine.Random.Range(0, 15);
+        int legs = UnityEngine.Random.Range(0, 15);
         if (legs < 8)
         {
             return "ArmorLeatherLegs";
@@ -765,7 +747,7 @@ public class NPCData
             return;
         }
 
-        var color = new Vector3(r, g, b);
+        Vector3 color = new Vector3(r, g, b);
         (_character as Humanoid).m_visEquipment.SetHairColor(color);
     }
 
@@ -781,7 +763,7 @@ public class NPCData
             return;
         }
 
-        var color = new Vector3(r, g, b);
+        Vector3 color = new Vector3(r, g, b);
         (_character as Humanoid).m_visEquipment.SetSkinColor(color);
     }
 
@@ -806,6 +788,18 @@ public class NPCData
 
         (_character as Humanoid).m_beardItem = name;
         (_character as Humanoid).m_visEquipment.SetBeardItem(name);
+    }
+
+    protected int SetRandomModel(bool isHuman)
+    {
+        if (isHuman)
+        {
+            int index = UnityEngine.Random.Range(0, 2);
+            SetModel(index);
+            return index;
+        }
+
+        return 0;
     }
 
     protected void SetModel(int index)
@@ -839,7 +833,7 @@ public class NPCData
         }
 
         // Check if new item exists
-        if (!Utility.GetItemPrefab(hash, out var item))
+        if (!Utility.GetItemPrefab(hash, out GameObject item))
         {
             NPCSPlugin.NPCSLogger.LogDebug($"Item with hash {hash} not found! Skipping adding new item.");
             return true;
@@ -1166,15 +1160,15 @@ public class NPCData
 
     protected Color GetRandomSkinColor()
     {
-        var skintone = UnityEngine.Random.Range(0f, 1f);
+        float skintone = UnityEngine.Random.Range(0f, 1f);
         Color skinColor = Color.Lerp(SkinColorMin, SkinColorMax, skintone);
         return skinColor;
     }
 
     protected Color GetRandomHairColor()
     {
-        var hairtone = UnityEngine.Random.Range(0f, 1f);
-        var hairlevel = UnityEngine.Random.Range(0f, 1f);
+        float hairtone = UnityEngine.Random.Range(0f, 1f);
+        float hairlevel = UnityEngine.Random.Range(0f, 1f);
         Color hairColor = Color.Lerp(HairColorMin, HairColorMax, hairtone) *
             Mathf.Lerp(0.1f, 1f, hairlevel);
         return hairColor;
@@ -1182,13 +1176,13 @@ public class NPCData
 
     public string GetSkinColor()
     {
-        var color = NPCZDOUtils.GetSkinColor(_character.m_nview.GetZDO());
+        Vector3 color = NPCZDOUtils.GetSkinColor(_character.m_nview.GetZDO());
         return $"Skin Color RGB: {color.x}, {color.y}, {color.z}";
     }
 
     public string GetHairColor()
     {
-        var color = NPCZDOUtils.GetHairColor(_character.m_nview.GetZDO());
+        Vector3 color = NPCZDOUtils.GetHairColor(_character.m_nview.GetZDO());
         return $"Hair Color RGB: {color.x}, {color.y}, {color.z}";
     }
 

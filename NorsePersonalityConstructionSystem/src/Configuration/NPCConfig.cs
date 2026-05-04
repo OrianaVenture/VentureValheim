@@ -16,6 +16,7 @@ public class NPCConfig
     public bool StandStill { get; set; }
     public string? Animation { get; set; }
     public bool? GiveDefaultItems { get; set; }
+    public bool? UpdateStyle { get; set; }
     public float? MaxHealth { get; set; }
     public List<NPCQuest>? Quests { get; set; }
     // Trader
@@ -58,7 +59,8 @@ public class NPCConfig
         Name ??= "Ragnar";
         DefeatKey ??= "";
         Animation ??= "";
-        GiveDefaultItems ??= true;
+        GiveDefaultItems ??= false;
+        UpdateStyle ??= true;
         MaxHealth ??= 0f;
 
         Quests ??= new List<NPCQuest>();
