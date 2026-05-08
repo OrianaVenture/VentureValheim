@@ -35,7 +35,7 @@ public class CaveManager
         GameObject copperTinCave = ZoneManager.Instance.CreateLocationContainer(MiningCavesPlugin.CavesBundle, copperTinCaveName);
         LocationConfig copperTinCaveLocConfig = new LocationConfig();
         copperTinCaveLocConfig.Biome = Heightmap.Biome.BlackForest;
-        copperTinCaveLocConfig.Quantity = 50;
+        copperTinCaveLocConfig.Quantity = MiningCavesPlugin.GetCopperTinCaveAmount();
         copperTinCaveLocConfig.ExteriorRadius = 12;
         copperTinCaveLocConfig.HasInterior = true;
         copperTinCaveLocConfig.InteriorRadius = 35;
@@ -51,7 +51,7 @@ public class CaveManager
         GameObject silverCave = ZoneManager.Instance.CreateLocationContainer(MiningCavesPlugin.CavesBundle, silverCaveName);
         LocationConfig silverCaveLocConfig = new LocationConfig();
         silverCaveLocConfig.Biome = Heightmap.Biome.Mountain;
-        silverCaveLocConfig.Quantity = 50;
+        silverCaveLocConfig.Quantity = MiningCavesPlugin.GetSilverCaveAmount();
         silverCaveLocConfig.ExteriorRadius = 16;
         silverCaveLocConfig.HasInterior = true;
         silverCaveLocConfig.InteriorRadius = 40;
@@ -68,7 +68,7 @@ public class CaveManager
         GameObject tarCave = ZoneManager.Instance.CreateLocationContainer(MiningCavesPlugin.CavesBundle, tarCaveName);
         LocationConfig tarCaveLocConfig = new LocationConfig();
         tarCaveLocConfig.Biome = Heightmap.Biome.Plains;
-        tarCaveLocConfig.Quantity = 50;
+        tarCaveLocConfig.Quantity = MiningCavesPlugin.GetTarCaveAmount();
         tarCaveLocConfig.ExteriorRadius = 25;
         tarCaveLocConfig.HasInterior = true;
         tarCaveLocConfig.InteriorRadius = 50;

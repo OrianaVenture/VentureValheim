@@ -17,7 +17,7 @@ namespace VentureValheim.MiningCaves;
 public class MiningCavesPlugin : BaseUnityPlugin
 {
     private const string ModName = "MiningCaves";
-    private const string ModVersion = "0.3.0";
+    private const string ModVersion = "0.3.1";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
@@ -29,10 +29,14 @@ public class MiningCavesPlugin : BaseUnityPlugin
     public static GameObject Root;
 
     #region ConfigurationEntries
-    public static ConfigEntry<bool> CE_AdminBypass = null!;
-    public static ConfigEntry<bool> CE_LockTerrain = null!;
-    public static ConfigEntry<string> CE_LockTerrainIgnoreItems = null!;
-    public static ConfigEntry<bool> CE_RemoveSilverWishbonePing = null!;
+    private static ConfigEntry<bool> CE_AdminBypass = null!;
+    private static ConfigEntry<bool> CE_LockTerrain = null!;
+    private static ConfigEntry<string> CE_LockTerrainIgnoreItems = null!;
+    private static ConfigEntry<bool> CE_RemoveSilverWishbonePing = null!;
+
+    private static ConfigEntry<int> CE_CopperTinCaveAmount = null!;
+    private static ConfigEntry<int> CE_SilverCaveAmount = null!;
+    private static ConfigEntry<int> CE_TarCaveAmount = null!;
 
     internal static AssetBundle CavesBundle;
 
@@ -48,6 +52,10 @@ public class MiningCavesPlugin : BaseUnityPlugin
 
     public static string GetLockTerrainIgnoreItems() => CE_LockTerrainIgnoreItems.Value;
     public static bool GetRemoveSilverWishbonePing() => CE_RemoveSilverWishbonePing.Value;
+
+    public static int GetCopperTinCaveAmount() => CE_CopperTinCaveAmount.Value;
+    public static int GetSilverCaveAmount() => CE_SilverCaveAmount.Value;
+    public static int GetTarCaveAmount() => CE_TarCaveAmount.Value;
 
     private readonly ConfigurationManagerAttributes AdminConfig = new ConfigurationManagerAttributes { IsAdminOnly = true };
     private readonly ConfigurationManagerAttributes ClientConfig = new ConfigurationManagerAttributes { IsAdminOnly = false };
@@ -69,6 +77,7 @@ public class MiningCavesPlugin : BaseUnityPlugin
     public void Awake()
     {
         const string general = "General";
+        const string generation = "Generation";
 
         AddConfig("AdminBypass", general,
             "True to allow admins to bypass settings (boolean)",
@@ -82,6 +91,16 @@ public class MiningCavesPlugin : BaseUnityPlugin
         AddConfig("RemoveSilverWishbonePing", general,
             "True to always remove the wishbone ping from silver veins (boolean)",
             true, false, ref CE_RemoveSilverWishbonePing);
+
+        AddConfig("CopperTinCaveAmount", generation,
+            "Amount of CopperTinCave to attempt to place during world generation (integer)",
+            false, 50, ref CE_CopperTinCaveAmount);
+        AddConfig("SilverCaveAmount", generation,
+            "Amount of SilverCave to attempt to place during world generation (integer)",
+            false, 50, ref CE_SilverCaveAmount);
+        AddConfig("TarCaveAmount", generation,
+            "Amount of TarCave to attempt to place during world generation (integer)",
+            false, 50, ref CE_TarCaveAmount);
 
         ZoneManager.OnVanillaLocationsAvailable += CaveManager.AddMiningCaves;
         PrefabManager.OnVanillaPrefabsAvailable += CaveManager.AddPrefabs;

@@ -1,3 +1,7 @@
+## 0.3.1
+
+* Added three new configurations to control how many of each cave can spawn in the world.
+
 ## 0.3.0
 
 * Added a new Tar Cave in the Plains! (Version 0.2.1 still works fine if you do not want the new cave!)

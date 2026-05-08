@@ -8,18 +8,18 @@ Adds three new caves to the world containing ore for mining. Adds the ability to
 
 ## Features
 
-* Adds a cave for mining Copper and Tin in the Black Forest (prefab name VV_CopperTinCave)
+* Adds a cave for mining Copper and Tin in the Black Forest (prefab name ``VV_CopperTinCave``)
 <br>
 <img alt="Caves" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MiningCaves/pictures/MiningCaves-CopperTin-Outer.png?raw=true" />
 <img alt="Caves" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MiningCaves/pictures/MiningCaves-CopperTin-Inter.png?raw=true" />
 
 
-* Adds a cave for mining Silver in the Mountains (prefab name VV_SilverCave)
+* Adds a cave for mining Silver in the Mountains (prefab name ``VV_SilverCave``)
 <br>
 <img alt="Caves" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MiningCaves/pictures/MiningCaves-Silver-Outer.png?raw=true" />
 <img alt="Caves" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MiningCaves/pictures/MiningCaves-Silver-Inter.png?raw=true" />
 
-* Adds a cave for mining Copper and Iron in the Plains (prefab name VV_TarCave)
+* Adds a cave for mining Copper and Iron in the Plains (prefab name ``VV_TarCave``)
 <br>
 <img alt="Caves" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MiningCaves/pictures/MiningCaves-Tar-Outer.png?raw=true" />
 <img alt="Caves" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/MiningCaves/pictures/MiningCaves-Tar-Inter.png?raw=true" />
@@ -28,9 +28,17 @@ Adds three new caves to the world containing ore for mining. Adds the ability to
 
 ### Adding Caves
 
-* If creating a new world with this mod installed the caves will be added automatically on world generation.
-* If you are adding this to an existing world you can run the vanilla "genloc" command to add caves to unexplored areas of the map. Be aware this can change the positions of unexplored boss locations and can make your map pins inaccurate.
+* If creating a **new world** with this mod installed the caves will be added automatically on world generation.
+* If you are adding this to an **existing world** you can run the vanilla ``genloc`` command to add caves to unexplored areas of the map. Be aware this can change the positions of unexplored boss locations and can make your map pins inaccurate.
 * If your map is heavily explored you will need to use another mod to automatically add the locations to explored areas.
+
+#### Configure Amounts
+
+There are three configuration options to set the cave amounts generated on world creation and when running the ``genloc`` command. When vanilla updates with new locations this command may be run automatically for you when you upgrade your game version. Make sure these values are set in your configuration to the desired amount. They do not sync to players since they are only used on the server or client generating the world.
+
+Set to 0 to prevent adding that particular cave to your world. Values over 50 are not recommended since this can crowd out your world and prevent vanilla locations from spawning in their expected amounts. If using other mods that add locations you may want to reduce the amount of caves spawned to make space for those.
+
+#### Confirming Success
 
 Use the find command such as "find VV_SilverCave 50" in game after creating a world to have all these locations added to your map as pins. This will help you ensure the world had a good spawn. Example of the warning message displayed in your log file on a bad spawn after initial world generation:
 
@@ -38,7 +46,7 @@ Use the find command such as "find VV_SilverCave 50" in game after creating a wo
 Failed to place all VV_SilverCave, placed 5 out of 50
 ```
 
-Don't know how to use commands? Dedicated servers do not allow for use of commands, but there are mods that can enable them (like Server devcommands by JereKuusela). The commands mentioned above are considered a "cheat". To use cheats you must enable them with the "devcommands" command, you may have to be an admin for them to work depending on what mod you use to access commands.
+Don't know how to use commands? Dedicated servers do not allow for use of commands, but there are mods that can enable them (like Server devcommands by JereKuusela). The commands mentioned above are considered a "cheat". To use cheats you must enable them with the ``devcommands`` command, you may have to be an admin for them to work depending on what mod you use to access commands.
 
 ### Locking Terrain Changes
 
