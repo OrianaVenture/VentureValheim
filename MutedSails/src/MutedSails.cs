@@ -1,5 +1,7 @@
 using HarmonyLib;
 using Jotunn.Managers;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -127,12 +129,30 @@ public class MutedSails
         }
     }
 
-    [HarmonyPatch(typeof(Player), nameof(Player.Update))]
-    public static class Patch_Player_Update
+    // Thank you Redsekio for the template!
+    [HarmonyPatch(typeof(Player))]
+    static class PlayerPatch
     {
-        private static void Postfix(Player __instance)
+        [HarmonyTranspiler]
+        [HarmonyPatch(typeof(Player), nameof(Player.Update))]
+        static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            if (__instance.TakeInput() && ZInput.GetKeyDown(MutedSailsPlugin.GetToggleKey()))
+            return new CodeMatcher(instructions)
+                .Start()
+                .MatchStartForward(
+                    new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.UpdateHover))))
+                .ThrowIfInvalid($"Could not patch Player.Update()!")
+                .Advance(offset: 1)
+                .InsertAndAdvance(
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    new CodeInstruction(OpCodes.Ldloc_1),
+                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PlayerPatch), nameof(UpdateInputDelegate))))
+                .InstructionEnumeration();
+        }
+
+        static void UpdateInputDelegate(Player player, bool takeInput)
+        {
+            if (takeInput && ZInput.GetKeyDown(MutedSailsPlugin.GetToggleKey()))
             {
                 MutedSailsPlugin.CE_TransparencyEnabled.BoxedValue = !MutedSailsPlugin.CE_TransparencyEnabled.Value;
                 ConfigurationDirty = true;

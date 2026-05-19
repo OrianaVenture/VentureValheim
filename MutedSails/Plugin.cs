@@ -14,7 +14,7 @@ namespace VentureValheim.MutedSails;
 public class MutedSailsPlugin : BaseUnityPlugin
 {
     private const string ModName = "MutedSails";
-    private const string ModVersion = "0.1.1";
+    private const string ModVersion = "0.1.2";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";

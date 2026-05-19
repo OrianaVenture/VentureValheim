@@ -26,6 +26,9 @@ This mod is client side and changes made to the configurations will only affect 
 
 ## Changelog
 
+### 0.1.2
+
+* Improved compatibility with other mods. No feature change.
 
 ### 0.1.1
 
