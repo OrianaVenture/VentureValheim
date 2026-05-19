@@ -1,4 +1,6 @@
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace VentureValheim.NoUnlockSpam;
 
@@ -21,12 +23,30 @@ public class NoUnlockSpam
         }
     }
 
-    [HarmonyPatch(typeof(Player), nameof(Player.Update))]
-    public static class Patch_Player_Update
+    // Thank you Redsekio for the template!
+    [HarmonyPatch(typeof(Player))]
+    static class PlayerPatch
     {
-        private static void Postfix(Player __instance)
+        [HarmonyTranspiler]
+        [HarmonyPatch(typeof(Player), nameof(Player.Update))]
+        static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            if (__instance.TakeInput() && ZInput.GetKeyDown(NoUnlockSpamPlugin.GetToggleKey()))
+            return new CodeMatcher(instructions)
+                .Start()
+                .MatchStartForward(
+                    new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.UpdateHover))))
+                .ThrowIfInvalid($"Could not patch Player.Update()!")
+                .Advance(offset: 1)
+                .InsertAndAdvance(
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    new CodeInstruction(OpCodes.Ldloc_1),
+                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PlayerPatch), nameof(UpdateInputDelegate))))
+                .InstructionEnumeration();
+        }
+
+        static void UpdateInputDelegate(Player player, bool takeInput)
+        {
+            if (takeInput && ZInput.GetKeyDown(NoUnlockSpamPlugin.GetToggleKey()))
             {
                 HotkeyPressed = true;
             }

@@ -13,7 +13,7 @@ namespace VentureValheim.NoUnlockSpam;
 public class NoUnlockSpamPlugin : BaseUnityPlugin
 {
     private const string ModName = "NoUnlockSpam";
-    private const string ModVersion = "0.1.0";
+    private const string ModVersion = "0.1.1";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
