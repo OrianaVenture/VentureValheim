@@ -14,7 +14,7 @@ namespace VentureValheim.PiecesSmoothStone;
 public class PiecesSmoothStonePlugin : BaseUnityPlugin
 {
     private const string ModName = "VenturePiecesSmoothStone";
-    private const string ModVersion = "0.1.0";
+    private const string ModVersion = "0.2.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
@@ -25,6 +25,10 @@ public class PiecesSmoothStonePlugin : BaseUnityPlugin
     public static GameObject Root;
     internal static AssetBundle StoneBundle;
     internal static Material StoneTexture;
+    internal static Material StoneTextureWorn;
+    internal static Material StoneTextureDestruction;
+    internal static Material StoneTextureSecondary;
+    internal static Material StoneTextureNoNoise;
 
     public void Awake()
     {
@@ -38,9 +42,13 @@ public class PiecesSmoothStonePlugin : BaseUnityPlugin
         Assembly assembly = Assembly.GetExecutingAssembly();
         HarmonyInstance.PatchAll(assembly);
 
-        PrefabManager.OnPrefabsRegistered += PiecesSmoothStone.Initialize;
-
         StoneBundle = AssetUtils.LoadAssetBundleFromResources("vv_smoothstone", Assembly.GetExecutingAssembly());
         StoneTexture = StoneBundle.LoadAsset<Material>("vv_smooth_stone");
+        StoneTextureWorn = StoneBundle.LoadAsset<Material>("vv_smooth_stone_worn");
+        StoneTextureDestruction = StoneBundle.LoadAsset<Material>("vv_smooth_stone_destruction");
+        StoneTextureSecondary = StoneBundle.LoadAsset<Material>("vv_roof_orange");
+        StoneTextureNoNoise = StoneBundle.LoadAsset<Material>("vv_smooth_stone_nonoise");
+
+        PrefabManager.OnPrefabsRegistered += PiecesSmoothStone.Initialize;
     }
 }
