@@ -30,17 +30,23 @@ public static class LeviathanExtension
 
     /// <summary>
     /// Moves the Leviathan underwater if reset is enabled, otherwise destroys it.
+    /// It should have already submerged completely when this code is reached.
     /// </summary>
     /// <param name="leviathan"></param>
     private static void MoveUnderwater(this Leviathan leviathan)
     {
+        if (leviathan == null)
+        {
+            return;
+        }
+
         if (LocationResetPlugin.GetEnableLeviathanReset())
         {
-            if (leviathan.m_body.position.y > 1f)
+            if (leviathan.transform.position.y > 0f)
             {
-                Vector3 position = leviathan.m_body.position;
+                Vector3 position = leviathan.transform.position;
                 position.y = 0f;
-                leviathan.m_body.MovePosition(position);
+                leviathan.transform.position = position;
             }
         }
         else if (leviathan.m_nview != null)

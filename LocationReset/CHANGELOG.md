@@ -1,3 +1,7 @@
+## 0.10.9
+
+* Changed how Leviathans stay underwater to fix a bug likely caused by a mod compatibility issue.
+
 ## 0.10.8
 
 * Added LiquidVolume (includes tar liquid) to allowed reset components.
