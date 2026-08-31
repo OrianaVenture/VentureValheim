@@ -4,13 +4,21 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-This mod increases the transparency of the Mistland mist making it see through. May help with motion sickness.
+This mod increases the transparency of the Mistland mist making it see through (configurable). May help with motion sickness.
+
+## Features
+
+Contains one configuration option ``TransparencyIntensity`` to control the alpha value of the mist particle effect material. A value of 0 will hide the mist. A value of 1 will use the default vanilla transparency.
 
 ## Installation
 
-This mod is client side and has no configuration options.
+This mod is client side but when installed on a server will enforce configuration. To allow individual configuration do not install on your server. Live updates to the configurations will take immediate effect.
 
 ## Changelog
+
+### 0.2.0
+
+* Added a configuration option. Now requires Jotunn. Previous version still works.
 
 ### 0.1.0
 
