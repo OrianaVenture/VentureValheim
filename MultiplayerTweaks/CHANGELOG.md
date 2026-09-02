@@ -1,3 +1,8 @@
+## 0.12.0
+
+* Added an API to get the map pin indexes. Support for new Travel Totems mod.
+* Fixed the warnings about invalid map pin types.
+
 ## 0.11.8
 
 * New feature: Adds small custom map icons when interacting with traders.

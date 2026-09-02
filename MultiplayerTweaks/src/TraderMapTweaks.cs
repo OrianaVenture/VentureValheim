@@ -16,24 +16,24 @@ public class TraderMapTweaks
     private const int HILDIR_INT = 124;
     private const int BOGWITCH_INT = 125;
 
-    private static int haldorIndex = -1;
-    private static int hildirIndex = -1;
-    private static int bogWitchIndex = -1;
+    internal static int HaldorIndex = -1;
+    internal static int HildirIndex = -1;
+    internal static int BogWitchIndex = -1;
 
     private static void TransformPinIdsToSave(ref List<Minimap.PinData> pins)
     {
         foreach (Minimap.PinData pin in pins)
         {
             int type = (int)pin.m_type;
-            if (type == haldorIndex)
+            if (type == HaldorIndex)
             {
                 pin.m_type = (Minimap.PinType)HALDOR_INT;
             }
-            else if (type == hildirIndex)
+            else if (type == HildirIndex)
             {
                 pin.m_type = (Minimap.PinType)HILDIR_INT;
             }
-            else if (type == bogWitchIndex)
+            else if (type == BogWitchIndex)
             {
                 pin.m_type = (Minimap.PinType)BOGWITCH_INT;
             }
@@ -47,15 +47,15 @@ public class TraderMapTweaks
             int type = (int)pin.m_type;
             if (type == HALDOR_INT)
             {
-                pin.m_type = (Minimap.PinType)haldorIndex;
+                pin.m_type = (Minimap.PinType)HaldorIndex;
             }
             else if (type == HILDIR_INT)
             {
-                pin.m_type = (Minimap.PinType)hildirIndex;
+                pin.m_type = (Minimap.PinType)HildirIndex;
             }
             else if (type == BOGWITCH_INT)
             {
-                pin.m_type = (Minimap.PinType)bogWitchIndex;
+                pin.m_type = (Minimap.PinType)BogWitchIndex;
             }
         }
     }
@@ -106,13 +106,13 @@ public class TraderMapTweaks
                 visibleIconsNew[lcv] = __instance.m_visibleIconTypes[lcv];
             }
 
-            haldorIndex = __instance.m_visibleIconTypes.Length;
-            hildirIndex = __instance.m_visibleIconTypes.Length + 1;
-            bogWitchIndex = __instance.m_visibleIconTypes.Length + 2;
+            HaldorIndex = __instance.m_visibleIconTypes.Length;
+            HildirIndex = __instance.m_visibleIconTypes.Length + 1;
+            BogWitchIndex = __instance.m_visibleIconTypes.Length + 2;
 
-            visibleIconsNew[haldorIndex] = true;
-            visibleIconsNew[hildirIndex] = true;
-            visibleIconsNew[bogWitchIndex] = true;
+            visibleIconsNew[HaldorIndex] = true;
+            visibleIconsNew[HildirIndex] = true;
+            visibleIconsNew[BogWitchIndex] = true;
 
             __instance.m_visibleIconTypes = visibleIconsNew;
         }
@@ -125,29 +125,59 @@ public class TraderMapTweaks
     private static class Patch_Minimap_AddPin
     {
         [HarmonyPriority(Priority.First)]
-        private static void Prefix(Minimap.PinType type, out int __state)
+        private static void Prefix(ref Minimap.PinType type, out int __state)
         {
+            int typeInt = (int)type;
+            if (typeInt == HALDOR_INT)
+            {
+                type = (Minimap.PinType)HaldorIndex;
+            }
+            else if (typeInt == HILDIR_INT)
+            {
+                type = (Minimap.PinType)HildirIndex;
+            }
+            else if (typeInt == BOGWITCH_INT)
+            {
+                type = (Minimap.PinType)BogWitchIndex;
+            }
+
+            if ((int)type >= Minimap.instance.m_visibleIconTypes.Length)
+            {
+                MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogWarning("Minimap conversion type out of range of visible icons.");
+            }
+            else if (type < Minimap.PinType.Icon0)
+            {
+                MultiplayerTweaksPlugin.MultiplayerTweaksLogger.LogWarning("Minimap conversion type less than icon 0.");
+            }
+
             __state = (int)type;
         }
+    }
 
-        [HarmonyPriority(Priority.Low)]
-        private static void Postfix(ref Minimap.PinData __result, Minimap.PinType type, int __state)
+    [HarmonyPatch(typeof(Minimap), nameof(Minimap.GetSprite))]
+    private static class Patch_Minimap_GetSprite
+    {
+        [HarmonyPriority(Priority.High)]
+        private static bool Prefix(Minimap.PinType type, ref Sprite __result)
         {
-            if (__state == haldorIndex || __state == HALDOR_INT)
+            int typeInt = (int)type;
+            if (typeInt == HaldorIndex)
             {
-                __result.m_icon = Minimap.instance.GetLocationIcon(HALDOR_LOC);
-                __result.m_type = (Minimap.PinType)haldorIndex;
+                __result = Minimap.instance.GetLocationIcon(HALDOR_LOC);
+                return false;
             }
-            else if (__state == hildirIndex || __state == HILDIR_INT)
+            else if (typeInt == HildirIndex)
             {
-                __result.m_icon = Minimap.instance.GetLocationIcon(HILDIR_LOC);
-                __result.m_type = (Minimap.PinType)hildirIndex;
+                __result = Minimap.instance.GetLocationIcon(HILDIR_LOC);
+                return false;
             }
-            else if (__state == bogWitchIndex || __state == BOGWITCH_INT)
+            else if (typeInt == BogWitchIndex)
             {
-                __result.m_icon = Minimap.instance.GetLocationIcon(BOGWITCH_LOC);
-                __result.m_type = (Minimap.PinType)bogWitchIndex;
+                __result = Minimap.instance.GetLocationIcon(BOGWITCH_LOC);
+                return false;
             }
+
+            return true;
         }
     }
 
@@ -165,13 +195,13 @@ public class TraderMapTweaks
             switch (name)
             {
                 case "Haldor":
-                    pinType = HALDOR_INT;
+                    pinType = HaldorIndex;
                     break;
                 case "Hildir":
-                    pinType = HILDIR_INT;
+                    pinType = HildirIndex;
                     break;
                 case "BogWitch":
-                    pinType = BOGWITCH_INT;
+                    pinType = BogWitchIndex;
                     break;
             }
 
