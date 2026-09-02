@@ -51,8 +51,8 @@ Prefab names:
 * VV_RS_piece_grausten_roof_45_arch_corner2
 
 <p>
-<img alt="Piece" width="800" src="https://github.com/OrianaVenture/VentureValheim/blob/10b50dd93476df522c6a3a49ad982799509b559c/PiecesRoughStone/image/RoughStoneImage.png?raw=true" />
-<img alt="Piece" width="800" src="https://github.com/OrianaVenture/VentureValheim/blob/10b50dd93476df522c6a3a49ad982799509b559c/PiecesRoughStone/image/RoughStoneImage2.png?raw=true" />
+<img alt="Piece" width="800" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/PiecesRoughStone/image/RoughStoneImage.png?raw=true" />
+<img alt="Piece" width="800" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/PiecesRoughStone/image/RoughStoneImage2.png?raw=true" />
 </p>
 
 ## Stability
