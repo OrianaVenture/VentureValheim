@@ -1,10 +1,11 @@
-﻿using System.IO;
-using System.Reflection;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using Jotunn.Managers;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace VentureValheim.MultiplayerTweaks;
 
@@ -13,7 +14,7 @@ namespace VentureValheim.MultiplayerTweaks;
 public class MultiplayerTweaksPlugin : BaseUnityPlugin
 {
     private const string ModName = "MultiplayerTweaks";
-    private const string ModVersion = "0.12.0";
+    private const string ModVersion = "0.12.1";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -241,17 +242,33 @@ public class MultiplayerTweaksPlugin : BaseUnityPlugin
         watcher.EnableRaisingEvents = true;
     }
 
+    private DateTime _lastReloadTime;
+    private const long RELOAD_DELAY = 10000000; // One second
+
     private void ReadConfigValues(object sender, FileSystemEventArgs e)
     {
-        if (!File.Exists(ConfigFileFullPath)) return;
+        var now = DateTime.Now;
+        var time = now.Ticks - _lastReloadTime.Ticks;
+        if (!File.Exists(ConfigFileFullPath) || time < RELOAD_DELAY) return;
+
         try
         {
-            MultiplayerTweaksLogger.LogDebug("Attempting to reload configuration...");
+            MultiplayerTweaksLogger.LogInfo("Attempting to reload configuration...");
             Config.Reload();
         }
         catch
         {
             MultiplayerTweaksLogger.LogError($"There was an issue loading {ConfigFileName}");
+            return;
         }
+
+        _lastReloadTime = now;
+
+        if (Player.m_localPlayer)
+        {
+            Player.m_localPlayer.SetPVP(Player.m_localPlayer.m_pvp);
+        }
+
+        MapTweaks.TrySetPublicReferencePosition();
     }
 }

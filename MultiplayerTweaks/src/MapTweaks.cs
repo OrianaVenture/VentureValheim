@@ -4,18 +4,28 @@ namespace VentureValheim.MultiplayerTweaks;
 
 public class MapTweaks
 {
+    public static void TrySetPublicReferencePosition()
+    {
+        if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins() && ZNet.instance)
+        {
+            ZNet.instance.SetPublicReferencePosition(ZNet.instance.m_publicReferencePosition);
+        }
+    }
+
     [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
     public static class Patch_Player_OnSpawned
     {
         /// <summary>
         /// Set the Player map position as public or private if overridden.
         /// </summary>
-        private static void Postfix()
+        private static void Postfix(Player __instance)
         {
-            if (MultiplayerTweaksPlugin.GetOverridePlayerMapPins())
+            if (__instance != Player.m_localPlayer)
             {
-                ZNet.instance.SetPublicReferencePosition(MultiplayerTweaksPlugin.GetForcePlayerMapPinsOn());
+                return;
             }
+
+            TrySetPublicReferencePosition();
         }
     }
 

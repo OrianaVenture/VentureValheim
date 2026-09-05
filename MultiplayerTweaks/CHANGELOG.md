@@ -1,3 +1,8 @@
+## 0.12.1
+
+* Fixed a weird bug with PVP settings not applying when installed with some other mods like Jewelcrafting.
+* PVP and map position settings should now update live with config changes.
+
 ## 0.12.0
 
 * Added an API to get the map pin indexes. Support for new Travel Totems mod.

@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VentureValheim.MultiplayerTweaks;
@@ -66,12 +67,12 @@ public class GeneralTweaks
     {
         private static void Postfix(Player __instance)
         {
-            if (MultiplayerTweaksPlugin.GetOverridePlayerPVP())
+            if (__instance != Player.m_localPlayer)
             {
-                __instance.m_nview?.GetZDO()?.Set(ZDOVars.s_pvp, MultiplayerTweaksPlugin.GetForcePlayerPVPOn());
-                __instance.m_pvp = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
-                InventoryGui.instance.m_pvp.isOn = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
+                return;
             }
+
+            __instance.SetPVP(__instance.m_pvp);
 
             _lastSpawnTime = ZNet.instance.GetTimeSeconds();
             _lastHitByPlayer = false;
@@ -90,6 +91,41 @@ public class GeneralTweaks
             {
                 __result = false;
             }
+        }
+    }
+
+    /// <summary>
+    /// Intercept anything trying to set PVP.
+    /// </summary>
+    [HarmonyPatch(typeof(Player), nameof(Player.SetPVP))]
+    public static class Patch_Player_SetPVP
+    {
+        private static void Prefix(Player __instance, ref bool enabled)
+        {
+            if (__instance == null || __instance != Player.m_localPlayer)
+            {
+                return;
+            }
+
+            if (MultiplayerTweaksPlugin.GetOverridePlayerPVP())
+            {
+                enabled = MultiplayerTweaksPlugin.GetForcePlayerPVPOn();
+                InventoryGui.instance.m_pvp.isOn = enabled;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Force a fix with Jewelcrafting and other mods not applying PVP method patches when this is transpiled by those mods.
+    /// This is likely some sort of bug with Harmony.
+    /// </summary>
+    [HarmonyPriority(Priority.First)]
+    [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.UpdateCharacterStats))]
+    private class InventoryGui_UpdateCharacterStats_Transpiler
+    {
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return instructions;
         }
     }
 
