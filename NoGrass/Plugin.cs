@@ -11,7 +11,7 @@ namespace VentureValheim.NoGrass;
 public class NoGrassPlugin : BaseUnityPlugin
 {
     private const string ModName = "NoGrass";
-    private const string ModVersion = "0.1.5";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
