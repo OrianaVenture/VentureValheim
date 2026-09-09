@@ -37,6 +37,9 @@
       <SpecificVersion>false</SpecificVersion>
       <HintPath>..\Lib\Jotunn.dll</HintPath>
     </Reference>
+    <Reference Include="MagicaClothV2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>$(GamePath)\valheim_Data\Managed\MagicaClothV2.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="SoftReferenceableAssets, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>$(GamePath)\valheim_Data\Managed\SoftReferenceableAssets.dll</HintPath>
