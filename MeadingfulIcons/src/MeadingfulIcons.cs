@@ -60,7 +60,7 @@ public class MeadingfulIcons
         if (!name.IsNullOrWhiteSpace())
         {
             // Try hash code
-            var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
+            GameObject prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
             if (prefab == null)
             {
                 // Failed, try slow search
@@ -129,7 +129,7 @@ public class MeadingfulIcons
     {
         int width = baseTexture.width;
         int height = baseTexture.height;
-        var merged = new Texture2D(width, height);
+        Texture2D merged = new Texture2D(width, height);
 
         for (int x = 0; x < width; x++)
         {
@@ -137,14 +137,14 @@ public class MeadingfulIcons
             {
                 merged.SetPixel(x, y, UnityEngine.Color.clear);
 
-                var overlayPixel = overlayTexture.GetPixel(x, y);
+                Color overlayPixel = overlayTexture.GetPixel(x, y);
                 if (overlayPixel.a != 0)
                 {
                     merged.SetPixel(x, y, overlayPixel);
                     continue;
                 }
 
-                var basePixel = baseTexture.GetPixel(x, y);
+                Color basePixel = baseTexture.GetPixel(x, y);
                 if (basePixel.a != 0)
                 {
                     merged.SetPixel(x, y, basePixel);
@@ -154,7 +154,7 @@ public class MeadingfulIcons
         }
 
         merged.Apply();
-        var newSprite = Sprite.Create(merged, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f));
+        Sprite newSprite = Sprite.Create(merged, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f));
         newSprite.name = name;
         return newSprite;
     }
@@ -184,7 +184,7 @@ public class MeadingfulIcons
 
         Texture2D baseSpriteTexture = null;
 
-        if (GetItemDrop("MeadBaseTasty", out var tasty))
+        if (GetItemDrop("MeadBaseTasty", out ItemDrop tasty))
         {
             if (MeadingfulIconsPlugin.GetReplaceIcons() && _iconBundle != null && tasty.m_itemData.m_shared.m_icons.Length > 0)
             {
@@ -202,9 +202,9 @@ public class MeadingfulIcons
             tasty.m_itemData.m_shared.m_maxStackSize = MeadingfulIconsPlugin.GetStackSize();
         }
 
-        foreach (var mead in _meadList)
+        foreach (string mead in _meadList)
         {
-            if (GetItemDrop(mead, out var item))
+            if (GetItemDrop(mead, out ItemDrop item))
             {
                 if (MeadingfulIconsPlugin.GetReplaceIcons() && _iconBundle != null)
                 {
@@ -239,7 +239,7 @@ public class MeadingfulIcons
 
                     if (overlay != null && overlay.texture.isReadable)
                     {
-                        var sprite = MergeTextures($"VV_{mead}", originalSpriteTexture, overlay.texture);
+                        Sprite sprite = MergeTextures($"VV_{mead}", originalSpriteTexture, overlay.texture);
                         item.m_itemData.m_shared.m_icons = new Sprite[] { sprite };
                     }
                     else
