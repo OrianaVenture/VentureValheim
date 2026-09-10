@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Release for game version 1.0.7
+
 ## 0.12.1
 
 * Fixed a weird bug with PVP settings not applying when installed with some other mods like Jewelcrafting.

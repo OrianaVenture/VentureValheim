@@ -52,9 +52,9 @@ public class ArrivalTweaks
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var codes = new List<CodeInstruction>(instructions);
-            var method = AccessTools.Method(typeof(Chat), nameof(Chat.SendText));
-            for (var lcv = 5; lcv < codes.Count; lcv++)
+            List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
+            System.Reflection.MethodInfo method = AccessTools.Method(typeof(Chat), nameof(Chat.SendText));
+            for (int lcv = 5; lcv < codes.Count; lcv++)
             {
                 if (codes[lcv].opcode == OpCodes.Callvirt)
                 {
@@ -65,7 +65,7 @@ public class ArrivalTweaks
                         codes[lcv - 3].opcode = OpCodes.Nop; // call
                         codes[lcv - 2].opcode = OpCodes.Nop; // ldstr
                         codes[lcv - 1].opcode = OpCodes.Nop; // callvirt
-                        var methodCall = AccessTools.Method(typeof(ArrivalTweaks), nameof(SendArrivalMessage));
+                        System.Reflection.MethodInfo methodCall = AccessTools.Method(typeof(ArrivalTweaks), nameof(SendArrivalMessage));
                         codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
                         break;
                     }
@@ -132,7 +132,7 @@ public class ArrivalTweaks
         {
             if (!__instance.m_playerProfile.HaveLogoutPoint() &&
                 !__instance.m_playerProfile.HaveCustomSpawnPoint() &&
-                GetCustomSpawnPoint(out var point))
+                GetCustomSpawnPoint(out Vector3 point))
             {
                 __instance.m_respawnAfterDeath = false;
                 __instance.m_playerProfile.SetLogoutPoint(point);
@@ -148,10 +148,10 @@ public class ArrivalTweaks
     /// <returns></returns>
     public static bool GetCustomSpawnPoint(out Vector3 position)
     {
-        var point = MultiplayerTweaksPlugin.GetPlayerDefaultSpawnPoint();
+        string point = MultiplayerTweaksPlugin.GetPlayerDefaultSpawnPoint();
         if (!point.IsNullOrWhiteSpace())
         {
-            var coordinates = point.Split(',');
+            string[] coordinates = point.Split(',');
             if (coordinates.Length >= 3)
             {
                 try
@@ -188,16 +188,16 @@ public class ArrivalTweaks
     /// <returns></returns>
     private static IEnumerable<CodeInstruction> ReplaceMessageAll(IEnumerable<CodeInstruction> instructions)
     {
-        var codes = new List<CodeInstruction>(instructions);
-        var method = AccessTools.Method(typeof(MessageHud), nameof(MessageHud.MessageAll));
-        for (var lcv = 4; lcv < codes.Count; lcv++)
+        List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
+        System.Reflection.MethodInfo method = AccessTools.Method(typeof(MessageHud), nameof(MessageHud.MessageAll));
+        for (int lcv = 4; lcv < codes.Count; lcv++)
         {
             if (codes[lcv].opcode == OpCodes.Callvirt)
             {
                 if (codes[lcv].operand?.Equals(method) ?? false)
                 {
                     codes[lcv - 4].opcode = OpCodes.Ldarg_0; // this
-                    var methodCall = AccessTools.Method(typeof(ArrivalTweaks), nameof(SendMessageInRange));
+                    System.Reflection.MethodInfo methodCall = AccessTools.Method(typeof(ArrivalTweaks), nameof(SendMessageInRange));
                     codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
                     break;
                 }

@@ -19,7 +19,7 @@ public class GeneralTweaks
     {
         if (id != null && !id.IsNone() && Player.s_players != null)
         {
-            var players = Player.s_players;
+            List<Player> players = Player.s_players;
             for (int lcv = 0; lcv < players.Count; lcv++)
             {
                 if (players[lcv].GetZDOID().Equals(id))
@@ -239,7 +239,7 @@ public class GeneralTweaks
             if (__instance.IsPlayer() && __instance == Player.m_localPlayer)
             {
                 // 15 seconds of immunity
-                var time = ZNet.instance.GetTimeSeconds() - _lastSpawnTime;
+                double time = ZNet.instance.GetTimeSeconds() - _lastSpawnTime;
                 if (time < 15d)
                 {
                     return false;
@@ -258,7 +258,7 @@ public class GeneralTweaks
     {
         private static void Postfix(ref int __result)
         {
-            var offset = MultiplayerTweaksPlugin.GetGameDayOffset();
+            int offset = MultiplayerTweaksPlugin.GetGameDayOffset();
             __result -= offset;
             if (__result < 0)
             {

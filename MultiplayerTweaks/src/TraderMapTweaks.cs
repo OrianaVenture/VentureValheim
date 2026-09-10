@@ -233,8 +233,8 @@ public class TraderMapTweaks
                 return;
             }
 
-            var list = new List<Vector3>();
-            foreach (var item in icons)
+            List<Vector3> list = new List<Vector3>();
+            foreach (KeyValuePair<Vector3, string> item in icons)
             {
                 switch (item.Value)
                 {
@@ -267,7 +267,7 @@ public class TraderMapTweaks
                 }
             }
 
-            foreach (var item in list)
+            foreach (Vector3 item in list)
             {
                 icons.Remove(item);
             }
