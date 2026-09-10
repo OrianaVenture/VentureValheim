@@ -15,7 +15,7 @@ public class NoUnlockSpam
         {
             if (__instance.m_unlockMsgQueue.Count > 0 && (HotkeyPressed || !NoUnlockSpamPlugin.GetNotificationsEnabled()))
             {
-                __instance.m_unlockMsgQueue.Clear();
+                __instance.ClearUnlockQueue();
                 NoUnlockSpamPlugin.NoUnlockSpamLogger.LogDebug("Clearing messages!");
             }
 
