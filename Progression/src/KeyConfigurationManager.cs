@@ -86,7 +86,7 @@ public partial class KeyManager
     {
         int count = 0;
 
-        foreach (var key in BossKeyOrderList.Keys)
+        foreach (string key in BossKeyOrderList.Keys)
         {
             if (!key.IsNullOrWhiteSpace() && PrivateKeysList.Contains(key))
             {
@@ -105,7 +105,7 @@ public partial class KeyManager
     {
         int count = 0;
 
-        foreach (var key in BossKeyOrderList.Keys)
+        foreach (string key in BossKeyOrderList.Keys)
         {
             if (!key.IsNullOrWhiteSpace() && HasGlobalKey(key))
             {
@@ -250,7 +250,7 @@ public partial class KeyManager
     {
         SetOriginalItemsList(ref HaldorOriginalItemsList, items);
 
-        var keyReplacements = new Dictionary<string, string>();
+        Dictionary<string, string> keyReplacements = new Dictionary<string, string>();
         if (!ProgressionConfiguration.Instance.GetHelmetYuleKey().IsNullOrWhiteSpace())
         {
             keyReplacements.Add("HelmetYule", ProgressionConfiguration.Instance.GetHelmetYuleKey());
@@ -288,8 +288,8 @@ public partial class KeyManager
             keyReplacements.Add("BarrelRings", ProgressionConfiguration.Instance.GetBarrelRingsKey());
         }
 
-        var trades = new Dictionary<string, string>();
-        foreach (var item in HaldorOriginalItemsList)
+        Dictionary<string, string> trades = new Dictionary<string, string>();
+        foreach (KeyValuePair<string, string> item in HaldorOriginalItemsList)
         {
             if (keyReplacements.ContainsKey(item.Key))
             {
@@ -316,11 +316,11 @@ public partial class KeyManager
         }
 
         cache = new Dictionary<string, string>();
-        foreach (var item in items)
+        foreach (Trader.TradeItem item in items)
         {
             if (item.m_prefab != null)
             {
-                var name = Utils.GetPrefabName(item.m_prefab.gameObject);
+                string name = Utils.GetPrefabName(item.m_prefab.gameObject);
                 if (!cache.ContainsKey(name))
                 {
                     cache.Add(name, item.m_requiredGlobalKey.ToLower());
@@ -338,7 +338,7 @@ public partial class KeyManager
     {
         SetOriginalItemsList(ref HildirOriginalItemsList, items);
 
-        var keyReplacements = new Dictionary<string, string>();
+        Dictionary<string, string> keyReplacements = new Dictionary<string, string>();
         if (!ProgressionConfiguration.Instance.GetCryptItemsKey().IsNullOrWhiteSpace())
         {
             keyReplacements.Add(HILDIR_KEY_CRYPT, ProgressionConfiguration.Instance.GetCryptItemsKey());
@@ -352,8 +352,8 @@ public partial class KeyManager
             keyReplacements.Add(HILDIR_KEY_TOWER, ProgressionConfiguration.Instance.GetTowerItemsKey());
         }
 
-        var trades = new Dictionary<string, string>();
-        foreach (var item in HildirOriginalItemsList)
+        Dictionary<string, string> trades = new Dictionary<string, string>();
+        foreach (KeyValuePair<string, string> item in HildirOriginalItemsList)
         {
             if (keyReplacements.ContainsKey(item.Value))
             {
@@ -372,8 +372,8 @@ public partial class KeyManager
     {
         SetOriginalItemsList(ref BogWitchOriginalItemsList, items);
 
-        var trades = new Dictionary<string, string>();
-        foreach (var item in BogWitchOriginalItemsList)
+        Dictionary<string, string> trades = new Dictionary<string, string>();
+        foreach (KeyValuePair<string, string> item in BogWitchOriginalItemsList)
         {
             if (item.Key.Equals("ScytheHandle") && !ProgressionConfiguration.Instance.GetScytheHandleKey().IsNullOrWhiteSpace())
             {

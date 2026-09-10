@@ -36,7 +36,7 @@ public class KeyTests
 
     private static void SetupConfiguration(int bossSummonsTime)
     {
-        var mockManager = new Mock<IProgressionConfiguration>();
+        Mock<IProgressionConfiguration> mockManager = new Mock<IProgressionConfiguration>();
         mockManager.Setup(x => x.GetUnlockBossSummonsTime()).Returns(bossSummonsTime);
 
         new ProgressionConfiguration(mockManager.Object);
@@ -44,18 +44,18 @@ public class KeyTests
 
     private static TestKeyManager Setup(string a, string b, string c, string d)
     {
-        var mockManager = new Mock<IKeyManager>();
+        Mock<IKeyManager> mockManager = new Mock<IKeyManager>();
         mockManager.Setup(x => x.BlockedGlobalKeys).Returns(a);
         mockManager.Setup(x => x.AllowedGlobalKeys).Returns(b);
-        var set1 = ProgressionAPI.StringToSet(a);
-        var set2 = ProgressionAPI.StringToSet(b);
+        HashSet<string> set1 = ProgressionAPI.StringToSet(a);
+        HashSet<string> set2 = ProgressionAPI.StringToSet(b);
         mockManager.Setup(x => x.BlockedGlobalKeysList).Returns(set1);
         mockManager.Setup(x => x.AllowedGlobalKeysList).Returns(set2);
 
         mockManager.Setup(x => x.BlockedPrivateKeys).Returns(c);
         mockManager.Setup(x => x.AllowedPrivateKeys).Returns(d);
-        var set3 = ProgressionAPI.StringToSet(c);
-        var set4 = ProgressionAPI.StringToSet(d);
+        HashSet<string> set3 = ProgressionAPI.StringToSet(c);
+        HashSet<string> set4 = ProgressionAPI.StringToSet(d);
         mockManager.Setup(x => x.BlockedPrivateKeysList).Returns(set3);
         mockManager.Setup(x => x.AllowedPrivateKeysList).Returns(set4);
 
@@ -69,7 +69,7 @@ public class KeyTests
     [InlineData(string3, "")]
     public void BlockGlobalKey_BlockAll(string a, string b)
     {
-        var keyManager = Setup(a, b, "", "");
+        TestKeyManager keyManager = Setup(a, b, "", "");
 
         Assert.True(keyManager.BlockGlobalKey(true, "random_string"));
         Assert.True(keyManager.BlockGlobalKey(true, "killedtroll"));
@@ -82,7 +82,7 @@ public class KeyTests
     [InlineData("", string3)]
     public void BlockGlobalKey_BlockAllAllowedList(string a, string b)
     {
-        var keyManager = Setup(a, b, "", "");
+        TestKeyManager keyManager = Setup(a, b, "", "");
 
         Assert.True(keyManager.BlockGlobalKey(true, "random_string"));
         Assert.False(keyManager.BlockGlobalKey(true, "killedtroll"));
@@ -96,7 +96,7 @@ public class KeyTests
     [InlineData("", string3)]
     public void BlockGlobalKey_BlockNone(string a, string b)
     {
-        var keyManager = Setup(a, b, "", "");
+        TestKeyManager keyManager = Setup(a, b, "", "");
 
         Assert.False(keyManager.BlockGlobalKey(false, "random_string"));
         Assert.False(keyManager.BlockGlobalKey(false, "killedtroll"));
@@ -109,7 +109,7 @@ public class KeyTests
     [InlineData(string3, "")]
     public void BlockGlobalKey_BlockNoneBlockedList(string a, string b)
     {
-        var keyManager = Setup(a, b, "", "");
+        TestKeyManager keyManager = Setup(a, b, "", "");
 
         Assert.False(keyManager.BlockGlobalKey(false, "random_string"));
         Assert.True(keyManager.BlockGlobalKey(false, "killedtroll"));
@@ -119,7 +119,7 @@ public class KeyTests
     [Fact]
     public void BlockGlobalKey_BlockNullOrWhitespace()
     {
-        var keyManager = Setup(string3, string3, "", "");
+        TestKeyManager keyManager = Setup(string3, string3, "", "");
 
         Assert.True(keyManager.BlockGlobalKey(true, ""));
         Assert.True(keyManager.BlockGlobalKey(true, null));
@@ -132,11 +132,11 @@ public class KeyTests
     [InlineData(string2, string1)]
     public void UpdateGlobalKeyConfiguration_Update(string a, string b)
     {
-        var keyManager = Setup("", "", "", "");
+        TestKeyManager keyManager = Setup("", "", "", "");
         keyManager.UpdateGlobalKeyConfigurationTest(a, b);
 
-        var set1 = ProgressionAPI.StringToSet(a);
-        var set2 = ProgressionAPI.StringToSet(b);
+        HashSet<string> set1 = ProgressionAPI.StringToSet(a);
+        HashSet<string> set2 = ProgressionAPI.StringToSet(b);
 
         Assert.Equal(a, keyManager.BlockedGlobalKeys);
         Assert.Equal(b, keyManager.AllowedGlobalKeys);
@@ -150,14 +150,14 @@ public class KeyTests
     [InlineData(string2, string2)]
     public void UpdateGlobalKeyConfiguration_NoUpdate(string a, string b)
     {
-        var mockManager = new Mock<IKeyManager>();
+        Mock<IKeyManager> mockManager = new Mock<IKeyManager>();
         mockManager.SetupGet(x => x.BlockedGlobalKeys).Returns(a);
         mockManager.SetupGet(x => x.AllowedGlobalKeys).Returns(b);
-        var set3 = ProgressionAPI.StringToSet("Test1,Test2,Test3");
+        HashSet<string> set3 = ProgressionAPI.StringToSet("Test1,Test2,Test3");
         mockManager.SetupGet(x => x.BlockedGlobalKeysList).Returns(set3);
         mockManager.SetupGet(x => x.AllowedGlobalKeysList).Returns(set3);
 
-        var keyManager = new TestKeyManager(mockManager.Object);
+        TestKeyManager keyManager = new TestKeyManager(mockManager.Object);
 
         keyManager.UpdateGlobalKeyConfigurationTest(a, b);
 
@@ -174,11 +174,11 @@ public class KeyTests
     [InlineData("defeated_eikthyr,defeated_gdking,defeated_bonemass,defeated_dragon,defeated_goblinking,test1,test2", 5)]
     public void CountPrivateBossKeys_All(string keys, int expected)
     {
-        var mockManager = new Mock<IKeyManager>();
-        var set = ProgressionAPI.StringToSet(keys);
+        Mock<IKeyManager> mockManager = new Mock<IKeyManager>();
+        HashSet<string> set = ProgressionAPI.StringToSet(keys);
         mockManager.SetupGet(x => x.PrivateKeysList).Returns(set);
 
-        var keyManager = new TestKeyManager(mockManager.Object);
+        TestKeyManager keyManager = new TestKeyManager(mockManager.Object);
 
         Assert.Equal(expected, keyManager.CountPrivateBossKeysTest());
     }
@@ -195,12 +195,12 @@ public class KeyTests
     [InlineData("GP_Eikthyr,GP_TheElder,GP_Bonemass", "defeated_eikthyr,defeated_gdking,defeated_bonemass", true)]
     public void HasGuardianKey_All(string guardianPower, string keys, bool expected)
     {
-        var mockManager = new Mock<IKeyManager>();
-        var set = ProgressionAPI.StringToSet(keys);
+        Mock<IKeyManager> mockManager = new Mock<IKeyManager>();
+        HashSet<string> set = ProgressionAPI.StringToSet(keys);
         mockManager.SetupGet(x => x.PrivateKeysList).Returns(set);
-        var keyManager = new TestKeyManager(mockManager.Object);
+        TestKeyManager keyManager = new TestKeyManager(mockManager.Object);
 
-        var mockProgressionConfiguration = new Mock<IProgressionConfiguration>();
+        Mock<IProgressionConfiguration> mockProgressionConfiguration = new Mock<IProgressionConfiguration>();
         mockProgressionConfiguration.Setup(x => x.GetUsePrivateKeys()).Returns(true);
         new ProgressionConfiguration(mockProgressionConfiguration.Object);
 
@@ -213,7 +213,7 @@ public class KeyTests
     [InlineData("", string3)]
     public void BlockPrivateKey_AllowedList(string a, string b)
     {
-        var keyManager = Setup("", "", a, b);
+        TestKeyManager keyManager = Setup("", "", a, b);
 
         Assert.True(keyManager.PrivateKeyIsBlockedTest("random_string"));
         Assert.False(keyManager.PrivateKeyIsBlockedTest("killedtroll"));
@@ -229,7 +229,7 @@ public class KeyTests
     [InlineData(string3, string3)]
     public void BlockPrivateKey_BlockedList(string a, string b)
     {
-        var keyManager = Setup("", "", a, b);
+        TestKeyManager keyManager = Setup("", "", a, b);
 
         Assert.False(keyManager.PrivateKeyIsBlockedTest("random_string"));
         Assert.True(keyManager.PrivateKeyIsBlockedTest("killedtroll"));
@@ -239,7 +239,7 @@ public class KeyTests
     [Fact]
     public void BlockPrivateKey_BlockNullOrWhitespace()
     {
-        var keyManager = Setup("", "", "", "");
+        TestKeyManager keyManager = Setup("", "", "", "");
 
         Assert.True(keyManager.PrivateKeyIsBlockedTest(""));
         Assert.True(keyManager.PrivateKeyIsBlockedTest(null));
@@ -250,11 +250,11 @@ public class KeyTests
     [InlineData(string2, string1)]
     public void UpdatePrivateKeyConfiguration_Update(string a, string b)
     {
-        var keyManager = Setup("", "", "", "");
+        TestKeyManager keyManager = Setup("", "", "", "");
         keyManager.UpdatePrivateKeyConfigurationTest(a, b);
 
-        var set1 = ProgressionAPI.StringToSet(a);
-        var set2 = ProgressionAPI.StringToSet(b);
+        HashSet<string> set1 = ProgressionAPI.StringToSet(a);
+        HashSet<string> set2 = ProgressionAPI.StringToSet(b);
 
         Assert.Equal(a, keyManager.BlockedPrivateKeys);
         Assert.Equal(b, keyManager.AllowedPrivateKeys);
@@ -268,14 +268,14 @@ public class KeyTests
     [InlineData(string2, string2)]
     public void UpdatePrivateKeyConfiguration_NoUpdate(string a, string b)
     {
-        var mockManager = new Mock<IKeyManager>();
+        Mock<IKeyManager> mockManager = new Mock<IKeyManager>();
         mockManager.SetupGet(x => x.BlockedPrivateKeys).Returns(a);
         mockManager.SetupGet(x => x.AllowedPrivateKeys).Returns(b);
-        var set3 = ProgressionAPI.StringToSet("Test1,Test2,Test3");
+        HashSet<string> set3 = ProgressionAPI.StringToSet("Test1,Test2,Test3");
         mockManager.SetupGet(x => x.BlockedPrivateKeysList).Returns(set3);
         mockManager.SetupGet(x => x.AllowedPrivateKeysList).Returns(set3);
 
-        var keyManager = new TestKeyManager(mockManager.Object);
+        TestKeyManager keyManager = new TestKeyManager(mockManager.Object);
 
         keyManager.UpdatePrivateKeyConfigurationTest(a, b);
 
@@ -303,7 +303,7 @@ public class KeyTests
     [InlineData("defeated_dragon", 500, true)]
     public void SummoningTimeReachedTest(string key, int day, bool expected)
     {
-        var keyManager = Setup("", "", "", "");
+        TestKeyManager keyManager = Setup("", "", "", "");
         SetupConfiguration(100);
         Assert.Equal(expected, keyManager.SummoningTimeReachedTest(key, day));
     }

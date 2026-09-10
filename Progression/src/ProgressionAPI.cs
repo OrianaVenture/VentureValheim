@@ -34,12 +34,12 @@ public class ProgressionAPI : IProgressionAPI
     /// <returns></returns>
     public static HashSet<string> StringToSet(string str)
     {
-        var set = new HashSet<string>();
+        HashSet<string> set = new HashSet<string>();
 
         if (!str.IsNullOrWhiteSpace())
         {
             List<string> keys = str.Split(',').ToList();
-            for (var lcv = 0; lcv < keys.Count; lcv++)
+            for (int lcv = 0; lcv < keys.Count; lcv++)
             {
                 set.Add(keys[lcv].Trim().ToLower());
             }
@@ -56,14 +56,14 @@ public class ProgressionAPI : IProgressionAPI
     /// <returns></returns>
     public static Dictionary<string, string> StringToDictionary(string str)
     {
-        var dict = new Dictionary<string, string>();
+        Dictionary<string, string> dict = new Dictionary<string, string>();
 
         if (!str.IsNullOrWhiteSpace())
         {
             List<string> keys = str.Split(',').ToList();
-            for (var lcv = 0; lcv < keys.Count - 1; lcv += 2)
+            for (int lcv = 0; lcv < keys.Count - 1; lcv += 2)
             {
-                var key = keys[lcv].Trim();
+                string key = keys[lcv].Trim();
                 if (!dict.ContainsKey(key))
                 {
                     dict.Add(key, keys[lcv + 1].Trim());
@@ -153,7 +153,7 @@ public class ProgressionAPI : IProgressionAPI
     /// <returns></returns>
     public static long GetPersistentPlayerID(ZDOID id)
     {
-        var playerZDO = ZDOMan.instance.GetZDO(id);
+        ZDO playerZDO = ZDOMan.instance.GetZDO(id);
 
         if (playerZDO != null)
         {
@@ -171,12 +171,12 @@ public class ProgressionAPI : IProgressionAPI
     /// <returns></returns>
     public static long GetPlayerZDOID(string playerName)
     {
-        var nameSimple = playerName.Trim().ToLower();
-        var players = ZNet.instance.GetPlayerList();
+        string nameSimple = playerName.Trim().ToLower();
+        List<ZNet.PlayerInfo> players = ZNet.instance.GetPlayerList();
 
         for (int lcv = 0; lcv < players.Count; lcv++)
         {
-            var player = players[lcv].m_name.Trim().ToLower();
+            string player = players[lcv].m_name.Trim().ToLower();
             if (player.Equals(nameSimple))
             {
                 return players[lcv].m_characterID.UserID;
@@ -199,11 +199,11 @@ public class ProgressionAPI : IProgressionAPI
             return GetLocalPlayerName();
         }
 
-        var players = ZNet.instance.GetPlayerList();
+        List<ZNet.PlayerInfo> players = ZNet.instance.GetPlayerList();
 
         for (int lcv = 0; lcv < players.Count; lcv++)
         {
-            var playerZDO = ZDOMan.instance.GetZDO(players[lcv].m_characterID);
+            ZDO playerZDO = ZDOMan.instance.GetZDO(players[lcv].m_characterID);
 
             if (playerZDO != null)
             {
@@ -224,7 +224,7 @@ public class ProgressionAPI : IProgressionAPI
     /// <returns></returns>
     public static string GetLocalPlayerName()
     {
-        var profile = Game.instance.GetPlayerProfile();
+        PlayerProfile profile = Game.instance.GetPlayerProfile();
         if (profile != null)
         {
             return profile.m_playerName;
@@ -239,7 +239,7 @@ public class ProgressionAPI : IProgressionAPI
     /// <returns></returns>
     public static long GetLocalPlayerID()
     {
-        var profile = Game.instance.GetPlayerProfile();
+        PlayerProfile profile = Game.instance.GetPlayerProfile();
         if (profile != null)
         {
             return profile.m_playerID;

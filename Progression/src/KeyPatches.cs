@@ -37,7 +37,7 @@ public partial class KeyManager
                 {
                     for (int lcv = 0; lcv < nearbyPlayers.Count; lcv++)
                     {
-                        var player = nearbyPlayers[lcv].GetPlayerName();
+                        string player = nearbyPlayers[lcv].GetPlayerName();
                         ProgressionPlugin.VentureProgressionLogger.LogDebug(
                                 $"Attempting to send private key: {name} to \"{player}\".");
                         Instance.SendPrivateKey(player, name);
@@ -143,7 +143,7 @@ public partial class KeyManager
             if (ProgressionConfiguration.Instance.GetUsePrivateKeys() &&
                 !ZNet.instance.IsDedicated())
             {
-                var privateKeys = new List<string>(Instance.PrivateKeysList);
+                List<string> privateKeys = new List<string>(Instance.PrivateKeysList);
                 __result = ProgressionAPI.MergeLists(__result, privateKeys);
             }
         }
@@ -223,7 +223,7 @@ public partial class KeyManager
             }
 
             // Add loaded private keys if not blocked
-            foreach (var key in loadedKeys)
+            foreach (string key in loadedKeys)
             {
                 if (!Instance.BlockPrivateKey(key))
                 {
@@ -232,7 +232,7 @@ public partial class KeyManager
             }
 
             // Add enforced private keys regardless of settings
-            foreach (var key in Instance.EnforcedPrivateKeysList)
+            foreach (string key in Instance.EnforcedPrivateKeysList)
             {
                 Instance.PrivateKeysList.Add(key);
             }
@@ -273,8 +273,8 @@ public partial class KeyManager
             Instance.ResetServer();
             Instance.UpdateConfigurations();
 
-            var keys = ProgressionAPI.GetGlobalKeys().ToList();
-            var blockAll = ProgressionConfiguration.Instance.GetBlockAllGlobalKeys();
+            List<string> keys = ProgressionAPI.GetGlobalKeys().ToList();
+            bool blockAll = ProgressionConfiguration.Instance.GetBlockAllGlobalKeys();
 
             // Remove any blocked global keys from the list
             for (int lcv = 0; lcv < keys.Count; lcv++)
@@ -286,7 +286,7 @@ public partial class KeyManager
             }
 
             // Add enforced global keys regardless of settings
-            foreach (var key in Instance.EnforcedGlobalKeysList)
+            foreach (string key in Instance.EnforcedGlobalKeysList)
             {
                 ZoneSystem.instance.m_globalKeys.Add(key);
             }
@@ -363,7 +363,7 @@ public partial class KeyManager
             }, isCheat: true, isNetwork: false, onlyServer: false);
             new Terminal.ConsoleCommand("listglobalkeys", "", delegate (Terminal.ConsoleEventArgs args)
             {
-                var keys = ProgressionAPI.GetGlobalKeys();
+                HashSet<string> keys = ProgressionAPI.GetGlobalKeys();
                 args.Context.AddString($"Total Keys {keys.Count}");
                 foreach (string key in keys)
                 {
@@ -378,7 +378,7 @@ public partial class KeyManager
             {
                 if (args.Length >= 3)
                 {
-                    var name = args[2];
+                    string name = args[2];
                     for (int lcv = 3; lcv < args.Length; lcv++)
                     {
                         name += " " + args[lcv];
@@ -400,7 +400,7 @@ public partial class KeyManager
             {
                 if (args.Length >= 3)
                 {
-                    var name = args[2];
+                    string name = args[2];
                     for (int lcv = 3; lcv < args.Length; lcv++)
                     {
                         name += " " + args[lcv];
@@ -423,7 +423,7 @@ public partial class KeyManager
                 if (args.Length >= 2)
                 {
 
-                    var name = args[1];
+                    string name = args[1];
                     for (int lcv = 2; lcv < args.Length; lcv++)
                     {
                         name += " " + args[lcv];
@@ -455,9 +455,9 @@ public partial class KeyManager
                 {
                     args.Context.AddString($"Total Players Recorded This Session: {Instance.ServerPrivateKeysList.Count}");
 
-                    foreach (var set in Instance.ServerPrivateKeysList)
+                    foreach (KeyValuePair<long, HashSet<string>> set in Instance.ServerPrivateKeysList)
                     {
-                        var numKeys = set.Value?.Count ?? 0;
+                        int numKeys = set.Value?.Count ?? 0;
 
                         args.Context.AddString($"Player {set.Key} has {numKeys} recorded keys:");
 

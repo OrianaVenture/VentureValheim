@@ -242,7 +242,7 @@ public partial class KeyManager : IKeyManager
     /// <param name="key"></param>
     private void SendPrivateKey(string playerName, string key)
     {
-        var id = ProgressionAPI.GetPlayerZDOID(playerName);
+        long id = ProgressionAPI.GetPlayerZDOID(playerName);
         if (id != 0)
         {
             ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_SetPrivateKey, key);
@@ -305,7 +305,7 @@ public partial class KeyManager : IKeyManager
     /// <param name="key"></param>
     private void SendRemovePrivateKey(string playerName, string key)
     {
-        var id = ProgressionAPI.GetPlayerZDOID(playerName);
+        long id = ProgressionAPI.GetPlayerZDOID(playerName);
         if (id != 0)
         {
             ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_RemovePrivateKey, key);
@@ -362,7 +362,7 @@ public partial class KeyManager : IKeyManager
     /// <param name="playerName"></param>
     private void SendResetPrivateKeys(string playerName)
     {
-        var id = ProgressionAPI.GetPlayerZDOID(playerName);
+        long id = ProgressionAPI.GetPlayerZDOID(playerName);
         if (id != 0)
         {
             ZRoutedRpc.instance.InvokeRoutedRPC(id, RPCNAME_ResetPrivateKeys);
@@ -401,7 +401,7 @@ public partial class KeyManager : IKeyManager
     /// <param name="playerID">Player ID</param>
     private void RPC_ServerSetPrivateKeys(long sender, string keys, long playerID)
     {
-        var set = ProgressionAPI.StringToSet(keys);
+        HashSet<string> set = ProgressionAPI.StringToSet(keys);
         ProgressionPlugin.VentureProgressionLogger.LogDebug($"Updating Server Player: " +
             $"{set.Count} keys found for player: \"{ProgressionAPI.GetPlayerName(playerID)}\".");
         SetServerKeys(playerID, set);
@@ -465,10 +465,10 @@ public partial class KeyManager : IKeyManager
     /// <param name="sender"></param>
     private void RPC_ServerListKeys(long sender)
     {
-        foreach (var player in ServerPrivateKeysList)
+        foreach (KeyValuePair<long, HashSet<string>> player in ServerPrivateKeysList)
         {
             string keys = "";
-            foreach (var key in player.Value)
+            foreach (string key in player.Value)
             {
                 keys += $"{key}, ";
             }
@@ -508,7 +508,7 @@ public partial class KeyManager : IKeyManager
         }
         else
         {
-            var set = new HashSet<string>
+            HashSet<string> set = new HashSet<string>
             {
                 key
             };

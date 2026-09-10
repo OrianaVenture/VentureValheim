@@ -338,7 +338,7 @@ public partial class KeyManager
             return true;
         }
 
-        var recipe = ObjectDB.instance.GetRecipe(item);
+        Recipe recipe = ObjectDB.instance.GetRecipe(item);
         return IsActionBlocked(recipe, quality, checkBossItems, checkMaterials, checkFood);
     }
 

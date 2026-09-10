@@ -23,7 +23,7 @@ public partial class KeyManager
 
     private static HashSet<string> GetPossiblePlayerEvents(HashSet<string> playerKeys)
     {
-        var events = new HashSet<string>();
+        HashSet<string> events = new HashSet<string>();
         
         foreach (RandomEvent randEvent in RandEventSystem.instance.m_events)
         {
@@ -59,11 +59,11 @@ public partial class KeyManager
 
     private static RandEventSystem.PlayerEventData GetPlayerEventData(ZNetPeer peer)
     {
-        var eventData = default(RandEventSystem.PlayerEventData);
+        RandEventSystem.PlayerEventData eventData = default(RandEventSystem.PlayerEventData);
         eventData.position = peer.m_refPos;
         eventData.possibleEvents = GetPossiblePlayerEvents(ProgressionAPI.GetPersistentPlayerID(peer.m_characterID));
         eventData.baseValue = 0;
-        if (peer.m_serverSyncedPlayerData.TryGetValue("baseValue", out var basevalue))
+        if (peer.m_serverSyncedPlayerData.TryGetValue("baseValue", out string basevalue))
         {
             int.TryParse(basevalue, out eventData.baseValue);
         }
@@ -72,7 +72,7 @@ public partial class KeyManager
 
     private static RandEventSystem.PlayerEventData GetHostPlayerEventData()
     {
-        var eventData = default(RandEventSystem.PlayerEventData);
+        RandEventSystem.PlayerEventData eventData = default(RandEventSystem.PlayerEventData);
         eventData.position = ZNet.instance.GetReferencePosition();
         eventData.possibleEvents = GetPossiblePlayerEvents(Instance.PrivateKeysList);
         eventData.baseValue = Player.m_localPlayer.m_nview.GetZDO().GetInt(ZDOVars.s_baseValue);

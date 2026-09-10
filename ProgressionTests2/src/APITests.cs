@@ -12,11 +12,11 @@ public class APITests
         string string2 = "killedTroll,killedBear,killed_Jesus";
         string string3 = " killedTroll , killedBear   , killed_Jesus ";
 
-        var set1 = new HashSet<string>
+        HashSet<string> set1 = new HashSet<string>
         {
             "killedtroll"
         };
-        var set2 = new HashSet<string>
+        HashSet<string> set2 = new HashSet<string>
         {
             "killedtroll",
             "killedbear",
@@ -36,8 +36,8 @@ public class APITests
         string string2 = "Boar,defeated_eikthyr,Wolf,defeated_dragon,Lox,defeated_goblinking";
         string string3 = " Boar, defeated_eikthyr  ,  Wolf, defeated_dragon,   Lox, defeated_goblinking ";
 
-        var dict1 = new Dictionary<string, string>();
-        var dict2 = new Dictionary<string, string>
+        Dictionary<string, string> dict1 = new Dictionary<string, string>();
+        Dictionary<string, string> dict2 = new Dictionary<string, string>
         {
             { "Boar", "defeated_eikthyr" },
             { "Wolf", "defeated_dragon" },
@@ -52,7 +52,7 @@ public class APITests
     [Fact]
     public void MergeLists_All()
     {
-        var list1 = new List<string>
+        List<string> list1 = new List<string>
         {
             "key1",
             "key1",
@@ -63,7 +63,7 @@ public class APITests
             "key5",
             "key6"
         };
-        var list2 = new List<string>
+        List<string> list2 = new List<string>
         {
             "key1",
             "key2",
@@ -72,7 +72,7 @@ public class APITests
             "key9",
             "key10"
         };
-        var merged = new List<string>
+        List<string> merged = new List<string>
         {
             "key1",
             "key2",
@@ -86,7 +86,7 @@ public class APITests
             "key10"
         };
 
-        var result = ProgressionAPI.MergeLists(list1, list2);
+        List<string> result = ProgressionAPI.MergeLists(list1, list2);
         Assert.Equal(merged, result);
     }
 }

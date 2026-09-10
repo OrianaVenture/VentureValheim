@@ -39,7 +39,7 @@ public class SkillsTests
 
     private void Setup()
     {
-        var mockManager = new Mock<IProgressionConfiguration>();
+        Mock<IProgressionConfiguration> mockManager = new Mock<IProgressionConfiguration>();
         mockManager.Setup(x => x.GetBossKeysSkillPerKey()).Returns(0);
         mockManager.Setup(x => x.GetOverrideMaximumSkillLevel()).Returns(false);
         mockManager.Setup(x => x.GetMaximumSkillLevel()).Returns(100);
@@ -52,7 +52,7 @@ public class SkillsTests
 
     private void Setup(bool useSkillDrain, int skillDrain, bool compare, bool useMinimum)
     {
-        var mockManager = new Mock<IProgressionConfiguration>();
+        Mock<IProgressionConfiguration> mockManager = new Mock<IProgressionConfiguration>();
         mockManager.Setup(x => x.GetUseAbsoluteSkillDrain()).Returns(useSkillDrain);
         mockManager.Setup(x => x.GetAbsoluteSkillDrain()).Returns(skillDrain);
         mockManager.Setup(x => x.GetCompareAndSelectDrain()).Returns(compare);
@@ -63,7 +63,7 @@ public class SkillsTests
 
     private void Setup(bool useBossKeys, bool usePrivateKeys, bool overrideMax, bool overrideMin)
     {
-        var mockManager = new Mock<IProgressionConfiguration>();
+        Mock<IProgressionConfiguration> mockManager = new Mock<IProgressionConfiguration>();
         mockManager.Setup(x => x.GetUseBossKeysForSkillLevel()).Returns(useBossKeys);
         mockManager.Setup(x => x.GetBossKeysSkillPerKey()).Returns(10);
         mockManager.Setup(x => x.GetUsePrivateKeys()).Returns(usePrivateKeys);

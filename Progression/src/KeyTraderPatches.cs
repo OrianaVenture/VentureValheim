@@ -17,7 +17,7 @@ public partial class KeyManager
     {
         private static bool Prefix(Trader __instance, ref List<Trader.TradeItem> __result)
         {
-            var name = Utils.GetPrefabName(__instance.gameObject);
+            string name = Utils.GetPrefabName(__instance.gameObject);
 
             if ((name.Equals(Haldor) && ProgressionConfiguration.Instance.GetUnlockAllHaldorItems()) ||
                 (name.Equals(Hildir) && ProgressionConfiguration.Instance.GetUnlockAllHildirItems()) ||
@@ -55,7 +55,7 @@ public partial class KeyManager
         [HarmonyPriority(Priority.First)]
         private static void Postfix(Trader __instance)
         {
-            var traderName = Utils.GetPrefabName(__instance.gameObject);
+            string traderName = Utils.GetPrefabName(__instance.gameObject);
 
             Dictionary<string, string> items = null;
 
@@ -77,11 +77,11 @@ public partial class KeyManager
                 return;
             }
 
-            foreach (var item in __instance.m_items)
+            foreach (Trader.TradeItem item in __instance.m_items)
             {
                 if (item.m_prefab != null)
                 {
-                    var name = Utils.GetPrefabName(item.m_prefab.gameObject);
+                    string name = Utils.GetPrefabName(item.m_prefab.gameObject);
 
                     if (items.ContainsKey(name))
                     {

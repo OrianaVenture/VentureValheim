@@ -114,7 +114,7 @@ public class SkillsManager
         {
             if (ProgressionConfiguration.Instance.GetUseAbsoluteSkillDrain())
             {
-                var drain = ProgressionConfiguration.Instance.GetAbsoluteSkillDrain();
+                int drain = ProgressionConfiguration.Instance.GetAbsoluteSkillDrain();
 
                 if (ProgressionConfiguration.Instance.GetCompareAndSelectDrain())
                 {
@@ -204,8 +204,8 @@ public class SkillsManager
             {
                 foreach (KeyValuePair<Skills.SkillType, Skills.Skill> skillDatum in __instance.m_skillData)
                 {
-                    var floor = Instance.GetSkillDrainFloor();
-                    var skillDrain = Instance.GetSkillDrain(skillDatum.Value.m_level, floor, factor);
+                    float floor = Instance.GetSkillDrainFloor();
+                    float skillDrain = Instance.GetSkillDrain(skillDatum.Value.m_level, floor, factor);
                     skillDatum.Value.m_level = Instance.NormalizeSkillLevel(skillDatum.Value.m_level - skillDrain);
                     skillDatum.Value.m_accumulator = 0f;
                 }
@@ -232,8 +232,8 @@ public class SkillsManager
                 return true; // Do nothing
             }
 
-            var increase = __instance.m_info.m_increseStep * factor;
-            var ceiling = Instance.GetSkillGainCeiling();
+            float increase = __instance.m_info.m_increseStep * factor;
+            float ceiling = Instance.GetSkillGainCeiling();
 
             float accumulation = Instance.GetSkillAccumulationGain(__instance.m_level, ceiling, increase);
 

@@ -1,3 +1,8 @@
+## 1.0.0
+
+* Release for game version 1.0.7
+* New content will be evaluated and added in a future update!
+
 ## 0.3.14
 
 * Existing high level night spawns will now despawn upon loading when a low level player is the first to enter an area.
