@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Release for game version 1.0.7
+
 ## 0.3.1
 
 * Added three new configurations to control how many of each cave can spawn in the world.
