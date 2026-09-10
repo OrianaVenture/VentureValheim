@@ -11,7 +11,7 @@ namespace VentureValheim.NoDamageFlash;
 public class NoDamageFlashPlugin : BaseUnityPlugin
 {
     private const string ModName = "NoDamageFlash";
-    private const string ModVersion = "0.2.0";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
