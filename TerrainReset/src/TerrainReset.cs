@@ -79,7 +79,7 @@ public class TerrainReset
                 {
                     if (heightmap.TerrainVSModifier(terrainModifier))
                     {
-                        heightmap.Poke(true);
+                        heightmap.Poke();
                     }
                 }
 
@@ -148,7 +148,7 @@ public class TerrainReset
                 if (thisReset)
                 {
                     terrainComp.Save();
-                    enumerator.Current.Poke(true);
+                    enumerator.Current.Poke();
                 }
             }
         }
@@ -181,7 +181,7 @@ public class TerrainReset
                 CheckKeyHeld(TerrainResetPlugin.GetToolModKey()))
             {
                 // Reset, do not send RPC
-                var pos = modifier.transform.position;
+                Vector3 pos = modifier.transform.position;
                 ResetTerrain(pos, TerrainResetPlugin.GetToolRadius() > 0 ?
                     TerrainResetPlugin.GetToolRadius() : modifier.GetRadius());
                 return false;

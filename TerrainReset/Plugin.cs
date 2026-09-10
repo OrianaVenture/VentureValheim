@@ -12,7 +12,7 @@ namespace VentureValheim.TerrainReset;
 public class TerrainResetPlugin : BaseUnityPlugin
 {
     private const string ModName = "TerrainReset";
-    private const string ModVersion = "0.1.2";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
