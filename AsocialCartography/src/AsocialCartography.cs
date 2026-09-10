@@ -21,9 +21,9 @@ public class AsocialCartography
     {
         if (!str.IsNullOrWhiteSpace())
         {
-            var list = str.Split(',');
+            string[] list = str.Split(',');
             HashSet<int> nums = new HashSet<int>();
-            for (var lcv = 0; lcv < list.Length; lcv++)
+            for (int lcv = 0; lcv < list.Length; lcv++)
             {
                 nums.Add(int.Parse(list[lcv].Trim()));
             }

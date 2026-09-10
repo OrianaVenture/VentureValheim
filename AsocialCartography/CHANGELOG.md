@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Release for game version 1.0.7
+
 ## 0.3.1
 
 * Added new configuration IgnoredCustomPins to allow blocking custom pins from other mods.
