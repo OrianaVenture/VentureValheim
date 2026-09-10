@@ -14,7 +14,7 @@ namespace VentureValheim.MutedMist;
 public class MutedMistPlugin : BaseUnityPlugin
 {
     private const string ModName = "MutedMist";
-    private const string ModVersion = "0.2.0";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -91,8 +91,8 @@ public class MutedMistPlugin : BaseUnityPlugin
 
     private void ReadConfigValues(object sender, FileSystemEventArgs e)
     {
-        var now = DateTime.Now;
-        var time = now.Ticks - _lastReloadTime.Ticks;
+        DateTime now = DateTime.Now;
+        long time = now.Ticks - _lastReloadTime.Ticks;
         if (!File.Exists(ConfigFileFullPath) || time < RELOAD_DELAY) return;
 
         try
