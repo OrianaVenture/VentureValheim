@@ -64,7 +64,7 @@ public class FarmGrid
 
         foreach (GameObject obj in ZNetScene.instance.m_prefabs)
         {
-            var plant = obj.GetComponent<Plant>();
+            Plant plant = obj.GetComponent<Plant>();
             if (plant == null || plantsConfiguration.ContainsKey(plant.name))
             {
                 continue;
@@ -72,7 +72,7 @@ public class FarmGrid
 
             plantsConfiguration.Add(plant.name, plant.m_growRadius);
 
-            foreach (var grownPlant in plant.m_grownPrefabs)
+            foreach (GameObject grownPlant in plant.m_grownPrefabs)
             {
                 if (!plantsConfiguration.ContainsKey(grownPlant.name))
                 {
@@ -81,7 +81,7 @@ public class FarmGrid
             }
         }
 
-        foreach (var vanilla in vanillaPlantsDefaults)
+        foreach (KeyValuePair<string, float> vanilla in vanillaPlantsDefaults)
         {
             if (!plantsConfiguration.ContainsKey(vanilla.Key))
             {
@@ -98,7 +98,7 @@ public class FarmGrid
         {
             string[] entry = text.Split(new string[1] { ":" }, StringSplitOptions.RemoveEmptyEntries);
             if (entry.Length == 2 &&
-                float.TryParse(entry[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var size))
+                float.TryParse(entry[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float size))
             {
                 customPlants.Add(entry[0].Trim(), size);
             }
@@ -261,7 +261,7 @@ public class FarmGrid
 
         Collider component = localPlayer.m_placementGhost.GetComponentInChildren<Collider>();
 
-        if (GetPlantObject(component, out var plantObject))
+        if (GetPlantObject(component, out PlantObject plantObject))
         {
             plantGhost = plantObject;
             plantGhostPosition = plantGhost.position;
@@ -474,7 +474,7 @@ public class FarmGrid
     {
         int size = Physics.OverlapSphereNonAlloc(position, collisionRadius, Piece.s_pieceColliders, plantObjectMask);
 
-        var colliders = Piece.s_pieceColliders.Take(size)
+        List<Collider> colliders = Piece.s_pieceColliders.Take(size)
             .OrderBy((Collider plant) => (plant.transform.position - plantGhost.position).sqrMagnitude)
             .ToList();
 
@@ -482,7 +482,7 @@ public class FarmGrid
 
         for (int lcv = 0; lcv < colliders.Count; lcv++)
         {
-            if (GetPlantObject(colliders[lcv], out var plantObject))
+            if (GetPlantObject(colliders[lcv], out PlantObject plantObject))
             {
                 plants.Add(plantObject);
 
@@ -515,7 +515,7 @@ public class FarmGrid
 
         for (int lcv = 0; lcv < num; lcv++)
         {
-            if (GetPlantObject(Piece.s_pieceColliders[lcv], out var plantObject) &&
+            if (GetPlantObject(Piece.s_pieceColliders[lcv], out PlantObject plantObject) &&
                 (pos - plantObject.position).magnitude <= collisionRadius + plantObject.growthSize)
             {
                 return true;
@@ -562,8 +562,8 @@ public class FarmGrid
             List<CodeInstruction> list = instructions.ToList();
             bool flag = false;
             int num = 0;
-            var method = AccessTools.Method(typeof(Player), nameof(Player.FindClosestSnapPoints), (Type[])null, (Type[])null);
-            var customMethod = (object)AccessTools.Method(typeof(FarmGrid), nameof(GetFarmSnapPoints), (Type[])null, (Type[])null);
+            System.Reflection.MethodInfo method = AccessTools.Method(typeof(Player), nameof(Player.FindClosestSnapPoints), (Type[])null, (Type[])null);
+            object customMethod = (object)AccessTools.Method(typeof(FarmGrid), nameof(GetFarmSnapPoints), (Type[])null, (Type[])null);
             for (int lcv = 0; lcv < list.Count; lcv++)
             {
                 if (list[lcv].opcode == OpCodes.Brtrue)
@@ -595,7 +595,7 @@ public class FarmGrid
         private static bool Prefix(ref Player __instance, ref bool __result, Piece piece)
         {
             if (GetPlantObject(__instance.m_placementGhost.GetComponent<Collider>(),
-                out var plantObject) && HasOverlappingPlants(plantObject.position, plantObject.growthSize))
+                out PlantObject plantObject) && HasOverlappingPlants(plantObject.position, plantObject.growthSize))
             {
                 __result = false;
                 return false;
