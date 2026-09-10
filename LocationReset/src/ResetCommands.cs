@@ -12,11 +12,11 @@ public static class ResetCommands
     /// <param name="range"></param>
     public static void ManualReset(int range)
     {
-        var point = Player.m_localPlayer.transform.position;
-        var list = SceneManager.GetActiveScene().GetRootGameObjects();
+        UnityEngine.Vector3 point = Player.m_localPlayer.transform.position;
+        UnityEngine.GameObject[] list = SceneManager.GetActiveScene().GetRootGameObjects();
         for (int lcv = 0; lcv < list.Length; lcv++)
         {
-            var location = list[lcv].GetComponent<LocationProxy>();
+            LocationProxy location = list[lcv].GetComponent<LocationProxy>();
 
             if (location != null && LocationReset.InBounds(point, location.transform.position, range))
             {

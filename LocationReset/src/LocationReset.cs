@@ -101,7 +101,7 @@ public class LocationReset
 
         public LocationPosition(LocationProxy loc, ZoneSystem.ZoneLocation zone, Location location)
         {
-            var dg = location.m_generator;
+            DungeonGenerator dg = location.m_generator;
             IsSkyLocation = location.m_hasInterior ||
                 (dg != null && dg.transform.position.y > LOCATION_MINIMUM);
             IsDungeon = false;
@@ -162,7 +162,7 @@ public class LocationReset
     /// <returns></returns>
     public static bool LocalPlayerInRange(Vector3 position, float resetRange)
     {
-        var player = Player.m_localPlayer;
+        Player player = Player.m_localPlayer;
         if (player == null)
         {
             return false;
@@ -178,7 +178,7 @@ public class LocationReset
     /// <returns></returns>
     public static bool LocalPlayerBeyondRange(Vector3 position)
     {
-        var player = Player.m_localPlayer;
+        Player player = Player.m_localPlayer;
         if (player == null)
         {
             return true;
@@ -198,11 +198,11 @@ public class LocationReset
         bool exemptLocation = hash == LocationResetPlugin.Hash_HildirTower;
         PlayerActivity activity = new PlayerActivity(false, false);
 
-        var list = SceneManager.GetActiveScene().GetRootGameObjects();
+        GameObject[] list = SceneManager.GetActiveScene().GetRootGameObjects();
 
         for (int lcv = 0; lcv < list.Length; lcv++)
         {
-            var obj = list[lcv];
+            GameObject obj = list[lcv];
             if (obj.transform.position.y >= LOCATION_MINIMUM)
             {
                 if (position.IsSkyLocation && !activity.SkyActivity && 
@@ -233,7 +233,7 @@ public class LocationReset
     /// <returns></returns>
     private static bool IsPlayerActiveObject(GameObject obj, bool exemptLocation = false)
     {
-        var piece = obj.GetComponent<Piece>();
+        Piece piece = obj.GetComponent<Piece>();
         if (piece != null)
         {
             bool exempt = exemptLocation &&
@@ -266,8 +266,8 @@ public class LocationReset
     /// <returns></returns>
     public static bool InBounds(Vector3 center, Vector3 position, float distance)
     {
-        var delta = center - position;
-        var mag = GetMaximumDistance(delta.x, delta.z);
+        Vector3 delta = center - position;
+        float mag = GetMaximumDistance(delta.x, delta.z);
         return mag <= distance;
     }
 
@@ -279,12 +279,12 @@ public class LocationReset
     /// <returns></returns>
     public static DungeonGenerator GetDungeonGeneratorInBounds(Vector3 center, float distance)
     {
-        var list = SceneManager.GetActiveScene().GetRootGameObjects();
+        GameObject[] list = SceneManager.GetActiveScene().GetRootGameObjects();
 
         for (int lcv = 0; lcv < list.Length; lcv++)
         {
-            var obj = list[lcv];
-            var dg = obj.GetComponent<DungeonGenerator>();
+            GameObject obj = list[lcv];
+            DungeonGenerator dg = obj.GetComponent<DungeonGenerator>();
 
             if (dg != null && InBounds(center, obj.transform.position, distance))
             {
@@ -372,7 +372,7 @@ public class LocationReset
         if (!config.IsNullOrWhiteSpace())
         {
             List<string> keys = config.Split(',').ToList();
-            for (var lcv = 0; lcv < keys.Count; lcv++)
+            for (int lcv = 0; lcv < keys.Count; lcv++)
             {
                 list.Add(keys[lcv].GetStableHashCode());
             }
@@ -392,13 +392,13 @@ public class LocationReset
     /// </returns>
     private static string DeleteObject(ref GameObject obj)
     {
-        var nview = obj.GetComponent<ZNetView>();
+        ZNetView nview = obj.GetComponent<ZNetView>();
         if (nview != null && nview.GetZDO() != null)
         {
             nview.GetZDO().SetOwner(ZDOMan.GetSessionID());
         }
 
-        var prefabName = Utils.GetPrefabName(obj);
+        string prefabName = Utils.GetPrefabName(obj);
         ZNetScene.instance.Destroy(obj);
         return prefabName;
     }
@@ -409,7 +409,7 @@ public class LocationReset
     /// <param name="obj"></param>
     public static void TryResetDoor(GameObject obj)
     {
-        var door = obj.GetComponent<Door>();
+        Door door = obj.GetComponent<Door>();
 
         if (door != null && door.m_keyItem != null)
         {
@@ -434,12 +434,12 @@ public class LocationReset
     /// </returns>
     public static HashSet<int> DeleteLocation(LocationPosition position, PlayerActivity activity)
     {
-        var list = SceneManager.GetActiveScene().GetRootGameObjects();
+        GameObject[] list = SceneManager.GetActiveScene().GetRootGameObjects();
         HashSet<int> skippedObjects = new HashSet<int>();
 
         for (int lcv = 0; lcv < list.Length; lcv++)
         {
-            var obj = list[lcv];
+            GameObject obj = list[lcv];
 
             if (obj.transform.position.y < LOCATION_MINIMUM)
             {
@@ -677,7 +677,7 @@ public class LocationReset
 
                 if (!skippedObjects.Contains(prefabName.GetStableHashCode()))
                 {
-                    var bestObject = Jotunn.Managers.PrefabManager.Instance.GetPrefab(prefabName) ?? obj.gameObject;
+                    GameObject bestObject = Jotunn.Managers.PrefabManager.Instance.GetPrefab(prefabName) ?? obj.gameObject;
 
                     if (TrySpawnGameObject(obj.gameObject, bestObject, prefabName.GetStableHashCode(), loc, activity))
                     {
@@ -699,7 +699,7 @@ public class LocationReset
 
                 if (!skippedObjects.Contains(prefabName.GetStableHashCode()))
                 {
-                    var bestObject = Jotunn.Managers.PrefabManager.Instance.GetPrefab(prefabName) ??
+                    GameObject bestObject = Jotunn.Managers.PrefabManager.Instance.GetPrefab(prefabName) ??
                     spawnPrefab.m_prefab.gameObject;
 
                     if (TrySpawnGameObject(spawnPrefab.gameObject, bestObject,

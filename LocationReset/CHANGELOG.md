@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Release for game version 1.0.7
+
 ## 0.10.9
 
 * Changed how Leviathans stay underwater to fix a bug likely caused by a mod compatibility issue.

@@ -35,7 +35,7 @@ public static class LocationProxyExtension
     /// <returns></returns>
     public static bool NeedsReset(this LocationProxy loc, int hash)
     {
-        var lastReset = loc.GetLastReset();
+        int lastReset = loc.GetLastReset();
         if (lastReset < 0)
         {
             loc.SetLastResetNow();
@@ -43,8 +43,8 @@ public static class LocationProxyExtension
             return false;
         }
 
-        var timePassed = LocationReset.GetGameDay() - lastReset;
-        var resetTime = LocationResetPlugin.GetResetTime(hash);
+        int timePassed = LocationReset.GetGameDay() - lastReset;
+        int resetTime = LocationResetPlugin.GetResetTime(hash);
 
         if (timePassed >= resetTime)
         {
@@ -75,7 +75,7 @@ public class LocationProxyReset : MonoBehaviour
     {
         yield return new WaitForSeconds(5);
         yield return null;
-        var loc = gameObject.GetComponent<LocationProxy>();
+        LocationProxy loc = gameObject.GetComponent<LocationProxy>();
         if (loc != null)
         {
             int hash = 0;

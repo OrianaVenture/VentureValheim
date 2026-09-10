@@ -66,11 +66,11 @@ public static class LeviathanExtension
 
         if (leviathan.m_nview != null && leviathan.m_nview.IsOwner())
         {
-            var time = leviathan.GetLastSubmerged();
+            int time = leviathan.GetLastSubmerged();
 
             if (time != -1 && (LocationReset.GetGameDay() - time) >= LocationResetPlugin.GetLeviathanResetTime())
             {
-                var zdo = leviathan.m_nview.GetZDO();
+                ZDO zdo = leviathan.m_nview.GetZDO();
                 if (zdo != null)
                 {
                     ZDOMan.instance.DestroyZDO(zdo);
@@ -92,16 +92,16 @@ public static class LeviathanExtension
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var codes = new List<CodeInstruction>(instructions);
-            var method = AccessTools.Method(typeof(ZNetView), nameof(ZNetView.Destroy));
-            for (var lcv = 1; lcv < codes.Count; lcv++)
+            List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
+            System.Reflection.MethodInfo method = AccessTools.Method(typeof(ZNetView), nameof(ZNetView.Destroy));
+            for (int lcv = 1; lcv < codes.Count; lcv++)
             {
                 if (codes[lcv].opcode == OpCodes.Callvirt)
                 {
                     if (codes[lcv].operand?.Equals(method) ?? false)
                     {
                         codes[lcv - 1].opcode = OpCodes.Nop;
-                        var methodCall = AccessTools.Method(typeof(LeviathanExtension), nameof(LeviathanExtension.MoveUnderwater));
+                        System.Reflection.MethodInfo methodCall = AccessTools.Method(typeof(LeviathanExtension), nameof(LeviathanExtension.MoveUnderwater));
                         codes[lcv] = new CodeInstruction(OpCodes.Call, methodCall);
                         break;
                     }
@@ -124,8 +124,8 @@ public static class LeviathanExtension
             {
                 if (__instance != null && __instance.m_left)
                 {
-                    var day = LocationReset.GetGameDay();
-                    var time = __instance.GetLastSubmerged();
+                    int day = LocationReset.GetGameDay();
+                    int time = __instance.GetLastSubmerged();
                     if (time == -1 || day - time >= LocationResetPlugin.GetLeviathanResetTime())
                     {
                         __instance.SetLastSubmerged(day);

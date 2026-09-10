@@ -23,7 +23,7 @@ public class LocationResetPlugin : BaseUnityPlugin
     }
 
     private const string ModName = "LocationReset";
-    private const string ModVersion = "0.10.9";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";

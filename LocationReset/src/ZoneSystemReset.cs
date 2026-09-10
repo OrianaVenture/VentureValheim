@@ -14,7 +14,7 @@ public class ZoneSystemReset
 
     public class ZoneSystemResetComponent : MonoBehaviour
     {
-        private Dictionary<Vector2i, IEnumerator> resetCoroutines = new Dictionary<Vector2i, IEnumerator>();
+        private Dictionary<Vector2s, IEnumerator> resetCoroutines = new Dictionary<Vector2s, IEnumerator>();
 
         /// <summary>
         /// Reset coroutine that waits until a zone is fully loaded then checks
@@ -23,7 +23,7 @@ public class ZoneSystemReset
         /// <param name="zoneID"></param>
         /// <param name="root"></param>
         /// <returns></returns>
-        public IEnumerator WaitForReset(Vector2i zoneID, GameObject root)
+        public IEnumerator WaitForReset(Vector2s zoneID, GameObject root)
         {
             yield return new WaitForSeconds(3);
             yield return null;
@@ -35,24 +35,24 @@ public class ZoneSystemReset
                 {
                     bool reset = false;
                     List<ZDO> objects = new List<ZDO>();
-                    ZDOMan.instance.FindObjects(zoneID, objects);
+                    ZDOMan.instance.FindObjects(zoneID, objects, ZDOMan.instance.m_visitedSectorIndices);
 
                     if (objects != null)
                     {
                         int leviathansInZone = 0;
                         bool zoneOwner = false;
-                        foreach (var obj in objects)
+                        foreach (ZDO obj in objects)
                         {
                             if (obj.m_prefab == LeviathanHash)
                             {
                                 // Count Leviathans in zone
-                                var levi = ZNetScene.instance.FindInstance(obj);
+                                ZNetView levi = ZNetScene.instance.FindInstance(obj);
                                 if (levi == null)
                                 {
                                     continue;
                                 }
 
-                                var leviathan = levi.transform.root.GetComponent<Leviathan>();
+                                Leviathan leviathan = levi.transform.root.GetComponent<Leviathan>();
                                 if (leviathan != null && leviathan.CheckDelete(out bool deleted))
                                 {
                                     if (!deleted)
@@ -104,14 +104,14 @@ public class ZoneSystemReset
         /// </summary>
         /// <param name="zoneID"></param>
         /// <param name="root"></param>
-        public void AddResetWatcher(Vector2i zoneID, GameObject root)
+        public void AddResetWatcher(Vector2s zoneID, GameObject root)
         {
             if (resetCoroutines.ContainsKey(zoneID))
             {
                 return;
             }
 
-            var coroutine = WaitForReset(zoneID, root);
+            IEnumerator coroutine = WaitForReset(zoneID, root);
             resetCoroutines.Add(zoneID, coroutine);
             StartCoroutine(coroutine);
         }
@@ -121,7 +121,7 @@ public class ZoneSystemReset
         /// </summary>
         /// <param name="zoneID"></param>
         /// <param name="root"></param>
-        private void ResetZone(Vector2i zoneID, GameObject root)
+        private void ResetZone(Vector2s zoneID, GameObject root)
         {
             ZoneSystem zoneSystem = gameObject.GetComponent<ZoneSystem>();
             Heightmap heightmap = root.GetComponentInChildren<Heightmap>();
@@ -133,7 +133,7 @@ public class ZoneSystemReset
 
                 Vector3 zonePos = ZoneSystem.GetZonePos(zoneID);
 
-                var vegetation = zoneSystem.m_vegetation;
+                List<ZoneSystem.ZoneVegetation> vegetation = zoneSystem.m_vegetation;
                 zoneSystem.m_vegetation = ResetVegetation;
                 zoneSystem.PlaceVegetation(zoneID, zonePos, root.transform, heightmap,
                     zoneSystem.m_tempClearAreas, ZoneSystem.SpawnMode.Full, zoneSystem.m_tempSpawnedObjects);
@@ -146,7 +146,7 @@ public class ZoneSystemReset
         {
             if (resetCoroutines != null)
             {
-                foreach (var coroutine in resetCoroutines.Values)
+                foreach (IEnumerator coroutine in resetCoroutines.Values)
                 {
                     StopCoroutine(coroutine);
                 }
@@ -167,7 +167,7 @@ public class ZoneSystemReset
             {
                 if (ResetVegetation == null)
                 {
-                    foreach (var veg in __instance.m_vegetation)
+                    foreach (ZoneSystem.ZoneVegetation veg in __instance.m_vegetation)
                     {
                         if (veg.m_prefab != null && veg.m_prefab.name == "Leviathan")
                         {
@@ -193,7 +193,7 @@ public class ZoneSystemReset
     [HarmonyPatch(typeof(ZoneSystem), nameof(ZoneSystem.SpawnZone))]
     public static class Patch_ZoneSystem_SpawnZone
     {
-        private static void Postfix(ZoneSystem __instance, Vector2i zoneID, ref GameObject root, bool __result)
+        private static void Postfix(ZoneSystem __instance, Vector2s zoneID, ref GameObject root, bool __result)
         {
             if (LocationResetPlugin.GetEnableLeviathanReset())
             {
