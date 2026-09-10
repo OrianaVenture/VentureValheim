@@ -28,7 +28,7 @@ namespace VentureValheim.NoPuke
             if (!name.IsNullOrWhiteSpace())
             {
                 // Try hash code
-                var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
+                GameObject prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
                 if (prefab == null)
                 {
                     // Failed, try slow search
@@ -55,13 +55,13 @@ namespace VentureValheim.NoPuke
             {
                 if (SceneManager.GetActiveScene().name.Equals("main"))
                 {
-                    var pukeFX = ZNetScene.instance.GetPrefab("fx_Puke".GetStableHashCode());
+                    GameObject pukeFX = ZNetScene.instance.GetPrefab("fx_Puke".GetStableHashCode());
                     if (pukeFX != null)
                     {
-                        var particles = pukeFX.GetComponentsInChildren<ParticleSystem>();
-                        foreach (var particle in particles)
+                        ParticleSystem[] particles = pukeFX.GetComponentsInChildren<ParticleSystem>();
+                        foreach (ParticleSystem particle in particles)
                         {
-                            var main = particle.main;
+                            ParticleSystem.MainModule main = particle.main;
                             main.duration = 0;
                             main.startDelay = 0;
                             main.startLifetime = 0;
@@ -72,10 +72,10 @@ namespace VentureValheim.NoPuke
                         NoPukePlugin.NoPukeLogger.LogWarning("Could not disable puke animations and effects for fx_Puke.");
                     }
 
-                    var femPukeFX = ZNetScene.instance.GetPrefab("sfx_Puke_female".GetStableHashCode());
+                    GameObject femPukeFX = ZNetScene.instance.GetPrefab("sfx_Puke_female".GetStableHashCode());
                     if (femPukeFX != null)
                     {
-                        var sfx = femPukeFX.GetComponent<ZSFX>();
+                        ZSFX sfx = femPukeFX.GetComponent<ZSFX>();
                         if (sfx != null)
                         {
                             sfx.m_maxVol = 0f;
@@ -87,10 +87,10 @@ namespace VentureValheim.NoPuke
                         NoPukePlugin.NoPukeLogger.LogWarning("Could not disable puke animations and effects for sfx_Puke_female.");
                     }
 
-                    var malePukeFX = ZNetScene.instance.GetPrefab("sfx_Puke_male".GetStableHashCode());
+                    GameObject malePukeFX = ZNetScene.instance.GetPrefab("sfx_Puke_male".GetStableHashCode());
                     if (malePukeFX != null)
                     {
-                        var sfx = malePukeFX.GetComponent<ZSFX>();
+                        ZSFX sfx = malePukeFX.GetComponent<ZSFX>();
                         if (sfx != null)
                         {
                             sfx.m_maxVol = 0f;
@@ -102,7 +102,7 @@ namespace VentureValheim.NoPuke
                         NoPukePlugin.NoPukeLogger.LogWarning("Could not disable puke animations and effects for sfx_Puke_male.");
                     }
 
-                    if (GetItemDrop("bonemass_attack_aoe", out var bonemass))
+                    if (GetItemDrop("bonemass_attack_aoe", out ItemDrop bonemass))
                     {
                         bonemass.m_itemData.m_shared.m_startEffect = new EffectList();
                     }
