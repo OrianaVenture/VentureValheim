@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Release for game version 1.0.7
+
 ## 0.3.3
 
 * Fixed an elusive bug where some items floated away into the sky. They wanted to be with Odin, I now deny them this privilege.

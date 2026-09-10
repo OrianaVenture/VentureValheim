@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VentureValheim.FloatingItems</RootNamespace>
     <AssemblyName>VentureValheim.FloatingItems</AssemblyName>
-    <Version>0.3.3</Version>
+    <Version>1.0.0</Version>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>10.0</LangVersion>

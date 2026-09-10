@@ -59,24 +59,24 @@ public class FloatingItems
     /// </summary>
     public static void Update()
     {
-        var floatingPrefabsString = FloatingItemsPlugin.GetFloatingItems();
+        string floatingPrefabsString = FloatingItemsPlugin.GetFloatingItems();
         Instance.FloatingPrefabs = new HashSet<string>();
 
         if (!floatingPrefabsString.IsNullOrWhiteSpace())
         {
-            var prefabs = floatingPrefabsString.Split(',');
+            string[] prefabs = floatingPrefabsString.Split(',');
             for (int lcv = 0; lcv < prefabs.Length; lcv++)
             {
                 Instance.FloatingPrefabs.Add(prefabs[lcv].Trim().ToLower());
             }
         }
 
-        var sinkingPrefabsString = FloatingItemsPlugin.GetSinkingItems();
+        string sinkingPrefabsString = FloatingItemsPlugin.GetSinkingItems();
         Instance.SinkingPrefabs = new HashSet<string>();
 
         if (!sinkingPrefabsString.IsNullOrWhiteSpace())
         {
-            var prefabs = sinkingPrefabsString.Split(',');
+            string[] prefabs = sinkingPrefabsString.Split(',');
             for (int lcv = 0; lcv < prefabs.Length; lcv++)
             {
                 Instance.SinkingPrefabs.Add(prefabs[lcv].Trim().ToLower());
@@ -128,7 +128,12 @@ public class FloatingItems
     /// <returns></returns>
     private static bool IsPlayerGear(GameObject item)
     {
-        var name = item.name.ToLower();
+        if (item == null || item.name.IsNullOrWhiteSpace())
+        {
+            return false;
+        }
+
+        string name = item.name.ToLower();
         if (Instance.ItemsPrefabs.Contains(name) ||
             name.Contains(MeadPrefab) ||
             name.Contains(CookedPrefab) ||
@@ -138,16 +143,17 @@ public class FloatingItems
         }
         else
         {
-            var itemDrop = item.GetComponent<ItemDrop>();
-            
-            if (item != null)
-            {
-                if (itemDrop.m_itemData.m_shared.m_food > 0f ||
-                    ObjectDB.instance.GetRecipe(itemDrop.m_itemData) != null)
-                {
-                    return true;
-                }
+            ItemDrop itemDrop = item.GetComponent<ItemDrop>();
 
+            if (item == null || itemDrop == null)
+            {
+                return false;
+            }
+
+            if (itemDrop.m_itemData.m_shared.m_food > 0f ||
+                ObjectDB.instance.GetRecipe(itemDrop.m_itemData) != null)
+            {
+                return true;
             }
         }
 
@@ -185,8 +191,8 @@ public class FloatingItems
 
         for (int lcv = 0; lcv < ObjectDB.instance.m_items.Count; lcv++)
         {
-            var item = ObjectDB.instance.m_items[lcv];
-            var name = item.name.ToLower();
+            GameObject item = ObjectDB.instance.m_items[lcv];
+            string name = item.name.ToLower();
 
             if (Instance.SinkingPrefabs.Contains(name))
             {
@@ -210,7 +216,7 @@ public class FloatingItems
     {
         if (FloatingAddedPrefabs.Contains(name))
         {
-            var floating = item.gameObject.GetComponent<Floating>();
+            Floating floating = item.gameObject.GetComponent<Floating>();
             if (floating != null)
             {
                 GameObject.Destroy(floating);
@@ -220,7 +226,7 @@ public class FloatingItems
         }
         else if (FloatingDisabledPrefabs.Contains(name))
         {
-            var floating = item.gameObject.GetComponent<Floating>();
+            Floating floating = item.gameObject.GetComponent<Floating>();
             if (floating != null)
             {
                 floating.enabled = true;
@@ -243,7 +249,7 @@ public class FloatingItems
             return;
         }
 
-        var floating = item.gameObject.GetComponent<Floating>();
+        Floating floating = item.gameObject.GetComponent<Floating>();
         if (floating == null)
         {
             floating = item.gameObject.AddComponent<Floating>();
@@ -262,7 +268,7 @@ public class FloatingItems
     /// <param name="item"></param>
     private static void DisableFloatingComponent(GameObject item)
     {
-        var floating = item.gameObject.GetComponent<Floating>();
+        Floating floating = item.gameObject.GetComponent<Floating>();
         if (floating != null)
         {
             floating.enabled = false;
