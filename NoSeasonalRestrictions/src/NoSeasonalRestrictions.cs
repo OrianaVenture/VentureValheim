@@ -50,7 +50,7 @@ public class NoSeasonalRestrictions
     {
         try
         {
-            var obj = ZNetScene.instance.GetPrefab(name);
+            UnityEngine.GameObject obj = ZNetScene.instance.GetPrefab(name);
             obj.GetComponent<Piece>().m_enabled = true;
             return;
         }
@@ -72,7 +72,7 @@ public class NoSeasonalRestrictions
         {
             for (int lcv = 0; lcv < ObjectDB.instance.m_recipes.Count; lcv++)
             {
-                var recipe = ObjectDB.instance.m_recipes[lcv];
+                Recipe recipe = ObjectDB.instance.m_recipes[lcv];
                 if (recipe != null && recipe.name.Equals(name))
                 {
                     ObjectDB.instance.m_recipes[lcv].m_enabled = true;
@@ -89,41 +89,29 @@ public class NoSeasonalRestrictions
     }
 
     /// <summary>
-    /// Helper method to identify disabled entities
+    /// Helper patch to identify disabled entities.
     /// </summary>
-    /*private static void ListDisabledItems()
+    /*[HarmonyPatch(typeof(Player), nameof(Player.UpdateCurrentSeason))]
+    public static class Patch_Player_UpdateCurrentSeason
     {
-        foreach (GameObject obj in ZNetScene.instance.m_prefabs)
+        private static void Postfix(Player __instance)
         {
-            try
+            if (SceneManager.GetActiveScene().name.Equals("main"))
             {
-                var component = obj.GetComponent<Piece>();
-                if (component != null)
+                foreach (SeasonalItemGroup group in __instance.m_seasonalItemGroups)
                 {
-                    if (!component.m_enabled)
+                    NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Season: {group._startDate.ToString()} - {group._endDate.ToString()}");
+
+                    foreach (GameObject piece in group.Pieces)
                     {
-                        NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Found Disabled Piece: {obj.name}");
+                        NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Found Disabled Piece: {piece.name}");
+                    }
+
+                    foreach (Recipe recipe in group.Recipes)
+                    {
+                        NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Found Disabled Recipe: {recipe.m_item.name}");
                     }
                 }
-            }
-            catch
-            {
-                NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Error with ListDisabledItems: {obj.name}");
-            }
-        }
-
-        foreach (Recipe obj in ObjectDB.instance.m_recipes)
-        {
-            try
-            {
-                if (!obj.m_enabled)
-                {
-                    NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Found Disabled Piece: {obj.name}");
-                }
-            }
-            catch
-            {
-                NoSeasonalRestrictionsPlugin.NoSeasonalRestrictionsLogger.LogDebug($"Error with ListDisabledItems: {obj.name}");
             }
         }
     }*/
