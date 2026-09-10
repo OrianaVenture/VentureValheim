@@ -51,14 +51,14 @@ public class NeedForSpeed
 
     public bool OnPath()
     {
-        var ground = Player.m_localPlayer.m_lastGroundCollider;
+        Collider ground = Player.m_localPlayer.m_lastGroundCollider;
 
         if (ground == null)
         {
             return false;
         }
 
-        var heightmap = ground.GetComponent<Heightmap>();
+        Heightmap heightmap = ground.GetComponent<Heightmap>();
         if (heightmap != null && heightmap.IsCleared(Player.m_localPlayer.transform.position))
         {
             return true;

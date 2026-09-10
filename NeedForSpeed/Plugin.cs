@@ -23,7 +23,7 @@ public class NeedForSpeedPlugin : BaseUnityPlugin
     }
 
     private const string ModName = "NeedForSpeed";
-    private const string ModVersion = "0.2.3";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
