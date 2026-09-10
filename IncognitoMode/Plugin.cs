@@ -12,7 +12,7 @@ namespace VentureValheim.IncognitoMode;
 public class IncognitoModePlugin : BaseUnityPlugin
 {
     private const string ModName = "IncognitoMode";
-    private const string ModVersion = "0.5.0";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -60,12 +60,12 @@ public class IncognitoModePlugin : BaseUnityPlugin
         const string general = "General";
 
         AddConfig("HiddenByItems", general, "Prefab names of helmet/shoulder items that can hide a Player's name (comma-separated string).",
-            true, "HelmetRoot, HelmetFenring, HelmetPadded, HelmetMage_Ashlands, HelmetFlametal", ref CE_HiddenByItems);
+            true, "HelmetRoot, HelmetFenring, HelmetPadded, HelmetMage_Ashlands, HelmetFlametal, HelmetLox, HelmetDNMage, HelmetDNHeavy", ref CE_HiddenByItems);
         AddConfig("HiddenDisplayName", general, "The hidden Player's display name (string).",
             true, "???", ref CE_HiddenDisplayName);
         AddConfig("HideNameInChat", general, "When hidden also hides the name in chat (boolean).",
             true, true, ref CE_HideNameInChat);
-        AddConfig("HidePlatformTag", general, "When hidden also hides steam/xbox platform tags (boolean).",
+        AddConfig("HidePlatformTag", general, "[Temporarily disabled] When hidden also hides steam/xbox platform tags (boolean).",
             true, false, ref CE_HidePlatformTag);
         AddConfig("HideHud", general, "When hidden completely hides the hud as if the player is sneaking (boolean).",
             true, false, ref CE_HideHud);

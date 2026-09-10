@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Release for game version 1.0.7
+
 ## 0.5.0
 
 * New configuration HideHud that will completely hide the hud rather than change the hover display name (like the character is sneaking).
