@@ -1,4 +1,5 @@
 using HarmonyLib;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -30,20 +31,20 @@ public class DeluxeParticles
 
     private static void Deluxify()
     {
-        var items = ObjectDB.m_instance.m_items;
+        List<GameObject> items = ObjectDB.m_instance.m_items;
 
         for (int lcv = 0; lcv < items.Count; lcv++)
         {
-            var item = items[lcv].GetComponent<ParticleSystem>();
+            ParticleSystem item = items[lcv].GetComponent<ParticleSystem>();
             if (item != null)
             {
-                var itemMain = item.main;
+                ParticleSystem.MainModule itemMain = item.main;
 
                 itemMain.startLifetime = new ParticleSystem.MinMaxCurve(3f);
-                itemMain.startSize = new ParticleSystem.MinMaxCurve(0.6f, 0.8f);
+                itemMain.startSize = new ParticleSystem.MinMaxCurve(0.5f, 0.7f);
                 itemMain.maxParticles = 3;
 
-                var emission = item.emission;
+                ParticleSystem.EmissionModule emission = item.emission;
                 emission.rateOverTime = new ParticleSystem.MinMaxCurve(1f);
             }
         }
