@@ -14,12 +14,10 @@ If you would like to keep supporting the development and maintenance of my mods 
 
 Looking for a Valhiem server? I have partnered with Survival Servers to get you 25% off with the code ``VALHEIM25``! Order through the link by clicking on the image below and I will get a portion of the proceeds. You get a server to play with your friends and I can go buy some more of that sweet sweet coffee to keep the mods working!
 
-<div style="text-align:center"
-
-[![Buy Me A Coffee](https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/SharedImages/BuyMeACoffeeAd.png?raw=true "")](https://buymeacoffee.com/sk2qbkydvk)
-[![Survival Server](https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/SharedImages/SurvivalServersAd.png?raw=true "")](https://www.survivalservers.com/r/venturevalheim/valheim)
-
-</div>
+<p align="center">
+<a href="https://buymeacoffee.com/sk2qbkydvk"><img src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/SharedImages/BuyMeACoffeeAd.png?raw=true"></a>
+<a href="https://www.survivalservers.com/r/venturevalheim/valheim"><img src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/SharedImages/SurvivalServersAd.png?raw=true"></a>
+</p>
 
 ## Features
 
