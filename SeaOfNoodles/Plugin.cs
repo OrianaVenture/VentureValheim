@@ -10,7 +10,7 @@ namespace VentureValheim.SeaOfNoodles;
 public class SeaOfNoodlesPlugin : BaseUnityPlugin
 {
     private const string ModName = "SeaOfNoodles";
-    private const string ModVersion = "0.2.0";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
@@ -41,9 +41,9 @@ public class SeaOfNoodlesPlugin : BaseUnityPlugin
                 return;
             }
 
-            foreach (var spawn in __instance.m_spawnLists)
+            foreach (SpawnSystemList spawn in __instance.m_spawnLists)
             {
-                foreach (var entry in spawn.m_spawners)
+                foreach (SpawnSystem.SpawnData entry in spawn.m_spawners)
                 {
                     if (entry.m_prefab != null && entry.m_prefab.name == "Serpent")
                     {
