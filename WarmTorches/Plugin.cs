@@ -9,7 +9,7 @@ namespace VentureValheim.WarmTorches;
 public class WarmTorchesPlugin : BaseUnityPlugin
 {
     private const string ModName = "WarmTorches";
-    private const string ModVersion = "0.1.2";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
@@ -38,7 +38,7 @@ public class WarmTorchesPlugin : BaseUnityPlugin
                 return;
             }
 
-            var player = Player.m_localPlayer;
+            Player player = Player.m_localPlayer;
             if (player != null)
             {
                 if (player.m_rightItem != null && player.m_rightItem.m_shared != null &&
