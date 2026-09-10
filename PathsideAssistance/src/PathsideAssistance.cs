@@ -49,6 +49,9 @@ public class PathsideAssistance
             if (copy != null)
             {
                 IconMerge.AddSpriteOverlay(ref copy);
+
+                // TODO: clean up when supported by Jotunn
+                ObjectDB.instance.m_terrainOps.Add(copy.GetComponent<TerrainOp>());
                 newPieceTable.Add(copy); // Add modified
             }
         }
@@ -124,6 +127,8 @@ public class PathsideAssistance
 
                 GameObject cultivator = __instance.GetItemPrefab("Cultivator".GetStableHashCode());
                 UpdatePieceTable(cultivator);
+
+                __instance.UpdateRegisters();
 
                 PathsideAssistancePlugin.PathsideAssistanceLogger.LogInfo("Done adding additional options.");
                 Configured = true;

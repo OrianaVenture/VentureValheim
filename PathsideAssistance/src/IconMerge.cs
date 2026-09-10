@@ -68,7 +68,7 @@ public class IconMerge
     {
         int width = baseTexture.width;
         int height = baseTexture.height;
-        var merged = new Texture2D(width, height);
+        Texture2D merged = new Texture2D(width, height);
 
         for (int x = 0; x < width; x++)
         {
@@ -76,14 +76,14 @@ public class IconMerge
             {
                 merged.SetPixel(x, y, UnityEngine.Color.clear);
 
-                var overlayPixel = overlayTexture.GetPixel(x, y);
+                Color overlayPixel = overlayTexture.GetPixel(x, y);
                 if (overlayPixel.a != 0)
                 {
                     merged.SetPixel(x, y, overlayPixel);
                     continue;
                 }
 
-                var basePixel = baseTexture.GetPixel(x, y);
+                Color basePixel = baseTexture.GetPixel(x, y);
                 if (basePixel.a != 0)
                 {
                     merged.SetPixel(x, y, basePixel);
@@ -93,7 +93,7 @@ public class IconMerge
         }
 
         merged.Apply();
-        var newSprite = Sprite.Create(merged, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f));
+        Sprite newSprite = Sprite.Create(merged, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f));
         newSprite.name = name;
         return newSprite;
     }
@@ -120,7 +120,7 @@ public class IconMerge
             return;
         }
 
-        var piece = item.GetComponent<Piece>();
+        Piece piece = item.GetComponent<Piece>();
         if (piece != null && piece.m_icon != null)
         {
             Texture2D baseSpriteTexture;
@@ -135,7 +135,7 @@ public class IconMerge
                 baseSpriteTexture = DuplicateTexture(baseSprite);
             }
 
-            var sprite = MergeTextures($"VV_PA_{item.name}", baseSpriteTexture, _overlay.texture);
+            Sprite sprite = MergeTextures($"VV_PA_{item.name}", baseSpriteTexture, _overlay.texture);
 
             piece.m_icon = sprite;
         }
