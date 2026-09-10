@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Release for game version 1.0.7
+
 ## 0.6.0
 
 * Update for game version 0.219.13.

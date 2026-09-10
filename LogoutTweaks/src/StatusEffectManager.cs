@@ -61,14 +61,14 @@ public class StatusEffectManager
 
     public static StatusEffect BuildStatusEffect(StatusEffectData data)
     {
-        var original = ObjectDB.instance.GetStatusEffect(data.Name);
+        StatusEffect original = ObjectDB.instance.GetStatusEffect(data.Name);
 
         if (original == null)
         {
             return null;
         }
 
-        var se = original.Clone();
+        StatusEffect se = original.Clone();
 
         if (BasicStatusEffects.Contains(data.Name))
         {
@@ -78,7 +78,7 @@ public class StatusEffectManager
         }
         else if (data.Name == Poison)
         {
-            var sePoison = (SE_Poison)se;
+            SE_Poison sePoison = (SE_Poison)se;
             sePoison.m_ttl = data.Ttl;
             sePoison.m_time = data.Time;
             sePoison.m_damageLeft = data.Value1;
@@ -87,7 +87,7 @@ public class StatusEffectManager
         }
         else if (data.Name == Burning || data.Name == Spirit)
         {
-            var seBurning = (SE_Burning)se;
+            SE_Burning seBurning = (SE_Burning)se;
             seBurning.m_ttl = data.Ttl;
             seBurning.m_time = data.Time;
             seBurning.m_fireDamageLeft = data.Value1;
@@ -123,13 +123,13 @@ public class StatusEffectManager
 
             if (Name == Poison)
             {
-                var sePosion = (SE_Poison)se;
+                SE_Poison sePosion = (SE_Poison)se;
                 Value1 = sePosion.m_damageLeft;
                 Value2 = sePosion.m_damagePerHit;
             }
             else if (Name == Burning || Name == Spirit)
             {
-                var seBurining = (SE_Burning)se;
+                SE_Burning seBurining = (SE_Burning)se;
                 Value1 = seBurining.m_fireDamageLeft;
                 Value2 = seBurining.m_fireDamagePerHit;
                 Value3 = seBurining.m_spiritDamageLeft;
@@ -146,7 +146,7 @@ public class StatusEffectManager
             Value2 = 0;
             Value3 = 0;
             Value4 = 0;
-            var effectData = data.Split(':');
+            string[] effectData = data.Split(':');
 
             if (effectData.Length >= 3 &&
                 int.TryParse(effectData[0], out int name) &&

@@ -34,13 +34,13 @@ public class LogoutTweaks
             StatusEffects = new List<StatusEffectData>();
             if (saveString != null)
             {
-                var data = saveString.Split(';');
+                string[] data = saveString.Split(';');
 
                 if (data != null)
                 {
                     for (int lcv = 0; lcv < data.Length; lcv++)
                     {
-                        var effect = new StatusEffectData(data[lcv]);
+                        StatusEffectData effect = new StatusEffectData(data[lcv]);
                         StatusEffects.Add(effect);
                     }
                 }
@@ -50,7 +50,7 @@ public class LogoutTweaks
         public override string ToString()
         {
             string saveString = "";
-            foreach (var effect in StatusEffects)
+            foreach (StatusEffectData effect in StatusEffects)
             {
                 saveString += effect.ToString() + ";";
             }
@@ -128,7 +128,7 @@ public class LogoutTweaks
             try
             {
                 List<StatusEffectData> data = new List<StatusEffectData>();
-                var effects = __instance.m_seman.GetStatusEffects();
+                List<StatusEffect> effects = __instance.m_seman.GetStatusEffects();
 
                 if (effects == null)
                 {
@@ -167,7 +167,7 @@ public class LogoutTweaks
                 return;
             }
 
-            var data = Instance.LoadData(ref __instance);
+            FileData? data = Instance.LoadData(ref __instance);
 
             if (data == null)
             {
@@ -178,7 +178,7 @@ public class LogoutTweaks
 
             if (logoutData.StatusEffects != null)
             {
-                var effects = logoutData.StatusEffects;
+                List<StatusEffectData> effects = logoutData.StatusEffects;
                 for (int lcv = 0; lcv < effects.Count; lcv++)
                 {
                     try
