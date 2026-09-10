@@ -95,7 +95,7 @@ public class TravelTotemPortal : MonoBehaviour, Hoverable, Interactable, TextRec
         Player closestPlayer = Player.GetClosestPlayer(base.transform.position, ActivationRange);
 
         // TODO: teleport settings if doing that
-        bool travelPossible = closestPlayer && closestPlayer.IsTeleportable();
+        bool travelPossible = closestPlayer && closestPlayer.IsTeleportable(false);
         UpdateEffects(travelPossible);
     }
 
@@ -184,6 +184,11 @@ public class TravelTotemPortal : MonoBehaviour, Hoverable, Interactable, TextRec
     public string GetHoverName()
     {
         return "TravelTotem";
+    }
+
+    public float GetHoverOffset()
+    {
+        return 0f;
     }
 
     public bool Interact(Humanoid human, bool hold, bool alt)

@@ -329,7 +329,7 @@ public class AssetManager
 
         foreach (RequirementConfig req in config)
         {
-            var newReq = req.GetRequirement();
+            Piece.Requirement newReq = req.GetRequirement();
             GameObject resource = PrefabManager.Instance.GetPrefab(req.Item);
 
             if (resource == null)

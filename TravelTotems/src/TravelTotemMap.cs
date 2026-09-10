@@ -207,7 +207,7 @@ public static class TravelTotemMap
                 return;
             }
 
-            if (Player.m_localPlayer.IsTeleportable())
+            if (Player.m_localPlayer.IsTeleportable(false))
             {
                 StartTotemMap();
             }
@@ -323,7 +323,7 @@ public static class TravelTotemMap
                 return true;
             }
 
-            Vector3 position = Minimap.instance.ScreenToWorldPoint(ZInput.mousePosition);
+            Vector3 position = Minimap.instance.ScreenToWorldPoint(ZInput.pointerPosition);
             Vector3 pinLocation = GetClosestTravelLocation(position,
                 Minimap.instance.m_removeRadius * (Minimap.instance.m_largeZoom * 2f), out bool isTotem);
 
