@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Jotunn.Managers;
+using MagicaCloth2;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using UnityEngine;
@@ -15,6 +16,7 @@ public class MutedSails
     {
         public Material TransparentSailMaterial;
         public Material OriginalSailMaterial;
+        public SkinnedMeshRenderer SkinnedMeshRenderer;
 
         public bool IsTransparent = false;
     }
@@ -36,14 +38,14 @@ public class MutedSails
 
     public static void AddMutedSailTracker(ref Ship ship)
     {
-        Cloth sailCloth = ship.GetComponentInChildren<Cloth>();
+        MagicaCloth sailCloth = ship.GetComponentInChildren<MagicaCloth>();
 
         if (sailCloth == null)
         {
             return;
         }
 
-        SkinnedMeshRenderer sail = sailCloth.GetComponent<SkinnedMeshRenderer>();
+        SkinnedMeshRenderer sail = sailCloth.GetComponentInChildren<SkinnedMeshRenderer>();
 
         if (sail == null || sail.materials == null || sail.materials.Length < 1)
         {
@@ -56,12 +58,17 @@ public class MutedSails
         Shader shader = PrefabManager.Cache.GetPrefab<Shader>("Custom/LitParticles");
         Material material = new Material(shader);
         material.SetTexture("_MainTex", texture);
+
+        material.SetTexture("_MainTex", texture);
+        material.SetTextureScale("_MainTex", originalMaterial.GetTextureScale("_MainTex"));
+        material.SetTextureOffset("_MainTex", originalMaterial.GetTextureOffset("_MainTex"));
         material.SetFloat("_Cutoff", 0.1f);
         material.SetVector("_Color", new Vector4(1, 1, 1, 0.2f));
 
         MutedSailTracker mutedSail = ship.gameObject.AddComponent<MutedSailTracker>();
         mutedSail.TransparentSailMaterial = material;
         mutedSail.OriginalSailMaterial = originalMaterial;
+        mutedSail.SkinnedMeshRenderer = sail;
     }
 
     [HarmonyPatch(typeof(Ship), nameof(Ship.Awake))]
@@ -69,10 +76,12 @@ public class MutedSails
     {
         private static void Postfix(Ship __instance)
         {
-            if (!__instance.TryGetComponent<MutedSailTracker>(out MutedSailTracker sails))
+            if (!Player.IsPlacementGhost(__instance.gameObject) &&
+                !__instance.TryGetComponent<MutedSailTracker>(out MutedSailTracker sails))
             {
                 AddMutedSailTracker(ref __instance);
-                MutedSailsPlugin.MutedSailsLogger.LogWarning($"Added late sail information to {__instance.name}! This should not happen!");
+                MutedSailsPlugin.MutedSailsLogger.LogWarning(
+                    $"Added late sail information to {__instance.name}! This should not happen!");
             }
         }
     }
@@ -87,16 +96,14 @@ public class MutedSails
 
         private static void Postfix(Ship __instance, bool __state)
         {
-            if ((__state && !ConfigurationDirty) || __instance.m_sailCloth == null || Player.m_localPlayer == null)
+            if (__instance.m_sailCloth == null)
             {
                 return;
             }
 
-            ConfigurationDirty = false;
-            SkinnedMeshRenderer sail = __instance.m_sailCloth.GetComponent<SkinnedMeshRenderer>();
             MutedSailTracker mutedSail = __instance.gameObject.GetComponent<MutedSailTracker>();
 
-            if (sail == null || mutedSail == null)
+            if (mutedSail == null || mutedSail.SkinnedMeshRenderer == null)
             {
                 return;
             }
@@ -105,13 +112,15 @@ public class MutedSails
 
             if (shouldBeTransparent && !mutedSail.IsTransparent)
             {
-                sail.material = mutedSail.TransparentSailMaterial;
+                mutedSail.SkinnedMeshRenderer.material = mutedSail.TransparentSailMaterial;
                 mutedSail.IsTransparent = true;
+                __instance.m_sailCloth.SetParameterChange();
             }
             else if (!shouldBeTransparent && mutedSail.IsTransparent)
             {
-                sail.material = mutedSail.OriginalSailMaterial;
+                mutedSail.SkinnedMeshRenderer.material = mutedSail.OriginalSailMaterial;
                 mutedSail.IsTransparent = false;
+                __instance.m_sailCloth.SetParameterChange();
             }
         }
     }
