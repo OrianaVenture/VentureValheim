@@ -97,8 +97,7 @@ public static class TravelTotemMap
         }
 
         Vector3 position = Minimap.instance.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2));
-        Vector3 pinLocation = GetClosestTravelLocation(position,
-            Minimap.instance.m_removeRadius * (Minimap.instance.m_largeZoom * 2f), out bool isTotem);
+        Vector3 pinLocation = GetClosestTravelLocation(position, Minimap.instance.PinInteractRadius, out bool isTotem);
 
         TryTriggerTeleport(pinLocation, isTotem);
     }
@@ -324,8 +323,7 @@ public static class TravelTotemMap
             }
 
             Vector3 position = Minimap.instance.ScreenToWorldPoint(ZInput.pointerPosition);
-            Vector3 pinLocation = GetClosestTravelLocation(position,
-                Minimap.instance.m_removeRadius * (Minimap.instance.m_largeZoom * 2f), out bool isTotem);
+            Vector3 pinLocation = GetClosestTravelLocation(position, Minimap.instance.PinInteractRadius, out bool isTotem);
 
             TryTriggerTeleport(pinLocation, isTotem);
             return false; // Skip vanilla check/uncheck pin

@@ -30,7 +30,9 @@ public class TraderPatches
                 Trader.TradeItem bombTrade = new Trader.TradeItem
                 {
                     m_prefab = itemDrop,
-                    m_price = TravelTotemsPlugin.GetTradersSellTotemBombCost()
+                    m_price = TravelTotemsPlugin.GetTradersSellTotemBombCost(),
+                    m_buyPlayerEffects = new EffectList(),
+                    m_tooltip = string.Empty
                 };
 
                 __instance.m_items.Add(bombTrade);

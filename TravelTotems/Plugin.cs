@@ -21,7 +21,7 @@ namespace VentureValheim.TravelTotems;
 public class TravelTotemsPlugin : BaseUnityPlugin
 {
     private const string ModName = "TravelTotems";
-    private const string ModVersion = "1.0.0";
+    private const string ModVersion = "1.0.1";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
