@@ -14,7 +14,7 @@ namespace VentureValheim.PiecesSmoothStone;
 public class PiecesSmoothStonePlugin : BaseUnityPlugin
 {
     private const string ModName = "VenturePiecesSmoothStone";
-    private const string ModVersion = "0.2.0";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
