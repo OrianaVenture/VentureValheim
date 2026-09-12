@@ -86,6 +86,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TravelTotems", "TravelTotem
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AreaRepair", "AreaRepair\AreaRepair.csproj", "{CD8A336E-516B-4603-982F-8BFE41799896}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cornerstone", "Cornerstone\Cornerstone.csproj", "{4825E615-25D3-4537-AE7D-8C44DF6EF4C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -248,6 +250,10 @@ Global
 		{CD8A336E-516B-4603-982F-8BFE41799896}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD8A336E-516B-4603-982F-8BFE41799896}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD8A336E-516B-4603-982F-8BFE41799896}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4825E615-25D3-4537-AE7D-8C44DF6EF4C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4825E615-25D3-4537-AE7D-8C44DF6EF4C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4825E615-25D3-4537-AE7D-8C44DF6EF4C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4825E615-25D3-4537-AE7D-8C44DF6EF4C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
