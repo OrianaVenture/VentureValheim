@@ -4,7 +4,7 @@ Created by [OrianaVentureMod@gmail.com](https://github.com/OrianaVenture/Venture
 
 ## Introduction
 
-Adds rough stone variations of the black marble build pieces.
+Adds rough stone variations of the black marble and grausten build pieces.
 
 ## Support Me!
 
