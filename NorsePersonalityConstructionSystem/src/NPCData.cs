@@ -79,10 +79,10 @@ public class NPCData
                 SetChest(zdo.GetInt(ZDOVars.s_chestItem));
                 SetLegs(zdo.GetInt(ZDOVars.s_legItem));
                 SetShoulder(zdo.GetInt(ZDOVars.s_shoulderItem),
-                    zdo.GetInt(ZDOVars.s_shoulderItemVariant));
+                    variant: zdo.GetInt(ZDOVars.s_shoulderItemVariant));
                 SetUtility(zdo.GetInt(ZDOVars.s_utilityItem));
                 SetLeftHand(zdo.GetInt(ZDOVars.s_leftItem),
-                    zdo.GetInt(ZDOVars.s_leftItemVariant));
+                    variant: zdo.GetInt(ZDOVars.s_leftItemVariant));
                 SetRightHand(zdo.GetInt(ZDOVars.s_rightItem));
             }
 
@@ -732,7 +732,7 @@ public class NPCData
         }
 
         (_character as Humanoid).m_hairItem = name;
-        (_character as Humanoid).m_visEquipment.SetHairItem(name);
+        (_character as Humanoid).m_visEquipment.SetHairItem(name.GetStableHashCode());
     }
 
     protected void SetHairColor(Color color)
@@ -787,7 +787,7 @@ public class NPCData
         }
 
         (_character as Humanoid).m_beardItem = name;
-        (_character as Humanoid).m_visEquipment.SetBeardItem(name);
+        (_character as Humanoid).m_visEquipment.SetBeardItem(name.GetStableHashCode());
     }
 
     protected int SetRandomModel(bool isHuman)
@@ -812,7 +812,7 @@ public class NPCData
         (_character as Humanoid).m_visEquipment.SetModel(index);
     }
 
-    private bool SetItem(ref ItemDrop.ItemData slot, int hash, int variant = -1)
+    private bool SetItem(ref ItemDrop.ItemData slot, int hash, int variant = -1, int quality = 1)
     {
         if (_character is not Humanoid || (_character as Humanoid).m_inventory == null)
         {
@@ -847,13 +847,15 @@ public class NPCData
                 itemData.m_variant = variant;
             }
 
+            itemData.m_quality = quality;
+
             (_character as Humanoid).EquipItem(itemData, triggerEquipEffects: false);
         }
 
         return true;
     }
 
-    protected void SetHelmet(string name, bool isHuman, bool female)
+    protected void SetHelmet(string name, bool isHuman, bool female, int quality = 1)
     {
         if (_character is not Humanoid)
         {
@@ -876,23 +878,23 @@ public class NPCData
             }
         }
 
-        if (SetHelmet(name.GetStableHashCode()))
+        if (SetHelmet(name.GetStableHashCode(), quality))
         {
-            (_character as Humanoid).m_visEquipment.SetHelmetItem(name);
+            (_character as Humanoid).m_visEquipment.SetHelmetItem(name.GetStableHashCode());
         }
     }
 
-    protected bool SetHelmet(int hash)
+    protected bool SetHelmet(int hash, int quality = 1)
     {
         if (_character is not Humanoid)
         {
             return false;
         }
 
-        return SetItem(ref (_character as Humanoid).m_helmetItem, hash);
+        return SetItem(ref (_character as Humanoid).m_helmetItem, hash, quality: quality);
     }
 
-    protected void SetChest(string name, bool isHuman, bool female)
+    protected void SetChest(string name, bool isHuman, bool female, int quality = 1)
     {
         if (_character is not Humanoid)
         {
@@ -915,23 +917,23 @@ public class NPCData
             }
         }
 
-        if (SetChest(name.GetStableHashCode()))
+        if (SetChest(name.GetStableHashCode(), quality))
         {
-            (_character as Humanoid).m_visEquipment.SetChestItem(name);
+            (_character as Humanoid).m_visEquipment.SetChestItem(name.GetStableHashCode());
         }
     }
 
-    protected bool SetChest(int hash)
+    protected bool SetChest(int hash, int quality = 1)
     {
         if (_character is not Humanoid)
         {
             return false;
         }
 
-        return SetItem(ref (_character as Humanoid).m_chestItem, hash);
+        return SetItem(ref (_character as Humanoid).m_chestItem, hash, quality: quality);
     }
 
-    protected void SetLegs(string name, bool isHuman, bool female)
+    protected void SetLegs(string name, bool isHuman, bool female, int quality = 1)
     {
         if (_character is not Humanoid)
         {
@@ -954,43 +956,43 @@ public class NPCData
             }
         }
 
-        if (SetLegs(name.GetStableHashCode()))
+        if (SetLegs(name.GetStableHashCode(), quality))
         {
-            (_character as Humanoid).m_visEquipment.SetLegItem(name);
+            (_character as Humanoid).m_visEquipment.SetLegItem(name.GetStableHashCode());
         }
     }
 
-    protected bool SetLegs(int hash)
+    protected bool SetLegs(int hash, int quality = 1)
     {
         if (_character is not Humanoid)
         {
             return false;
         }
 
-        return SetItem(ref (_character as Humanoid).m_legItem, hash);
+        return SetItem(ref (_character as Humanoid).m_legItem, hash, quality: quality);
     }
 
-    protected void SetShoulder(string name, int variant = 0)
+    protected void SetShoulder(string name, int variant = 0, int quality = 1)
     {
         if (_character is not Humanoid)
         {
             return;
         }
 
-        if (SetShoulder(name.GetStableHashCode(), variant))
+        if (SetShoulder(name.GetStableHashCode(), variant, quality))
         {
-            (_character as Humanoid).m_visEquipment.SetShoulderItem(name, variant);
+            (_character as Humanoid).m_visEquipment.SetShoulderItem(name.GetStableHashCode(), variant, quality);
         }
     }
 
-    protected bool SetShoulder(int hash, int variant = 0)
+    protected bool SetShoulder(int hash, int variant = 0, int quality = 1)
     {
         if (_character is not Humanoid)
         {
             return false;
         }
 
-        return SetItem(ref (_character as Humanoid).m_shoulderItem, hash, variant);
+        return SetItem(ref (_character as Humanoid).m_shoulderItem, hash, variant, quality: quality);
     }
 
     protected void SetUtility(string name)
@@ -1002,7 +1004,7 @@ public class NPCData
 
         if (SetUtility(name.GetStableHashCode()))
         {
-            (_character as Humanoid).m_visEquipment.SetUtilityItem(name);
+            (_character as Humanoid).m_visEquipment.SetUtilityItem(name.GetStableHashCode());
         }
     }
 
@@ -1070,7 +1072,7 @@ public class NPCData
         return "";
     }
 
-    protected void SetRightHand(string name, bool isHuman)
+    protected void SetRightHand(string name, bool isHuman, int quality = 1)
     {
         if (_character is not Humanoid)
         {
@@ -1090,13 +1092,13 @@ public class NPCData
             }
         }
 
-        if (SetRightHand(name.GetStableHashCode()))
+        if (SetRightHand(name.GetStableHashCode(), quality))
         {
-            (_character as Humanoid).m_visEquipment.SetRightItem(name);
+            (_character as Humanoid).m_visEquipment.SetRightItem(name.GetStableHashCode(), quality);
         }
     }
 
-    protected bool SetRightHand(int hash)
+    protected bool SetRightHand(int hash, int quality = 1)
     {
         if (_character is not Humanoid)
         {
@@ -1104,7 +1106,7 @@ public class NPCData
         }
 
         // Add new item
-        return SetItem(ref (_character as Humanoid).m_rightItem, hash);
+        return SetItem(ref (_character as Humanoid).m_rightItem, hash, quality: quality);
     }
 
     protected string GetRandomLeftHand()
@@ -1122,7 +1124,7 @@ public class NPCData
         return "";
     }
 
-    protected void SetLeftHand(string name, bool isHuman, int variant = 0)
+    protected void SetLeftHand(string name, bool isHuman, int variant = 0, int quality = 1)
     {
         if (_character is not Humanoid)
         {
@@ -1142,20 +1144,20 @@ public class NPCData
             }
         }
 
-        if (SetLeftHand(name.GetStableHashCode(), variant))
+        if (SetLeftHand(name.GetStableHashCode(), variant, quality))
         {
-            (_character as Humanoid).m_visEquipment.SetLeftItem(name, variant);
+            (_character as Humanoid).m_visEquipment.SetLeftItem(name.GetStableHashCode(), variant, quality);
         }
     }
 
-    protected bool SetLeftHand(int hash, int variant = 0)
+    protected bool SetLeftHand(int hash, int variant = 0, int quality = 1)
     {
         if (_character is not Humanoid)
         {
             return false;
         }
 
-        return SetItem(ref (_character as Humanoid).m_leftItem, hash, variant);
+        return SetItem(ref (_character as Humanoid).m_leftItem, hash, variant: variant, quality: quality);
     }
 
     protected Color GetRandomSkinColor()

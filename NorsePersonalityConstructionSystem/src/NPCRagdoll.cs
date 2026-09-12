@@ -23,7 +23,7 @@ public class NPCRagdoll : Ragdoll, Interactable, Hoverable
 
         m_ttl = 4f;
 
-        var startCoroutine = SetUp();
+        IEnumerator startCoroutine = SetUp();
         StartCoroutine(startCoroutine);
     }
 
@@ -73,4 +73,8 @@ public class NPCRagdoll : Ragdoll, Interactable, Hoverable
         return "";
     }
 
+    public float GetHoverOffset()
+    {
+        return 0f;
+    }
 }

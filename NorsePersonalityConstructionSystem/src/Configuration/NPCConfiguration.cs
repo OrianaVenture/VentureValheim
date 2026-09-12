@@ -46,7 +46,7 @@ public static class NPCConfiguration
 
         if (Configurations.ContainsKey(id))
         {
-            var cleaned = Configurations[id];
+            NPCConfig cleaned = Configurations[id];
             cleaned.CleanData();
 
             return cleaned;
@@ -58,7 +58,7 @@ public static class NPCConfiguration
     public static void ReloadFile()
     {
         Configurations = new Dictionary<string, NPCConfig>();
-        var list = ReadFile();
+        NPCS list = ReadFile();
         if (list == null)
         {
             return;
@@ -66,7 +66,7 @@ public static class NPCConfiguration
 
         for (int lcv = 0; lcv < list.Npcs.Count; lcv++)
         {
-            var config = list.Npcs[lcv];
+            NPCConfig config = list.Npcs[lcv];
 
             Configurations.Add(config.Id.ToLower(), config);
         }
@@ -74,12 +74,12 @@ public static class NPCConfiguration
 
     public static NPCS ReadFile()
     {
-        var filePath = Paths.ConfigPath + Path.DirectorySeparatorChar + FileName;
+        string filePath = Paths.ConfigPath + Path.DirectorySeparatorChar + FileName;
         try
         {
-            using var fileReader = new StreamReader(filePath);
+            using StreamReader fileReader = new StreamReader(filePath);
             string fileData = File.ReadAllText(filePath);
-            var deserializer = new DeserializerBuilder()
+            IDeserializer deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .Build();
             return deserializer.Deserialize<NPCS>(fileData);

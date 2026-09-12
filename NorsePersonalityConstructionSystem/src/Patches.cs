@@ -2,6 +2,7 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using System.Security.Claims;
 using UnityEngine;
 
 namespace VentureValheim.NPCS;
@@ -459,49 +460,21 @@ public class Patches
         }
     }
 
-    /// <summary>
-    /// Do not let players sit on NPCs.
-    /// </summary>
-    [HarmonyPatch(typeof(Chair))]
-    static class ChairPatch
+    [HarmonyPatch(typeof(Chair), nameof(Chair.IsInUse))]
+    private static class Patch_Chair_IsInUse
     {
-        // Thank you Redseiko for the beautiful transpiler
-        [HarmonyTranspiler]
-        [HarmonyPatch(nameof(Chair.Interact))]
-        static IEnumerable<CodeInstruction> InputTextTranspiler(
-            IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        private static bool Prefix(Chair __instance, ref bool __result)
         {
-            return new CodeMatcher(instructions, generator)
-                .Start()
-                .MatchStartForward(
-                    new CodeMatch(OpCodes.Ldsfld, AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer))),
-                    new CodeMatch(OpCodes.Ldc_I4_2),
-                    new CodeMatch(OpCodes.Ldstr, "$msg_blocked"))
-                .ThrowIfInvalid($"Could not patch Chair.Interact()! (msg-blocked)")
-                .CreateLabel(out Label msgBlockedLabel)
-                .Start()
-                .MatchStartForward(
-                    new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.GetClosestPlayer))),
-                    new CodeMatch(OpCodes.Stloc_1))
-                .ThrowIfInvalid("Could not patch Chair.Interact()! (get-closest-player)")
-                .Advance(offset: 2)
-                .InsertAndAdvance(
-                    new CodeInstruction(OpCodes.Ldarg_0),
-                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ChairPatch), nameof(IsChairOccupied))),
-                    new CodeInstruction(OpCodes.Brtrue, msgBlockedLabel))
-                .InstructionEnumeration();
-        }
-
-        static bool IsChairOccupied(Chair chair)
-        {
-            Vector3 position = chair.m_attachPoint.position;
+            Vector3 position = __instance.m_attachPoint.position;
             INPC npc = Utility.GetClosestNPC(position, out float distance);
-            if (npc != null && distance <= 0.1f)
+            if (npc != null && distance <= 0.05f)
             {
-                return true;
+                __result = true;
+                return false;
             }
 
-            return false;
+            __result = false;
+            return true;
         }
     }
 }

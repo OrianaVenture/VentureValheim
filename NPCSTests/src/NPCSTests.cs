@@ -28,9 +28,9 @@ namespace VentureValheim.NPCS
             Player.m_localPlayer.RemoveUniqueKey("rahshahs2");
             Player.m_localPlayer.RemoveUniqueKey("thaneofvalheim");
 
-            var playerPosition = Player.m_localPlayer.gameObject.transform.position;
-            var playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
-            var position = playerPosition + (playerRotation * Vector3.forward);
+            Vector3 playerPosition = Player.m_localPlayer.gameObject.transform.position;
+            Quaternion playerRotation = Player.m_localPlayer.gameObject.transform.rotation;
+            Vector3 position = playerPosition + (playerRotation * Vector3.forward);
             NPCSPlugin.NPCSLogger.LogInfo("Trying to spawn NPCS!");
             NPCFactory.SpawnSavedNPC(position, Quaternion.identity, "Ragnar1");
             NPCFactory.SpawnSavedNPC(position + Vector3.right * 1, Quaternion.identity, "Ragnar2");

@@ -4,8 +4,8 @@ public class NPCTrader : Trader
 {
     public void Setup()
     {
-        var zdo = gameObject.GetComponent<ZNetView>().GetZDO();
-        if (!TryGetComponent<LookAt>(out var trader))
+        ZDO zdo = gameObject.GetComponent<ZNetView>().GetZDO();
+        if (!TryGetComponent<LookAt>(out LookAt trader))
         {
             gameObject.AddComponent<LookAt>();
         }
@@ -23,5 +23,6 @@ public class NPCTrader : Trader
 
         m_dialogHeight = 2.5f;
         m_hideDialogDelay = 5f;
+        m_hoverOffset = 0f;
     }
 }

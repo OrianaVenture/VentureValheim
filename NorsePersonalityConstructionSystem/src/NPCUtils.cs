@@ -17,7 +17,7 @@ public static class NPCUtils
         if (quest.GiveItem != null && text.Contains("{giveitem}"))
         {
             string giveItem = quest.GiveItem.PrefabName;
-            if (Utility.GetItemDrop(giveItem, out var requirement))
+            if (Utility.GetItemDrop(giveItem, out ItemDrop requirement))
             {
                 giveItem = requirement.m_itemData.m_shared.m_name;
             }
@@ -36,9 +36,9 @@ public static class NPCUtils
             string rewardItemText = "";
             for (int lcv = 0; lcv < quest.RewardItems.Count; lcv++)
             {
-                var item = quest.RewardItems[lcv];
+                NPCItem item = quest.RewardItems[lcv];
                 string rewardItem = item.PrefabName;
-                if (Utility.GetItemDrop(rewardItem, out var reward))
+                if (Utility.GetItemDrop(rewardItem, out ItemDrop reward))
                 {
                     rewardItem = reward.m_itemData.m_shared.m_name;
                 }
@@ -104,15 +104,15 @@ public static class NPCUtils
     {
         if (quest.RewardItems != null)
         {
-            foreach (var item in quest.RewardItems)
+            foreach (NPCItem item in quest.RewardItems)
             {
                 if (Utility.GetItemPrefab(item.PrefabName.GetStableHashCode(), out GameObject reward))
                 {
-                    var go = GameObject.Instantiate(reward,
+                    GameObject go = GameObject.Instantiate(reward,
                         character.transform.position + new Vector3(0, 0.75f, 0) + (character.transform.rotation * Vector3.forward),
                         character.transform.rotation);
 
-                    var itemdrop = go.GetComponent<ItemDrop>();
+                    ItemDrop itemdrop = go.GetComponent<ItemDrop>();
                     itemdrop.SetStack(item.Amount.Value);
                     itemdrop.SetQuality(item.Quality.Value);
                     itemdrop.GetComponent<Rigidbody>().linearVelocity = (character.transform.forward + Vector3.up) * 1f;
@@ -139,7 +139,7 @@ public static class NPCUtils
 
     public static bool TryUseItem(Character npc, ItemDrop.ItemData item)
     {
-        var baseAI = npc.GetComponent<BaseAI>();
+        BaseAI baseAI = npc.GetComponent<BaseAI>();
 
         if (baseAI != null && baseAI.m_aggravated)
         {
@@ -151,7 +151,7 @@ public static class NPCUtils
 
         if (NPCZDOUtils.GetType(zdo) == (int)NPCData.NPCType.Trader)
         {
-            var trader = npc.GetComponent<NPCTrader>();
+            NPCTrader trader = npc.GetComponent<NPCTrader>();
             if (trader == null)
             {
                 return false;
@@ -161,7 +161,7 @@ public static class NPCUtils
             return true;
         }
 
-        var npcComponent = npc.GetComponent<INPC>();
+        INPC npcComponent = npc.GetComponent<INPC>();
 
         NPCQuest quest = npcComponent.Data.GetCurrentQuest();
         if (quest == null)
@@ -169,17 +169,17 @@ public static class NPCUtils
             return false;
         }
 
-        var name = NPCZDOUtils.GetTamedName(zdo);
+        string name = NPCZDOUtils.GetTamedName(zdo);
         string text = quest.Text;
 
         if (quest.GiveItem != null && !quest.GiveItem.PrefabName.IsNullOrWhiteSpace())
         {
             if (item != null && item.m_dropPrefab.name.Equals(quest.GiveItem.PrefabName) && Player.m_localPlayer != null)
             {
-                var quality = quest.GiveItem.Quality.Value;
-                var amount = quest.GiveItem.Amount.Value;
-                var player = Player.m_localPlayer;
-                var count = player.GetInventory().CountItems(item.m_shared.m_name, quality);
+                int quality = quest.GiveItem.Quality.Value;
+                int amount = quest.GiveItem.Amount.Value;
+                Player player = Player.m_localPlayer;
+                int count = player.GetInventory().CountItems(item.m_shared.m_name, quality);
                 if (count >= amount)
                 {
                     if (quest.GiveItem.RemoveItem.Value)
@@ -217,18 +217,18 @@ public static class NPCUtils
 
     public static bool TryInteract(Character npc)
     {
-        var baseAI = npc.GetComponent<BaseAI>();
+        BaseAI baseAI = npc.GetComponent<BaseAI>();
 
         if (baseAI.m_aggravated)
         {
             return false;
         }
 
-        var zNetView = npc.GetComponent<ZNetView>();
+        ZNetView zNetView = npc.GetComponent<ZNetView>();
 
         if (NPCZDOUtils.GetType(zNetView.GetZDO()) == (int)NPCData.NPCType.Trader)
         {
-            var trader = npc.GetComponent<NPCTrader>();
+            NPCTrader trader = npc.GetComponent<NPCTrader>();
             if (trader == null)
             {
                 return false;
@@ -239,7 +239,7 @@ public static class NPCUtils
             return true;
         }
 
-        var npcComponent = npc.GetComponent<INPC>();
+        INPC npcComponent = npc.GetComponent<INPC>();
 
         NPCQuest quest = npcComponent.Data.GetCurrentQuest();
         if (quest == null)
@@ -247,7 +247,7 @@ public static class NPCUtils
             return false;
         }
 
-        var text = quest.Text;
+        string text = quest.Text;
 
         if (quest.GiveItem == null || quest.GiveItem.PrefabName.IsNullOrWhiteSpace())
         {
@@ -266,7 +266,7 @@ public static class NPCUtils
             Utility.SetKey(quest.InteractKey, quest.InteractKeyType);
         }
 
-        var name = NPCZDOUtils.GetTamedName(zNetView.GetZDO());
+        string name = NPCZDOUtils.GetTamedName(zNetView.GetZDO());
         Talk(npc, name, text, quest); // TODO disable talking as needed
         return false;
     }
@@ -290,13 +290,13 @@ public static class NPCUtils
             return "";
         }
 
-        var type = NPCZDOUtils.GetType(npc.m_nview.GetZDO());
+        int type = NPCZDOUtils.GetType(npc.m_nview.GetZDO());
         string text = "";
 
         if (type != (int)NPCData.NPCType.None)
         {
-            var npcComponent = npc.GetComponent<INPC>();
-            var quest = npcComponent.Data.GetCurrentQuest(false);
+            INPC npcComponent = npc.GetComponent<INPC>();
+            NPCQuest quest = npcComponent.Data.GetCurrentQuest(false);
 
             if (type == (int)NPCData.NPCType.Trader || quest != null)
             {
@@ -307,7 +307,7 @@ public static class NPCUtils
                     (quest != null && quest.GiveItem != null))
                 {
                     text += Localization.instance.Localize(
-                        "\n[<color=yellow><b>1-8</b></color>] $npc_giveitem");
+                        "\n[<color=yellow><b>$KEY_HotbarUse</b></color>] $npc_giveitem");
                 }
             }
         }

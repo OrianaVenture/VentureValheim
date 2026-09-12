@@ -64,19 +64,19 @@ public class NPCConfig
         MaxHealth ??= 0f;
 
         Quests ??= new List<NPCQuest>();
-        foreach (var quest in Quests)
+        foreach (NPCQuest quest in Quests)
         {
             quest.CleanData();
         }
 
         TradeItems ??= new List<NPCTradeItem>();
-        foreach (var trade in TradeItems)
+        foreach (NPCTradeItem trade in TradeItems)
         {
             trade.CleanData();
         }
 
         TraderUseItems ??= new List<NPCTraderUseItem>();
-        foreach (var item in TraderUseItems)
+        foreach (NPCTraderUseItem item in TraderUseItems)
         {
             item.CleanData();
         }

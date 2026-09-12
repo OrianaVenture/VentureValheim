@@ -78,23 +78,23 @@ public static class NPCZDOUtils
         {
             quest = new NPCQuest(fields);
 
-            var give = GetNPCQuestGive(zdo, index);
+            string give = GetNPCQuestGive(zdo, index);
             if (!give.IsNullOrWhiteSpace())
             {
-                var gives = give.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
+                string[] gives = give.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
                 if (gives.Length >= 4)
                 {
                     quest.GiveItem = new NPCItem(gives);
                 }
             }
 
-            var reward = GetNPCQuestReward(zdo, index);
+            string reward = GetNPCQuestReward(zdo, index);
             if (!reward.IsNullOrWhiteSpace())
             {
-                var rewards = reward.Split(PipeSeparatorList, int.MaxValue, StringSplitOptions.None);
+                string[] rewards = reward.Split(PipeSeparatorList, int.MaxValue, StringSplitOptions.None);
                 if (rewards.Length > 0)
                 {
-                    var rewardIndexed = reward.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
+                    string[] rewardIndexed = reward.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
                     if (rewardIndexed.Length >= 4)
                     {
                         quest.RewardItems = new List<NPCItem>
@@ -169,9 +169,9 @@ public static class NPCZDOUtils
         List<Trader.TradeItem> list = new List<Trader.TradeItem>();
         string[] fields = config.Split(PipeSeparatorList, int.MaxValue, StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var field in fields)
+        foreach (string field in fields)
         {
-            var item = GetTradeItem(field);
+            Trader.TradeItem item = GetTradeItem(field);
 
             if (item != null)
             {
@@ -188,18 +188,25 @@ public static class NPCZDOUtils
 
         if (fields.Length >= 5)
         {
-            var npcTradeItem = new NPCTradeItem(fields);
-            Utility.GetItemPrefab(npcTradeItem.PrefabName.GetStableHashCode(), out var prefab);
-            if (prefab == null || !prefab.TryGetComponent<ItemDrop>(out var itemdrop))
+            NPCTradeItem npcTradeItem = new NPCTradeItem(fields);
+            Utility.GetItemPrefab(npcTradeItem.PrefabName.GetStableHashCode(), out GameObject prefab);
+            if (prefab == null || !prefab.TryGetComponent<ItemDrop>(out ItemDrop itemdrop))
             {
                 return null;
             }
 
-            Trader.TradeItem tradeItem = new Trader.TradeItem();
-            tradeItem.m_prefab = itemdrop;
-            tradeItem.m_stack = npcTradeItem.Amount.Value;
-            tradeItem.m_price = npcTradeItem.Cost.Value;
-            tradeItem.m_requiredGlobalKey = npcTradeItem.RequiredKey;
+            itemdrop.m_itemData.m_cheated = false;
+
+            Trader.TradeItem tradeItem = new Trader.TradeItem
+            {
+                m_prefab = itemdrop,
+                m_stack = npcTradeItem.Amount.Value,
+                m_price = npcTradeItem.Cost.Value,
+                m_requiredGlobalKey = npcTradeItem.RequiredKey,
+                m_buyPlayerEffects = new EffectList(),
+                m_tooltip = string.Empty
+            };
+
             return tradeItem;
         }
 
@@ -211,17 +218,17 @@ public static class NPCZDOUtils
         List<Trader.TraderUseItem> list = new List<Trader.TraderUseItem>();
         string[] items = config.Split(PipeSeparatorList, int.MaxValue, StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var fieldString in items)
+        foreach (string fieldString in items)
         {
             string[] fields = fieldString.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.None);
             if (fields.Length >= 4)
             {
-                var traderUseItem = new NPCTraderUseItem(fields);
+                NPCTraderUseItem traderUseItem = new NPCTraderUseItem(fields);
 
                 if (traderUseItem != null)
                 {
-                    var prefab = ZNetScene.instance.GetPrefab(traderUseItem.PrefabName);
-                    if (prefab == null || !prefab.TryGetComponent<ItemDrop>(out var itemdrop))
+                    GameObject prefab = ZNetScene.instance.GetPrefab(traderUseItem.PrefabName);
+                    if (prefab == null || !prefab.TryGetComponent<ItemDrop>(out ItemDrop itemdrop))
                     {
                         return null;
                     }
@@ -264,7 +271,7 @@ public static class NPCZDOUtils
     public static List<string> GetNPCTexts(string zdoVar, ZDO zdo, bool isTrader = false)
     {
         string text = zdo.GetString(zdoVar);
-        var thing = text.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.RemoveEmptyEntries).ToList();
+        List<string> thing = text.Split(BackTickSeparatorList, int.MaxValue, StringSplitOptions.RemoveEmptyEntries).ToList();
         if (thing.Count == 0 && isTrader)
         {
             thing.Add("...");
@@ -493,7 +500,7 @@ public static class NPCZDOUtils
                 if (!reward.IsNullOrWhiteSpace())
                 {
                     firstQuest.RewardItems = new List<NPCItem>();
-                    var item = new NPCItem();
+                    NPCItem item = new NPCItem();
                     item.PrefabName = reward;
                     item.Amount = GetLegacyNPCRewardItemAmount(zdo);
                     item.Quality = GetLegacyNPCRewardItemQuality(zdo);

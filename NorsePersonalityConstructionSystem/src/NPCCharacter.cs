@@ -12,7 +12,7 @@ public class NPCCharacter : Character, Interactable, Hoverable, INPC
 
         Data = new NPCData(this);
 
-        var startCoroutine = SetUp();
+        IEnumerator startCoroutine = SetUp();
         StartCoroutine(startCoroutine);
     }
 

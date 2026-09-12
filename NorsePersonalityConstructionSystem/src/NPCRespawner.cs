@@ -38,7 +38,7 @@ public class NPCRespawner : MonoBehaviour
 
     public void OnDestroy()
     {
-        foreach (var package in _npcs.Values)
+        foreach (ZPackage package in _npcs.Values)
         {
             NPCFactory.RespawnNPC(package);
         }

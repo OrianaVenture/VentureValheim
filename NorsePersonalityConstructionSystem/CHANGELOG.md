@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Release for game version 1.0.7
+
 ## 0.1.2
 
 * New boolean configuration field ``updateStyle`` for yaml file. Set to false to prevent randomization/updating NPC equipment on update.

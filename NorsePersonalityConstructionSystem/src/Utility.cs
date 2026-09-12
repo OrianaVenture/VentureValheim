@@ -9,12 +9,12 @@ public class Utility
 {
     public static void CopyFields<T1, T2>(T1 original, ref T2 clone) where T2 : T1
     {
-        var fields = typeof(T1).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        FieldInfo[] fields = typeof(T1).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         foreach (FieldInfo field in fields)
         {
             try
             {
-                var value = field.GetValue(original);
+                object value = field.GetValue(original);
                 field.SetValue(clone, value);
             }
             catch { }
@@ -33,7 +33,7 @@ public class Utility
         if (!name.IsNullOrWhiteSpace())
         {
             // Try hash code
-            var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
+            GameObject prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
             if (prefab == null)
             {
                 // Failed, try slow search
@@ -67,12 +67,12 @@ public class Utility
 
     public static HashSet<string> StringToSet(string str)
     {
-        var set = new HashSet<string>();
+        HashSet<string> set = new HashSet<string>();
 
         if (!str.IsNullOrWhiteSpace())
         {
-            var keys = str.Split(NPCZDOUtils.CommaSeparatorList, int.MaxValue, System.StringSplitOptions.RemoveEmptyEntries);
-            for (var lcv = 0; lcv < keys.Length; lcv++)
+            string[] keys = str.Split(NPCZDOUtils.CommaSeparatorList, int.MaxValue, System.StringSplitOptions.RemoveEmptyEntries);
+            for (int lcv = 0; lcv < keys.Length; lcv++)
             {
                 set.Add(keys[lcv].Trim().ToLower());
             }
@@ -87,12 +87,12 @@ public class Utility
         GameObject closestnpc = null;
         distance = 1000;
 
-        foreach (var hit in hits)
+        foreach (Collider hit in hits)
         {
-            var go = hit.transform.root.gameObject;
+            GameObject go = hit.transform.root.gameObject;
             if (go != null && go.GetComponentInChildren<INPC>() != null)
             {
-                var newDistance = Vector3.Distance(position, go.transform.position);
+                float newDistance = Vector3.Distance(position, go.transform.position);
                 if (closestnpc == null || (newDistance < distance))
                 {
                     closestnpc = go;
@@ -114,9 +114,9 @@ public class Utility
         Collider[] hits = Physics.OverlapBox(position, Vector3.one * range, Quaternion.identity);
         List<INPC> npcs = new List<INPC>();
 
-        foreach (var hit in hits)
+        foreach (Collider hit in hits)
         {
-            var npc = hit.transform.root.gameObject.GetComponentInChildren<INPC>();
+            INPC npc = hit.transform.root.gameObject.GetComponentInChildren<INPC>();
             if (npc != null)
             {
                 npcs.Add(npc);
@@ -131,14 +131,14 @@ public class Utility
         Collider[] hits = Physics.OverlapBox(position, scale, Quaternion.identity);
         Chair closestChair = null;
 
-        foreach (var hit in hits)
+        foreach (Collider hit in hits)
         {
-            var chairs = hit.transform.root.gameObject.GetComponentsInChildren<Chair>();
+            Chair[] chairs = hit.transform.root.gameObject.GetComponentsInChildren<Chair>();
             if (chairs != null)
             {
                 for (int lcv = 0; lcv < chairs.Length; lcv++)
                 {
-                    var chair = chairs[lcv];
+                    Chair chair = chairs[lcv];
                     if (closestChair == null || (Vector3.Distance(position, chair.transform.position) <
                         Vector3.Distance(position, closestChair.transform.position)))
                     {

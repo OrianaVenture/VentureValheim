@@ -69,7 +69,7 @@ public class NPCQuest
 
         if (RewardItems != null)
         {
-            foreach (var item in RewardItems)
+            foreach (NPCItem item in RewardItems)
             {
                 item?.CleanData();
             }
