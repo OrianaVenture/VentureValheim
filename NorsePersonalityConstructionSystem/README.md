@@ -475,10 +475,6 @@ This mod needs to be on both the client and server; the mod will enforce install
 
 If the mod is removed from the server after NPCs have been generated they will disappear.
 
-## Changelog
-
-Moved to new file, it will appear as a new tab on the thunderstore page.
-
 ## Contributing
 
 All issues can be reported on Discord or on the project Github. To report issues please be as specific as possible and provide the following:
