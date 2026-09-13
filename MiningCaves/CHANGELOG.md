@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Fixed an issue with the hoe terrain operations when using locked terrain deformation.
+
 ## 1.0.0
 
 * Release for game version 1.0.7

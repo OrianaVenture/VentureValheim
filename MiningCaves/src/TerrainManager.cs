@@ -133,6 +133,9 @@ public class TerrainManager
                         terrainOpCopy.m_settings.m_smooth = false;
 
                         itemDrop.m_itemData.m_shared.m_spawnOnHitTerrain = copy;
+
+                        // TODO: clean up when supported by Jotunn
+                        ObjectDB.instance.m_terrainOps.Add(terrainOpCopy);
                         newPieceTable.Add(copy);
                         changed = true;
                         continue;
