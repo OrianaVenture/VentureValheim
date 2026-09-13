@@ -88,6 +88,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AreaRepair", "AreaRepair\Ar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cornerstone", "Cornerstone\Cornerstone.csproj", "{4825E615-25D3-4537-AE7D-8C44DF6EF4C5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TorchEmbers", "TorchEmbers\TorchEmbers.csproj", "{6DE6E052-925B-48D7-B2EF-01055A89C23E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -254,6 +256,10 @@ Global
 		{4825E615-25D3-4537-AE7D-8C44DF6EF4C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4825E615-25D3-4537-AE7D-8C44DF6EF4C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4825E615-25D3-4537-AE7D-8C44DF6EF4C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DE6E052-925B-48D7-B2EF-01055A89C23E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DE6E052-925B-48D7-B2EF-01055A89C23E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DE6E052-925B-48D7-B2EF-01055A89C23E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DE6E052-925B-48D7-B2EF-01055A89C23E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
