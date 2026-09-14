@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using System.Linq;
 
 namespace VentureValheim.PathsideAssistance;
 
@@ -15,8 +16,6 @@ public class PathsideAssistance
     {
         get => _instance;
     }
-
-    private static bool Configured = false;
 
     /// <summary>
     /// Adds new pieces to the given piece based off existing entries in the piece table
@@ -36,12 +35,15 @@ public class PathsideAssistance
         }
 
         PieceTable pieceTable = itemDrop.m_itemData.m_shared.m_buildPieces;
-        if (pieceTable == null)
+        if (pieceTable == null || pieceTable.m_pieces.Any(p => p.name.Contains("_ALT")))
         {
+            PathsideAssistancePlugin.PathsideAssistanceLogger.LogDebug("PieceTable already contains changes, skipping.");
             return;
         }
 
+        int count = 0;
         List<GameObject> newPieceTable = new List<GameObject>();
+
         foreach (GameObject item in pieceTable.m_pieces)
         {
             newPieceTable.Add(item); // Add original
@@ -49,12 +51,12 @@ public class PathsideAssistance
             if (copy != null)
             {
                 IconMerge.AddSpriteOverlay(ref copy);
-
-                // TODO: clean up when supported by Jotunn
-                ObjectDB.instance.m_terrainOps.Add(copy.GetComponent<TerrainOp>());
                 newPieceTable.Add(copy); // Add modified
+                count++;
             }
         }
+
+        PathsideAssistancePlugin.PathsideAssistanceLogger.LogInfo($"Done adding {count} additional options for {piece.name}");
 
         itemDrop.m_itemData.m_shared.m_buildPieces.m_pieces = newPieceTable;
     }
@@ -73,8 +75,16 @@ public class PathsideAssistance
             return null;
         }
 
+        string name = Utils.GetPrefabName(piece) + "_ALT";
+        TerrainOp match = ObjectDB.instance.m_terrainOps.Find(op => op.name == name);
+        if (match)
+        {
+            PathsideAssistancePlugin.PathsideAssistanceLogger.LogDebug("Match found! Returning previous copy.");
+            return match.gameObject;
+        }
+
         GameObject copy = GameObject.Instantiate(piece, PathsideAssistancePlugin.Root.transform, false);
-        copy.name = Utils.GetPrefabName(copy) + "_ALT";
+        copy.name = name;
 
         // Change name
         Piece pieceComp = copy.GetComponent<Piece>();
@@ -108,19 +118,22 @@ public class PathsideAssistance
             }
         }
 
+        // TODO: clean up when supported by Jotunn
+        ObjectDB.instance.m_terrainOps.Add(copy.GetComponent<TerrainOp>());
+
         return copy;
     }
 
     /// <summary>
-    /// Apply changes, low priority to run after other mod patches.
+    /// Apply changes, very low priority to run after other mod patches.
     /// </summary>
     [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.Awake))]
     public static class Patch_ObjectDB_Awake
     {
-        [HarmonyPriority(Priority.Low)]
+        [HarmonyPriority(Priority.VeryLow)]
         private static void Postfix(ObjectDB __instance)
         {
-            if (!Configured && SceneManager.GetActiveScene().name.Equals("main"))
+            if (SceneManager.GetActiveScene().name.Equals("main"))
             {
                 GameObject hoe = __instance.GetItemPrefab("Hoe".GetStableHashCode());
                 UpdatePieceTable(hoe);
@@ -129,9 +142,6 @@ public class PathsideAssistance
                 UpdatePieceTable(cultivator);
 
                 __instance.UpdateRegisters();
-
-                PathsideAssistancePlugin.PathsideAssistanceLogger.LogInfo("Done adding additional options.");
-                Configured = true;
             }
         }
     }

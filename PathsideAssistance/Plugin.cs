@@ -10,7 +10,7 @@ namespace VentureValheim.PathsideAssistance;
 public class PathsideAssistancePlugin : BaseUnityPlugin
 {
     private const string ModName = "PathsideAssistance";
-    private const string ModVersion = "1.0.0";
+    private const string ModVersion = "1.0.1";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 

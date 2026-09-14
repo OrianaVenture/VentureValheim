@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Fix for options not appearing when logging out and back into worlds in the same game session.
+
 ## 1.0.0
 
 * Release for game version 1.0.7
