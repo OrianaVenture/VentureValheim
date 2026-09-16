@@ -27,6 +27,7 @@ public class TerrainManager
     }
 
     private static List<OriginalTerrainComp> _originalTerrainCompList = new List<OriginalTerrainComp>();
+    private static Dictionary<string, GameObject> _newTerrainCompList = new Dictionary<string, GameObject>();
 
     /// <summary>
     /// Converts a comma separated string to a HashSet of strings.
@@ -103,7 +104,7 @@ public class TerrainManager
             }
         }
 
-        _originalTerrainCompList = new List<OriginalTerrainComp>();
+        _originalTerrainCompList.Clear();
     }
 
     private static bool RemoveHitTerrainFromTable(ref ItemDrop itemDrop, out List<GameObject> OriginalPieces)
@@ -126,16 +127,8 @@ public class TerrainManager
                     if (terrainOp.m_settings.m_level != false || terrainOp.m_settings.m_smooth != false)
                     {
                         // Replace pieces that flatten or level
-                        GameObject copy = GameObject.Instantiate(piece, MiningCavesPlugin.Root.transform, false);
-                        copy.name = Utils.GetPrefabName(copy) + SUFFIX;
-                        TerrainOp terrainOpCopy = copy.GetComponent<TerrainOp>();
-                        terrainOpCopy.m_settings.m_level = false;
-                        terrainOpCopy.m_settings.m_smooth = false;
+                        GameObject copy = GetTerrainCopy(piece, false);
 
-                        itemDrop.m_itemData.m_shared.m_spawnOnHitTerrain = copy;
-
-                        // TODO: clean up when supported by Jotunn
-                        ObjectDB.instance.m_terrainOps.Add(terrainOpCopy);
                         newPieceTable.Add(copy);
                         changed = true;
                         continue;
@@ -169,11 +162,7 @@ public class TerrainManager
             if (terrainOp != null &&
                 (terrainOp.m_settings.m_raise != false || terrainOp.m_spawnOnPlaced != null))
             {
-                GameObject copy = GameObject.Instantiate(original, MiningCavesPlugin.Root.transform, false);
-                copy.name = Utils.GetPrefabName(copy) + SUFFIX;
-                TerrainOp terrainOpCopy = copy.GetComponent<TerrainOp>();
-                terrainOpCopy.m_settings.m_raise = false;
-                terrainOpCopy.m_spawnOnPlaced = null;
+                GameObject copy = GetTerrainCopy(original, true);
                 itemDrop.m_itemData.m_shared.m_spawnOnHitTerrain = copy;
 
                 return true;
@@ -181,6 +170,40 @@ public class TerrainManager
         }
 
         return false;
+    }
+
+    private static GameObject GetTerrainCopy(GameObject original, bool disable)
+    {
+        string copyName = Utils.GetPrefabName(original) + SUFFIX;
+        GameObject copy;
+
+        TerrainOp match = ObjectDB.instance.m_terrainOps.Find(op => op.name == copyName);
+        if (match)
+        {
+            return match.gameObject;
+        }
+        else if (_newTerrainCompList.ContainsKey(copyName))
+        {
+            return _newTerrainCompList[copyName];
+        }
+
+        copy = GameObject.Instantiate(original, MiningCavesPlugin.Root.transform, false);
+        copy.name = copyName;
+        TerrainOp terrainOpCopy = copy.GetComponent<TerrainOp>();
+        terrainOpCopy.m_settings.m_raise = false;
+        terrainOpCopy.m_settings.m_level = false;
+        terrainOpCopy.m_settings.m_smooth = false;
+        if (disable)
+        {
+            terrainOpCopy.m_spawnOnPlaced = null;
+        }
+
+        _newTerrainCompList.Add(copyName, copy);
+
+        // TODO: clean up when supported by Jotunn
+        ObjectDB.instance.m_terrainOps.Add(copy.GetComponent<TerrainOp>());
+
+        return copy;
     }
 
     /// <summary>
@@ -233,6 +256,8 @@ public class TerrainManager
             }
         }
 
+        ObjectDB.instance.UpdateRegisters();
+
         MiningCavesPlugin.MiningCavesLogger.LogInfo("Done removing terrain operations from tools.");
     }
 
@@ -278,4 +303,3 @@ public class TerrainManager
         }
     }
 }
-

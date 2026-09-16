@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Fixed an issue with enabled terrain locking setting causing terrain modifications to break if settings on client did not match on startup. (I think?)
+
 ## 1.0.1
 
 * Fixed an issue with the hoe terrain operations when using locked terrain deformation.
