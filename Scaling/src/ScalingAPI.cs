@@ -31,7 +31,7 @@ public class ScalingAPI : IScalingAPI
     /// <param name="overrideBiome"></param>
     public static void AddCustomBiome(Heightmap.Biome biome, int order, bool overrideBiome = false)
     {
-        var internalBiome = GetProgressionBiome(biome);
+        WorldConfiguration.Biome internalBiome = GetProgressionBiome(biome);
         WorldConfiguration.Instance.AddBiome(internalBiome, order, overrideBiome);
     }
 
@@ -43,7 +43,7 @@ public class ScalingAPI : IScalingAPI
     /// <param name="overrideBiome"></param>
     public static void AddCustomBiome(Heightmap.Biome biome, int order, float scale, bool overrideBiome = false)
     {
-        var internalBiome = GetProgressionBiome(biome);
+        WorldConfiguration.Biome internalBiome = GetProgressionBiome(biome);
         WorldConfiguration.Instance.AddCustomBiome(internalBiome, scale, order, overrideBiome);
     }
 
@@ -146,7 +146,7 @@ public class ScalingAPI : IScalingAPI
         if (!name.IsNullOrWhiteSpace())
         {
             // Try hash code
-            var prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
+            GameObject prefab = ObjectDB.instance.GetItemPrefab(name.GetStableHashCode());
             if (prefab == null)
             {
                 // Failed, try slow search
@@ -175,18 +175,18 @@ public class ScalingAPI : IScalingAPI
     {
         if (!name.IsNullOrWhiteSpace() && ZNetScene.instance != null)
         {
-            var hash = name.GetStableHashCode();
+            int hash = name.GetStableHashCode();
             if (ZNetScene.instance.m_namedPrefabs != null && 
                 ZNetScene.instance.m_namedPrefabs.ContainsKey(hash))
             {
                 // Try hash code
-                var gameObject = ZNetScene.instance.m_namedPrefabs[hash];
+                GameObject gameObject = ZNetScene.instance.m_namedPrefabs[hash];
                 return gameObject.GetComponent<Humanoid>();
             }
             else if (ZNetScene.instance.m_prefabs != null)
             {
                 // Failed, try slow search
-                var prefabs = ZNetScene.instance.m_prefabs;
+                List<GameObject> prefabs = ZNetScene.instance.m_prefabs;
                 for (int lcv = 0; lcv < prefabs.Count; lcv++)
                 {
                     if (prefabs[lcv].name.Equals(name, System.StringComparison.OrdinalIgnoreCase))
@@ -206,7 +206,7 @@ public class ScalingAPI : IScalingAPI
     /// <param name="overwrite"></param>
     public static void GenerateData(bool overwrite = false)
     {
-        var path = $"{Paths.ConfigPath}{Path.DirectorySeparatorChar}{"ItemDropData"}";
+        string path = $"{Paths.ConfigPath}{Path.DirectorySeparatorChar}{"ItemDropData"}";
         if (!Directory.Exists(path) || overwrite == true)
         {
             Directory.CreateDirectory(path);
@@ -216,7 +216,7 @@ public class ScalingAPI : IScalingAPI
                 try
                 {
                     ItemDrop itemDrop = obj.GetComponent<ItemDrop>();
-                    var filePath = $"{path}{Path.DirectorySeparatorChar}{itemDrop.name}.json";
+                    string filePath = $"{path}{Path.DirectorySeparatorChar}{itemDrop.name}.json";
                     File.WriteAllText(filePath, JsonUtility.ToJson(itemDrop, true));
                 }
                 catch
@@ -259,13 +259,13 @@ public class ScalingAPI : IScalingAPI
                     Humanoid character = obj.GetComponent<Humanoid>();
                     if (character != null)
                     {
-                        var filePath = $"{path}{Path.DirectorySeparatorChar}{character.name}.json";
+                        string filePath = $"{path}{Path.DirectorySeparatorChar}{character.name}.json";
                         File.WriteAllText(filePath, JsonUtility.ToJson(character, true));
 
-                        var items = new Dictionary<string, GameObject>();
+                        Dictionary<string, GameObject> items = new Dictionary<string, GameObject>();
                         if (character.m_defaultItems != null)
                         {
-                            foreach (var item in character.m_defaultItems)
+                            foreach (GameObject item in character.m_defaultItems)
                             {
                                 if (!items.ContainsKey(item.name))
                                 {
@@ -276,7 +276,7 @@ public class ScalingAPI : IScalingAPI
 
                         if (character.m_randomWeapon != null)
                         {
-                            foreach (var item in character.m_randomWeapon)
+                            foreach (GameObject item in character.m_randomWeapon)
                             {
                                 if (!items.ContainsKey(item.name))
                                 {
@@ -291,7 +291,7 @@ public class ScalingAPI : IScalingAPI
                             {
                                 if (character.m_randomSets[lcv].m_items != null)
                                 {
-                                    foreach (var item in character.m_randomSets[lcv].m_items)
+                                    foreach (GameObject item in character.m_randomSets[lcv].m_items)
                                     {
                                         if (!items.ContainsKey(item.name))
                                         {
@@ -304,12 +304,12 @@ public class ScalingAPI : IScalingAPI
 
                         if (items != null)
                         {
-                            foreach (var item in items.Values)
+                            foreach (GameObject item in items.Values)
                             {
-                                var component = item.GetComponent<ItemDrop>();
+                                ItemDrop component = item.GetComponent<ItemDrop>();
                                 if (component != null)
                                 {
-                                    var itemPath = $"{path}{Path.DirectorySeparatorChar}{character.name}.{item.name}.json";
+                                    string itemPath = $"{path}{Path.DirectorySeparatorChar}{character.name}.{item.name}.json";
                                     File.WriteAllText(itemPath, JsonUtility.ToJson(component.m_itemData?.m_shared?.m_damages, true));
                                 }
                                 else
@@ -342,9 +342,9 @@ public class ScalingAPI : IScalingAPI
     {
         if (!str.IsNullOrWhiteSpace())
         {
-            var list = str.Split(',');
-            var copy = new int[list.Length];
-            for (var lcv = 0; lcv < list.Length; lcv++)
+            string[] list = str.Split(',');
+            int[] copy = new int[list.Length];
+            for (int lcv = 0; lcv < list.Length; lcv++)
             {
                 copy[lcv] = int.Parse(list[lcv].Trim());
             }
@@ -364,7 +364,7 @@ public class ScalingAPI : IScalingAPI
     /// <returns></returns>
     public static int PrettifyNumber(int number, int roundTo = 5, bool roundUp = true)
     {
-        var remainder = number % roundTo;
+        int remainder = number % roundTo;
         if (remainder == 0)
         {
             return number;

@@ -180,7 +180,7 @@ public partial class ItemConfiguration : IItemConfiguration
     /// <returns></returns>
     public float GetTotalDamage(HitData.DamageTypes originalDamage)
     {
-        var damage = originalDamage.m_damage +
+        float damage = originalDamage.m_damage +
             originalDamage.m_blunt +
             originalDamage.m_slash +
             originalDamage.m_pierce +
@@ -210,7 +210,7 @@ public partial class ItemConfiguration : IItemConfiguration
         // Consider the maximum total damage this creature can do when auto-scaling for multiple attacks.
         float ratio = DamageRatio(GetTotalDamage(originalDamage), maxTotalDamage);
 
-        var multiplier = ratio * biomeScale;
+        float multiplier = ratio * biomeScale;
 
         return CalculateDamageTypesFinal(originalDamage, baseTotalDamage, multiplier);
     }
@@ -242,7 +242,7 @@ public partial class ItemConfiguration : IItemConfiguration
         float baseTotalDamage, float multiplier)
     {
         HitData.DamageTypes damageTypes = new HitData.DamageTypes();
-        var sum = GetTotalDamage(OriginalDamage);
+        float sum = GetTotalDamage(OriginalDamage);
 
         // Do not scale chop or pickaxe damage, makes mining stupid
         damageTypes.m_chop = OriginalDamage.m_chop;
@@ -291,7 +291,7 @@ public partial class ItemConfiguration : IItemConfiguration
             return 0f;
         }
 
-        var value = baseTotalDamage * multiplier * (original / originalSum);
+        float value = baseTotalDamage * multiplier * (original / originalSum);
         return (float)Math.Round(value, 1);
     }
 
@@ -336,8 +336,8 @@ public partial class ItemConfiguration : IItemConfiguration
     public HitData.DamageTypes CalculateUpgradeValue(WorldConfiguration.Biome biome,
         HitData.DamageTypes original, float baseTotalDamage, int quality)
     {
-        var scale = WorldConfiguration.Instance.GetBiomeScaling(biome);
-        var nextScale = WorldConfiguration.Instance.GetNextBiomeScale(biome);
+        float scale = WorldConfiguration.Instance.GetBiomeScaling(biome);
+        float nextScale = WorldConfiguration.Instance.GetNextBiomeScale(biome);
 
         return CalculateUpgradeValue(scale, nextScale, original, baseTotalDamage, quality);
     }
@@ -361,9 +361,9 @@ public partial class ItemConfiguration : IItemConfiguration
             return original;
         }
 
-        var startValue = baseTotalDamage * scale;
-        var endValue = baseTotalDamage * nextScale;
-        var range = endValue - startValue;
+        float startValue = baseTotalDamage * scale;
+        float endValue = baseTotalDamage * nextScale;
+        float range = endValue - startValue;
 
         if (range > 0f)
         {
@@ -391,7 +391,7 @@ public partial class ItemConfiguration : IItemConfiguration
             return;
         }
 
-        var original = item.m_itemData.m_shared.m_damages;
+        HitData.DamageTypes original = item.m_itemData.m_shared.m_damages;
         float sumDamage = GetTotalDamage(original);
         float newSumDamage = GetTotalDamage(value.Value);
         item.m_itemData.m_shared.m_damages = value.Value;
@@ -421,8 +421,8 @@ public partial class ItemConfiguration : IItemConfiguration
             return;
         }
 
-        var quality = item.m_itemData.m_shared.m_maxQuality;
-        var upgradeAmount = item.m_itemData.m_shared.m_damagesPerLevel;
+        int quality = item.m_itemData.m_shared.m_maxQuality;
+        HitData.DamageTypes upgradeAmount = item.m_itemData.m_shared.m_damagesPerLevel;
         float sumDamageUpgrade = GetTotalDamage(upgradeAmount);
         float newSumDamageUpgrade = GetTotalDamage(upgradeValue.Value);
 

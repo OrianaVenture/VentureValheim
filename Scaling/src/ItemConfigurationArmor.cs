@@ -126,8 +126,8 @@ public partial class ItemConfiguration : IItemConfiguration
     /// <returns></returns>
     public float CalculateUpgradeValue(WorldConfiguration.Biome biome, float baseValue, int quality)
     {
-        var scale = WorldConfiguration.Instance.GetBiomeScaling(biome);
-        var nextScale = WorldConfiguration.Instance.GetNextBiomeScale(biome);
+        float scale = WorldConfiguration.Instance.GetBiomeScaling(biome);
+        float nextScale = WorldConfiguration.Instance.GetNextBiomeScale(biome);
 
         return CalculateUpgradeValue(scale, nextScale, baseValue, quality);
     }
@@ -148,9 +148,9 @@ public partial class ItemConfiguration : IItemConfiguration
             return 0f;
         }
 
-        var startValue = baseValue * scale;
-        var endValue = baseValue * nextScale;
-        var range = endValue - startValue;
+        float startValue = baseValue * scale;
+        float endValue = baseValue * nextScale;
+        float range = endValue - startValue;
 
         if (range > 0f)
         {
@@ -176,7 +176,7 @@ public partial class ItemConfiguration : IItemConfiguration
             return;
         }
 
-        var original = item.m_itemData.m_shared.m_armor;
+        float original = item.m_itemData.m_shared.m_armor;
         item.m_itemData.m_shared.m_armor = value.Value;
 
         ScalingPlugin.VentureScalingLogger.LogDebug(
@@ -197,8 +197,8 @@ public partial class ItemConfiguration : IItemConfiguration
             return;
         }
 
-        var quality = item.m_itemData.m_shared.m_maxQuality;
-        var upgradeAmount = item.m_itemData.m_shared.m_armorPerLevel;
+        int quality = item.m_itemData.m_shared.m_maxQuality;
+        float upgradeAmount = item.m_itemData.m_shared.m_armorPerLevel;
         item.m_itemData.m_shared.m_maxQuality = upgrades.Value;
         item.m_itemData.m_shared.m_armorPerLevel = upgradeValue.Value;
 
@@ -222,7 +222,7 @@ public partial class ItemConfiguration : IItemConfiguration
             return;
         }
 
-        var original = item.m_itemData.m_shared.m_blockPower;
+        float original = item.m_itemData.m_shared.m_blockPower;
         item.m_itemData.m_shared.m_blockPower = value.Value;
 
         ScalingPlugin.VentureScalingLogger.LogDebug(
@@ -243,8 +243,8 @@ public partial class ItemConfiguration : IItemConfiguration
             return;
         }
 
-        var quality = item.m_itemData.m_shared.m_maxQuality;
-        var upgradeAmount = item.m_itemData.m_shared.m_blockPowerPerLevel;
+        int quality = item.m_itemData.m_shared.m_maxQuality;
+        float upgradeAmount = item.m_itemData.m_shared.m_blockPowerPerLevel;
         item.m_itemData.m_shared.m_maxQuality = upgrades.Value;
         item.m_itemData.m_shared.m_blockPowerPerLevel = upgradeValue.Value;
 

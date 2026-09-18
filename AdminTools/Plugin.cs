@@ -9,7 +9,7 @@ namespace VentureValheim.AdminTools;
 public class AdminToolsPlugin : BaseUnityPlugin
 {
     private const string ModName = "AdminTools";
-    private const string ModVersion = "0.1.0";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 

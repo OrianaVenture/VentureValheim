@@ -72,10 +72,10 @@ public class CreatureTests
 
         worldConfiguration = new TestWorldConfiguration(mockWorld.Object);
 
-        var mockCreature = new Mock<ICreatureConfiguration>();
+        Mock<ICreatureConfiguration> mockCreature = new Mock<ICreatureConfiguration>();
         creatureConfiguration = new TestCreatureConfiguration(mockCreature.Object);
 
-        var mockItem = new Mock<IItemConfiguration>();
+        Mock<IItemConfiguration> mockItem = new Mock<IItemConfiguration>();
         itemConfiguration = new TestItemConfiguration(mockItem.Object);
     }
 
@@ -88,7 +88,7 @@ public class CreatureTests
     [InlineData(WorldConfiguration.Difficulty.Boss, 500)]
     public void GetCreatureHealth_EnsureDefaultUnchanged(WorldConfiguration.Difficulty d, int expected)
     {
-        var health = creatureConfiguration.GetBaseHealth(d);
+        int health = creatureConfiguration.GetBaseHealth(d);
 
         Assert.Equal(expected, health);
     }
@@ -120,7 +120,7 @@ public class CreatureTests
     [Fact]
     public void GetCreatureHealth_VanillaDifficulty()
     {
-        var test = new TestCreatureClassification("test145", WorldConfiguration.Biome.Meadow, WorldConfiguration.Difficulty.Vanilla);
+        TestCreatureClassification test = new TestCreatureClassification("test145", WorldConfiguration.Biome.Meadow, WorldConfiguration.Difficulty.Vanilla);
         Assert.Null(test.GetHealth());
 
         test.SetVanillaData(101, null);
@@ -133,7 +133,7 @@ public class CreatureTests
     [Fact]
     public void GetCreatureHealth_Override()
     {
-        var test = new TestCreatureClassification("test275", WorldConfiguration.Biome.Meadow, WorldConfiguration.Difficulty.Average);
+        TestCreatureClassification test = new TestCreatureClassification("test275", WorldConfiguration.Biome.Meadow, WorldConfiguration.Difficulty.Average);
         Assert.NotNull(test.GetHealth());
 
         test.SetVanillaData(101, null);
@@ -152,7 +152,7 @@ public class CreatureTests
     [InlineData(WorldConfiguration.Difficulty.Boss, 30)]
     public void GetCreatureDamage_EnsureDefaultUnchanged(WorldConfiguration.Difficulty d, int expected)
     {
-        var damage = creatureConfiguration.GetBaseTotalDamage(d);
+        int damage = creatureConfiguration.GetBaseTotalDamage(d);
         Assert.Equal(expected, damage);
     }
 
@@ -228,11 +228,11 @@ public class CreatureTests
             m_spirit = 0f
         };
 
-        var max = itemConfiguration.GetTotalDamage(damageTypes);
+        float max = itemConfiguration.GetTotalDamage(damageTypes);
 
-        var newDamage = creatureConfiguration.GetBaseTotalDamage(d);
+        int newDamage = creatureConfiguration.GetBaseTotalDamage(d);
 
-        var result = itemConfiguration.CalculateCreatureDamageTypes(worldConfiguration.GetBiome(biome).ScaleValue, damageTypes, newDamage, max);
+        HitData.DamageTypes result = itemConfiguration.CalculateCreatureDamageTypes(worldConfiguration.GetBiome(biome).ScaleValue, damageTypes, newDamage, max);
 
         Assert.Equal(10f, result.m_chop);
         Assert.Equal(10f, result.m_pickaxe);
@@ -276,12 +276,12 @@ public class CreatureTests
             }
         };
 
-        foreach (var entry in list.creatures)
+        foreach (CreatureOverride? entry in list.creatures)
         {
             creatureConfiguration.AddCreatureConfiguration(entry);
         }
 
-        var creature = creatureConfiguration.GetCreature("TestCreature");
+        CreatureClassification creature = creatureConfiguration.GetCreature("TestCreature");
 
         Assert.NotNull(creature);
 
@@ -292,22 +292,22 @@ public class CreatureTests
 
         Assert.True(creature.AttackOverridden(attack1));
         Assert.Equal(200f, creature.GetAttackOverrideTotal(attack1));
-        var attackOverride1 = creature.GetAttackOverride(attack1);
+        HitData.DamageTypes? attackOverride1 = creature.GetAttackOverride(attack1);
         Assert.NotNull(attackOverride1);
         Assert.Equal(_emptyDamageTypes, attackOverride1);
 
         Assert.True(creature.AttackOverridden(attack2));
         Assert.Null(creature.GetAttackOverrideTotal(attack2));
-        var attackOverride2 = creature.GetAttackOverride(attack2);
+        HitData.DamageTypes? attackOverride2 = creature.GetAttackOverride(attack2);
         Assert.NotNull(attackOverride2);
         Assert.Equal(200f, attackOverride2.Value.m_blunt);
 
         Assert.False(creature.AttackOverridden(attack3));
         Assert.Null(creature.GetAttackOverrideTotal(attack3));
-        var attackOverride3 = creature.GetAttackOverride(attack3);
+        HitData.DamageTypes? attackOverride3 = creature.GetAttackOverride(attack3);
         Assert.Null(attackOverride3);
 
-        var creature2 = creatureConfiguration.GetCreature("EmptyCreature");
+        CreatureClassification creature2 = creatureConfiguration.GetCreature("EmptyCreature");
 
         Assert.NotNull(creature2);
         Assert.Equal(WorldConfiguration.Biome.Undefined, creature2.BiomeType);

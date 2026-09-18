@@ -20,7 +20,7 @@ public class VentureDebugger
             {
                 VentureDebuggerPlugin.VentureDebuggerLogger.LogDebug("Catching exception and fixing:");
                 VentureDebuggerPlugin.VentureDebuggerLogger.LogDebug(__exception);
-                var timeNow = ZNet.instance.GetTime();
+                DateTime timeNow = ZNet.instance.GetTime();
                 __instance.m_nview.GetZDO().Set(ZDOVars.s_pickedTime, timeNow.Ticks);
             }
 
@@ -56,7 +56,7 @@ public class VentureDebugger
     {
         if (keys != null)
         {
-            var fixedKeys = new HashSet<string>();
+            HashSet<string> fixedKeys = new HashSet<string>();
             foreach (string key in keys)
             {
                 if (!fixedKeys.Contains(key))

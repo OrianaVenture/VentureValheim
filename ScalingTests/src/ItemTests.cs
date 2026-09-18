@@ -88,7 +88,7 @@ public class ItemTests
         mockWorld.SetupGet(x => x.ScaleFactor).Returns(0.75f);
         worldConfiguration = new TestWorldConfiguration(mockWorld.Object);
 
-        var mockItem = new Mock<IItemConfiguration>();
+        Mock<IItemConfiguration> mockItem = new Mock<IItemConfiguration>();
         itemConfiguration = new TestItemConfiguration(mockItem.Object);
     }
 
@@ -141,7 +141,7 @@ public class ItemTests
             m_spirit = 0f
         };
 
-        var result = itemConfiguration.CalculateItemDamageTypes(worldConfiguration.GetBiome(biome).ScaleValue, damageTypes, 10f);
+        HitData.DamageTypes result = itemConfiguration.CalculateItemDamageTypes(worldConfiguration.GetBiome(biome).ScaleValue, damageTypes, 10f);
 
         Assert.Equal(10f, result.m_chop);
         Assert.Equal(10f, result.m_pickaxe);
@@ -154,9 +154,9 @@ public class ItemTests
     public void GetItemCategory_All()
     {
         Array items = Enum.GetValues(typeof(ItemType));
-        foreach (var item in items)
+        foreach (object? item in items)
         {
-            var itemType = (ItemType)item;
+            ItemType itemType = (ItemType)item;
             if (itemType != ItemType.Undefined && itemType != ItemType.None)
             {
                 Assert.True(ItemClassification.GetItemCategory(itemType) != ItemCategory.Undefined);
@@ -201,8 +201,8 @@ public class ItemTests
     [InlineData(WorldConfiguration.Biome.DeepNorth, 10f, 2, 188f)]
     public void CalculateUpgradeValue_ValueItems(WorldConfiguration.Biome biome, float value, int quality, float expected)
     {
-        var scale = worldConfiguration.GetBiomeScaling(biome);
-        var nextScale = worldConfiguration.GetNextBiomeScale(biome);
+        float scale = worldConfiguration.GetBiomeScaling(biome);
+        float nextScale = worldConfiguration.GetNextBiomeScale(biome);
 
         Assert.Equal(expected, itemConfiguration.CalculateUpgradeValueTest(scale, nextScale, value, quality), 1f);
     }
@@ -233,10 +233,10 @@ public class ItemTests
             m_spirit = 0f
         };
 
-        var scale = worldConfiguration.GetBiomeScaling(biome);
-        var nextScale = worldConfiguration.GetNextBiomeScale(biome);
+        float scale = worldConfiguration.GetBiomeScaling(biome);
+        float nextScale = worldConfiguration.GetNextBiomeScale(biome);
 
-        var result = itemConfiguration.CalculateUpgradeValueTest(scale, nextScale, damageTypes, value, quality);
+        HitData.DamageTypes result = itemConfiguration.CalculateUpgradeValueTest(scale, nextScale, damageTypes, value, quality);
 
         Assert.Equal(1f, result.m_chop);
         Assert.Equal(1f, result.m_pickaxe);
@@ -265,10 +265,10 @@ public class ItemTests
             m_spirit = 0f
         };
 
-        var scale = worldConfiguration.GetBiomeScaling(biome);
-        var nextScale = worldConfiguration.GetNextBiomeScale(biome);
+        float scale = worldConfiguration.GetBiomeScaling(biome);
+        float nextScale = worldConfiguration.GetNextBiomeScale(biome);
 
-        var result = itemConfiguration.CalculateUpgradeValueTest(scale, nextScale, damageTypes, value, quality);
+        HitData.DamageTypes result = itemConfiguration.CalculateUpgradeValueTest(scale, nextScale, damageTypes, value, quality);
 
         Assert.Equal(1f, result.m_chop);
         Assert.Equal(1f, result.m_pickaxe);
@@ -279,7 +279,7 @@ public class ItemTests
     [Fact]
     public void GetItemValues_All()
     {
-        var test = new TestItemClassification("test221", WorldConfiguration.Biome.Meadow, ItemType.PrimativeArmor);
+        TestItemClassification test = new TestItemClassification("test221", WorldConfiguration.Biome.Meadow, ItemType.PrimativeArmor);
         Assert.NotNull(test.GetValue());
         Assert.Null(test.GetUpgradeValue());
         Assert.Null(test.GetUpgradeLevels());
@@ -298,7 +298,7 @@ public class ItemTests
     [Fact]
     public void GetItemValues_WorldUndefined()
     {
-        var test = new TestItemClassification("test298", null, ItemType.PrimativeArmor);
+        TestItemClassification test = new TestItemClassification("test298", null, ItemType.PrimativeArmor);
         Assert.Null(test.GetValue());
         Assert.Null(test.GetUpgradeValue());
         Assert.Null(test.GetUpgradeLevels());
@@ -317,7 +317,7 @@ public class ItemTests
     [Fact]
     public void GetItemValues_TypeUndefined()
     {
-        var test = new TestItemClassification("test371", WorldConfiguration.Biome.Meadow, null);
+        TestItemClassification test = new TestItemClassification("test371", WorldConfiguration.Biome.Meadow, null);
         Assert.Null(test.GetValue());
         Assert.Null(test.GetUpgradeValue());
         Assert.Null(test.GetUpgradeLevels());
@@ -529,7 +529,7 @@ public class ItemTests
             }
         };
 
-        foreach (var entry in list.baseItemValues)
+        foreach (BaseItemValueOverride? entry in list.baseItemValues)
         {
             itemConfiguration.AddBaseItemValue(entry);
         }
@@ -544,7 +544,7 @@ public class ItemTests
     [Fact]
     public void SetVanillaData_Value_HappyPaths()
     {
-        var ic = new TestItemClassification("test789", null, null);
+        TestItemClassification ic = new TestItemClassification("test789", null, null);
 
         Assert.Equal(WorldConfiguration.Biome.Undefined, ic.BiomeType);
         Assert.Equal(ItemType.Undefined, ic.ItemType);
@@ -575,7 +575,7 @@ public class ItemTests
     [Fact]
     public void SetVanillaData_Damage_HappyPaths()
     {
-        var ic = new TestItemClassification("test263", null, null);
+        TestItemClassification ic = new TestItemClassification("test263", null, null);
 
         Assert.Equal(WorldConfiguration.Biome.Undefined, ic.BiomeType);
         Assert.Equal(ItemType.Undefined, ic.ItemType);

@@ -23,7 +23,7 @@ public class ScalingPlugin : BaseUnityPlugin
     }
 
     private const string ModName = "WorldScaling";
-    private const string ModVersion = "0.3.0";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -127,8 +127,8 @@ public class ScalingPlugin : BaseUnityPlugin
 
     private void ReadConfigValues(object sender, FileSystemEventArgs e)
     {
-        var now = DateTime.Now;
-        var time = now.Ticks - _lastReloadTime.Ticks;
+        DateTime now = DateTime.Now;
+        long time = now.Ticks - _lastReloadTime.Ticks;
         if (!File.Exists(ConfigFileFullPath) || time < RELOAD_DELAY) return;
 
         try

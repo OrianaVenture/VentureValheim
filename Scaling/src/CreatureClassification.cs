@@ -110,7 +110,7 @@ public class CreatureClassification
 
         if (creatureOverride.attacks != null)
         {
-            foreach (var entry in creatureOverride.attacks)
+            foreach (CreatureOverrides.AttackOverride entry in creatureOverride.attacks)
             {
                 if (!entry.name.IsNullOrWhiteSpace())
                 {
@@ -151,14 +151,14 @@ public class CreatureClassification
 
         for (int lcv = 0; lcv < attacks.Count; lcv++)
         {
-            var item = attacks[lcv].GetComponent<ItemDrop>();
+            ItemDrop item = attacks[lcv].GetComponent<ItemDrop>();
             if (item == null)
             {
                 ScalingPlugin.VentureScalingLogger.LogWarning($"Attack {attacks[lcv].name} not added to creature {Name}. ItemDrop not found. Will not override.");
             }
             else if (!VanillaAttacks.ContainsKey(item.name))
             {
-                var damage = item.m_itemData.m_shared.m_damages;
+                HitData.DamageTypes damage = item.m_itemData.m_shared.m_damages;
                 if (ItemConfiguration.Instance.GetTotalDamage(damage) > 0)
                 {
                     VanillaAttacks.Add(item.name, damage);
@@ -199,9 +199,9 @@ public class CreatureClassification
         }
         else
         {
-            var scale = WorldConfiguration.Instance.GetBiomeScaling(BiomeType);
+            float scale = WorldConfiguration.Instance.GetBiomeScaling(BiomeType);
             int baseHealth = CreatureConfiguration.Instance.GetBaseHealth(CreatureDifficulty);
-            var health = CreatureConfiguration.Instance.CalculateHealth(scale, baseHealth);
+            int health = CreatureConfiguration.Instance.CalculateHealth(scale, baseHealth);
             return ScalingAPI.PrettifyNumber(health);
         }
     }
@@ -217,7 +217,7 @@ public class CreatureClassification
             return null;
         }
 
-        var vanillaAttack = VanillaAttacks[name];
+        HitData.DamageTypes vanillaAttack = VanillaAttacks[name];
 
         if (IgnoreScaling())
         {
@@ -225,14 +225,14 @@ public class CreatureClassification
         }
         else if (AttackOverridden(name))
         {
-            var attack = OverrideAttacks[name];
+            CreatureOverrides.AttackOverride attack = OverrideAttacks[name];
             if (attack.totalDamage != null)
             {
                 return ItemConfiguration.Instance.CalculateDamageTypesFinal(vanillaAttack, attack.totalDamage.Value, 1);
             }
             else
             {
-                var damage = CreatureOverrides.GetDamageTypes(attack);
+                HitData.DamageTypes damage = CreatureOverrides.GetDamageTypes(attack);
                 // Prevent an overwrite of chop and pickaxe damage to reduce confusion hopefully
                 if (attack.pickaxe == null)
                 {
@@ -247,8 +247,8 @@ public class CreatureClassification
         }
         else
         {
-            var baseTotalDamage = CreatureConfiguration.Instance.GetBaseTotalDamage(CreatureDifficulty);
-            var biomeData = WorldConfiguration.Instance.GetBiome(BiomeType);
+            int baseTotalDamage = CreatureConfiguration.Instance.GetBaseTotalDamage(CreatureDifficulty);
+            WorldConfiguration.BiomeData biomeData = WorldConfiguration.Instance.GetBiome(BiomeType);
 
             if (biomeData != null)
             {

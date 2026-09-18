@@ -250,7 +250,7 @@ public class WorldConfiguration : IWorldConfiguration
     /// <returns>Value or 1 if not found</returns>
     public float GetBiomeScaling(int biome)
     {
-        var data = GetBiome(biome);
+        BiomeData data = GetBiome(biome);
 
         if (data == null)
         {
@@ -311,13 +311,13 @@ public class WorldConfiguration : IWorldConfiguration
     /// <returns>Value or 1 if not found</returns>
     public float GetNextBiomeScale(Biome originalBiome)
     {
-        var biome = GetBiome(originalBiome);
+        BiomeData biome = GetBiome(originalBiome);
         if (biome == null)
         {
             return 1f;
         }
 
-        var next = GetNextBiome(biome.BiomeOrder);
+        BiomeData next = GetNextBiome(biome.BiomeOrder);
 
         if (next == null)
         {
@@ -339,7 +339,7 @@ public class WorldConfiguration : IWorldConfiguration
             return null;
         }
 
-        var next = GetBiomeByOrder(originalOrder + 1);
+        BiomeData next = GetBiomeByOrder(originalOrder + 1);
 
         if (next == null)
         {
@@ -356,7 +356,7 @@ public class WorldConfiguration : IWorldConfiguration
     /// <returns></returns>
     protected BiomeData GetBiomeByOrder(int order)
     {
-        foreach (var biome in _biomeData.Values)
+        foreach (BiomeData biome in _biomeData.Values)
         {
             if (biome.BiomeOrder == order)
             {
@@ -424,7 +424,7 @@ public class WorldConfiguration : IWorldConfiguration
 
     private void SetupWorld(string type, float factor)
     {
-        var scale = Scaling.Vanilla;
+        Scaling scale = Scaling.Vanilla;
         type = type.Trim().ToLower();
 
         if (type.Equals("exponential"))
@@ -480,8 +480,8 @@ public class WorldConfiguration : IWorldConfiguration
     {
         try
         {
-            var healthString = ScalingConfiguration.Instance.GetAutoScaleCreatureHealth();
-            var arr = ScalingAPI.StringToIntArray(healthString);
+            string healthString = ScalingConfiguration.Instance.GetAutoScaleCreatureHealth();
+            int[] arr = ScalingAPI.StringToIntArray(healthString);
             CreatureConfiguration.Instance.SetBaseHealth(arr);
         }
         catch
@@ -491,8 +491,8 @@ public class WorldConfiguration : IWorldConfiguration
 
         try
         {
-            var damageString = ScalingConfiguration.Instance.GetAutoScaleCreatureDamage();
-            var arr = ScalingAPI.StringToIntArray(damageString);
+            string damageString = ScalingConfiguration.Instance.GetAutoScaleCreatureDamage();
+            int[] arr = ScalingAPI.StringToIntArray(damageString);
             CreatureConfiguration.Instance.SetBaseDamage(arr);
         }
         catch

@@ -10,7 +10,7 @@ namespace VentureValheim.RememberLocation;
 public class RememberLocationPlugin : BaseUnityPlugin
 {
     private const string ModName = "RememberLocation";
-    private const string ModVersion = "0.1.0";
+    private const string ModVersion = "1.0.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
 
@@ -33,8 +33,8 @@ public class RememberLocationPlugin : BaseUnityPlugin
         {
             RememberLocationLogger.LogDebug($"Overwriting all world logout points with {point}.");
             point.y = 0; // Set height to 0 to prevent falling to death on spawn
-            var currentWorldID = ZNet.instance.GetWorldUID();
-            foreach (var worldData in __instance.m_worldData)
+            long currentWorldID = ZNet.instance.GetWorldUID();
+            foreach (System.Collections.Generic.KeyValuePair<long, PlayerProfile.WorldPlayerData> worldData in __instance.m_worldData)
             {
                 if (worldData.Key != currentWorldID) // Do not override point for current world
                 {

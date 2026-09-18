@@ -16,9 +16,9 @@ public class CreatureOverrides
     {
         if (File.Exists(filePath))
         {
-            using var fileReader = new StreamReader(filePath);
+            using StreamReader fileReader = new StreamReader(filePath);
             string fileData = File.ReadAllText(filePath);
-            var deserializer = new DeserializerBuilder()
+            IDeserializer deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .Build();
             CreatureOverridesList creatures = deserializer.Deserialize<CreatureOverridesList>(fileData);
@@ -45,7 +45,7 @@ public class CreatureOverrides
             }
 
             string str = $"Creatures in list {creatures.Count()}:\n";
-            foreach (var entry in creatures)
+            foreach (CreatureOverride entry in creatures)
             {
                 str += entry.ToString();
             }
@@ -67,7 +67,7 @@ public class CreatureOverrides
             string str = $"{name}: Biome {biome}, Difficulty {difficulty}, Health {health}, Attacks:\n";
             if (attacks != null)
             {
-                foreach (var entry in attacks)
+                foreach (AttackOverride entry in attacks)
                 {
                     str += entry.ToString();
                 }

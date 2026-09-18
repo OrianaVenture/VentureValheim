@@ -76,7 +76,7 @@ public partial class ItemConfiguration : IItemConfiguration
     {
         if (item.itemType != null && item.value != null)
         {
-            var type = (ItemType)item.itemType;
+            ItemType type = (ItemType)item.itemType;
 
             AddBaseItemValue(type, item.value.Value);
         }
@@ -196,23 +196,23 @@ public partial class ItemConfiguration : IItemConfiguration
             {
                 if (data.ItemCategory == ItemCategory.Weapon)
                 {
-                    var damage = item.m_itemData.m_shared.m_damages;
-                    var upgrades = item.m_itemData.m_shared.m_maxQuality;
-                    var upgradeDamage = item.m_itemData.m_shared.m_damagesPerLevel;
+                    HitData.DamageTypes damage = item.m_itemData.m_shared.m_damages;
+                    int upgrades = item.m_itemData.m_shared.m_maxQuality;
+                    HitData.DamageTypes upgradeDamage = item.m_itemData.m_shared.m_damagesPerLevel;
                     data.SetVanillaData(damage, upgrades, upgradeDamage);
                 }
                 else if (data.ItemCategory == ItemCategory.Armor)
                 {
-                    var value = item.m_itemData.m_shared.m_armor;
-                    var upgrades = item.m_itemData.m_shared.m_maxQuality;
-                    var upgradeValue = item.m_itemData.m_shared.m_armorPerLevel;
+                    float value = item.m_itemData.m_shared.m_armor;
+                    int upgrades = item.m_itemData.m_shared.m_maxQuality;
+                    float upgradeValue = item.m_itemData.m_shared.m_armorPerLevel;
                     data.SetVanillaData(value, upgrades, upgradeValue);
                 }
                 else if (data.ItemCategory == ItemCategory.Shield)
                 {
-                    var value = item.m_itemData.m_shared.m_blockPower;
-                    var upgrades = item.m_itemData.m_shared.m_maxQuality;
-                    var upgradeValue = item.m_itemData.m_shared.m_blockPowerPerLevel;
+                    float value = item.m_itemData.m_shared.m_blockPower;
+                    int upgrades = item.m_itemData.m_shared.m_maxQuality;
+                    float upgradeValue = item.m_itemData.m_shared.m_blockPowerPerLevel;
                     data.SetVanillaData(value, upgrades, upgradeValue);
                 }
             }
@@ -268,12 +268,12 @@ public partial class ItemConfiguration : IItemConfiguration
             {
                 ScalingPlugin.VentureScalingLogger.LogDebug("Deserializer successfully parsed yaml data.");
                 ScalingPlugin.VentureScalingLogger.LogDebug(items.ToString());
-                foreach (var entry in items.items)
+                foreach (ItemOverrides.ItemOverride entry in items.items)
                 {
                     AddItemConfiguration(entry);
                 }
 
-                foreach (var entry in items.baseItemValues)
+                foreach (ItemOverrides.BaseItemValueOverride entry in items.baseItemValues)
                 {
                     AddBaseItemValue(entry);
                 }

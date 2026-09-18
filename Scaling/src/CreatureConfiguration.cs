@@ -139,18 +139,18 @@ public class CreatureConfiguration : ICreatureConfiguration
 
         try
         {
-            var maxTotalDamage = GetMaxCreatureDamage(cc.VanillaAttacks);
+            float maxTotalDamage = GetMaxCreatureDamage(cc.VanillaAttacks);
             if (maxTotalDamage <= 0)
             {
                 return;
             }
 
-            foreach (var attack in cc.VanillaAttacks)
+            foreach (KeyValuePair<string, HitData.DamageTypes> attack in cc.VanillaAttacks)
             {
                 ScalingAPI.GetItemDrop(attack.Key, out ItemDrop item);
                 if (item != null)
                 {
-                    var damage = cc.GetAttack(attack.Key, maxTotalDamage);
+                    HitData.DamageTypes? damage = cc.GetAttack(attack.Key, maxTotalDamage);
                     ConfigureAttack(ref item, damage);
                 }
                 else
@@ -188,7 +188,7 @@ public class CreatureConfiguration : ICreatureConfiguration
 
         if (attacks != null)
         {
-            foreach (var attack in attacks.Values)
+            foreach (HitData.DamageTypes attack in attacks.Values)
             {
                 float damage = ItemConfiguration.Instance.GetTotalDamage(attack);
 
@@ -213,7 +213,7 @@ public class CreatureConfiguration : ICreatureConfiguration
         }
 
         // Meadow Defaults
-        var biome = WorldConfiguration.Biome.Meadow;
+        WorldConfiguration.Biome biome = WorldConfiguration.Biome.Meadow;
         AddCreatureConfiguration("Eikthyr", biome, WorldConfiguration.Difficulty.Boss);
         AddCreatureConfiguration("Boar_piggy", biome, WorldConfiguration.Difficulty.Harmless);
         AddCreatureConfiguration("Boar", biome, WorldConfiguration.Difficulty.Novice);
@@ -377,10 +377,10 @@ public class CreatureConfiguration : ICreatureConfiguration
     {
         foreach (CreatureClassification cc in _creatureData.Values)
         {
-            var creature = ScalingAPI.GetHumanoid(cc.Name);
+            Humanoid creature = ScalingAPI.GetHumanoid(cc.Name);
             if (creature != null)
             {
-                var health = cc.GetHealth();
+                float? health = cc.GetHealth();
                 if (health != null)
                 {
                     UpdateCreature(health.Value, ref creature);
@@ -398,7 +398,7 @@ public class CreatureConfiguration : ICreatureConfiguration
     /// <param name="creature"></param>
     private void UpdateCreature(float health, ref Humanoid creature)
     {
-        var original = creature.m_health;
+        float original = creature.m_health;
         creature.m_health = health;
         ScalingPlugin.VentureScalingLogger.LogDebug($"{creature.name}: Health updated from {original} to {creature.m_health}.");
     }
@@ -412,10 +412,10 @@ public class CreatureConfiguration : ICreatureConfiguration
 
         foreach (CreatureClassification cc in _creatureData.Values)
         {
-            var creature = ScalingAPI.GetHumanoid(cc.Name);
+            Humanoid creature = ScalingAPI.GetHumanoid(cc.Name);
             if (creature != null)
             {
-                var attacks = new List<GameObject>();
+                List<GameObject> attacks = new List<GameObject>();
                 if (creature.m_defaultItems != null)
                 {
                     attacks.AddRange(creature.m_defaultItems);
@@ -450,7 +450,7 @@ public class CreatureConfiguration : ICreatureConfiguration
     {
         foreach (CreatureClassification creatureClass in _creatureData.Values)
         {
-            var creature = ScalingAPI.GetHumanoid(creatureClass.Name);
+            Humanoid creature = ScalingAPI.GetHumanoid(creatureClass.Name);
             if (creature != null)
             {
                 if (creatureClass.VanillaHealth != null)
@@ -460,7 +460,7 @@ public class CreatureConfiguration : ICreatureConfiguration
 
                 if (creatureClass.VanillaAttacks != null)
                 {
-                    foreach (var attack in creatureClass.VanillaAttacks)
+                    foreach (KeyValuePair<string, HitData.DamageTypes> attack in creatureClass.VanillaAttacks)
                     {
                         ScalingAPI.GetItemDrop(attack.Key, out ItemDrop item);
                         if (item != null)
@@ -487,7 +487,7 @@ public class CreatureConfiguration : ICreatureConfiguration
                 ScalingPlugin.VentureScalingLogger.LogDebug("Deserializer successfully parsed yaml data.");
                 ScalingPlugin.VentureScalingLogger.LogDebug(creatures.ToString());
 
-                foreach (var entry in creatures.creatures)
+                foreach (CreatureOverrides.CreatureOverride entry in creatures.creatures)
                 {
                     AddCreatureConfiguration(entry);
                 }

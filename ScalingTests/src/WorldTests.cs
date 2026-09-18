@@ -19,7 +19,7 @@ public class WorldTests
 
     private TestWorldConfiguration Setup(WorldConfiguration.Scaling a, float b)
     {
-        var mockWorld = new Mock<IWorldConfiguration>();
+        Mock<IWorldConfiguration> mockWorld = new Mock<IWorldConfiguration>();
         mockWorld.SetupGet(x => x.WorldScale).Returns(a);
         mockWorld.SetupGet(x => x.ScaleFactor).Returns(b);
 
@@ -35,7 +35,7 @@ public class WorldTests
     [InlineData(100, _factor, 11f)]
     public void GetScalingLinear_HappyPaths(int order, float factor, float expected)
     {
-        var worldConfiguration = Setup(WorldConfiguration.Scaling.Linear, factor);
+        TestWorldConfiguration worldConfiguration = Setup(WorldConfiguration.Scaling.Linear, factor);
         Assert.Equal(expected, worldConfiguration.GetScaling(order, factor));
     }
 
@@ -48,7 +48,7 @@ public class WorldTests
     [InlineData(100, _factor, 13780.64f)]
     public void GetScalingExponential_HappyPaths(int order, float factor, float expected)
     {
-        var worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, factor);
+        TestWorldConfiguration worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, factor);
         Assert.Equal(expected, worldConfiguration.GetScaling(order, factor), 0.1f);
     }
 
@@ -61,7 +61,7 @@ public class WorldTests
     [InlineData(100, _factor2, 10.82f)]
     public void GetScalingLogarithmic_HappyPaths(int order, float factor, float expected)
     {
-        var worldConfiguration = Setup(WorldConfiguration.Scaling.Logarithmic, factor);
+        TestWorldConfiguration worldConfiguration = Setup(WorldConfiguration.Scaling.Logarithmic, factor);
         Assert.Equal(expected, worldConfiguration.GetScaling(order, factor), 0.1f);
     }
 
@@ -72,7 +72,7 @@ public class WorldTests
     [InlineData(100, _factor, 1f)]
     public void GetScalingVanilla_HappyPaths(int order, float factor, float expected)
     {
-        var worldConfiguration = Setup(WorldConfiguration.Scaling.Vanilla, factor);
+        TestWorldConfiguration worldConfiguration = Setup(WorldConfiguration.Scaling.Vanilla, factor);
         Assert.Equal(expected, worldConfiguration.GetScaling(order, factor));
     }
 
@@ -86,14 +86,14 @@ public class WorldTests
     [InlineData(WorldConfiguration.Biome.AshLand, (int)WorldConfiguration.Biome.DeepNorth)]
     public void GetNextBiome_HappyPaths(WorldConfiguration.Biome biome, int expected)
     {
-        var worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, 0.75f);
+        TestWorldConfiguration worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, 0.75f);
         Assert.Equal(expected, worldConfiguration.GetNextBiome(biome).BiomeType);
     }
 
     [Fact]
     public void GetNextBiome_NotFound()
     {
-        var worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, 0.75f);
+        TestWorldConfiguration worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, 0.75f);
         Assert.Null(worldConfiguration.GetNextBiome(WorldConfiguration.Biome.DeepNorth));
     }
 
@@ -108,7 +108,7 @@ public class WorldTests
     [InlineData(WorldConfiguration.Biome.DeepNorth, 87.96f)]
     public void GetNextBiomeScaling_HappyPaths(WorldConfiguration.Biome biome, float expected)
     {
-        var worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, 0.75f);
+        TestWorldConfiguration worldConfiguration = Setup(WorldConfiguration.Scaling.Exponential, 0.75f);
         float result = worldConfiguration.GetNextBiomeScale(biome);
         Assert.Equal(expected, result, 0.1f);
     }

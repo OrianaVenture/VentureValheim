@@ -11,8 +11,8 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>VentureValheim.Scaling</RootNamespace>
         <AssemblyName>VentureValheim.Scaling</AssemblyName>
-        <Version>0.3.0</Version>
-        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <Version>1.0.0</Version>
+        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>10.0</LangVersion>
         <Nullable>enable</Nullable>

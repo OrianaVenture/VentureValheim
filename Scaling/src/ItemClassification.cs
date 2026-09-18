@@ -258,7 +258,7 @@ public class ItemClassification
         }
         else if (BiomeType != WorldConfiguration.Biome.Undefined && ItemTypeDefined())
         {
-            var scale = WorldConfiguration.Instance.GetBiomeScaling(BiomeType);
+            float scale = WorldConfiguration.Instance.GetBiomeScaling(BiomeType);
             return (int)(GetBaseValue() * scale);
         }
 
@@ -286,7 +286,7 @@ public class ItemClassification
         }
         else if (BiomeType != WorldConfiguration.Biome.Undefined && ItemTypeDefined())
         {
-            var levels = GetUpgradeLevels();
+            int? levels = GetUpgradeLevels();
             if (levels != null)
             {
                 return ItemConfiguration.Instance.CalculateUpgradeValue(BiomeType, GetBaseValue(), levels.Value);
@@ -326,7 +326,7 @@ public class ItemClassification
             }
             else
             {
-                var damage = CreatureOverrides.GetDamageTypes(OverrideDamageValue);
+                HitData.DamageTypes damage = CreatureOverrides.GetDamageTypes(OverrideDamageValue);
                 // Prevent an overwrite of chop and pickaxe damage to reduce confusion hopefully
                 if (VanillaDamageValue != null)
                 {
@@ -345,7 +345,7 @@ public class ItemClassification
         }
         else if (BiomeType != WorldConfiguration.Biome.Undefined && VanillaDamageValue != null && ItemTypeDefined())
         {
-            var biome = WorldConfiguration.Instance.GetBiome(BiomeType);
+            WorldConfiguration.BiomeData biome = WorldConfiguration.Instance.GetBiome(BiomeType);
             return ItemConfiguration.Instance.CalculateItemDamageTypes(biome.ScaleValue, VanillaDamageValue.Value, GetBaseValue());
         }
 

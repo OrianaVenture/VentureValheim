@@ -16,9 +16,9 @@ public class ItemOverrides
     {
         if (File.Exists(filePath))
         {
-            using var fileReader = new StreamReader(filePath);
+            using StreamReader fileReader = new StreamReader(filePath);
             string fileData = File.ReadAllText(filePath);
-            var deserializer = new DeserializerBuilder()
+            IDeserializer deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .Build();
             ItemOverridesList items = deserializer.Deserialize<ItemOverridesList>(fileData);
@@ -46,7 +46,7 @@ public class ItemOverrides
             }
 
             string str = $"Items in list {items.Count()}:\n";
-            foreach (var entry in items)
+            foreach (ItemOverride entry in items)
             {
                 str += entry.ToString();
             }
