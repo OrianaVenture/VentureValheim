@@ -90,6 +90,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cornerstone", "Cornerstone\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TorchEmbers", "TorchEmbers\TorchEmbers.csproj", "{6DE6E052-925B-48D7-B2EF-01055A89C23E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabyGotBuild", "BabyGotBuild\BabyGotBuild.csproj", "{DAD409CD-A59B-4381-9F15-49E0E5D02B18}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -260,6 +262,10 @@ Global
 		{6DE6E052-925B-48D7-B2EF-01055A89C23E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DE6E052-925B-48D7-B2EF-01055A89C23E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DE6E052-925B-48D7-B2EF-01055A89C23E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAD409CD-A59B-4381-9F15-49E0E5D02B18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAD409CD-A59B-4381-9F15-49E0E5D02B18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAD409CD-A59B-4381-9F15-49E0E5D02B18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAD409CD-A59B-4381-9F15-49E0E5D02B18}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
