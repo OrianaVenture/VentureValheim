@@ -1,3 +1,8 @@
+## 1.0.2
+
+* Bug fix for loud sound effects.
+* Added Totems to the Transportation build usage tab.
+
 ## 1.0.1
 
 * Fixed bug with Totem Bomb not adding to trader correctly.
