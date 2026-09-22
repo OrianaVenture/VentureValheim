@@ -31,9 +31,11 @@ Player activity includes:
 
 There are advanced options in the config file to set individual reset times for certain locations. To use the advanced options set OverrideResetTimes to true, you must then customize all overridden values. Any locations not specified in the config will use the default value and cannot be changed individually. If you do not want specific locations to reset you can set the reset time to an arbitrarily large value like 100000, or any value that will be greater than the number of expected passed in-game days.
 
-### Console Commands
+### Console Commands (Cheats)
 
-To perform a manual reset use the "resetlocations" command. To specify a range use a whole number: "resetlocations 10". Maximum range for the manual reset command is 100 and defaults to 20. Manual resets will ignore time and Player activity restrictions specified above. This can cause loss of player built structures and tombstones. PLEASE USE WITH CAUTION.
+To perform a manual reset use the ``resetlocations`` command. To specify a range use a whole number: ``resetlocations 10``. Maximum range for the manual reset command is 100 and defaults to 20. Manual resets will ignore time and Player activity restrictions specified above. This can cause loss of player built structures and tombstones. PLEASE USE WITH CAUTION.
+
+A second command ``resetitemstands`` can be used to pop all items off item stands in range similar to the previous command. This can be used to reset boss stones and remove all trophies without deleting anything. To only remove one approach it and use a small range such as ``resetitemstands 3``.
 
 Don't know how to use commands? Dedicated servers do not allow for use of commands, but there are mods that can enable them (like Server devcommands by JereKuusela). The command added by this mod is considered a "cheat". To use cheats you must enable them with the "devcommands" command, you may have to be an admin for them to work depending on what mod you use to access commands.
 
@@ -48,7 +50,7 @@ Don't know how to use commands? Dedicated servers do not allow for use of comman
 * Infested Mines/Citadel
 * Morgen Holes
 
-"Ground locations" are every other type of location in the game. This mod supports resetting all kinds of ground locations including abandoned buildings, shipwrecks, infested trees, tar pits, etc. If you do not want to reset ground locations set ``ResetGroundLocations`` to False. This will not apply for meadows farms/villages or fuling camps as those locations are considered dungeons and are in a separate category (large locations with randomly generated "rooms"). It will also not apply to any location that has an individual reset time in the configuration file like the CharredFortress.
+"Ground locations" are every other type of location in the game. This mod supports resetting all kinds of ground locations including abandoned buildings, shipwrecks, infested trees, tar pits, etc. If you do not want to reset ground locations set ``ResetGroundLocations`` to False. This will not apply for meadows farms/villages or fuling camps as those locations are considered dungeons and are in a separate category (large locations with randomly generated "rooms"). It will also not apply to any location that has an individual reset time in the configuration file like the CharredFortress. Read more about the allow list below for more customization options.
 
 If you are using another mod that adds custom locations or dungeons you may see this mod behave unexpectedly. If you would like support added for another mod please reach out to me in my discord (link below).
 
@@ -66,6 +68,8 @@ You may notice that Sealed Towers (Hildir plains dungeon) are not resetting. The
 ### Skip/Allow Resetting Certain Locations
 
 There is a config called ``IgnoreList`` in the configuration file in which you can specify locations NOT to reset separated by commas, for example: ``StartTemple, Eikthyrnir, WoodHouse6``. Similarly there is a config called ``AllowList`` in which you can specify locations to always reset regardless of the ``ResetGroundLocations`` setting and internal mod default settings. Be warned that overriding default ignored locations can cause strange behaviors, there is a reason they are hard coded as ignored.
+
+PLEASE NOTE: These configurations are case sensitive. You must match spelling exactly or your configurations will not take effect.
 
 To see a list of all location names you can see them on the [Jotunn Modding Wiki](https://valheim-modding.github.io/Jotunn/data/zones/location-list.html).
 

@@ -1,3 +1,9 @@
+## 1.1.0
+
+* Added a new command "resetitemstands" to drop items from any items stands such as the starting boss stones. (sorry for the delay)
+* Fixed extra whitespace in custom list config list not correctly recognizing locations strings.
+* Fixed ground locations not working with the manual reset command when the configuration is disabled for ground resets.
+
 ## 1.0.0
 
 * Release for game version 1.0.7

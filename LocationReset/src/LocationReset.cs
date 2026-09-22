@@ -374,7 +374,7 @@ public class LocationReset
             List<string> keys = config.Split(',').ToList();
             for (int lcv = 0; lcv < keys.Count; lcv++)
             {
-                list.Add(keys[lcv].GetStableHashCode());
+                list.Add(keys[lcv].Trim().GetStableHashCode());
             }
         }
     }
@@ -559,7 +559,7 @@ public class LocationReset
                 return;
             }
         }
-        else if (!position.IsSkyLocation && !GroundResetQualified(hash))
+        else if (!force && !position.IsSkyLocation && !GroundResetQualified(hash))
         {
             // Do not reset ground locations when config is off
             LocationResetPlugin.LocationResetLogger.LogDebug(
