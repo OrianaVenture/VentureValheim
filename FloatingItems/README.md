@@ -36,10 +36,6 @@ If an item is included in the "SinkingItems" list it will be excluded from autom
 
 This mod needs to be on all clients to work properly. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations should take immediate effect but items already on the ground will not update until reloaded or picked up.
 
-## Changelog
-
-Moved to new file, it will appear as a new tab on the thunderstore page.
-
 ## Contributing
 
 All issues can be reported on Discord or on the project Github. To report issues please be as specific as possible and provide the following:

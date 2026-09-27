@@ -1,19 +1,21 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using Jotunn.Utils;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace VentureValheim.FloatingItems;
 
+[SynchronizationMode(AdminOnlyStrictness.IfOnServer)]
 [BepInDependency(Jotunn.Main.ModGuid)]
 [BepInPlugin(ModGUID, ModName, ModVersion)]
 public class FloatingItemsPlugin : BaseUnityPlugin
 {
     private const string ModName = "VentureFloatingItems";
-    private const string ModVersion = "1.0.0";
+    private const string ModVersion = "1.0.1";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
