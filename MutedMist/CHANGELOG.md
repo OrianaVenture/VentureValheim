@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Now allows changing "admin" configurations client side if the mod is not installed on a server.
+
 ## 1.0.0
 
 * Release for game version 1.0.7

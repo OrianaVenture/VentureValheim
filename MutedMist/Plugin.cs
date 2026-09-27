@@ -5,16 +5,18 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using Jotunn.Utils;
 using UnityEngine;
 
 namespace VentureValheim.MutedMist;
 
+[SynchronizationMode(AdminOnlyStrictness.IfOnServer)]
 [BepInDependency(Jotunn.Main.ModGuid)]
 [BepInPlugin(ModGUID, ModName, ModVersion)]
 public class MutedMistPlugin : BaseUnityPlugin
 {
     private const string ModName = "MutedMist";
-    private const string ModVersion = "1.0.0";
+    private const string ModVersion = "1.0.1";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
