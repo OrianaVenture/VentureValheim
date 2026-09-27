@@ -111,10 +111,6 @@ When using the mod "More Vanilla Build Prefabs" by Searica (or mods with similar
 
 This mod needs to be on the client, it will work even if other players do not have it installed but may behave unexpectedly when playing around other players without the mod. For best results have everyone install the mod. Config Syncing is included with Jotunn. Install on the server to enforce the same mod configuration for all players. Live changes to the configurations should take immediate effect.
 
-## Changelog
-
-Moved to new file, it will appear as a new tab on the thunderstore page.
-
 ## Contributing
 
 All issues can be reported on Discord or on the project Github. To report issues please be as specific as possible and provide the following:

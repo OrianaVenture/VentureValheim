@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Now allows changing "admin" configurations client side if the mod is not installed on a server.
+
 ## 1.1.0
 
 * Added a new command "resetitemstands" to drop items from any items stands such as the starting boss stones. (sorry for the delay)

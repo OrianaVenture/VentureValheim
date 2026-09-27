@@ -1,12 +1,14 @@
-﻿using System.IO;
-using System.Reflection;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using Jotunn.Utils;
+using System.IO;
+using System.Reflection;
 
 namespace VentureValheim.LocationReset;
 
+[SynchronizationMode(AdminOnlyStrictness.IfOnServer)]
 [BepInDependency(Jotunn.Main.ModGuid)]
 [BepInDependency(ModCompatibility.DungeonSplitterName, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(ModCompatibility.MVBPName, BepInDependency.DependencyFlags.SoftDependency)]
@@ -23,7 +25,7 @@ public class LocationResetPlugin : BaseUnityPlugin
     }
 
     private const string ModName = "LocationReset";
-    private const string ModVersion = "1.1.0";
+    private const string ModVersion = "1.1.1";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
