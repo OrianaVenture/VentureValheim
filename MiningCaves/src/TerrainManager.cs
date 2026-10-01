@@ -200,9 +200,6 @@ public class TerrainManager
 
         _newTerrainCompList.Add(copyName, copy);
 
-        // TODO: clean up when supported by Jotunn
-        ObjectDB.instance.m_terrainOps.Add(copy.GetComponent<TerrainOp>());
-
         return copy;
     }
 
@@ -253,6 +250,17 @@ public class TerrainManager
             if (RemoveHitTerrainFromTable(ref itemDrop, out pieces) || RemoveHitTerrain(ref itemDrop, out spawnOnHit))
             {
                 _originalTerrainCompList.Add(new OriginalTerrainComp(item.name, spawnOnHit, pieces));
+            }
+        }
+
+        // Ensure new TerainOp are added to the objectDB lists
+        foreach (KeyValuePair<string, GameObject> terrainOP in _newTerrainCompList)
+        {
+            TerrainOp match = ObjectDB.instance.m_terrainOps.Find(op => op.name == terrainOP.Key);
+            if (!match)
+            {
+                MiningCavesPlugin.MiningCavesLogger.LogDebug($"Tracking TerrainOp {terrainOP.Key}");
+                ObjectDB.instance.m_terrainOps.Add(terrainOP.Value.GetComponent<TerrainOp>());
             }
         }
 

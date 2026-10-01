@@ -1,3 +1,7 @@
+## 1.0.3
+
+* Fixed the terrainOp issue again! (This one has to stick this time right?)
+
 ## 1.0.2
 
 * Fixed an issue with enabled terrain locking setting causing terrain modifications to break if settings on client did not match on startup. (I think?)
