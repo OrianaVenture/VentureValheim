@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Fixed the terrainOp issue again! (This one has to stick this time right?)
+
 ## 1.0.1
 
 * Fix for options not appearing when logging out and back into worlds in the same game session.

@@ -17,6 +17,8 @@ public class PathsideAssistance
         get => _instance;
     }
 
+    private static Dictionary<string, GameObject> _newTerrainCompList = new Dictionary<string, GameObject>();
+
     /// <summary>
     /// Adds new pieces to the given piece based off existing entries in the piece table
     /// </summary>
@@ -75,16 +77,19 @@ public class PathsideAssistance
             return null;
         }
 
-        string name = Utils.GetPrefabName(piece) + "_ALT";
-        TerrainOp match = ObjectDB.instance.m_terrainOps.Find(op => op.name == name);
+        string copyName = Utils.GetPrefabName(piece) + "_ALT";
+        TerrainOp match = ObjectDB.instance.m_terrainOps.Find(op => op.name == copyName);
         if (match)
         {
-            PathsideAssistancePlugin.PathsideAssistanceLogger.LogDebug("Match found! Returning previous copy.");
             return match.gameObject;
+        }
+        else if (_newTerrainCompList.ContainsKey(copyName))
+        {
+            return _newTerrainCompList[copyName];
         }
 
         GameObject copy = GameObject.Instantiate(piece, PathsideAssistancePlugin.Root.transform, false);
-        copy.name = name;
+        copy.name = copyName;
 
         // Change name
         Piece pieceComp = copy.GetComponent<Piece>();
@@ -118,8 +123,7 @@ public class PathsideAssistance
             }
         }
 
-        // TODO: clean up when supported by Jotunn
-        ObjectDB.instance.m_terrainOps.Add(copy.GetComponent<TerrainOp>());
+        _newTerrainCompList.Add(copyName, copy);
 
         return copy;
     }
@@ -140,6 +144,17 @@ public class PathsideAssistance
 
                 GameObject cultivator = __instance.GetItemPrefab("Cultivator".GetStableHashCode());
                 UpdatePieceTable(cultivator);
+
+                // Ensure new TerainOp are added to the objectDB lists
+                foreach (KeyValuePair<string, GameObject> terrainOP in _newTerrainCompList)
+                {
+                    TerrainOp match = ObjectDB.instance.m_terrainOps.Find(op => op.name == terrainOP.Key);
+                    if (!match)
+                    {
+                        PathsideAssistancePlugin.PathsideAssistanceLogger.LogDebug($"Tracking TerrainOp {terrainOP.Key}");
+                        ObjectDB.instance.m_terrainOps.Add(terrainOP.Value.GetComponent<TerrainOp>());
+                    }
+                }
 
                 __instance.UpdateRegisters();
             }
