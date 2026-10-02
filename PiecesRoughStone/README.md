@@ -86,19 +86,6 @@ Due to the length of time required to polish this mod some features have been de
 
 * Localization
 
-## Changelog
-
-### 0.2.0
-
-* Added variations of the Grausten pieces. Roof pieces have unique colors!
-* Added icons for each piece.
-* Moved both piece mods into one hammer tab.
-* Added worn and broken textures.
-
-### 0.1.0
-
-* First release
-
 ## Contributing
 
 All issues can be reported on Discord or on the project Github. To report issues please be as specific as possible and provide the following:
