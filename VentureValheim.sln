@@ -94,6 +94,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabyGotBuild", "BabyGotBuil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pride", "Pride\Pride.csproj", "{EAB77D37-3399-4964-BA66-150DFCF3667E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PiecesSigns", "PiecesSigns\PiecesSigns.csproj", "{7C95117E-DB85-4805-BAF8-72BEE6209084}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -272,6 +274,10 @@ Global
 		{EAB77D37-3399-4964-BA66-150DFCF3667E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAB77D37-3399-4964-BA66-150DFCF3667E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAB77D37-3399-4964-BA66-150DFCF3667E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C95117E-DB85-4805-BAF8-72BEE6209084}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C95117E-DB85-4805-BAF8-72BEE6209084}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C95117E-DB85-4805-BAF8-72BEE6209084}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C95117E-DB85-4805-BAF8-72BEE6209084}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
