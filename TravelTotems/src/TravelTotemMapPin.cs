@@ -8,12 +8,19 @@ public class TravelTotemMapPin
 {
     // Random numbers for saving custom pin data, if collides with another mod will need to alter
     private const int TOTEM_INT = 126;
+    private const int TOTEMDISCOVERABLE_INT = 127;
 
     internal static int TotemIndex = -1;
+    internal static int TotemDiscoverableIndex = -1;
 
     public static Minimap.PinType GetTotemPinType()
     {
         return (Minimap.PinType)TotemIndex;
+    }
+
+    public static Minimap.PinType GetTotemDiscoverablePinType()
+    {
+        return (Minimap.PinType)TotemDiscoverableIndex;
     }
 
     private static void TransformPinIdsToSave(ref List<Minimap.PinData> pins)
@@ -24,6 +31,10 @@ public class TravelTotemMapPin
             if (type == TotemIndex)
             {
                 pin.m_type = (Minimap.PinType)TOTEM_INT;
+            }
+            else if (type == TotemDiscoverableIndex)
+            {
+                pin.m_type = (Minimap.PinType)TOTEMDISCOVERABLE_INT;
             }
         }
     }
@@ -36,6 +47,10 @@ public class TravelTotemMapPin
             if (type == TOTEM_INT)
             {
                 pin.m_type = (Minimap.PinType)TotemIndex;
+            }
+            else if (type == TOTEMDISCOVERABLE_INT)
+            {
+                pin.m_type = (Minimap.PinType)TotemDiscoverableIndex;
             }
         }
     }
@@ -79,7 +94,7 @@ public class TravelTotemMapPin
         [HarmonyPriority(Priority.VeryLow)]
         private static void Postfix(Minimap __instance)
         {
-            bool[] visibleIconsNew = new bool[__instance.m_visibleIconTypes.Length + 1];
+            bool[] visibleIconsNew = new bool[__instance.m_visibleIconTypes.Length + 2];
 
             for (int lcv = 0; lcv < __instance.m_visibleIconTypes.Length; lcv++)
             {
@@ -87,7 +102,9 @@ public class TravelTotemMapPin
             }
 
             TotemIndex = __instance.m_visibleIconTypes.Length;
+            TotemDiscoverableIndex = __instance.m_visibleIconTypes.Length + 1;
             visibleIconsNew[TotemIndex] = true;
+            visibleIconsNew[TotemDiscoverableIndex] = true;
 
             __instance.m_visibleIconTypes = visibleIconsNew;
         }
@@ -106,6 +123,10 @@ public class TravelTotemMapPin
             if (typeInt == TOTEM_INT)
             {
                 type = (Minimap.PinType)TotemIndex;
+            }
+            else if (typeInt == TOTEMDISCOVERABLE_INT)
+            {
+                type = (Minimap.PinType)TotemDiscoverableIndex;
             }
 
             if ((int)type >= Minimap.instance.m_visibleIconTypes.Length)
@@ -131,6 +152,11 @@ public class TravelTotemMapPin
             if (type == (Minimap.PinType)TotemIndex)
             {
                 __result = AssetManager.TotemMapSprite;
+                return false;
+            }
+            else if (type == (Minimap.PinType)TotemDiscoverableIndex)
+            {
+                __result = AssetManager.TotemDiscoverableMapSprite;
                 return false;
             }
 

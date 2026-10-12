@@ -45,9 +45,11 @@ Once unlocked Totems can be used by walking into them such as walking into a van
 
 #### Totem Map Pins
 
-Totems will appear as a new red map pin type. The pins will display with the name assigned to them for all players that have access to it.
+Totems when unlocked will appear as a new red map pin type. Discoverable Totems not yet unlocked will appear as a new white map pin type (when enabled). The pins will display on the map with the name assigned to them.
 
 The ``ShowMapPins`` client configuration can show all Totem map pins at all times, not just when using a Totem.
+
+The ``ShowDiscoverableMapPins`` server configuration can show all spawned Totem map pins that are not yet unlocked for the player.
 
 <br>
 <img alt="Totems" height="300" src="https://raw.githubusercontent.com/OrianaVenture/VentureValheim/master/TravelTotems/image/MapTotems.png?raw=true" />
@@ -170,6 +172,7 @@ Disable building Totems and make players find the Totems scattered about the wor
 * ``TotemAccessDefault`` set to ``FindUnlock``
 * ``PieceCost``, ``PieceMistlandsCost``, ``PieceAshlandsCost`` set to blank values to disable
 * ``AllowTotemClaiming`` set to True
+* ``ShowDiscoverableMapPins`` set to False so players cannot view progress of other players.
 
 ### Community Progress
 

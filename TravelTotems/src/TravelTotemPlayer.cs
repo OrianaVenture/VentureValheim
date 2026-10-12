@@ -133,10 +133,11 @@ public static class TravelTotemPlayer
     /// <summary>
     /// Returns all the totems that the player can access on the map.
     /// </summary>
-    public static List<ZDO> GetValidTotems()
+    public static List<ZDO> GetValidTotems(out List<ZDO> discoverableTotems)
     {
         long playerID = Game.instance.GetPlayerProfile().GetPlayerID();
         List<ZDO> validTotems = new List<ZDO>();
+        discoverableTotems = new List<ZDO>();
 
         foreach (ZDO totem in TravelTotems.GetTravelTotems())
         {
@@ -154,6 +155,11 @@ public static class TravelTotemPlayer
                     totem.GetInt(TravelTotemPortal.TOTEM_ID_BIN),
                     totem.GetInt(TravelTotemPortal.TOTEM_ID)))
                 {
+                    if (type != TravelTotemType.AlwaysLock)
+                    {
+                        discoverableTotems.Add(totem);
+                    }
+
                     continue;
                 }
             }
@@ -285,6 +291,7 @@ public static class TravelTotemPlayer
             if (!TravelTotemsPlugin.IsInTheMainScene())
             {
                 CurrentSaveString = string.Empty;
+                TravelTotemMap.ResetData(); // redundant cleanup for logout and character switch
                 return;
             }
 

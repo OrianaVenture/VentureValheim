@@ -44,7 +44,9 @@ public class AssetManager
     public static Material TotemMaterialAshlands { get; private set; }
 
     private static string TotemMapSprite_Name = "VV_TravelTotemMapSprite";
+    private static string TotemDiscoverableMapSprite_Name = "VV_TravelTotemDiscoverableMapSprite";
     public static Sprite TotemMapSprite { get; private set; }
+    public static Sprite TotemDiscoverableMapSprite { get; private set; }
 
     public static bool IsTravelTotem(int prefabHash)
     {
@@ -74,6 +76,7 @@ public class AssetManager
         CreateItems();
 
         TotemMapSprite = TravelTotemsPlugin.TotemBundle.LoadAsset<Sprite>(TotemMapSprite_Name);
+        TotemDiscoverableMapSprite = TravelTotemsPlugin.TotemBundle.LoadAsset<Sprite>(TotemDiscoverableMapSprite_Name);
 
         PrefabManager.OnVanillaPrefabsAvailable -= AddPrefabs;
     }

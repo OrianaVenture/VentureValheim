@@ -20,6 +20,12 @@ public static class TravelTotemMap
     private const string HILDIR_LOC = "Hildir_camp";
     private const string BOGWITCH_LOC = "BogWitch_Camp";
 
+    public static void ResetData()
+    {
+        TotemMapPins.Clear();
+        TravelMapPinsAdded = false;
+    }
+
     public static void SetTravelMapActive(bool active)
     {
         TravelMapActive = active;
@@ -30,14 +36,16 @@ public static class TravelTotemMap
         TotemTeleportActive = active;
     }
 
-    public static void AddMapPin(ZDO totem)
+    public static void AddMapPin(ZDO totem, bool active)
     {
         if (totem == null || Minimap.instance == null)
         {
             return;
         }
 
-        Minimap.PinData pin = Minimap.instance.AddPin(totem.GetPosition(), TravelTotemMapPin.GetTotemPinType(),
+        Minimap.PinType pinType = active ? TravelTotemMapPin.GetTotemPinType() : TravelTotemMapPin.GetTotemDiscoverablePinType();
+
+        Minimap.PinData pin = Minimap.instance.AddPin(totem.GetPosition(), pinType,
             totem.GetString(TravelTotemPortal.TOTEM_NAME), false, false);
         TotemMapPins.Add(pin);
     }
@@ -58,11 +66,19 @@ public static class TravelTotemMap
         if ((TravelMapActive || TravelTotemsPlugin.GetShowMapPins()) && !TravelMapPinsAdded)
         {
             // Add pins
-            List<ZDO> totems = TravelTotemPlayer.GetValidTotems();
+            List<ZDO> totems = TravelTotemPlayer.GetValidTotems(out List<ZDO> discoverableTotems);
 
             foreach (ZDO totem in totems)
             {
-                AddMapPin(totem);
+                AddMapPin(totem, true);
+            }
+
+            if (TravelTotemsPlugin.GetShowDiscoverableMapPins())
+            {
+                foreach (ZDO totem in discoverableTotems)
+                {
+                    AddMapPin(totem, false);
+                }
             }
 
             TravelMapPinsAdded = true;
@@ -76,16 +92,16 @@ public static class TravelTotemMap
     private static void ClearPins()
     {
         Minimap.PinType totemPinType = TravelTotemMapPin.GetTotemPinType();
+        Minimap.PinType totemDiscoverablePinType = TravelTotemMapPin.GetTotemDiscoverablePinType();
         foreach (Minimap.PinData pin in TotemMapPins)
         {
-            if (pin.m_type == totemPinType)
+            if (pin.m_type == totemPinType || pin.m_type == totemDiscoverablePinType)
             {
                 Minimap.instance.RemovePin(pin);
             }
         }
 
-        TotemMapPins.Clear();
-        TravelMapPinsAdded = false;
+        ResetData();
     }
 
     public static void TryTriggerTeleportGamepad()

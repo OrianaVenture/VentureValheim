@@ -21,7 +21,7 @@ namespace VentureValheim.TravelTotems;
 public class TravelTotemsPlugin : BaseUnityPlugin
 {
     private const string ModName = "TravelTotems";
-    private const string ModVersion = "1.0.2";
+    private const string ModVersion = "1.1.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -43,6 +43,7 @@ public class TravelTotemsPlugin : BaseUnityPlugin
     private static ConfigEntry<bool> CE_ShowTotemID = null!;
     private static ConfigEntry<bool> CE_TotemNamingAccess = null!;
     private static ConfigEntry<bool> CE_ShowMapPins = null!;
+    private static ConfigEntry<bool> CE_ShowDiscoverableMapPins = null!;
     private static ConfigEntry<string> CE_TotemAccessDefault = null!;
     private static ConfigEntry<string> CE_TotemUnlockRequirementsString = null!;
     private static ConfigEntry<bool> CE_AllowSelectDefaultSpawn = null!;
@@ -99,6 +100,7 @@ public class TravelTotemsPlugin : BaseUnityPlugin
     }
 
     public static bool GetShowMapPins() => CE_ShowMapPins.Value;
+    public static bool GetShowDiscoverableMapPins() => CE_ShowDiscoverableMapPins.Value;
     public static bool GetShowTotemID() => CE_ShowTotemID.Value;
 
     public static TravelTotemType GetTravelTotemType()
@@ -191,10 +193,13 @@ public class TravelTotemsPlugin : BaseUnityPlugin
             true, true, ref CE_AllowSelectBed);
         AddConfig("AllowTotemClaiming", general, "When true allow players to claim public totems they unlock as if they built them (boolean).",
             true, false, ref CE_AllowTotemClaiming);
+        AddConfig("ShowDiscoverableMapPins", client, "Show map pins of discoverable, but not yet unlocked, Totems on the Player minimap. " +
+            "These pins cannot be used to teleport (boolean).",
+            false, true, ref CE_ShowDiscoverableMapPins);
 
         AddConfig("AdminBypass", client, "Allow local admins to access and change all travel totems at all times (boolean).",
             false, false, ref CE_AdminBypass);
-        AddConfig("ShowMapPins", client, "Always show map pins of available Totems on the Player minimap (boolean).",
+        AddConfig("ShowMapPins", client, "Always show map pins of available (and discoverable when applicable) Totems on the Player minimap (boolean).",
             false, true, ref CE_ShowMapPins);
         AddConfig("ShowTotemID", client, "Display the Totem ID when looking at a Totem (boolean).",
             false, false, ref CE_ShowTotemID);
