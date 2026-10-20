@@ -21,7 +21,7 @@ Looking for a Valhiem server? I have partnered with Survival Servers to get you 
 
 ## Features
 
-Automatic sail transparency when sails are deployed applying for any boats with players on board. Toggle the transparency on and off with a configurable hot key (default ``Y``).
+Automatic sail transparency when sails are deployed applying for any boats with players on board. Toggle the transparency on and off with a configurable hot key (default ``Y``). Set the intensity with the TransparencyIntensity configuration (toggle sail off and on again to see changes when live updating this configuration).
 
 ## Candid Shots
 

@@ -14,7 +14,7 @@ namespace VentureValheim.MutedSails;
 public class MutedSailsPlugin : BaseUnityPlugin
 {
     private const string ModName = "MutedSails";
-    private const string ModVersion = "1.0.0";
+    private const string ModVersion = "1.1.0";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -29,9 +29,14 @@ public class MutedSailsPlugin : BaseUnityPlugin
 
     public static ConfigEntry<bool> CE_TransparencyEnabled = null!;
     private static ConfigEntry<KeyCode> CE_ToggleKey = null!;
+    public static ConfigEntry<float> CE_TransparencyIntensity = null!;
 
     public static bool GetTransparencyEnabled() => CE_TransparencyEnabled.Value;
     public static KeyCode GetToggleKey() => CE_ToggleKey.Value;
+    public static float GetTransparencyIntensity()
+    {
+        return Mathf.Clamp01(CE_TransparencyIntensity.Value);
+    }
 
     private void AddConfig<T>(string key, string section, string description, bool synced, T value, ref ConfigEntry<T> configEntry)
     {
@@ -56,6 +61,8 @@ public class MutedSailsPlugin : BaseUnityPlugin
             false, true, ref CE_TransparencyEnabled);
         AddConfig("ToggleKey", general, "Keycode to toggle the transparency on and off (Unity.KeyCode).",
             false, KeyCode.Y, ref CE_ToggleKey);
+        AddConfig("TransparencyIntensity", general, "A value from 0 to 1: 0 makes the sail disappear, 1 is vanilla transparency (float).",
+            true, 0.2f, ref CE_TransparencyIntensity);
 
         Assembly assembly = Assembly.GetExecutingAssembly();
         HarmonyInstance.PatchAll(assembly);

@@ -63,7 +63,7 @@ public class MutedSails
         material.SetTextureScale("_MainTex", originalMaterial.GetTextureScale("_MainTex"));
         material.SetTextureOffset("_MainTex", originalMaterial.GetTextureOffset("_MainTex"));
         material.SetFloat("_Cutoff", 0.1f);
-        material.SetVector("_Color", new Vector4(1, 1, 1, 0.2f));
+        material.SetVector("_Color", new Vector4(1, 1, 1, MutedSailsPlugin.GetTransparencyIntensity()));
 
         MutedSailTracker mutedSail = ship.gameObject.AddComponent<MutedSailTracker>();
         mutedSail.TransparentSailMaterial = material;
@@ -112,6 +112,11 @@ public class MutedSails
 
             if (shouldBeTransparent && !mutedSail.IsTransparent)
             {
+                // Set transparancy intensity
+                Color color = mutedSail.TransparentSailMaterial.color;
+                color.a = MutedSailsPlugin.GetTransparencyIntensity();
+                mutedSail.TransparentSailMaterial.color = color;
+
                 mutedSail.SkinnedMeshRenderer.material = mutedSail.TransparentSailMaterial;
                 mutedSail.IsTransparent = true;
                 __instance.m_sailCloth.SetParameterChange();
