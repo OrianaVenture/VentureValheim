@@ -25,7 +25,7 @@ public class LocationResetPlugin : BaseUnityPlugin
     }
 
     private const string ModName = "LocationReset";
-    private const string ModVersion = "1.1.1";
+    private const string ModVersion = "1.1.2";
     private const string Author = "com.orianaventure.mod";
     private const string ModGUID = Author + "." + ModName;
     private static string ConfigFileName = ModGUID + ".cfg";
@@ -64,6 +64,7 @@ public class LocationResetPlugin : BaseUnityPlugin
 
     private static ConfigEntry<int> CE_CopperTinCaveResetTime = null!;
     private static ConfigEntry<int> CE_SilverCaveResetTime = null!;
+    private static ConfigEntry<int> CE_TarCaveResetTime = null!;
 
     private static ConfigEntry<bool> CE_EnableLeviathanReset = null!;
     private static ConfigEntry<int> CE_LeviathanResetTime = null!;
@@ -97,6 +98,7 @@ public class LocationResetPlugin : BaseUnityPlugin
 
     private static readonly int Hash_CopperTinCave = "VV_CopperTinCave".GetStableHashCode();
     private static readonly int Hash_SilverCave = "VV_SilverCave".GetStableHashCode();
+    private static readonly int Hash_TarCave = "VV_TarCave".GetStableHashCode();
 
     public static int GetResetTime(int hash)
     {
@@ -157,6 +159,10 @@ public class LocationResetPlugin : BaseUnityPlugin
             else if (hash == Hash_SilverCave)
             {
                 return CE_SilverCaveResetTime.Value;
+            }
+            else if (hash == Hash_TarCave)
+            {
+                return CE_TarCaveResetTime.Value;
             }
             else if (hash == Hash_CharredFortress)
             {
@@ -265,6 +271,8 @@ public class LocationResetPlugin : BaseUnityPlugin
             true, 30, ref CE_CopperTinCaveResetTime);
         AddConfig("SilverCaveResetTime", advanced, "Number of in-game days for resetting silver mining caves (int).",
             true, 30, ref CE_SilverCaveResetTime);
+        AddConfig("TarCaveResetTime", advanced, "Number of in-game days for resetting tar mining caves (int).",
+            true, 30, ref CE_TarCaveResetTime);
 
         AddConfig("EnableLeviathanReset", leviathans, "True to enable resetting Leviathans (boolean).",
             true, true, ref CE_EnableLeviathanReset);

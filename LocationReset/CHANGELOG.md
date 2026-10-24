@@ -1,3 +1,7 @@
+## 1.1.2
+
+* Added missing configuration for custom Tar Mining Caves.
+
 ## 1.1.1
 
 * Now allows changing "admin" configurations client side if the mod is not installed on a server.
