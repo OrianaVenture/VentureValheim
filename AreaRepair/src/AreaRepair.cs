@@ -8,7 +8,6 @@ namespace VentureValheim.AreaRepair;
 
 public class AreaRepair
 {
-    private const float RADIUS = 20f;
     private static bool AltKeyPressed = false;
     private static Dictionary<string, bool> TempStationsInRange = new Dictionary<string, bool>();
 
@@ -73,8 +72,10 @@ public class AreaRepair
             Piece hoverPiece = __instance.GetHoveringPiece();
             Vector3 position = hoverPiece != null ? hoverPiece.transform.position : __instance.transform.position;
 
+            float maximumRadius = __instance.m_noPlacementCost ? 1000f : 100f;
+            float repairRadius = Mathf.Clamp(AreaRepairPlugin.GetRepairRadius(), 0, maximumRadius);
             int totalRepaired = 0;
-            List<KeyValuePair<Piece, float>> pieces = GetAllPiecesInRadius(position, RADIUS);
+            List<KeyValuePair<Piece, float>> pieces = GetAllPiecesInRadius(position, repairRadius);
             pieces = pieces.OrderBy(p => p.Value).ToList();
 
             bool freePlacement = __instance.m_noPlacementCost || ZoneSystem.instance.GetGlobalKey(GlobalKeys.NoWorkbench);
@@ -90,7 +91,7 @@ public class AreaRepair
                     continue;
                 }
 
-                if (!CheckCanRepair(__instance.transform.position, piece, RADIUS, freePlacement))
+                if (!CheckCanRepair(__instance.transform.position, piece, repairRadius, freePlacement))
                 {
                     continue;
                 }

@@ -21,15 +21,15 @@ Looking for a Valhiem server? I have partnered with Survival Servers to get you 
 
 ## Features
 
-When repairing a piece it will try to repair additional pieces in a 20 meter radius. Will select the closest damaged piece to the original target until stamina runs out or the hammer breaks. Will check that the required crafting station for each piece is in range of the player before repairing.
+When repairing a piece it will try to repair additional pieces in the configured radius (20 meters by default, maximum 100). Will select the closest damaged piece to the original target until stamina runs out or the hammer breaks. Will check that the required crafting station for each piece is in range of the player before repairing.
 
 To use single repair mode hold ``Left Alt`` before repairing.
 
-When using NoCost cheat mode repairing additional pieces will not consume stamina or tool durability.
+When using NoCost cheat mode repairing additional pieces will not consume stamina or tool durability, and the maximum radius restriction will not apply.
 
 ## Installation
 
-This mod is client side only and has no configuration options. Does not need to be on the server.
+This mod is client side only and changes made to the configurations will only affect your client. Live updates to the configs will take immediate effect. Does not need to be on the server.
 
 ## Contributing
 
